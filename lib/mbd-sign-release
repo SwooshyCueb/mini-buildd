@@ -1,0 +1,14 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+mbd_opt_init "Mini-buildd: Release signing script for mini-dinstall."
+mbd_opt_addPos "RELEASEFILE" "Temporary release file name."
+mbd_opt_parse "$@"
+
+MBD_ARG_RELEASEFILE="`mbd_opt_getPos 0`"
+mbdCheckFile "${MBD_ARG_RELEASEFILE}"
+
+MBD_TMP_SIGNFILE="Release.gpg.mbd-sign-release.tmp"
+rm -f "${MBD_TMP_SIGNFILE}"
+gpg --no-tty --batch --detach-sign -o "${MBD_TMP_SIGNFILE}" "${MBD_ARG_RELEASEFILE}"
+mv "${MBD_TMP_SIGNFILE}" "Release.gpg"

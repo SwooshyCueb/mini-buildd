@@ -1,0 +1,81 @@
+#!/bin/sh -e
+
+# @bug This is EXPERIMENTAL; use this to auto-setup a "fake" lvm volume group via a
+# loopback device. When all todos below are fixed, calling this from postinstall might
+# become an option.
+#
+# @todo make loop device (and thus then volume group) permanent.
+
+. `dirname $0`/mbd-common.sh
+. "${MBD_REPCONFIGFILE}"
+. "${MBD_BLDCONFIGFILE}"
+
+mbd_opt_init "Mini-buildd: Auto-setup lvm w/ loop device (root only)."
+mbd_opt_add "f" "Force fresh setup (i.e., delete existing setup first)."
+mbd_opt_add "d" "Delete existing setup." ### was -p
+mbd_opt_add "a" "Only (re-)attach loop device (needed on system startup before lvm)."
+mbd_opt_parse "$@"
+
+mbdCheckUser root
+
+if [ "${mbd_lvm_vg}" != "auto" ]; then
+	${MBD_LOG} -s "INFO: Using given lvm volume group \"`mbdLvmVgName`\"."
+	exit 0
+fi
+
+MBD_SETUPLVM_VGNAME=`mbdLvmVgName`
+MBD_SETUPLVM_IMGFILE="${MBD_HOME}/bld/chroots/lvm.image"
+MBD_SETUPLVM_IMGDEVICEFILE="${MBD_HOME}/bld/chroots/lvm.device"
+MBD_SETUPLVM_GIGS="100"
+
+# @todo => parseLoopDev()
+mbdGetLoopdev()
+{
+	# @hack: This just works as long as losetup's output does not change.
+	LOOPDEV=`cat ${MBD_SETUPLVM_IMGDEVICEFILE} 2>/dev/null | rev | cut -f1 -d" " | rev`
+
+	if losetup "${LOOPDEV}" 2>/dev/null | grep -q "${MBD_SETUPLVM_IMGFILE}"; then
+		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: \"${LOOPDEV}\" attached to \"${MBD_SETUPLVM_IMGFILE}\"."
+		return 0
+	else
+		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: WARNING: \"${LOOPDEV}\" not attached to ${MBD_SETUPLVM_IMGFILE}"
+		LOOPDEV=""
+		return 1
+	fi
+}
+
+if mbd_opt_given a; then
+	if ! mbdGetLoopdev; then
+		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Re-attach image file: `losetup -v -f ${MBD_SETUPLVM_IMGFILE} | tee "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1`"
+	fi
+	exit 0
+fi
+
+mbdGetLoopdev || true
+
+if mbd_opt_given f || mbd_opt_given d; then
+	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing lv removal: `lvremove --force "${MBD_SETUPLVM_VGNAME}" 2>&1`"
+	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing vg removal: `vgremove "${MBD_SETUPLVM_VGNAME}" 2>&1`"
+	[ -z "${LOOPDEV}" ] || ${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing ${LOOPDEV} unattach: `losetup -d "${LOOPDEV}" 2>&1`"
+	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing image removal: `rm -f -v "${MBD_SETUPLVM_IMGFILE}" "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1`"
+	if mbd_opt_given d; then
+		exit 0
+	fi
+fi
+
+if [ -e "${MBD_SETUPLVM_IMGFILE}" ]; then
+	${MBD_LOG} -s "Not touching existing \"${MBD_SETUPLVM_IMGFILE}\"."
+else
+	MBD_TMP_LOGFILE="${MBD_HOME}/bld/chroots/lvm-setup.log"
+	${MBD_LOG} -s "Setting up lvm ${MBD_SETUPLVM_VGNAME} (logging to ${MBD_TMP_LOGFILE})..."
+
+	if (dd if=/dev/zero of="${MBD_SETUPLVM_IMGFILE}" bs=${MBD_SETUPLVM_GIGS}M seek=1024 count=0 &&
+			losetup -v -f ${MBD_SETUPLVM_IMGFILE} >"${MBD_SETUPLVM_IMGDEVICEFILE}" &&
+			mbdGetLoopdev &&
+			pvcreate -v ${LOOPDEV} &&
+			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${LOOPDEV} ) >${MBD_TMP_LOGFILE} 2>&1; then
+		${MBD_LIB}/mbd-setup-chroots ${1}
+	else
+		${MBD_LOG} -s "FAILURE creating VG ${MBD_SETUPLVM_VGNAME}; rerun \"${0} -f\" as root any time to retry."
+	fi
+fi

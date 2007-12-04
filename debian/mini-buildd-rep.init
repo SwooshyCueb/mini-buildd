@@ -1,0 +1,55 @@
+#!/bin/sh -e
+
+DAEMON="/usr/bin/mini-dinstall"
+
+if [ "`id -u -n`" != "root" -a "`id -u -n`" != "mini-buildd" ]; then
+	echo "Either user root or mini-buildd must run this." >&2
+	exit 1
+fi
+
+if [ ! -x "${DAEMON}" -o ! -e "/home/mini-buildd/.mini-dinstall.conf" ]; then
+	exit 0
+fi
+
+mbdMiniDinstall()
+{
+	local pure="${DAEMON} ${1}"
+	if [ "`id -u -n`" = "root" ]; then
+		su - mini-buildd -c "${pure}"
+	else
+		${pure}
+	fi
+}
+
+start()
+{
+	echo "Starting `basename ${DAEMON}` for user mini-buildd..."
+	mbdMiniDinstall
+	sleep 5
+}
+
+stop()
+{
+	echo "Stopping `basename ${DAEMON}` for user mini-buildd..."
+	mbdMiniDinstall -k || true
+	sleep 5
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart|force-reload)
+		stop
+		start
+		;;
+	*)
+		echo -e "\nUsage: $0 {start|stop|restart|force-reload}" >&2
+		exit 1
+		;;
+esac
+
+exit 0

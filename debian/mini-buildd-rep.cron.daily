@@ -1,0 +1,3 @@
+#!/bin/sh -e
+
+su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep"

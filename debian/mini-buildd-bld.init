@@ -1,0 +1,16 @@
+#!/bin/sh -e
+
+case "$1" in
+	start)
+		/usr/lib/mini-buildd/mbd-setup-lvm -a
+		;;
+	stop|restart|force-reload)
+		echo "Ignored (call with start only)."
+		;;
+	*)
+		echo -e "\nUsage: $0 start" >&2
+		exit 1
+		;;
+esac
+
+exit 0

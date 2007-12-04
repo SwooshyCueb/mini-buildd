@@ -1,0 +1,72 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+. "${MBD_BLDCONFIGFILE}"
+
+# Update config file; this must be first
+if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
+	# -bld w/o -rep only; retrieve config from rephost.
+	mbdGetUrl "${MBD_REPCONFIGFILE}" "http://${mbd_rephttphost}/~mini-buildd/config" || true
+fi
+
+mbd_opt_init "Mini-buildd: Builder update script."
+mbd_opt_parse "$@"
+mbdCheckUser mini-buildd
+
+cd "${MBD_HOME}"
+. "${MBD_REPCONFIGFILE}"
+
+mkdir -p "bld/chroots"
+mkdir -p "bld/builds"
+
+cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
+\$chroot_mode = "schroot";
+\$log_dir = "/tmp";
+\$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";
+\$mailto = "${mbd_mail}";
+\$maintainer_name='${MBD_AUTOBUILD_MAINTAINER}';
+EOF
+${MBD_LOG} -s "${MBD_SBUILDCONFIGFILE} updated."
+
+${MBD_LIB}/mbd-update-common
+
+# Make some items accessible via http
+${MBD_LOG} -s `ln -s -v ../bld public_html/ 2>/dev/null`
+
+mbdUpdateSshKeyring "${mbd_rephost}"
+
+# Check/prepare chroots for all dists.
+for d in ${mbd_dists}; do
+	MBD_TMP_ID="${d}-${mbd_id}";
+	MBD_TMP_APTSRC="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}.sources.list"
+	cat <<EOF >"${MBD_TMP_APTSRC}"
+deb `mbdBldGetMirror ${d}` ${d} main contrib non-free
+deb http://${mbd_rephttphost}/~mini-buildd/rep ${MBD_TMP_ID}/
+EOF
+	MBD_TMP_APTSRC_EXTRA="${MBD_TMP_APTSRC}.extra"
+	if [ -e "${MBD_TMP_APTSRC_EXTRA}" ]; then
+		echo -e "\n# Local configuration in ${MBD_TMP_APTSRC_EXTRA}:" >>"${MBD_TMP_APTSRC}"
+		cat "${MBD_TMP_APTSRC_EXTRA}" >>"${MBD_TMP_APTSRC}"
+	fi
+
+	MBD_TMP_LOGFILE="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}-update.log"
+	${MBD_LOG} -s "Updating chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
+	if ! cat <<EOF | schroot -c "${MBD_TMP_ID}-source" -u root >${MBD_TMP_LOGFILE} 2>&1 ; then
+set -e
+cp -v "${MBD_TMP_APTSRC}" /etc/apt/sources.list
+apt-get update
+apt-get --yes --ignore-missing dist-upgrade
+[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
+apt-get clean
+
+# Workaround for Debian Bug #327477 (bash building)
+[ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd
+[ -e /dev/stdin ] || ln -sv fd/0 /dev/stdin
+[ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
+[ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
+EOF
+		${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_ID} (see ${MBD_TMP_LOGFILE})."
+	fi
+done
+
+exit 0

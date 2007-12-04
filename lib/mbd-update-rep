@@ -1,0 +1,66 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+mbd_opt_init "Mini-buildd: Repository update script."
+mbd_opt_add "p" "Special handling for debian postinstall run."
+mbd_opt_parse "$@"
+mbdCheckUser mini-buildd
+
+cd "${MBD_HOME}"
+. "${MBD_REPCONFIGFILE}"
+
+mkdir -p "rep"
+mkdir -p "log"
+
+# Calculating archs beforehand
+MBD_TMP_ARCHS="all"
+for b in ${mbd_bldhosts}; do
+	mbdParseBH "${b}"
+	MBD_TMP_ARCHS="${MBD_TMP_ARCHS}, ${mbdParseBH_arch}"
+done
+
+cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"
+[DEFAULT]
+archivedir = ${MBD_HOME}/rep
+mail_to = ${mbd_mail}
+
+trigger_reindex = 1
+mail_on_success = 0
+
+incoming_permissions = 0755
+
+pre_install_script = ${MBD_LIB}/mbd-preinstall
+#post_install_script = ${MBD_LIB}/postinstall
+release_signscript = ${MBD_LIB}/mbd-sign-release
+
+architectures = ${MBD_TMP_ARCHS}
+archive_style = flat
+keep_old = 1
+generate_release = 1
+release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
+
+`for d in ${mbd_dists}; do
+   echo "[${d}-${mbd_id}]";
+   echo "release_description = ${d} packages for ${mbd_id}.";
+   echo "release_label = ${d}-${mbd_id}";
+   echo;
+ done`
+EOF
+${MBD_LOG} -s "${MBD_MDINSTALLCONFIGFILE} updated."
+
+${MBD_LIB}/mbd-update-common
+${MBD_LIB}/mbd-update-rep-html
+
+for b in ${mbd_bldhosts}; do
+	mbdParseBH "${b}"
+	mbdUpdateSshKeyring ${mbdParseBH_host}
+	# Also update bld hosts
+	${MBD_LOG} -s "Updating ${mbdParseBH_arch} builder on ${mbdParseBH_host} (ignore failures on initial installs)..."
+	ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "${MBD_LIB}/mbd-update-bld" || true
+done
+
+if ! mbd_opt_given p; then
+	${MBD_LOG} -s "`/etc/init.d/mini-buildd-rep restart 2>&1`"
+fi
+
+exit 0

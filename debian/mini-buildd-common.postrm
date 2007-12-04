@@ -1,0 +1,13 @@
+#!/bin/sh -e
+
+#DEBHELPER#
+
+case $1 in
+	purge)
+		# Workaround: deluser does not seem to remove socket files
+		find /home/mini-buildd/ -type s -exec rm -f {} \;
+		deluser --quiet --remove-home mini-buildd >/dev/null || true
+		;;
+esac
+
+exit 0

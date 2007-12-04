@@ -1,0 +1,61 @@
+Template: mini-buildd-rep/mbd_rephost
+Type: string
+Description: Repository host name:
+ Give the repository's host name; this is usually just the hostname you get
+ via "hostname -f". This will be used to create URLs for HTTP acccess, and for
+ ssh/scp commands. 
+
+Template: mini-buildd-rep/mbd_id
+Type: string
+Description: Mini-buildd's identity:
+ This is the "identity" of the mini-buildd network your (are going to) set
+ up.
+ .
+ Most importantly, the distributions created will be called "BASEDIST-ID"
+ (for example "sarge-mbd, etch-mbd" when ID="mbd").
+
+Template: mini-buildd-rep/mbd_dists
+Type: string
+Default: sarge etch sid
+Description: Supported basis distributions:
+ Space separated list of basis distributions (e.g. sarge, etch) to support.
+
+Template: mini-buildd-rep/mbd_bldhosts
+Type: string
+Description: Builder host names:
+ Build hosts are installations of mini-buildd-bld for a specific architecture
+ on a (usually) different host; they manage the chroots and building for that
+ architecture.
+ .
+ You may give build hosts to-be here, and set them up later.
+ .
+ This is a space-separated list of tuples ARCH:HOSTNAME, for example
+ .
+ "i386:bld-i386.mydomain.com amd64:bld-amd64.mydomain.com"
+
+Template: mini-buildd-rep/mbd_archall
+Type: string
+Default: i386
+Description: Arch of builder to build non-arch binary packages:
+ One builder machine must have the part to compile arch=all binary packages;
+ just give the architecture here.
+
+Template: mini-buildd-rep/mbd_mail
+Type: string
+Description: Mail address (uploads/builds/failures):
+ All install, failure or log mails go here; usually, it's a good idea to set
+ up a mailing list for that.
+
+Template: mini-buildd-rep/mbd_httpport
+Type: string
+Default: 80
+Description: HTTP port to use:
+ If you use a dedicated HTTP server not using a standard port; note that the
+ whole network (i.e., build hosts too) must use that port.
+
+Template: mini-buildd-rep/mbd_sshport
+Type: string
+Default: 22
+Description: SSH port to use:
+ If you use a dedicated SSH server not using a standard port; note that the
+ whole network (i.e., build hosts too) must use that port.

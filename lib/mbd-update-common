@@ -1,0 +1,64 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+mbd_opt_init "Mini-buildd: Common update script."
+mbd_opt_parse "$@"
+mbdCheckUser mini-buildd
+
+cd "${MBD_HOME}"
+. "${MBD_REPCONFIGFILE}"
+
+if ! grep -q "PATH=\"${MBD_LIB}" .profile; then
+	echo "PATH=\"${MBD_LIB}:\${PATH}\"" >>.profile
+	echo "export PATH" >>.profile
+	${MBD_LOG} -s ".profile patched: Adding ${MBD_LIB} to path."
+fi
+
+if [ -e "${MBD_SSHSECKEYFILE}" ]; then
+	${MBD_LOG} -s "Not touching existing ${MBD_SSHSECKEYFILE}."
+else
+	ssh-keygen -t "dsa" -f "${MBD_SSHSECKEYFILE}" -N ""
+	cat "${MBD_SSHPUBKEYFILE}" >>.ssh/authorized_keys
+fi
+
+if [ -e "${MBD_GNUPGSECRING}" ]; then
+	${MBD_LOG} -s "Not touching existing ${MBD_GNUPGSECRING}."
+else
+	MBD_TMP_GPGTEMPLATE=`mktemp /tmp/mini-buildd-common.XXXXXX`
+	trap "rm -f ${MBD_TMP_GPGTEMPLATE}" EXIT
+
+	cat >"${MBD_TMP_GPGTEMPLATE}" <<EOF
+%echo Generating an automatic signing key
+Key-Type: DSA
+Key-Length: 1024
+Subkey-Type: ELG-E
+Subkey-Length: 1024
+Name-Real: Mini-Buildd Automatic Signing Key
+Name-Email: mini-buildd@`hostname -f`
+Expire-Date: 0
+%commit
+%echo done
+EOF
+
+	# @hack: Seems the following line always has exit code 2?
+	gpg --batch --gen-key "${MBD_TMP_GPGTEMPLATE}" || true
+
+	${MBD_LOG} -s "${MBD_GNUPGSECRING} created."
+fi
+
+cat <<EOF >"${MBD_DPUTCONFIGFILE}"
+[mini-buildd-${mbd_id}]
+fqdn = ${mbd_rephost}
+login = mini-buildd
+incoming = ${MBD_HOME}/rep/mini-dinstall/incoming/
+method = scp
+ssh_config_options = Port=${mbd_sshport}
+  StrictHostKeyChecking=no
+EOF
+${MBD_LOG} -s "${MBD_DPUTCONFIGFILE} updated."
+
+mkdir -p public_html
+gpg --armor --export "mini-buildd@`hostname -f`" >public_html/pgp_key.asc
+cat "${MBD_SSHPUBKEYFILE}" >public_html/ssh_key.asc
+
+exit 0

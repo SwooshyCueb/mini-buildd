@@ -1,0 +1,36 @@
+Source: mini-buildd
+Section: non-free/devel
+Priority: extra
+Maintainer: Stephan Suerken <stephan.suerken@1und1.de>
+Build-Depends: debhelper (>= 5), debconf
+Standards-Version: 3.7.2
+
+Package: mini-buildd-common
+Architecture: all
+Depends: ${misc:Depends}, adduser, mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild
+Description: Minimal debian buildd (common)
+ Mini-buildd lets a bunch of existing standard and debian specific
+ tools work together to build a easy-to-setup autobuilder network.
+ .
+ This package includes common parts for -rep (repostitory) and -bld
+ (builder) installations.
+
+Package: mini-buildd-rep
+Architecture: all
+Depends: ${misc:Depends}, mini-buildd-common, python, mini-dinstall, cron
+Description: Minimal debian buildd (repository)
+ Mini-buildd lets a bunch of existing standard and debian specific
+ tools work together to build a easy-to-setup autobuilder network.
+ .
+ Install this package on the machine that should hold the autobuilder
+ network's repository.
+
+Package: mini-buildd-bld
+Architecture: all
+Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap, schroot, dput
+Description: Minimal debian buildd (builder)
+ Mini-buildd lets a bunch of existing standard and debian specific
+ tools work together to build a easy-to-setup autobuilder network.
+ .
+ Install this package on any machine that should act as a builder for
+ a specific architecture.

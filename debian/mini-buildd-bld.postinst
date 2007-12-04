@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+. /usr/lib/mini-buildd/mbd-common.sh
+. /usr/share/debconf/confmodule
+
+# We just rewrite the config file from debconf values here.
+# Local changes to the file by the admin are not allowed.
+cat <<EOF >"${MBD_BLDCONFIGFILE}"
+# Created by postinst on `date`.
+# Don't edit by hand; Run 'dpkg-reconfigure mini-buildd-bld' to change.
+EOF
+for v in ${MBD_BLDCONFIGVARS}; do
+	db_get mini-buildd-bld/${v} || true
+	echo "$v=\"${RET}\"" >>"${MBD_BLDCONFIGFILE}"
+done
+chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
+
+/usr/lib/mini-buildd/mbd-setup-lvm
+
+su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-bld"
+
+. "${MBD_BLDCONFIGFILE}"
+if vgdisplay | grep -q `mbdLvmVgName`; then
+	/usr/lib/mini-buildd/mbd-setup-chroots || true
+fi
+
+#DEBHELPER#
+
+exit 0

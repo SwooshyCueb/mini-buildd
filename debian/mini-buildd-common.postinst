@@ -1,0 +1,9 @@
+#!/bin/sh -e
+
+if ! getent passwd mini-buildd >/dev/null; then
+	adduser --system --shell /bin/sh --ingroup sbuild mini-buildd
+fi
+
+#DEBHELPER#
+
+exit 0

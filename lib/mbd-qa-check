@@ -1,0 +1,256 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+. "${MBD_REPCONFIGFILE}"
+
+mbd_opt_init "Mini-buildd: Perform checks on a changes file."
+mbd_opt_add "c:" "Absolute path to changes file."
+mbd_opt_add "a:" "Run check(s) for that arch."
+mbd_opt_add "r"  "Run check(s) remotely on the build host for arch (-a)."
+mbd_opt_add "q:" "Single QA check to run. Logging to stdout and stderr, exit code of check.
+         Used internally only; you may misuse it for debugging."
+mbd_opt_add "Q:" "List of QA check to run. Logging to files in log dir given via -L."
+mbd_opt_add "I:" "Build ID PACKAGE/VERSION/STAMP."
+mbd_opt_add "P:" "Prefix for log files."
+
+mbd_opt_parse "$@"
+
+mbd_opt_get c >/dev/null
+MBD_TMP_BUILDID=`mbd_opt_get I`
+mbdCheckUser mini-buildd
+
+MBD_TMP_CFA="`mbd_opt_get c`"
+MBD_TMP_CF=`basename "${MBD_TMP_CFA}"`
+MBD_TMP_DIR=`dirname "${MBD_TMP_CFA}"`
+if mbd_opt_given a; then
+	MBD_TMP_ARCH="`mbd_opt_get a`"
+	MBD_TMP_ARCHHOST="${MBD_TMP_ARCH}"
+else
+	MBD_TMP_ARCHHOST="rep"
+fi
+if ! mbd_opt_given r; then
+	mbdCheckFile "${MBD_TMP_CFA}"
+	cd "${MBD_TMP_DIR}"
+	mbdParseCF "${MBD_TMP_CF}"
+fi
+
+MBD_TMP_SSH="ssh -o StrictHostKeyChecking=no -p ${mbd_sshport}"
+MBD_TMP_SCP="scp -o StrictHostKeyChecking=no -P ${mbd_sshport}"
+
+# Check funtions must be named mbdQACheck<CHECKNAME>.
+#
+# Pre-conditions:
+#  - Variables MBD_TMP_CF[A], MBD_TMP_DIR, MBD_TMP_ARCH.
+#  - All variables produced by mbdParseCF (on MBD_TMP_CFA).
+# Output:
+#  - All output (stdout or stderr) goes to the respective test's log file.
+# Retval:
+#  Check functions must deliver 0 (fine), 1 (warn) or 2 (fail) return status.
+#  Note that all code is run with "set -e" enabled, so if you run any non-trivial
+#  command use s.th. like
+#   myCommand || return 10
+#  to be sure the check function does not return 1 or 2 on that failure.
+
+# Check mandatory version part
+mbdQACheckVersion()
+{
+	local retval=0
+	local mandatory=`mbdGetMandatoryVersionPart "${mbdParseCF_dist}"`
+	local info="Mandatory version part \"${mandatory}\" for distribution \"${mbdParseCF_dist}\" in \"${mbdParseCF_version}\""
+
+	if echo "${mbdParseCF_version}" | grep --quiet "${mandatory}"; then
+		echo "I: ${info}: Included."
+	else
+		echo "I: ${info}: Missing."
+		retval=2
+	fi
+	return ${retval}
+}
+
+# Check that source package is not in repo yet
+mbdQACheckNew()
+{
+	local retval=0
+	local info="${mbdParseCF_package}"
+
+	if [ -e "${MBD_HOME}/rep/${mbdParseCF_dist}/${MBD_TMP_CF}" ]; then
+		echo "E: ${info}: Already installed."
+		echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
+		retval=2
+	else
+		echo "I: ${info}: New."
+	fi
+	return ${retval}
+}
+
+# Check that no conflicting orig tarball is uploaded
+mbdQACheckOrig()
+{
+	local retval=0
+	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
+	local info="Orig tarball: ${mbdParseCF_orig_tarball}"
+
+	if [ -e "${mbdParseCF_orig_tarball}" ]; then
+		if [ -e "${repOrig}" ]; then
+			if cmp "${mbdParseCF_orig_tarball}" "${repOrig}"; then
+				echo "W: ${info}: Re-upload (you don't need this)."
+				retval=1
+			else
+				echo "E: ${info}: Re-upload with a different file (uploader should be punished hard)."
+				retval=2
+			fi
+		else
+			echo "I: Upload with NEW orig tarball: ${mbdParseCF_orig_tarball}."
+		fi
+	else
+		echo "I: Upload without orig tarball: ${mbdParseCF_orig_tarball}."
+	fi
+	return ${retval}
+}
+
+# Do and check DSP upload to all build hosts
+mbdQACheckUploadDSP()
+{
+	local retval=0
+	local bDir="bld/builds/`mbdBId2BDir "${MBD_TMP_BUILDID}"`"
+	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
+
+	for b in ${mbd_bldhosts}; do
+		mbdParseBH "${b}"
+		echo "I: Uploading for ${mbdParseBH_host}."
+
+		${MBD_TMP_SSH} "${mbdParseBH_host}" mkdir -p -v "${bDir}"
+		if ! ${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbdParseBH_host}:${bDir}/"; then
+			echo "E: Error uploading DSP to build host ${mbdParseBH_host}."
+			retval=2
+		fi
+		echo "I: Files from changes uploaded: ${mbdParseCF_files}."
+
+		if [ ! -e "${mbdParseCF_orig_tarball}" -a -e "${repOrig}" ]; then
+			if ! ${MBD_TMP_SCP} -p -v "${repOrig}" "${mbdParseBH_host}:${bdir}/"; then
+				echo "E: Error uploading orig tarball from repo."
+				retval=2
+			fi
+			echo "I: Orig tarball from repo uploaded: ${mbdParseCF_orig_tarball}"
+		fi
+	done
+	return ${retval}
+}
+
+# Check for lintian errors
+mbdQACheckLintian()
+{
+	local lf="${MBD_TMP_CF}.lintian"
+	local retval=0
+
+	schroot --quiet --chroot="${mbdParseCF_dist}" -- lintian --info "${MBD_TMP_CF}" >"${lf}" || true
+
+	# @hack for lintian: Some lintian tests need to be ignored (and -X does not seem to work):
+	#  - "bad-distribution-in-changes-file": As our dists are not supported by lintian.
+	#  - "bad-version" (all bad-version* errors): As in lintian/sarge, Tilde-Versioning results in errors.
+	grep --invert-match -e "bad-distribution-in-changes-file" -e "bad-version" "${lf}" >"${lf}.mbd" || true
+
+	if grep '^E: .*$' "${lf}.mbd"; then
+		retval=2
+		grep '^W: .*$' "${lf}.mbd" || true
+	elif grep '^W: .*$' "${lf}.mbd"; then
+		retval=1
+	fi
+
+	echo "I: ----------------------------------------------------------------------"
+	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"
+	echo "I: ----------------------------------------------------------------------"
+	cat "${lf}"
+	rm -f -v "${lf}" "${lf}.mbd"
+	return ${retval}
+}
+
+# Check if it builds from source
+mbdQACheckBuild()
+{
+	local retval=0
+	local lf="${MBD_TMP_CF}.build"
+	if [ "${MBD_TMP_ARCH}" = "${mbd_archall}" ]; then
+		local options="-A"
+	else
+		local options=""
+	fi
+
+	if ! sbuild --nolog ${options} -d "${mbdParseCF_dist}" "${mbdParseCF_package}" >"${lf}" 2>&1; then
+		echo "I: Internal sbuild error?."
+		retval=3
+	else
+		local cfArch="${mbdParseCF_package}_${MBD_TMP_ARCH}.changes"
+		if [ -f "${cfArch}" ]; then
+			echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=$options]."
+		else
+			# @hack: If this package has no packages to be built for this arch, this is ok, and we get:
+			if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
+				retval=1
+				echo "W: No packages to build for arch=${MBD_TMP_ARCH}."
+			else
+				retval=2
+				echo "E: FTBFS for ${MBD_TMP_ARCH}."
+			fi
+		fi
+	fi
+	echo "I: ----------------------------------------------------------------------"
+	echo "I: Build log:"
+	echo "I: ----------------------------------------------------------------------"
+	cat "${lf}"
+	rm -f -v "${lf}"
+	return ${retval}
+}
+
+# Download DBP via dput
+mbdQACheckDownloadDBP()
+{
+	local retval=0
+	if dput -f -u mini-buildd-${mbd_id} ${mbdParseCF_package}_${MBD_TMP_ARCH}.changes; then
+		echo "I: Uploaded for ${MBD_TMP_ARCH}."
+	else
+		echo "W: No DBP from ${MBD_TMP_ARCH} - skipping. This is ok if there are no packages to build for this arch."
+		retval=1
+	fi
+	return ${retval}
+}
+
+
+# Run one check, either here (rep host) or remotely (bld host)
+mbdRunCheck()
+{
+	if mbd_opt_given r; then
+		${MBD_TMP_SSH} `mbdGetBH "${MBD_TMP_ARCH}"` ${MBD_LIB}/mbd-qa-check -c "`mbd_opt_get c`" -a "${MBD_TMP_ARCH}" -q "${check}" -I "`mbd_opt_get I`"
+	else
+		mbdQACheck${1}
+	fi
+	return $?
+}
+
+# Run either one check (no logging) or a list of checks (logging)
+if mbd_opt_given q; then
+	mbdRunCheck "`mbd_opt_get q`"
+else
+	MBD_TMP_COUNT=0
+
+	for check in `mbd_opt_get Q`; do
+		MBD_TMP_LOGDIR="${MBD_HOME}/log/${MBD_TMP_BUILDID}"
+		MBD_TMP_LOGBASE="${MBD_TMP_LOGDIR}/`mbd_opt_get P`.`printf "%02d" ${MBD_TMP_COUNT}`_${check}"
+		MBD_TMP_LOGPRE="`basename "${MBD_TMP_CF}"`@${MBD_TMP_ARCHHOST}: \"${check}\""
+
+		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Checking..."
+
+		(mbdRunCheck "${check}" >"${MBD_TMP_LOGBASE}.log" 2>&1)
+		MBD_TMP_RETVAL=$?
+
+		MBD_TMP_STATUS=`mbdRetval2Status QACHECK ${MBD_TMP_RETVAL}`
+		echo -n "${MBD_TMP_STATUS}" >"${MBD_TMP_LOGBASE}.status"
+
+		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Checked: ${MBD_TMP_STATUS}."
+		if [ ${MBD_TMP_RETVAL} -gt 1 ]; then
+			exit 1
+		fi
+
+		MBD_TMP_COUNT=$((MBD_TMP_COUNT+1))
+	done
+fi

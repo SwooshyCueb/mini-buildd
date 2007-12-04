@@ -1,0 +1,88 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+mbd_opt_init "Mini-buildd: Repository html update script."
+mbd_opt_parse "$@"
+mbdCheckUser mini-buildd
+
+cd "${MBD_HOME}"
+. "${MBD_REPCONFIGFILE}"
+
+# Make some items accessible via http
+${MBD_LOG} -s `ln -s -v ../.mini-buildd.conf public_html/config 2>/dev/null`
+${MBD_LOG} -s `ln -s -v ../.dput.cf public_html/dput.cf 2>/dev/null`
+${MBD_LOG} -s `ln -s -v ../rep public_html/ 2>/dev/null`
+${MBD_LOG} -s `ln -s -v ../log public_html/ 2>/dev/null`
+
+# Rudimentary HTML index
+mbdBldHtml()
+{
+	mbdParseBH "${b}"
+
+	local urlbase="http://${mbdParseBH_host}:${mbd_httpport}/~mini-buildd"
+cat <<EOF
+<b>${mbdParseBH_arch}</b>: <a href="${urlbase}/bld">${mbdParseBH_host}</a>:
+<a href="${urlbase}/pgp_key.asc">PGP Key</a>,
+<a href="${urlbase}/ssh_key.asc">SSH Key</a>.
+<br/>
+EOF
+}
+
+MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\" on ${mbd_rephost}"
+cat <<EOF >"${MBD_HTML_INDEXFILE}"
+<html>
+<head>
+<title>${MBD_TMP_TITLE}</title>
+<body>
+<h1>${MBD_TMP_TITLE}</h1>
+
+<hr/>
+
+<a href="rep/"><h2>Repository</a></h2>
+
+<ul>
+<li><a href="pgp_key.asc">PGP Signing Key</a> (Users add this to their apt-secure keyring)
+<pre>wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-key add -</pre></li>
+
+<li><a href="dput.cf">Configuration for dput</a> (Uploaders add this to their dput.cf)</li>
+
+<li><a href="ssh_key.asc">SSH Key</a></li>
+
+<li>Status:
+    <a href="log/">Logs</a>,
+    <a href="rep/mini-dinstall/incoming/">Incoming</a>,
+    <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.
+</li>
+</ul>
+
+<hr/>
+
+<h2>Distributions</h2>
+
+<ul>
+`for d in ${mbd_dists}; do
+   echo "<li><a href=\"rep/${d}-${mbd_id}\">${d}-${mbd_id}</a>: ${d} packages for ${mbd_id}";
+   echo -n "<small/><em>(Mandatory version part: \""; mbdGetMandatoryVersionPart "${d}"; echo "\")</em></small>"
+   echo "<pre>deb http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/rep ${d}-${mbd_id}/</pre></li>"
+ done`
+</ul>
+
+<hr/>
+
+<h2>Builders</h2>
+
+<ul>
+`for b in ${mbd_bldhosts}; do
+   echo -n "<li>"
+   mbdBldHtml "${b}"
+   echo "</li>"
+ done`
+</ul>
+
+<hr/>
+
+</html>
+EOF
+${MBD_LOG} -s "${MBD_HTML_INDEXFILE} updated."
+
+exit 0

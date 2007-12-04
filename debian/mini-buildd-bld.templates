@@ -1,0 +1,49 @@
+Template: mini-buildd-bld/mbd_rephttphost
+Type: string
+Description: Repository (http) host name:
+ Give the full host name of the repository here -- that is the machine where
+ mini-buildd-rep is installed. This will be used to retrieve the configuration
+ of the mini-buildd network automatically via http.
+ .
+ If you need to specify a different port than the default (80), use something
+ like "my.host.com:8088".
+
+Template: mini-buildd-bld/mbd_debian_mirror
+Type: string
+Default: all:ftp://ftp.debian.org/debian/
+Description: Debian mirror(s) to use:
+ Give URI(s) for debian mirrors here; this will be used to initially set up
+ chroots (via debootstrap) and as part of their sources.list.
+ .
+ This is space-separated list of tuples DIST:MIRROR; DIST="all" marks the default.
+ .
+ Thus, if you need a different mirror for a base distribution (for example
+ sarge for the amd64 arch), you can add specific mirrors like so:
+ .
+ "all:ftp://ftp.debian.org/debian/ sarge:ftp://amd64.debian.net/debian-amd64/"
+
+Template: mini-buildd-bld/mbd_lvm_vg
+Type: string
+Default: auto
+Description: LVM2 volume group to use:
+ You need a dedicated lvm volume group where the chroots are maintained (via
+ schroot).
+ .
+ In that volume group, mini-buildd will automatically maintain chroots named
+ BASEDIST-ID (ID is the identity you configured in mini-buildd-rep); for example
+ "sarge-mbd" or "etch-mbd" if your id is "mbd". These names should not collide
+ with exiting logical volumes in that group, else any reasonably sized volume
+ group should work.
+ .
+ If you set this to "auto", I will automagically use an image file
+ in mini-buildd's home and create a lvm volume group named "mini-buildd"
+ on that for our purposes.
+ .
+ If you have a lvm volume group to use ready, just type its name here.
+ .
+ If you want to create the lvm volume group manually later, just type the
+ name of the vg-to-be here; after you have set it up, run 
+ .
+ /usr/lib/mini-buildd/mbd-setup-chroots
+ .
+ as root to finish the installation.

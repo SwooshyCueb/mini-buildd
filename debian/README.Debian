@@ -1,0 +1,47 @@
+From milestone 0.6 summary (due to the lack of anything better):
+
+    o Fully automatic "lvm via loop device" configuration option
+      This greatly eases the setup and maintentence of test systems or
+      systems w/o "proper" pre-setup lvm.
+    o Thorough script cleanup; user visible changes:
+      - All scripts prefixed w/ "mbd-" to avoid namespace pollution when
+        adding the libary to PATH.
+      - All scripts using a getopt library, proper command line arguments
+        and a usage help (via -h).
+    o Complete new scheme for the autobuild processing:
+      Everything* that is done during the autobuild process is a QA-Check
+      on a debian changes file, resulting each in 0=FINE, 1=WARN or 2=FAIL
+      status code and a log file (* i.e., a build run on arch X is also just
+      a QA-Check).
+      If any of the QA checks in the sequence results in "FAIL", the autobuild
+      run is stopped. If no check results in FAIL, the status is 0=BUILT; if
+      the failing check was a build check, the autobuild run status is 1=FTBFS,
+      else 2=REJECT.
+      The overall status mail's subject now always reflect this (e.g.
+      "FTBS: mypkg_1.2.3-1"); in the body, information adapted to the
+      respective status is delivered. No log output is pasted here
+      directly any more but, if needed, links to repective QA check logs
+      on the repository host.
+      Binary uploads are just installed quietly unless they don't originate
+      from mini-buildd autobuilder hosts; then, the special status "DISCARD"
+      is used.
+      Build run statuses overview:
+       - BUILT  : OK=Source package build, binary packages uploaded.
+       - FTBFS  : Problems building, but retrying later.
+       - REJECT : Unfixable errors, upload moved to REJECT/.
+       - DISCARD: Binary upload not allowed, upload removed.
+       - INTERNAL: Indicates a bug in mini-buildd or its setup.
+    o New QA checks:
+      - New: Check that the to-build source package is not already in repository.
+      - Orig: Warn on reupload, reject on different files.
+    o New file and directory layout:
+      On build hosts, we only have directories "chroots/" (for auto lvm
+      setup when used) and "builds/" under bld/.
+      "builds/" is used as location for temporary build directories;
+      nothing is stored permanently on bld hosts any more (even the orig tarball
+      is copied on demand from the repository).
+      All actual data (log and state of check runs) of an autobuild run is hold on
+      the repository host only in the new directory "log"; under that dir, the
+      data is hold in a structure PACKAGE/VERSION/UTC-STAMP/.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>, Tue,  4 Dec 2007 14:11:52 +0000

@@ -1,0 +1,25 @@
+#!/bin/sh -e
+
+. /usr/lib/mini-buildd/mbd-common.sh
+. /usr/share/debconf/confmodule
+
+# We just rewrite the config file from debconf values here.
+# Local changes to the file by the admin are not allowed.
+cat <<EOF >"${MBD_REPCONFIGFILE}"
+# Created by postinst on `date`.
+# Don't edit by hand; Run 'dpkg-reconfigure mini-buildd-rep' to change.
+EOF
+for v in ${MBD_REPCONFIGVARS}; do
+	db_get mini-buildd-rep/${v} || true
+	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
+done
+chown mini-buildd:sbuild "${MBD_REPCONFIGFILE}"
+
+su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep -p"
+
+#DEBHELPER#
+
+# @hack: mini-dinstall should close all inherited file descriptors; calling db_stop is a workaround to make debconf come back.
+db_stop
+
+exit 0

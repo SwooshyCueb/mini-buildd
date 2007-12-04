@@ -1,0 +1,427 @@
+mini-buildd (0.6.0~pre+1) sid-ui; urgency=low
+
+  * Milestone 0.6 summary (see other cl entries for encrypted details):
+    o Fully automatic "lvm via loop device" configuration option
+      This greatly eases the setup and maintentence of test systems or
+      systems w/o "proper" pre-setup lvm.
+    o Thorough script cleanup; user visible changes:
+      - All scripts prefixed w/ "mbd-" to avoid namespace pollution when
+        adding the libary to PATH.
+      - All scripts using a getopt library, proper command line arguments
+        and a usage help (via -h).
+    o Complete new scheme for the autobuild processing:
+      Everything* that is done during the autobuild process is a QA-Check
+      on a debian changes file, resulting each in 0=FINE, 1=WARN or 2=FAIL
+      status code and a log file (* i.e., a build run on arch X is also just
+      a QA-Check).
+      If any of the QA checks in the sequence results in "FAIL", the autobuild
+      run is stopped. If no check results in FAIL, the status is 0=BUILT; if
+      the failing check was a build check, the autobuild run status is 1=FTBFS,
+      else 2=REJECT.
+      The overall status mail's subject now always reflect this (e.g.
+      "FTBS: mypkg_1.2.3-1"); in the body, information adapted to the
+      respective status is delivered. No log output is pasted here
+      directly any more but, if needed, links to repective QA check logs
+      on the repository host.
+      Binary uploads are just installed quietly unless they don't originate
+      from mini-buildd autobuilder hosts; then, the special status "DISCARD"
+      is used.
+      Build run statuses overview:
+       - BUILT  : OK=Source package build, binary packages uploaded.
+       - FTBFS  : Problems building, but retrying later.
+       - REJECT : Unfixable errors, upload moved to REJECT/.
+       - DISCARD: Binary upload not allowed, upload removed.
+       - INTERNAL: Indicates a bug in mini-buildd or its setup.
+    o New QA checks:
+      - New: Check that the to-build source package is not already in repository.
+      - Orig: Warn on reupload, reject on different files.
+    o New file and directory layout:
+      On build hosts, we only have directories "chroots/" (for auto lvm
+      setup when used) and "builds/" under bld/.
+      "builds/" is used as location for temporary build directories;
+      nothing is stored permanently on bld hosts any more (even the orig tarball
+      is copied on demand from the repository).
+      All actual data (log and state of check runs) of an autobuild run is hold on
+      the repository host only in the new directory "log"; under that dir, the
+      data is hold in a structure PACKAGE/VERSION/UTC-STAMP/.
+    o All qa-checks run on all bld hosts are now run in parallel.
+      .......................................................
+              Details below
+  * -bld: New directory "bld/chroots/"; this is for all chroot-related
+    files and the upcoming automatic lvm vg via loop images.
+     => Obsoleted files under $HOME that may be removed eventually:
+        DIST.setup-chroots.log DIST.update.log DIST.sources.list.
+  * setup-lvm: @todo LOOPDEV is hardcoded.
+  * setup-lvm: Add attach (-a) support (for use in rcS scripts).
+  * build: Ignore "bad-version" lintian error (workaround for lintian on
+    sarge erroring on Tilde-Versioning).
+  * scripts: Setup sane naming conventions and fixed all scripts.
+  * cleanup: rename tope level src/ to lib/.
+  * update-common: Support to have library path in .profile.
+  * lib: Add "cruft" script to (manually) remove cruft from earlier
+    versions of mini-buildd.
+  * update-common: Make file temporary: gpg_key_template; add to cruft.
+  * update-bld: Remove adding of our own GPG key for apt-key: sbuild works
+    around this itself. Obsoletes repository_signing_key.asc file, added to
+    cruft.
+  * all scripts: Add "mbd-" prefix (names and calls).
+  * mbd-sign-release: Create to tmp first, then move (incr availability).
+  * lib: Add mbd-libopt.sh getopt parser library.
+  * mbd-build: getopt update.
+  * mbd-preinstall: getopt update.
+  * mbd-cruft: getopt update; fix variable naming; fix logging.
+  * mbd-setup-chroots: getopt update.
+  * mbd-setup-lvm: getopt update.
+  * mbd-sign-release: getopt update.
+  * mbd-update-*: geopt update.
+  * common.sh: Add mbdCatUrl, update mbdGetUrl using that.
+  * common.sh: Update ssh keyring tool so we don't need a temporary file.
+    Obsoletes *.ssh_key.asc, added to cruft.
+  * Building in extra directory bld/builds/ (was: top level bld/).
+  * mbd-cruft: treat all build files in bld/ (rm *, mv orig.tar.gz).
+  * mbd-cruft: Use -u (update) rather than -d.
+  * mbd-update-rep: Add new top level directory "log".
+  * mbd-build: sbuild call: Use --nolog, use own logfile name.
+  * .sbuidrc: Change log dire to /tmp/ (we don't log anywhere anymore).
+  * cruft: Obsolete "bld/logs".
+  * mbdParseCF: Also parse "Source" entry.
+  * preinstall: new logfile: logs/PACKAGE/VERSION/DATE/TYPE.log.
+  * mdb-qa-check: New tool to simplifiy and generalize running qa checks.
+  * mbd-*: Use extra dir per package under bld/builds/.
+  * rep/mini-dinstall/REJECT/ obsoleted (cruft); moved to respective log directory.
+  * Remove upload in DISCARD (not reject); fixup info mail.
+  * mini-dinstall: Skip mail sending on success.
+  * dput.cf: generate in common, obsolete rep/dput.cf and download on bld hosts.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue,  4 Dec 2007 16:47:39 +0000
+
+mini-buildd (0.5.1) etch-mini-buildd; urgency=low
+
+  * Bugfix release.
+  * Use --ignore-missing when updating chroots.
+  * update-bld: Add Workaround for Debian Bug #327477 (bash building).
+  * common.sh: parse_changes_file: Make it work for signed changes files.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon, 24 Sep 2007 12:58:22 +0000
+
+mini-buildd (0.5.0) etch-mini-buildd; urgency=low
+
+  * "Milestone" (0.4->0.5): This release basically adds more QA:
+     - Adopting versioning scheme from bpo; packages not complying are
+       rejected.
+     - Direct binary uploads (i.e., not from mini-buildd) are detected
+       and rejected.
+     - Packages w/ lintian errors now fail to build (and are not installed).
+     This release also fixes a lot of pending smaller todos in one go (see cl).
+  * update-rep-html: Show mandatory version part per dist.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 20 Sep 2007 13:46:48 +0000
+
+mini-buildd (0.5.0~pre.5) etch-mini-buildd; urgency=low
+
+  * common.sh: Fix changes file parsing (leading space).
+  * preinstall: On reject (version, binary upload): Move package to REJECT directory.
+  * update-rep-html: Include links for incoming and rejected.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 19 Sep 2007 15:48:16 +0000
+
+mini-buildd (0.5.0~pre.4) etch-mini-buildd; urgency=low
+
+  * @todo Automatic error prevention: REJECT wrong version number. This adapts the versioning
+     scheme as described for backports.org. See
+     http://www.backports.org/dokuwiki/doku.php?id=contribute .
+  * @todo Automatic error prevention: REJECT direct binary uploads.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 19 Sep 2007 14:16:08 +0000
+
+mini-buildd (0.5.0~pre.3) etch-mini-buildd; urgency=low
+
+  * common.sh: urlget_file will now write a dummy file on download error if none
+    exists yet; fixes possible stalls on -bld package removal when the configured
+    rephost does not work.
+  * @todo [deb] preconfigure fails: No common.sh when configuring -rep. Variables
+    are copied now and need to be synced if needed.
+  * update-bld: Rename file for extra sources.
+  * update-rep: Configure rep w/ keep_old = 1 again (not the reason sbuild fails sometimes).
+  * -bld: debconf templates: Add descriptions for all items.
+  * -rep: debconf templates: Add descriptions for all items.
+  * control: Add package description.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 18 Sep 2007 16:56:19 +0000
+
+mini-buildd (0.5.0~pre.2) etch-mini-buildd; urgency=low
+
+  * @todo [deb] on --purge: mini-dinstall unix socket file is not removed.
+  * init.d: Remove obsolete/false status display.
+  * @todo [deb] update-rep: Restart mini-dinstall.
+  * @todo [deb] run update-rep from cron daily.
+  * @todo [deb] -p (postinstall) option for running update scripts from postinstall.
+  * @todo [deb] update-rep: autorun update-bld on all builders (as there might be config changes).
+  * @todo [deb] bld: on package removal: Also remove lvm logical volumes.
+  * @todo [deb] bld: on package removal: Also remove config snippet in schroot.conf.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon, 17 Sep 2007 16:21:47 +0000
+
+mini-buildd (0.5.0~pre.1) etch-mini-buildd; urgency=low
+
+  * update-bld, setup-chroots: Add CHROOT_EXTRA_PACKAGES variable; remove obsolete
+    "zile"; add "lintian". Only install in update-bld, not in setup-chroot.
+  * build: Add lintian test; passing test w/o errors (except bad-distribution-in-changes-file)
+    is now mandatory for uploads.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 13 Sep 2007 18:09:20 +0200
+
+mini-buildd (0.4.0) etch-mini-buildd; urgency=low
+
+  * "Milestone" (0.3->0.4): This release moves the actual "autobuild" part
+    from mini-dinstalls postinstall to the preinstall, and copies DSP rather
+    than relying on the repository itself to have them installed; this fixes
+    various pending problems:
+     - No need to have a (guessed) timeout waiting for indexes to be updated
+       before auto-building.
+     - No installation on the actual repository until all configured archs are
+       successfully build.
+     - Works around sbuild's "sporadically not updating package list"
+       behaviour.
+    This release also uses reniced logging throughout all scripts (see daemon.log),
+    improved error handling (logs mailed on failure) and the ability to configure
+    specific mirrors for base distributions (sarge/amd64 problem).
+  * Cosmetic fixes for logging and mail.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 11 Sep 2007 16:32:09 +0000
+
+mini-buildd (0.3.6) etch-mini-buildd; urgency=low
+
+  * preinstall: upload: Fix: Ignore arch upload failures, log "skipping" instead.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 11 Sep 2007 11:12:39 +0000
+
+mini-buildd (0.3.5) etch-mini-buildd; urgency=low
+
+  * common.sh: parse_changes_file: Also add changes file itself to list of files.
+  * preinstall: update for above (give unqualified changes file).
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 11 Sep 2007 09:29:11 +0000
+
+mini-buildd (0.3.4) etch-mini-buildd; urgency=low
+
+  * Adding experimental setup-lvm script.
+  * postinstall -> preinstall.
+  * preinstall: Until we have a better solution: Don't build parallel, fail if one build fails.
+  * preinstall/update-bld: scp DSP, don't rely on a deb-src line in build chroot;
+    also obsoletes sleep before build runs.
+  * Add extra build script.
+  * preinstall: Change build logic: 1st, build for all archs; if all were successfull,
+    upload all archs and return success.
+  * Only one error mail per source, including proper logs now in the body.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon, 10 Sep 2007 16:33:22 +0000
+
+mini-buildd (0.3.3) etch-mini-buildd; urgency=low
+
+  * NOTE: If you update, you need to reconfigue -bld and adapt the debian mirror
+    configuration.
+  * -bld config: Update mbd_debian_mirror to have a default mirror plus specific
+    mirrors per dist if needed.
+  * Logging: All scripts now use logging for informational output; logs for
+    chroot setup and update go to seperate files.
+  * setup-chroots: Add "-f" option to re-generate all chroots.
+  * update-bld: Update chroots: Use pipe to schroot rather than different calls
+    (significant speed improvemnet); further refine error handling.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu,  6 Sep 2007 15:05:09 +0000
+
+mini-buildd (0.3.2) etch-mini-buildd; urgency=low
+
+  * update-bld: Also apt-clean source chroots to avoid pkg cache hanging around.
+  * control: Fix: sbuild dep must be in common as we use group sbuild for mini-buildd.
+  * update-rep-html: Design fixes for <ul/>.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu,  6 Sep 2007 08:21:44 +0000
+
+mini-buildd (0.3.1) etch-mini-buildd; urgency=low
+
+  * setup-chroots: Avoid broken schroot.conf on error; also better error handling
+    when chroot creation fails.
+  * -bld: postinst: Fix order to be able to reconfigure after the -rep has new dists
+    so newly needed chroots are auto-created.
+  * setup-chroots: Always also trigger a -bld update.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue,  4 Sep 2007 16:43:19 +0000
+
+mini-buildd (0.3.0) etch-mini-buildd; urgency=low
+
+  * "Milestone": This release adds
+    - lvm support (chroots must be in lvm logical volumes now),
+    - auto-setup for chroots and a
+    - nice html overview page.
+  * control: -bld: Add dep for lvm2, debootstrap.
+  * config: -bld: Add rephttphost (obsoletes rephost+httpport), mbd_debian_mirror, mbd_lvm_vg.
+  * Initial setup-chroots script.
+  * update-bld: Auto-create chroot sources lists.
+  * update-rep: Add "proper" html index file; obsoleting html index on -bld.
+  * update-rep: mini-dinstall config: Use keep_old = 0 for now (multiple sources confuse sbuild).
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue,  4 Sep 2007 14:26:12 +0000
+
+mini-buildd (0.2.1) etch-mini-buildd; urgency=low
+
+  * Fix: mini-dinstall.conf: Fix arch line creation.
+  * control: Fix inter-package dependencies.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 29 Aug 2007 14:44:59 +0000
+
+mini-buildd (0.2.0) etch-mini-buildd; urgency=low
+
+  * "Milestone": Adds auto-configuration for -bld (being a slave to the
+    already configured -rep), auto-configuration for the ssh keychain,
+    ssh+http port configuration items -- and has many bugs and quirks
+    fixed.
+  * -rep config: Cleanups, support ssh+http port.
+  * -rep config: Add on the fly defaults for rephost and mail.
+  * -bld: add "zero-debconf": Only ask for rephost and download config from there.
+  * -bld+rep: Auto-update mechanism for ssh keyrings.
+  * control: Need wget, add dep for -common.
+  * -rep: Add on-the-fly default for mbd_bldhosts.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 28 Aug 2007 16:26:14 +0000
+
+mini-buildd (0.1.3) etch-mini-buildd; urgency=low
+
+  * update-*: Output cosmetics; dput.cf is also now always updated.
+  * postinst: typeo fix ;(.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 22 Aug 2007 14:04:28 +0000
+
+mini-buildd (0.1.2) etch-mini-buildd; urgency=low
+
+  * update-rep, postinstall: use "mini-buildd-$appendix" as generic id for
+    dput.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 22 Aug 2007 13:47:43 +0000
+
+mini-buildd (0.1.1) etch-mini-buildd; urgency=low
+
+  * update-common: Remove temporary use of port 24 for ssh.
+  * update-rep: Change file name ".dput.cf -> "dput.cf", so its per
+    default shown in http index.
+  * update-rep: Fix dput name to more generic "mini-buildd@HOST".
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 22 Aug 2007 13:07:58 +0000
+
+mini-buildd (0.1.0) etch-mini-buildd; urgency=low
+
+  * "Milestone": The repository part is configurable via debconf,
+     all config files are created automatically, automatic ssh/gnupg
+     handling is in place. This release will be used to build an
+     initial installation for further testing.
+  * Clean up public names for ssh+pgp key.
+  * Establish $HOME/.mini-buildd.conf in -rep as master config file.
+    - Use debconf to create the file in -rep.
+    - Use in all update-* scripts.
+    - Add common.sh to reduce redundancies in scripts.
+  * debian: Prepare to use debconf for mini-buildd-rep:
+    - Add initial template w/ all configuartion options.
+    - postinst: Update to write config file.
+    - rules: call dh_debconf.
+    - config: Add initial debconf configuration script.
+  * Add logging facility via syslog: See /var/log/daemon.log, tag "mini-buildd".
+  * update-*: Always rewrite automatically produced config (even if they exist).
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 21 Aug 2007 13:05:32 +0000
+
+mini-buildd (0.0.8) etch-mini-buildd; urgency=low
+
+  * Status: Cleanup the way we run the builder -- i.e., only on
+    source-only uploads; scripts now prepared to use "std" pkg
+    configuration.
+  * Add TODO and README.Debian.
+  * postinstall: Replace python script w/ shell script by now:
+    - we can simply source sh config in later.
+    - much simpler logic: When upload is ARCH=SOURCE (i.e., source only
+      upload), feed bld. Else, do nothing.
+    - Skipping mail sending on every binary package.
+    - Skipping buggy sending of NEWS.Debian file (does not always exist).
+    - Mail sending will be ahndled later.
+  * postinstall: Embedding build script.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 16 Aug 2007 17:05:59 +0000
+
+mini-buildd (0.0.7) etch-mini-buildd; urgency=low
+
+  * Status: Bugfix/cleanup only release.
+  * Fix: postinst rep+bld: don't call adduser.
+  * Fix: Add additional real http (apache2-mpm-worker) package dep.
+  * Put all helper scripts to lib/mini-buildd, as they don't really belong to usr/bin.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 16 Aug 2007 15:09:22 +0000
+
+mini-buildd (0.0.6) etch-mini-buildd; urgency=low
+
+  * Status: This revision has the needed pkg split and a new directory layout
+    for /home/mini-buildd; purge old mini-buildd package before trying this.
+  * control: Fix arch to all, not any.
+  * Splitting package: common, rep, bld:
+    - Splitting mbd-update-home: mbd-update-common, mbd-update-rep, mbd-update-bld.
+    - debian/*: Many updates to cope with new multi-pkg setup.
+  * mbd-update-*: Changed directory layout for /home/mini-buildd/.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 16 Aug 2007 12:52:35 +0000
+
+mini-buildd (0.0.5) etch-mini-buildd; urgency=low
+
+  * Status: This revision should be able to actually autobuild
+    for dist "unstable"; restrictions:
+    - bld-host == rep-host, and only one bld-host.
+    - proper schroot setup for a chroot named "unstable" is provided beforehand.
+  * Fix: Use system user for mini-buildd.
+  * mbd-update-home: Support for .sbuildrc.
+  * use shortcuts "rep" and "bld" for the repository and build parts, resp.
+  * "Auto-ssh-key" support; dep to openssh-cleint.
+  * Missing dep: mailx.
+  * postinst: Make added user mini-buildd --ingroup sbuild.
+  * Many smaller fixes.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 15 Aug 2007 16:58:36 +0000
+
+mini-buildd (0.0.4) etch-mini-buildd; urgency=low
+
+  * control: Add dep for httpd.
+  * mbd-update-home: Clenaups.
+  * mbd-update-home: Support "public_html" link.
+  * mbd-update-home: Rudimentary HTML index file support.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 14 Aug 2007 14:12:16 +0000
+
+mini-buildd (0.0.3) etch-mini-buildd; urgency=low
+
+  * mbd-update-home: Add support for ".dput.cf".
+  * control: Add dep for dput.
+  * mbd-update-home: Add support to generate gnupg signing key automatically (for apt-secure).
+  * control: Add dep for gnupg.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 14 Aug 2007 12:24:03 +0000
+
+mini-buildd (0.0.2) etch-mini-buildd; urgency=low
+
+  * dirs: add usr/lib/mini-buildd for scriptlets to be used by mini-buildd only.
+  * Fix: build script: Use mini-buildd user.
+  * debian: Mv preinst code back to postinst (we need postinst, no need to keep
+    two files w/ init script fixed);  also revert pre-depends -> depends for adduser.
+  * Add mbd-update-home tool; calling that from postinst.
+  * rules: Install mbd-update-home to usr/bin.
+  * lib/mini-buildd: Add "sign-release".
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon,  6 Aug 2007 17:13:13 +0000
+
+mini-buildd (0.0.1) etch-mini-buildd; urgency=low
+
+  * Debian native package, initial release:
+    - Initial debian skeleton.
+    - /usr/bin/mbd-build: Included "/usr/local/bin/build" from prototype.
+    - /usr/bin/mbd-postinstall: Included "/home/debian/bin/postinstall" from prototype.
+    - init.d: Initial version added.
+    - preinst: .mini-dinstall.conf: Initial version from prototype added.
+    - preinst/postrm: add/del dedicated user "mini-buildd".
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon,  6 Aug 2007 15:17:01 +0000

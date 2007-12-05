@@ -1,4 +1,4 @@
-mini-buildd (0.6.0~pre+1) sid-test; urgency=low
+mini-buildd (0.6.0~test40+1) etch-test; urgency=low
 
   * Milestone 0.6 summary (see other cl entries for encrypted details):
     o Fully automatic "lvm via loop device" configuration option
@@ -6,7 +6,7 @@ mini-buildd (0.6.0~pre+1) sid-test; urgency=low
       systems w/o "proper" pre-setup lvm.
     o Thorough script cleanup; user visible changes:
       - All scripts prefixed w/ "mbd-" to avoid namespace pollution when
-        adding the libary to PATH.
+        adding the library to PATH.
       - All scripts using a getopt library, proper command line arguments
         and a usage help (via -h).
     o Complete new scheme for the autobuild processing:

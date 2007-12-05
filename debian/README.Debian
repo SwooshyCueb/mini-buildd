@@ -5,7 +5,7 @@ From milestone 0.6 summary (due to the lack of anything better):
       systems w/o "proper" pre-setup lvm.
     o Thorough script cleanup; user visible changes:
       - All scripts prefixed w/ "mbd-" to avoid namespace pollution when
-        adding the libary to PATH.
+        adding the library to PATH.
       - All scripts using a getopt library, proper command line arguments
         and a usage help (via -h).
     o Complete new scheme for the autobuild processing:
@@ -44,4 +44,4 @@ From milestone 0.6 summary (due to the lack of anything better):
       the repository host only in the new directory "log"; under that dir, the
       data is hold in a structure PACKAGE/VERSION/UTC-STAMP/.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>, Tue,  4 Dec 2007 14:11:52 +0000
+ -- Stephan A Suerken <absurd@lucy>, Wed,  5 Dec 2007 10:00:37 +0100

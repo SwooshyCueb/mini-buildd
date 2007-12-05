@@ -1,4 +1,4 @@
-mini-buildd (0.6.0~pre+1) sid-ui; urgency=low
+mini-buildd (0.6.0~pre+1) sid-test; urgency=low
 
   * Milestone 0.6 summary (see other cl entries for encrypted details):
     o Fully automatic "lvm via loop device" configuration option
@@ -93,7 +93,7 @@ mini-buildd (0.6.0~pre+1) sid-ui; urgency=low
   * mini-dinstall: Skip mail sending on success.
   * dput.cf: generate in common, obsolete rep/dput.cf and download on bld hosts.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Tue,  4 Dec 2007 16:47:39 +0000
+ -- Stephan A Suerken <absurd@lucy>  Tue,  4 Dec 2007 20:39:47 +0100
 
 mini-buildd (0.5.1) etch-mini-buildd; urgency=low
 

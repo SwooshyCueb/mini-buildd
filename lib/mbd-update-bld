@@ -17,6 +17,7 @@ cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
 mkdir -p "bld/builds"
+mkdir -p "bld/chroots"
 
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$chroot_mode = "schroot";

@@ -59,7 +59,7 @@ fi
 if [ -e "${MBD_SETUPLVM_IMGFILE}" ]; then
 	${MBD_LOG} -s "Not touching existing \"${MBD_SETUPLVM_IMGFILE}\"."
 else
-	mkdir -p "${MBD_HOME}/bld/chroots"
+	su mini-buildd -c "mkdir -p ${MBD_HOME}/bld/chroots"
 	MBD_TMP_LOGFILE="${MBD_HOME}/bld/chroots/lvm-setup.log"
 	${MBD_LOG} -s "Setting up lvm ${MBD_SETUPLVM_VGNAME} (logging to ${MBD_TMP_LOGFILE})..."
 

@@ -6,7 +6,7 @@
 
 mbd_opt_init "Mini-buildd: Auto-setup lvm w/ loop device (root only)."
 mbd_opt_add "f" "Force fresh setup (i.e., delete existing setup first)."
-mbd_opt_add "d" "Delete existing setup." ### was -p
+mbd_opt_add "d" "Delete existing setup."
 mbd_opt_add "a" "Only (re-)attach loop device (needed on system startup before lvm)."
 mbd_opt_parse "$@"
 

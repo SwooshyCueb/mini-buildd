@@ -16,7 +16,6 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "bld/chroots"
 mkdir -p "bld/builds"
 
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"

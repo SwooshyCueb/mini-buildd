@@ -1,9 +1,9 @@
-mini-buildd (0.6.0~ui40+2) etch-ui; urgency=low
+mini-buildd (0.6.1~ui40+1) etch-ui; urgency=low
 
   * mbd-cruft: Under bld/, we should remove all "*.tar.gz", not only "orig.tar.gz".
   * mbd-cruft: Under bld/, we should also remove "*.udeb".
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  5 Dec 2007 17:51:04 +0000
 
 mini-buildd (0.6.0~ui40+1) etch-ui; urgency=low
 

@@ -1,4 +1,4 @@
-mini-buildd (0.6.0~test40+1) etch-test; urgency=low
+mini-buildd (0.6.0) sid-ui; urgency=low
 
   * Milestone 0.6 summary (see other cl entries for encrypted details):
     o Fully automatic "lvm via loop device" configuration option
@@ -94,7 +94,7 @@ mini-buildd (0.6.0~test40+1) etch-test; urgency=low
   * dput.cf: generate in common, obsolete rep/dput.cf and download on bld hosts.
   * Add support for /etc/default/mini-buildd-rep: en/disbale start of daemon.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  5 Dec 2007 15:42:37 +0000
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  5 Dec 2007 15:59:07 +0000
 
 mini-buildd (0.5.1) etch-mini-buildd; urgency=low
 

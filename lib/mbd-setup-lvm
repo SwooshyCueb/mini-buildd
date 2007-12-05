@@ -1,11 +1,5 @@
 #!/bin/sh -e
 
-# @bug This is EXPERIMENTAL; use this to auto-setup a "fake" lvm volume group via a
-# loopback device. When all todos below are fixed, calling this from postinstall might
-# become an option.
-#
-# @todo make loop device (and thus then volume group) permanent.
-
 . `dirname $0`/mbd-common.sh
 . "${MBD_REPCONFIGFILE}"
 . "${MBD_BLDCONFIGFILE}"

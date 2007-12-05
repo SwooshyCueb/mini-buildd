@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 . /etc/default/mini-buildd-rep
-if [ ${MBD_ENABLED} -eq 0 -a "${1}" != "stop" ]; then
+if [ "${MBD_ENABLE}" = "0" -a "${1}" != "stop" ]; then
 	echo "Starting mini-buildd disabled, skipping (see /etc/default/mini-buildd-rep)."
 	exit 0
 fi

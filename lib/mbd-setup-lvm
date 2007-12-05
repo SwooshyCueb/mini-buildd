@@ -22,18 +22,17 @@ MBD_SETUPLVM_IMGFILE="${MBD_HOME}/bld/chroots/lvm.image"
 MBD_SETUPLVM_IMGDEVICEFILE="${MBD_HOME}/bld/chroots/lvm.device"
 MBD_SETUPLVM_GIGS="100"
 
-# @todo => parseLoopDev()
 mbdGetLoopdev()
 {
 	# @hack: This just works as long as losetup's output does not change.
-	LOOPDEV=`cat ${MBD_SETUPLVM_IMGDEVICEFILE} 2>/dev/null | rev | cut -f1 -d" " | rev`
+	MBD_SETUPLVM_LOOPDEV=`cat ${MBD_SETUPLVM_IMGDEVICEFILE} 2>/dev/null | rev | cut -f1 -d" " | rev`
 
-	if losetup "${LOOPDEV}" 2>/dev/null | grep -q "${MBD_SETUPLVM_IMGFILE}"; then
-		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: \"${LOOPDEV}\" attached to \"${MBD_SETUPLVM_IMGFILE}\"."
+	if losetup "${MBD_SETUPLVM_LOOPDEV}" 2>/dev/null | grep -q "${MBD_SETUPLVM_IMGFILE}"; then
+		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: \"${MBD_SETUPLVM_LOOPDEV}\" attached to \"${MBD_SETUPLVM_IMGFILE}\"."
 		return 0
 	else
-		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: WARNING: \"${LOOPDEV}\" not attached to ${MBD_SETUPLVM_IMGFILE}"
-		LOOPDEV=""
+		${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: WARNING: \"${MBD_SETUPLVM_LOOPDEV}\" not attached to ${MBD_SETUPLVM_IMGFILE}"
+		MBD_SETUPLVM_LOOPDEV=""
 		return 1
 	fi
 }
@@ -50,7 +49,7 @@ mbdGetLoopdev || true
 if mbd_opt_given f || mbd_opt_given d; then
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing lv removal: `lvremove --force "${MBD_SETUPLVM_VGNAME}" 2>&1`"
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing vg removal: `vgremove "${MBD_SETUPLVM_VGNAME}" 2>&1`"
-	[ -z "${LOOPDEV}" ] || ${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing ${LOOPDEV} unattach: `losetup -d "${LOOPDEV}" 2>&1`"
+	[ -z "${MBD_SETUPLVM_LOOPDEV}" ] || ${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing ${MBD_SETUPLVM_LOOPDEV} unattach: `losetup -d "${MBD_SETUPLVM_LOOPDEV}" 2>&1`"
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing image removal: `rm -f -v "${MBD_SETUPLVM_IMGFILE}" "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1`"
 	if mbd_opt_given d; then
 		exit 0
@@ -66,8 +65,8 @@ else
 	if (dd if=/dev/zero of="${MBD_SETUPLVM_IMGFILE}" bs=${MBD_SETUPLVM_GIGS}M seek=1024 count=0 &&
 			losetup -v -f ${MBD_SETUPLVM_IMGFILE} >"${MBD_SETUPLVM_IMGDEVICEFILE}" &&
 			mbdGetLoopdev &&
-			pvcreate -v ${LOOPDEV} &&
-			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${LOOPDEV} ) >${MBD_TMP_LOGFILE} 2>&1; then
+			pvcreate -v ${MBD_SETUPLVM_LOOPDEV} &&
+			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${MBD_SETUPLVM_LOOPDEV} ) >${MBD_TMP_LOGFILE} 2>&1; then
 		${MBD_LIB}/mbd-setup-chroots ${1}
 	else
 		${MBD_LOG} -s "FAILURE creating VG ${MBD_SETUPLVM_VGNAME}; rerun \"${0} -f\" as root any time to retry."

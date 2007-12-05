@@ -62,7 +62,7 @@ mbdRetval2Status()
 	local var="MBD_${id}_STATUSES[${retval}]"
 	local result="${!var}"
 	if [ -z "${result}" ]; then
-		result="Internal Error"
+		result="INTERNAL_ERROR"
 	fi
 	echo -n "${result}"
 }

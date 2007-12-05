@@ -161,7 +161,6 @@ mbdQACheckLintian()
 	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"
 	echo "I: ----------------------------------------------------------------------"
 	cat "${lf}"
-	rm -f -v "${lf}" "${lf}.mbd"
 	return ${retval}
 }
 
@@ -198,7 +197,6 @@ mbdQACheckBuild()
 	echo "I: Build log:"
 	echo "I: ----------------------------------------------------------------------"
 	cat "${lf}"
-	rm -f -v "${lf}"
 	return ${retval}
 }
 

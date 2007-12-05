@@ -1,3 +1,11 @@
+mini-buildd (0.6.2~ui40+1) etch-ui; urgency=low
+
+  * mbd-preinstall/postbuild: Fix: Only run if changes file is present (if there is no package to build).
+  * mbd-common.sh: Cosmetic: Make the internal error status text BIG.
+  * mbd-qa-check: Cosmetic: No need to clean any files after remote tests.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  5 Dec 2007 18:19:20 +0000
+
 mini-buildd (0.6.1~ui40+1) etch-ui; urgency=low
 
   * mbd-cruft: Under bld/, we should remove all "*.tar.gz", not only "orig.tar.gz".

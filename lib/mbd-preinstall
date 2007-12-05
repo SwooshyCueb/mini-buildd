@@ -49,7 +49,12 @@ mbdBHBuild()
 mbdBHQAPostbuild()
 {
 	local cf="${MBD_HOME}/bld/builds/`mbdBId2BDir "${MBD_TMP_BUILDID}"`/${mbdParseCF_package}_${mbdParseBH_arch}.changes"
-	${MBD_LIB}/mbd-qa-check -a "${mbdParseBH_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseBH_arch}"
+	# Only run this if we have a changes file on bld host
+	if ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "test -f ${cf}"; then
+		${MBD_LIB}/mbd-qa-check -a "${mbdParseBH_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseBH_arch}"
+	else
+		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Skipping postbuild check: No changes file."
+	fi
 }
 
 mbdBHClean()

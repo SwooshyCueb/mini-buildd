@@ -12,7 +12,7 @@
 #  @bug : Known bug.
 
 MBD_HOME="/home/mini-buildd"
-MBD_LIB=`dirname ${0}`
+MBD_LIB="/usr/lib/mini-buildd"
 
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
 MBD_REPCONFIGVARS="mbd_rephost mbd_id mbd_dists mbd_bldhosts mbd_archall mbd_mail mbd_httpport mbd_sshport"

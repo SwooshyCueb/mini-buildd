@@ -11,7 +11,7 @@ mbd_opt_parse "$@"
 cd "${MBD_HOME}"
 
 MBD_TMP_OBSOLETE="*.sources.list *.update.log setup-lvm.log lvm_pv0.img gpg_key_template repository_signing_key.asc *.ssh_key.asc \
-                  bld/*.log bld/current* bld/*.dsc bld/*.diff.gz bld/*.orig.tar.gz bld/*.deb bld/*.changes bld/*.changes.lintian bld/*.upload bld/logs \
+                  bld/*.log bld/current* bld/*.dsc bld/*.diff.gz bld/*.tar.gz bld/*.deb bld/*.changes bld/*.changes.lintian bld/*.upload bld/logs \
                   rep/dput.cf rep/mini-dinstall/REJECT"
 
 for f in ${MBD_TMP_OBSOLETE}; do

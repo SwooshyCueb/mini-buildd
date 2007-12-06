@@ -141,14 +141,15 @@ mbdBldGetMirror()
 mbdParseCF()
 {
 	local cf="${1}"
-	mbdParseCF_dist=`grep "^Distribution" "${cf}" | cut -d" " -f2-`
+	local GREP1="grep --max-count=1"
+	mbdParseCF_dist=`${GREP1} "^Distribution" "${cf}" | cut -d" " -f2-`
 	mbdParseCF_arch=`echo "${cf}" | rev | cut -d. -f2 | cut -d_ -f1 | rev`
 	mbdParseCF_package=`echo "${cf}" | rev | cut -d_ -f2- | cut -d/ -f1 | rev`
-	mbdParseCF_files="`basename "${cf}"` `grep "^Files:" -A100 ${cf} | grep "^ .\+" | rev | cut -d" " -f1 | rev`"
-	mbdParseCF_source="`grep "^Source: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_version="`grep "^Version: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_maintainer="`grep "^Maintainer: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_changed_by="`grep "^Changed-By: " ${cf} | cut -d' ' -f2-`"
+	mbdParseCF_files="`basename "${cf}"` `${GREP1} "^Files:" -A100 ${cf} | grep "^ .\+" | rev | cut -d" " -f1 | rev`"
+	mbdParseCF_source="`${GREP1} "^Source: " ${cf} | cut -d' ' -f2-`"
+	mbdParseCF_version="`${GREP1} "^Version: " ${cf} | cut -d' ' -f2-`"
+	mbdParseCF_maintainer="`${GREP1} "^Maintainer: " ${cf} | cut -d' ' -f2-`"
+	mbdParseCF_changed_by="`${GREP1} "^Changed-By: " ${cf} | cut -d' ' -f2-`"
 	# For convenience
 	mbdParseCF_upstream_version="`echo "${mbdParseCF_version}" | cut -d- -f1`"
 	mbdParseCF_orig_tarball="${mbdParseCF_source}_${mbdParseCF_upstream_version}.orig.tar.gz"

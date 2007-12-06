@@ -53,7 +53,7 @@ mbdBHQAPostbuild()
 	if ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "test -f ${cf}"; then
 		${MBD_LIB}/mbd-qa-check -a "${mbdParseBH_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseBH_arch}"
 	else
-		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Skipping postbuild check: No changes file."
+		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${mbdParseBH_arch}: No changes file (skipping postbuild checks)."
 	fi
 }
 

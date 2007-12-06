@@ -126,7 +126,7 @@ mbdQACheckUploadDSP()
 		else
 			echo "I: Files from changes uploaded: ${mbdParseCF_files}."
 			if [ ! -e "${mbdParseCF_orig_tarball}" -a -e "${repOrig}" ]; then
-				if ! ${MBD_TMP_SCP} -p "${repOrig}" "${mbdParseBH_host}:${bdir}/"; then
+				if ! ${MBD_TMP_SCP} -p "${repOrig}" "${mbdParseBH_host}:${bDir}/"; then
 					echo "E: Error uploading orig tarball from repo."
 					retval=2
 				else

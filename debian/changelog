@@ -3,8 +3,9 @@ mini-buildd (0.6.3~ui40+1) etch-ui; urgency=low
   * preinstall: Cosmetic: Show arch on postbuild check notice "no changes".
   * qa-check: UploadDSP: Cosmetic: Don't use -v for scp.
   * common: Fix mbdParseCF for inline PGP signatures.
+  * qa-check: Fix typo in uploadDSP, breaking orig.tar.gz-from-rep upload.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu,  6 Dec 2007 13:34:50 +0000
 
 mini-buildd (0.6.2~ui40+1) etch-ui; urgency=low
 

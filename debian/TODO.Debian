@@ -23,6 +23,7 @@ Normal:
 Wishlist:
 =========
 @todo [chroots]: Sarge && debconfig non-interactive per default?
+@todo [chroots]: Enable ccache?
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
 @todo [deb] Warn before purging package && repository.

@@ -22,6 +22,7 @@ Normal:
 
 Wishlist:
 =========
+@todo [check]: piuparts check if feasible.
 @todo [chroots]: Sarge && debconfig non-interactive per default?
 @todo [chroots]: Enable ccache?
 @todo [auto-lvm]: Debug problems on initial setup.

@@ -14,6 +14,8 @@ Serious:
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
 @todo [mini-dinstall] Need speed increase for index file creation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
 @todo [mini-dinstall] Keeps only newest changes file in repository (i.e., instead of all source.changes, i386.changes, amd64.changes).
+@bug  [auto-lvm/deb]: When installing -bld only, setup-lvm is called before update-bld, and hence fails:
+      /usr/lib/mini-buildd/mbd-setup-lvm: line 4: /home/mini-buildd/.mini-buildd.conf: No such file or directory
 
 Normal:
 =======

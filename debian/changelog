@@ -1,3 +1,10 @@
+mini-buildd (0.7~pre1~ui40+1) etch-ab; urgency=low
+
+  * mdb-setup-chroots: Change chroot fs type to ext2 (was ext3 ?!); we really have
+    no need for journalling here. May speed up things somewhat.
+
+ --
+
 mini-buildd (0.6.3~ui40+1) etch-ui; urgency=low
 
   * preinstall: Cosmetic: Show arch on postbuild check notice "no changes".

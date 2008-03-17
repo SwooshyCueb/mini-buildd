@@ -38,8 +38,8 @@ for d in ${mbd_dists}; do
 		${MBD_LOG} -s "Setting up chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
 
 		if (lvcreate -L 4G -n "${MBD_TMP_ID}" "`mbdLvmVgName`" &&
-				mkfs.ext3 "${MBD_TMP_DEV}" &&
-				mount -v -text3 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+				mkfs.ext2 "${MBD_TMP_DEV}" &&
+				mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 				debootstrap --variant=buildd "${d}" "${MBD_TMP_MNTPOINT}" "`mbdBldGetMirror ${d}`" &&
 				umount -v "${MBD_TMP_MNTPOINT}") >${MBD_TMP_LOGFILE} 2>&1; then
 			${MBD_LOG} -s "LV ${MBD_TMP_ID} created successfully."

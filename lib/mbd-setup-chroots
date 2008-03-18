@@ -53,6 +53,7 @@ for d in ${mbd_dists}; do
 [${MBD_TMP_ID}]
 type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_ID} snapshot chroot
+aliases=${MBD_TMP_ID}-experimental
 priority=3
 groups=sbuild
 users=mini-buildd

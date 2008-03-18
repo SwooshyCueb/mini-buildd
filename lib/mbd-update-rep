@@ -44,6 +44,10 @@ release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
    echo "release_description = ${d} packages for ${mbd_id}.";
    echo "release_label = ${d}-${mbd_id}";
    echo;
+   echo "[${d}-${mbd_id}-experimental]";
+   echo "release_description = EXPERIMENTAL ${d} packages for ${mbd_id}.";
+   echo "release_label = ${d}-${mbd_id}-experimental";
+   echo;
  done`
 EOF
 ${MBD_LOG} -s "${MBD_MDINSTALLCONFIGFILE} updated."

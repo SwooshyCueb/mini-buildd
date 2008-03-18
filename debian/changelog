@@ -1,6 +1,15 @@
-mini-buildd (0.7~pre1~ui40+1) etch-ab; urgency=low
+mini-buildd (0.6.3.2~ab40+4) NOT RELEASED; urgency=low
 
+  * Per dist, add new distribution "*-experimental". This ist NOT staging,
+    but really just yet another repository. Packages uploaded to experimental
+    will always stay there, seperately; it just uses the same framework
+    to build packages, a new upload to "*" is needed to get it to the
+    actual distribution.
+    Note that *-experimental distributions can not yet satisfy build-deps
+    from themselves.
   * Smaller enhancements:
+    - In mails, always give distribution; most notably, to see what packages
+      are uploaded to experimental.
     - mdb-setup-chroots: Change chroot fs type to ext2 (was ext3 ?!);
       we really have no need for journalling here. May speed up things
       somewhat.

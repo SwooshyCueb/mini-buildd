@@ -125,7 +125,7 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 	(
 		case ${MBD_PREINSTALL_STATUS} in
 			BUILT)
-				echo "I: Built and uploaded for all archs."
+				echo "I: Built and uploaded for all archs (${mbdParseCF_dist})."
 				echo "----------------------------------------------------------------------"
 				cat "${MBD_TMP_CF}"
 				;;
@@ -147,7 +147,7 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 		esac
 		echo "----------------------------------------------------------------------"
 		mbdShowQAChecks "${MBD_TMP_BUILDID}"
-	) | mail -s "${MBD_PREINSTALL_STATUS}: ${mbdParseCF_package}" "${mbd_mail}"
+	) | mail -s "${MBD_PREINSTALL_STATUS}(${mbdParseCF_dist}): ${mbdParseCF_package}" "${mbd_mail}"
 	${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${MBD_PREINSTALL_STATUS}."
 	exit ${MBD_PREINSTALL_RETVAL}
 else

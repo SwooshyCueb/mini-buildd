@@ -60,7 +60,7 @@ root-users=mini-buildd
 source-root-users=mini-buildd
 device=${MBD_TMP_DEV}
 mount-options=-o atime,sync,user_xattr
-lvm-snapshot-options=--size 2G
+lvm-snapshot-options=--size 4G
 run-setup-scripts=true
 run-exec-scripts=true
 

@@ -1,11 +1,16 @@
 mini-buildd (0.7~pre1~ui40+1) etch-ab; urgency=low
 
-  * FIX: mdb-setup-chroots: Change chroot fs type to ext2 (was ext3 ?!);
-    we really have no need for journalling here. May speed up things
-    somewhat.
-  * FIX: mbd-update-rep-html, mbd-update-bld: Make some logger lines
-    that may have empty args not wait on input. Fixes some update
-    scripts just idling around (under sid's logger version).
+  * Smaller enhancements:
+    - mdb-setup-chroots: Change chroot fs type to ext2 (was ext3 ?!);
+      we really have no need for journalling here. May speed up things
+      somewhat.
+    - *-bld/debconf: Put mirror and lvm setup items to high prio (was
+      medium); you almost always want to change these.
+  * Bug fixes:
+    - mbd-update-rep-html, mbd-update-bld: Make some logger lines
+      that may have empty args not wait on input. Fixes some update
+      scripts just idling around (under sid's logger version).
+
 
  --
 

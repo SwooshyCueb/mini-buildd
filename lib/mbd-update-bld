@@ -31,7 +31,7 @@ ${MBD_LOG} -s "${MBD_SBUILDCONFIGFILE} updated."
 ${MBD_LIB}/mbd-update-common
 
 # Make some items accessible via http
-${MBD_LOG} -s `ln -s -v ../bld public_html/ 2>/dev/null`
+${MBD_LOG} -s "`ln -s -f -v ../bld public_html/ 2>&1`"
 
 mbdUpdateSshKeyring "${mbd_rephost}"
 

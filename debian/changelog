@@ -1,4 +1,4 @@
-mini-buildd (0.6.3.2~ab40+4) NOT RELEASED; urgency=low
+mini-buildd (0.6.4~ui40+1) etch-ui; urgency=low
 
   * Per dist, add new distribution "*-experimental". This ist NOT staging,
     but really just yet another repository. Packages uploaded to experimental
@@ -23,7 +23,7 @@ mini-buildd (0.6.3.2~ab40+4) NOT RELEASED; urgency=low
       workaround the phenomena described in
       http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=471545
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 19 Mar 2008 19:21:09 +0100
 
 mini-buildd (0.6.3~ui40+1) etch-ui; urgency=low
 

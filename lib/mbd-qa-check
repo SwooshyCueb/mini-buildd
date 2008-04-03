@@ -149,7 +149,9 @@ mbdQACheckLintian()
 	# @hack for lintian: Some lintian tests need to be ignored (and -X does not seem to work):
 	#  - "bad-distribution-in-changes-file": As our dists are not supported by lintian.
 	#  - "bad-version" (all bad-version* errors): As in lintian/sarge, Tilde-Versioning results in errors.
-	grep --invert-match -e "bad-distribution-in-changes-file" -e "bad-version" "${lf}" >"${lf}.mbd" || true
+	#  - "bad-version" (all bad-version* errors): As in lintian/sarge, Tilde-Versioning results in errors.
+	#  - "no-description-in-changes-file": since dpkg 1.4.16: Changes files in source only uploads have no description field any more.
+	grep --invert-match -e "bad-distribution-in-changes-file" -e "bad-version" -e "no-description-in-changes-file" "${lf}" >"${lf}.mbd" || true
 
 	if grep '^E: .*$' "${lf}.mbd"; then
 		retval=2

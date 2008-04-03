@@ -2,6 +2,8 @@ mini-buildd (0.6.3~ui40+2) etch-ui; urgency=low
 
   * Fix: Add verify_sigs = 0 to .mini-dinstall.conf (defaults to 1 when debian-keyring package
     is installed; we don't want this enabled ever at the moment.
+  * Fix: Ignoring lintian error "no-description-in-changes-file": since dpkg 1.4.16: Changes
+    files in source only uploads have no description field any more.
 
  --
 

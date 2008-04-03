@@ -26,6 +26,8 @@ mail_to = ${mbd_mail}
 
 trigger_reindex = 1
 mail_on_success = 0
+# @todo Default is on when debian-keyring package is installed; we don't want this enabled ever (yet)
+verify_sigs = 0
 
 incoming_permissions = 0755
 

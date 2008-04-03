@@ -1,3 +1,10 @@
+mini-buildd (0.6.3~ui40+2) etch-ui; urgency=low
+
+  * Fix: Add verify_sigs = 0 to .mini-dinstall.conf (defaults to 1 when debian-keyring package
+    is installed; we don't want this enabled ever at the moment.
+
+ --
+
 mini-buildd (0.6.4~ui40+1) etch-ui; urgency=low
 
   * Per dist, add new distribution "*-experimental". This ist NOT staging,

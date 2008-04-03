@@ -1,4 +1,4 @@
-mini-buildd (0.6.3~ui40+2) etch-ui; urgency=low
+mini-buildd (0.6.5~ui40+1) etch-ui-UNRELEASED; urgency=low
 
   * Fix: Add verify_sigs = 0 to .mini-dinstall.conf (defaults to 1 when debian-keyring package
     is installed; we don't want this enabled ever at the moment.

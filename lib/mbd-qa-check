@@ -178,22 +178,17 @@ mbdQACheckBuild()
 		local options=""
 	fi
 
-	if ! sbuild --nolog ${options} -d "${mbdParseCF_dist}" "${mbdParseCF_package}" >"${lf}" 2>&1; then
-		echo "I: Internal sbuild error?."
-		retval=3
+	# sbuild_mode is set to "user"; sbuild failure means build failure, or nothing to build for that arch.
+	if sbuild --nolog ${options} -d "${mbdParseCF_dist}" "${mbdParseCF_package}" >"${lf}" 2>&1; then
+		echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=$options]."
 	else
-		local cfArch="${mbdParseCF_package}_${MBD_TMP_ARCH}.changes"
-		if [ -f "${cfArch}" ]; then
-			echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=$options]."
+		# @hack: If this package has no packages to be built for this arch, this is ok, and we get:
+		if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
+			retval=1
+			echo "W: No packages to build for arch=${MBD_TMP_ARCH}."
 		else
-			# @hack: If this package has no packages to be built for this arch, this is ok, and we get:
-			if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
-				retval=1
-				echo "W: No packages to build for arch=${MBD_TMP_ARCH}."
-			else
-				retval=2
-				echo "E: FTBFS for ${MBD_TMP_ARCH}."
-			fi
+			retval=2
+			echo "E: FTBFS for ${MBD_TMP_ARCH}."
 		fi
 	fi
 	echo "I: ----------------------------------------------------------------------"

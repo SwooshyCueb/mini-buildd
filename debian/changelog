@@ -2,6 +2,8 @@ mini-buildd (0.6.6~ui40+1) UNRELEASED; urgency=low
 
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
     @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
+  * cron: Send output of nightly updates to configured mail address. Fixes
+    @todo cron: MAILTO (?).
 
  --
 

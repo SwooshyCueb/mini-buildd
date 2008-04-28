@@ -1,3 +1,10 @@
 #!/bin/sh -e
 
-su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep"
+CONF="/home/mini-buildd/.mini-buildd.conf"
+if [ -e "${CONF}" ]; then
+	. ${CONF}
+else
+	echo "WARNING: ${0}: No file ${CONF}. mini-buildd not installed/configured?" >&2
+	mbd_mail="root"
+fi
+su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep" 2>&1 | mail -s "mini-buildd daily update" "${mbd_mail}"

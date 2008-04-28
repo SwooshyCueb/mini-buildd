@@ -4,7 +4,6 @@ Blocker:
 0.6.x FIXES:
 ===================
 @todo *-experimental: Integrity checks.
-@todo cron: MAILTO (?).
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
 
 Missing features:

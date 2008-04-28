@@ -1,3 +1,10 @@
+mini-buildd (0.6.6~ui40+1) UNRELEASED; urgency=low
+
+  * control: Depend on mini-dinstall >= 0.6.24 (ui-etch-bpo available). Fixes
+    @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
+
+ --
+
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 
   * Fix: Add verify_sigs = 0 to .mini-dinstall.conf (defaults to 1 when debian-keyring package

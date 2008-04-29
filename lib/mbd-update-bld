@@ -39,23 +39,36 @@ mbdUpdateSshKeyring "${mbd_rephost}"
 # Check/prepare chroots for all dists.
 for d in ${mbd_dists}; do
 	MBD_TMP_ID="${d}-${mbd_id}";
-	MBD_TMP_APTSRC="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}.sources.list"
-	cat <<EOF >"${MBD_TMP_APTSRC}"
+	MBD_TMP_DIR="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}"
+	mkdir -p -v "${MBD_TMP_DIR}"
+
+	# Create base sources
+	# @todo: Create base sources: arch-specific
+	MBD_TMP_BASE="${MBD_TMP_DIR}/base.any.list"
+	cat <<EOF >"${MBD_TMP_BASE}"
 deb `mbdBldGetMirror ${d}` ${d} main contrib non-free
+EOF
+
+	# Create mbd sources
+	MBD_TMP_MBD="${MBD_TMP_DIR}/mbd.any.list"
+	mkdir -p `basename "${MBD_TMP_MBD}"`
+	cat <<EOF >"${MBD_TMP_MBD}"
 deb http://${mbd_rephttphost}/~mini-buildd/rep ${MBD_TMP_ID}/
 EOF
-	MBD_TMP_APTSRC_EXTRA="${MBD_TMP_APTSRC}.extra"
-	if [ -e "${MBD_TMP_APTSRC_EXTRA}" ]; then
-		echo -e "\n# Local configuration in ${MBD_TMP_APTSRC_EXTRA}:" >>"${MBD_TMP_APTSRC}"
-		cat "${MBD_TMP_APTSRC_EXTRA}" >>"${MBD_TMP_APTSRC}"
-	fi
 
-	MBD_TMP_LOGFILE="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}-update.log"
+	# @todo: Create extra sources
+	# @todo: Create extra sources: arch-specific
+	MBD_TMP_MBD="${MBD_TMP_DIR}/extra.any.list"
+	mkdir -p `basename "${MBD_TMP_MBD}"`
+	cat <<EOF >"${MBD_TMP_MBD}"
+EOF
+
+	# Update source chroot
+	# @todo: Should be arch specific: update-ARCH.log
+	MBD_TMP_LOGFILE="${MBD_TMP_DIR}/update.log"
 	${MBD_LOG} -s "Updating chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
 	if ! cat <<EOF | schroot -c "${MBD_TMP_ID}-source" -u root >${MBD_TMP_LOGFILE} 2>&1 ; then
 set -e
-cp -v "${MBD_TMP_APTSRC}" /etc/apt/sources.list
-apt-get update
 apt-get --yes --ignore-missing dist-upgrade
 [ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
 apt-get clean

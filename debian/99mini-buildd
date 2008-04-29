@@ -1,0 +1,50 @@
+#!/bin/sh -e
+
+# Manage sources.lists on "setup-start", for user "mini-buildd".
+
+log_debug()
+{
+	if [ "${AUTH_VERBOSITY}" = "verbose" ]; then
+		echo "[DEBUG mini-buildd]: ${1}"
+	fi
+}
+
+add_sources()
+{
+	for l in ${2}; do
+		# @todo: find out arch from chroot name
+		for a in any; do
+			local f="${1}/${l}.${a}.list"
+			if [ -f "${f}" ]; then
+				cat "${f}" >>"${3}"
+				log_debug "Sources list added: ${f}."
+			fi
+		done
+	done
+}
+
+# We only act on chroots having "mini-buildd" in description
+if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
+	log_debug "Mini-buildd chroot found: ${CHROOT_DESCRIPTION}."
+
+	if [ "${1}" = "setup-start" ]; then
+		DIST=`basename "${CHROOT_DEVICE}"`
+		log_debug "Distribution ${DIST}."
+
+		# Sources list file to generate in chroot
+		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
+		rm -f "${SOURCES_LIST}"
+		SOURCES_DIR="/home/mini-buildd/bld/chroots/${DIST}"
+
+		# Base is for both, source and snasphots
+		add_sources "${SOURCES_DIR}" "base" "${SOURCES_LIST}"
+
+		# Add extra sources for snapshots driven by mini-buildd only
+		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
+			add_sources "${SOURCES_DIR}" "mbd extra" "${SOURCES_LIST}"
+		fi
+
+		# Update apt cache in chroot
+		chroot "${CHROOT_PATH}" apt-get update
+	fi
+fi

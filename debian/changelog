@@ -1,11 +1,25 @@
-mini-buildd (0.6.6~ui40+1) UNRELEASED; urgency=low
+mini-buildd (0.6.6~manwe40+1~test.1) etch-manwe; urgency=low
 
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
     @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
   * cron: Send output of nightly updates to configured mail address. Fixes
     @todo cron: MAILTO (?).
   * sbuild: Set sbuild_mode to user; simplifies error handling in "build" qa test.
-
+  .
+  * bld: New chroot management:
+    * bld/chroots: New layout for the sources.lists to use in chroots:
+      DIST/base.any.list     1x: Sources for the base dist (any arch).
+      DIST/base.ARCH.list    nx: Sources for the base dist (special archs).
+      DIST/mbd.any.list      1x: Sources for the mbd repository (any arch).
+      DIST/extra.any.list    1x: Extra sources (any arch).
+      DIST/extra.ARCH.list   nx: Extra sources (special archs).
+    * Add hook for schroot: /etc/schroot/setup.d/99mini-buildd:
+      * Automates creation of sources list on chroot creation.
+      * Allows different sources.lists for -source and -snapshot.
+      * Auto-updating of apt cache.
+    * mbd-update-bld: Update to new layout (no arch support yet).
+    * mbd-cruft: Add now-obsolete files under chroots to cruft.
+	
  --
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low

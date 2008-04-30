@@ -43,3 +43,4 @@ Wishlist:
 @todo generic auto-generation stamp/note f. ALL auto-generated files.
 @todo Support for more than one id in one mini-buildd network.
 @todo Support for more than one arch in one bld-host.
+@todo Apt cache of build chroots should be updated before each build run.

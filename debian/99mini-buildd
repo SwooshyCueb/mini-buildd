@@ -2,10 +2,10 @@
 
 # Manage sources.lists on "setup-start", for user "mini-buildd".
 
-log_debug()
+log_info()
 {
-	if [ "${AUTH_VERBOSITY}" = "verbose" ]; then
-		echo "[DEBUG mini-buildd]: ${1}"
+	if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
+		echo "I: [mini-buildd]: ${1}"
 	fi
 }
 
@@ -16,8 +16,10 @@ add_sources()
 		for a in any; do
 			local f="${1}/${l}.${a}.list"
 			if [ -f "${f}" ]; then
+				echo "# ${l}-${a}" >>"${3}"
 				cat "${f}" >>"${3}"
-				log_debug "Sources list added: ${f}."
+				echo "" >>"${3}"
+				log_info "Sources list added: ${f}."
 			fi
 		done
 	done
@@ -25,15 +27,12 @@ add_sources()
 
 # We only act on chroots having "mini-buildd" in description
 if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
-	log_debug "Mini-buildd chroot found: ${CHROOT_DESCRIPTION}."
-
 	if [ "${1}" = "setup-start" ]; then
 		DIST=`basename "${CHROOT_DEVICE}"`
-		log_debug "Distribution ${DIST}."
 
 		# Sources list file to generate in chroot
 		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
-		rm -f "${SOURCES_LIST}"
+		echo -e "# Auto-generated on `date` by ${0}.\n" >"${SOURCES_LIST}"
 		SOURCES_DIR="/home/mini-buildd/bld/chroots/${DIST}"
 
 		# Base is for both, source and snasphots
@@ -45,6 +44,7 @@ if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 		fi
 
 		# Update apt cache in chroot
-		chroot "${CHROOT_PATH}" apt-get update
+		log_info "Updating apt cache for ${DIST}."
+		chroot "${CHROOT_PATH}" apt-get update >/dev/null 2>&1
 	fi
 fi

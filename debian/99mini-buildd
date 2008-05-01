@@ -5,7 +5,7 @@
 log_info()
 {
 	if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
-		echo "I: [mini-buildd]: ${1}"
+		echo "I: [mini-buildd]: ${1}" >&2
 	fi
 }
 

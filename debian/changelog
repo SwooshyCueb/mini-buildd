@@ -1,4 +1,4 @@
-mini-buildd (0.6.6~manwe40+1~test.1) etch-manwe; urgency=low
+mini-buildd (0.6.6~manwe40+0experimental1) etch-ui-experimental; urgency=low
 
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
     @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
@@ -20,7 +20,7 @@ mini-buildd (0.6.6~manwe40+1~test.1) etch-manwe; urgency=low
     * mbd-update-bld: Update to new layout (no arch support yet).
     * mbd-cruft: Add now-obsolete files under chroots to cruft.
 	
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 30 Apr 2008 18:54:34 +0200
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

@@ -1,4 +1,4 @@
-mini-buildd (0.6.6~manwe40+0experimental1) etch-ui-experimental; urgency=low
+mini-buildd (0.6.6~ui40+0experimental1) etch-ui-experimental; urgency=low
 
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
     @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).

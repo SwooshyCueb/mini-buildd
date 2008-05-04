@@ -25,7 +25,7 @@ Normal:
 @todo Rotation on rep: log/ + mini-dinstall.log.
 @todo [brain] Add per package html.
 @todo [deb] When reconfiguring mini-buildd-rep, adding/removing dist: Chroots are not updated automatically. Fix:
-      1. Call mbd-setup-chroots.
+      1. Call mbd-setup-chroots for all bld hosts.
       2. Update mbd-setup-chroots to also delete chroots for non-existing dists.
 
 Wishlist:

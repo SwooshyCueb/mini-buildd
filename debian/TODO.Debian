@@ -1,7 +1,7 @@
 Blocker:
 ========
 
-0.6.x FIXES:
+0.7.0:
 ===================
 @todo *-experimental: Integrity checks.
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
@@ -24,6 +24,7 @@ Normal:
 =======
 @todo Rotation on rep: log/ + mini-dinstall.log.
 @todo [brain] Add per package html.
+@todo [deb] When reconfiguring mini-buildd-rep, adding new dist: Chroot is not created automatically.
 
 Wishlist:
 =========

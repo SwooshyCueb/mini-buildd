@@ -62,11 +62,13 @@ EOF
 	cat <<EOF >"${MBD_TMP_MBD}"
 EOF
 
-	# Update source chroot
-	# @todo: Should be arch specific: update-ARCH.log
-	MBD_TMP_LOGFILE="${MBD_TMP_DIR}/update.log"
-	${MBD_LOG} -s "Updating chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
-	if ! cat <<EOF | schroot -c "${MBD_TMP_ID}-source" -u root >${MBD_TMP_LOGFILE} 2>&1 ; then
+	# Update all source chroots
+	# @todo: Multiarch: When this is configurable, we should rather use all archs for this host, not dpkg --print-arch
+	for arch in `dpkg --print-architecture`; do
+		MBD_TMP_LOGFILE="${MBD_TMP_DIR}/update-${arch}.log"
+		MBD_TMP_CHROOT="mbd-${MBD_TMP_DIR}-${arch}"
+		${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT} (logging to ${MBD_TMP_LOGFILE})..."
+		if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}" -u root >"${MBD_TMP_LOGFILE}" 2>&1 ; then
 set -e
 apt-get --yes --ignore-missing dist-upgrade
 [ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
@@ -78,8 +80,9 @@ apt-get clean
 [ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
 [ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
 EOF
-		${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_ID} (see ${MBD_TMP_LOGFILE})."
-	fi
+			${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_ID} (see ${MBD_TMP_LOGFILE})."
+		fi
+	done
 done
 
 exit 0

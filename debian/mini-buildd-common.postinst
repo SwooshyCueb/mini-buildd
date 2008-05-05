@@ -4,6 +4,9 @@ if ! getent passwd mini-buildd >/dev/null; then
 	adduser --system --shell /bin/sh --ingroup sbuild mini-buildd
 fi
 
+# sbuild >= 0.57.2 requires requires the user to be added with this tool.
+/usr/sbin/sbuild-adduser mini-buildd >/dev/null 2>&1
+
 #DEBHELPER#
 
 exit 0

@@ -50,9 +50,5 @@ if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
 			gen_sources_list "${SOURCES_DIR}" "mbd extra" "${ARCH}" >>"${SOURCES_LIST}"
 		fi
-
-		# Update apt cache in chroot
-		log_info "Updating apt cache for ${DIST}."
-		chroot "${CHROOT_PATH}" apt-get update >/dev/null 2>&1
 	fi
 fi

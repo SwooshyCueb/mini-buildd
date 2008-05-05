@@ -180,7 +180,7 @@ mbdQACheckBuild()
 	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
 
 	# sbuild_mode is set to "user"; sbuild failure means build failure, or nothing to build for that arch.
-	if sbuild --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" --nolog ${options} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
+	if sbuild --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" --apt-update --nolog ${options} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
 		echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=${options}]."
 	else
 		# @hack: If this package has no packages to be built for this arch, this is ok, and we get:

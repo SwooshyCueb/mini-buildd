@@ -66,7 +66,7 @@ EOF
 	# @todo: Multiarch: When this is configurable, we should rather use all archs for this host, not dpkg --print-arch
 	for arch in `dpkg --print-architecture`; do
 		MBD_TMP_LOGFILE="${MBD_TMP_DIR}/update-${arch}.log"
-		MBD_TMP_CHROOT="mbd-${MBD_TMP_ID}-${arch}"
+		MBD_TMP_CHROOT="mbd-${MBD_TMP_ID}-${arch}-source"
 		${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT} (logging to ${MBD_TMP_LOGFILE})..."
 		if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}" -u root >"${MBD_TMP_LOGFILE}" 2>&1 ; then
 set -e

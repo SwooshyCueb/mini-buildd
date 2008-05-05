@@ -20,7 +20,6 @@ mkdir -p "bld/builds"
 mkdir -p "bld/chroots"
 
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
-\$chroot_mode = "schroot";
 \$sbuild_mode = "user";
 \$log_dir = "/tmp";
 \$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";

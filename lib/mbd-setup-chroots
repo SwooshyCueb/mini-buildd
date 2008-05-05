@@ -24,7 +24,8 @@ trap "rmdir ${MBD_TMP_MNTPOINT}" EXIT
 
 # Check/prepare chroots for all dists.
 for d in ${mbd_dists}; do
-	MBD_TMP_ID="${d}-${mbd_id}";
+	MBD_TMP_ARCH=`dpkg --print-architecture`
+	MBD_TMP_ID="mbd-${d}-${mbd_id}-${MBD_TMP_ARCH}";
 	MBD_TMP_DEV="/dev/`mbdLvmVgName`/${MBD_TMP_ID}"
 
 	if mbd_opt_given f && lvdisplay | grep -q "${MBD_TMP_ID}"; then

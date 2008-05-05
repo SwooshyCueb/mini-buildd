@@ -19,7 +19,11 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * Auto-updating of apt cache.
     * mbd-update-bld: Update to new layout (no arch support yet).
     * mbd-cruft: Add now-obsolete files under chroots to cruft.
-	
+    * setup-chroots: rename lv names for chroots: DIST-ID to mbd-DIST-ID-ARCH. The prefix
+      makes more clear what the lvs are for, avoids lv-namesspace pollution;
+      the arch postfix allows multiarch chroots on on bld host (e.g., amd64+i386).
+    * Update to sbuild 0.57.2 (we need the --chroot option).
+
  --
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low

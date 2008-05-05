@@ -144,7 +144,7 @@ mbdQACheckLintian()
 	local lf="${MBD_TMP_CF}.lintian"
 	local retval=0
 
-	schroot --quiet --chroot="${mbdParseCF_dist}" -- lintian --info "${MBD_TMP_CF}" >"${lf}" || true
+	schroot --quiet --chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}" -- lintian --info "${MBD_TMP_CF}" >"${lf}" || true
 
 	# @hack for lintian: Some lintian tests need to be ignored (and -X does not seem to work):
 	#  - "bad-distribution-in-changes-file": As our dists are not supported by lintian.
@@ -177,10 +177,11 @@ mbdQACheckBuild()
 	else
 		local options=""
 	fi
+	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
 
 	# sbuild_mode is set to "user"; sbuild failure means build failure, or nothing to build for that arch.
-	if sbuild --nolog ${options} -d "${mbdParseCF_dist}" "${mbdParseCF_package}" >"${lf}" 2>&1; then
-		echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=$options]."
+	if sbuild --dist="${mbdParseCF_dist}" --chroot="${chroot}" --nolog ${options} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
+		echo "I: Built successful for arch=${MBD_TMP_ARCH} [all=${options}]."
 	else
 		# @hack: If this package has no packages to be built for this arch, this is ok, and we get:
 		if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then

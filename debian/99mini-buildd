@@ -9,16 +9,25 @@ log_info()
 	fi
 }
 
-add_sources()
+# Generates sources.list to stdout
+gen_sources_list()
 {
-	for l in ${2}; do
-		# @todo: find out arch from chroot name
-		for a in any; do
-			local f="${1}/${l}.${a}.list"
+	# Sources directory
+	local sd="${1}"
+	# Types: base, mbd, extra
+	local types="${2}"
+	# Arch: Also search for specialised arch sources list
+	local arch="${3}"
+
+	log_info "arch=$arch."
+
+	for l in ${types}; do
+		for a in any ${arch}; do
+			local f="${sd}/${l}.${a}.list"
 			if [ -f "${f}" ]; then
-				echo "# ${l}-${a}" >>"${3}"
-				cat "${f}" >>"${3}"
-				echo "" >>"${3}"
+				echo "# ${l}-${a}"
+				cat "${f}"
+				echo ""
 				log_info "Sources list added: ${f}."
 			fi
 		done
@@ -28,19 +37,22 @@ add_sources()
 # We only act on chroots having "mini-buildd" in description
 if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 	if [ "${1}" = "setup-start" ]; then
-		DIST=`basename "${CHROOT_DEVICE}"`
+		# CHROOT_DEVICE="/DIR/mbd-etch-ab-i386"
+		DIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2-3`
+		ARCH=`basename "${CHROOT_DEVICE}" | cut -d- -f4-`
+
+		log_info "DIST=$DIST ARCH=$ARCH."
 
 		# Sources list file to generate in chroot
 		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
-		echo -e "# Auto-generated on `date` by ${0}.\n" >"${SOURCES_LIST}"
 		SOURCES_DIR="/home/mini-buildd/bld/chroots/${DIST}"
 
 		# Base is for both, source and snasphots
-		add_sources "${SOURCES_DIR}" "base" "${SOURCES_LIST}"
+		gen_sources_list "${SOURCES_DIR}" "base" "${ARCH}" >"${SOURCES_LIST}"
 
 		# Add extra sources for snapshots driven by mini-buildd only
 		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
-			add_sources "${SOURCES_DIR}" "mbd extra" "${SOURCES_LIST}"
+			gen_sources_list "${SOURCES_DIR}" "mbd extra" "${ARCH}" >>"${SOURCES_LIST}"
 		fi
 
 		# Update apt cache in chroot

@@ -19,8 +19,6 @@ gen_sources_list()
 	# Arch: Also search for specialised arch sources list
 	local arch="${3}"
 
-	log_info "arch=$arch."
-
 	for l in ${types}; do
 		for a in any ${arch}; do
 			local f="${sd}/${l}.${a}.list"
@@ -40,8 +38,6 @@ if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 		# CHROOT_DEVICE="/DIR/mbd-etch-ab-i386"
 		DIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2-3`
 		ARCH=`basename "${CHROOT_DEVICE}" | cut -d- -f4-`
-
-		log_info "DIST=$DIST ARCH=$ARCH."
 
 		# Sources list file to generate in chroot
 		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"

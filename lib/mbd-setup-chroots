@@ -23,7 +23,7 @@ MBD_TMP_MNTPOINT=`mktemp -d /tmp/mini-buildd.XXXXXX`
 trap "rmdir ${MBD_TMP_MNTPOINT}" EXIT
 
 # Check/prepare chroots for all dists.
-for dist in `echo "${mbd_dists}" | tr -d ","`; do
+for d in `echo "${mbd_dists}" | tr -d ","`; do
 	# @todo: Do it for all configured archs for this bld host
 	for arch in `dpkg --print-architecture`; do
 		MBD_TMP_ID="mbd-${d}-${mbd_id}-${arch}";

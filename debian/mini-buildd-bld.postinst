@@ -7,7 +7,8 @@
 # Local changes to the file by the admin are not allowed.
 cat <<EOF >"${MBD_BLDCONFIGFILE}"
 # Created by postinst on `date`.
-# Don't edit by hand; Run 'dpkg-reconfigure mini-buildd-bld' to change.
+# To change, please run 'dpkg-reconfigure mini-buildd-bld'.
+# If you really want to edit by hand, run 'mbd-update-bld' afterwards.
 EOF
 for v in ${MBD_BLDCONFIGVARS}; do
 	db_get mini-buildd-bld/${v} || true

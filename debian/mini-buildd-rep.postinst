@@ -7,7 +7,8 @@
 # Local changes to the file by the admin are not allowed.
 cat <<EOF >"${MBD_REPCONFIGFILE}"
 # Created by postinst on `date`.
-# Don't edit by hand; Run 'dpkg-reconfigure mini-buildd-rep' to change.
+# To change, please run 'dpkg-reconfigure mini-buildd-rep'.
+# If you really want to edit by hand, run 'mbd-update-rep' afterwards.
 EOF
 for v in ${MBD_REPCONFIGVARS}; do
 	db_get mini-buildd-rep/${v} || true

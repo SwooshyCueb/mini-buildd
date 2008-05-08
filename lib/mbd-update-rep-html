@@ -28,6 +28,7 @@ cat <<EOF
 EOF
 }
 
+MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
 MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\" on ${mbd_rephost}"
 cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <html>
@@ -60,7 +61,7 @@ cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <h2>Distributions</h2>
 
 <ul>
-`for d in ${mbd_dists}; do
+`for d in ${MBD_TMP_DISTS}; do
    echo "<li><a href=\"rep/${d}-${mbd_id}\">${d}-${mbd_id}</a>: ${d} packages for ${mbd_id}";
    echo -n "<small/><em>(Mandatory version part: \""; mbdGetMandatoryVersionPart "${d}"; echo "\")</em></small>"
    echo "<pre>deb http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/rep ${d}-${mbd_id}/</pre></li>"

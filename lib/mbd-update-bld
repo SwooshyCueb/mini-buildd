@@ -36,7 +36,7 @@ ${MBD_LOG} -s "`ln -s -f -v ../bld public_html/ 2>&1`"
 mbdUpdateSshKeyring "${mbd_rephost}"
 
 # Check/prepare chroots for all dists.
-for d in ${mbd_dists}; do
+for dist in `echo "${mbd_dists}" | tr -d ","`; do
 	MBD_TMP_ID="${d}-${mbd_id}";
 	MBD_TMP_DIR="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}"
 	mkdir -p -v "${MBD_TMP_DIR}"

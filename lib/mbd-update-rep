@@ -19,6 +19,7 @@ for b in ${mbd_bldhosts}; do
 	MBD_TMP_ARCHS="${MBD_TMP_ARCHS}, ${mbdParseBH_arch}"
 done
 
+MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
 cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"
 [DEFAULT]
 archivedir = ${MBD_HOME}/rep
@@ -41,7 +42,7 @@ keep_old = 1
 generate_release = 1
 release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
 
-`for d in ${mbd_dists}; do
+`for d in ${MBD_TMP_DISTS}; do
    echo "[${d}-${mbd_id}]";
    echo "release_description = ${d} packages for ${mbd_id}.";
    echo "release_label = ${d}-${mbd_id}";

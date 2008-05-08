@@ -54,8 +54,10 @@ Description: Arch of builder to build non-arch binary packages:
 
 Template: mini-buildd-rep/mbd_source
 Type: string
-Description: ${DIST}: ${KIND} sources lines for architecture ${ARCH}:
- Configure apt source lines to use in base and build snapshot chroots.
+Description: "${KIND}" sources for architecture "${ARCH}":
+ Apt sources for "${DIST}".
+ .
+ These sources lines are used for base chroots and build snapshot:
  .
  "base"  sources: Used to create and maintain the base chroots.
          Example: ftp://ftp.debian.org/debian ${DIST} main contrib non-free

@@ -24,6 +24,12 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       the arch postfix allows multiarch chroots on on bld host (e.g., amd64+i386).
     * Update to sbuild 0.57.2 (we need the --chroot option).
     * Update to sbuild 0.57.3 (we need a bug fix from that version).
+    * debconf: Adapt to new chroot management:
+      * mini-buildd.conf: +"mbd_archs", ask for the bld host for all archs, write to +"mbd_bldhost_ARCH".
+      * mini-buildd.conf: +"mbd_src_DIST_base_any", ask for special arch source for all archs, write to +"mbd_src_DIST_base_ARCH".
+      * mini-buildd.conf: +"mbd_src_DIST_extra_any", ask for special arch source for all archs, write to +"mbd_src_DIST_extra_ARCH".
+      * mini-buildd.conf: -"mbd_bldhosts" (obsoleted).
+      * mini-buildd-rep.conf: -"mbd_debian_mirror" (obsoleted).
 
  --
 

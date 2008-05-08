@@ -36,21 +36,18 @@ Description: Mini-buildd's identity:
 
 Template: mini-buildd-rep/mbd_dists
 Type: multiselect
-Choices: sarge, etch, lenny, sid
-Default: etch
+Choices: ${DISTS}
 Description: Basis distributions to support:
  Space separated list of basis distributions to support.
 
 Template: mini-buildd-rep/mbd_archs
 Type: multiselect
-Choices: i386, amd64, powerpc, arm, sparc, alpha, mips, mipsel, hppa, ia64, s390, m68k
-Default: i386
+Choices: ${ARCHS}
 Description: Please select the architectures you want to support:
 
 Template: mini-buildd-rep/mbd_archall
 Type: select
 Choices: ${ARCHS}
-Default: i386
 Description: Arch of builder to build non-arch binary packages:
  One builder machine must have the part to compile arch=all binary packages;
  just give that architecture here.
@@ -58,11 +55,11 @@ Description: Arch of builder to build non-arch binary packages:
 Template: mini-buildd-rep/mbd_source
 Type: string
 Description: ${DIST}: ${KIND} sources lines for architecture ${ARCH}:
- Configure apt source lines to use in build chroots.
+ Configure apt source lines to use in base and build snapshot chroots.
  .
- "base"  sources: Used to create and maintain the basis chroots.
+ "base"  sources: Used to create and maintain the base chroots.
          Example: ftp://ftp.debian.org/debian ${DIST} main contrib non-free
- "extra" sources: Added on build time only to get satisfy extra dependencies.
+ "extra" sources: Added on build snapshot chroots to satisfy extra dependencies.
          Example: http://www.backports.org/debian ${DIST}-backports main contrib non-free
  .
  Notes:

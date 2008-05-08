@@ -12,43 +12,51 @@ log_info()
 # Generates sources.list to stdout
 gen_sources_list()
 {
-	# Sources directory
-	local sd="${1}"
-	# Types: base, mbd, extra
-	local types="${2}"
+	# Base distribution
+	local dist="${1}"
+	# Kinds: base, mbd, extra
+	local kinds="${2}"
 	# Arch: Also search for specialised arch sources list
 	local arch="${3}"
 
-	for l in ${types}; do
-		for a in any ${arch}; do
-			local f="${sd}/${l}.${a}.list"
-			if [ -f "${f}" ]; then
-				echo "# ${l}-${a}"
-				cat "${f}"
-				echo ""
-				log_info "Sources list added: ${f}."
-			fi
-		done
+	for k in ${kinds}; do
+		# Prefer arch over any, if defined
+		local srcAny="mbd_src_${dist}_${k}_any"
+		local srcArch="mbd_src_${dist}_${k}_${arch}"
+		local src="${srcAny}"
+		if [ -n "${!srcArch}" ]; then
+			src=${srcArch}
+		fi
+		# Multiple lines my be given separated via \n
+		echo -e "${!src}" |
+		(
+			while read LINE; do
+				if [ -n "${LINE}" ]; then
+					echo "deb ${LINE}"
+					log_info "Sources added: ${src}: deb ${LINE}"
+				fi
+			done
+		)
 	done
 }
 
 # We only act on chroots having "mini-buildd" in description
 if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
+	. /home/mini-buildd/.mini-buildd.conf
 	if [ "${1}" = "setup-start" ]; then
 		# CHROOT_DEVICE="/DIR/mbd-etch-ab-i386"
-		DIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2-3`
+		BASEDIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2`
 		ARCH=`basename "${CHROOT_DEVICE}" | cut -d- -f4-`
 
 		# Sources list file to generate in chroot
 		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
-		SOURCES_DIR="/home/mini-buildd/bld/chroots/${DIST}"
 
 		# Base is for both, source and snasphots
-		gen_sources_list "${SOURCES_DIR}" "base" "${ARCH}" >"${SOURCES_LIST}"
+		gen_sources_list "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
 
 		# Add extra sources for snapshots driven by mini-buildd only
 		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
-			gen_sources_list "${SOURCES_DIR}" "mbd extra" "${ARCH}" >>"${SOURCES_LIST}"
+			gen_sources_list "${BASEDIST}" "mbd extra" "${ARCH}" >>"${SOURCES_LIST}"
 		fi
 	fi
 fi

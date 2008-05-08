@@ -1,5 +1,20 @@
 #!/bin/sh -e
 
+# Same code as in mini-buildd-rep.config
+mbdDynConfVars()
+{
+	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+		echo -n "mbd_bldhost_${arch} "
+	done
+	for dist in `echo "${mbd_dists}" | tr -d ","`; do
+		for kind in base extra; do
+			for arch in any `echo "${mbd_archs}" | tr -d ","`; do
+				echo -n "mbd_src_`echo ${dist} | tr "-" "_"`_${kind}_${arch} "
+			done
+		done
+	done
+}
+
 . /usr/lib/mini-buildd/mbd-common.sh
 . /usr/share/debconf/confmodule
 
@@ -14,6 +29,13 @@ for v in ${MBD_REPCONFIGVARS}; do
 	db_get mini-buildd-rep/${v} || true
 	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
 done
+# Do the same again with the dynamic variables
+. "${MBD_REPCONFIGFILE}"
+for v in `mbdDynConfVars`; do
+	db_get mini-buildd-rep/${v} || true
+	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
+done
+
 chown mini-buildd:sbuild "${MBD_REPCONFIGFILE}"
 
 su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep -p"

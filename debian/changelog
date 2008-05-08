@@ -32,6 +32,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * mini-buildd-rep.conf: -"mbd_debian_mirror" (obsoleted).
       * Fix all defaults/on-the fly defaults. In a standard install with default values,
         you now get a working buildd for localhost's native arch called etch-`hostname`.
+      * rep+bld postinstall: Update to new debconf scheme. 
 
  --
 

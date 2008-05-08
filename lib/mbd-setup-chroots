@@ -36,7 +36,7 @@ for d in ${mbd_dists}; do
 		if lvdisplay | grep -q "${MBD_TMP_ID}"; then
 			${MBD_LOG} -s "LV ${MBD_TMP_ID} exists, leaving alone."
 		else
-			MBD_TMP_LOGFILE="${MBD_HOME}/bld/chroots/${MBD_TMP_ID}-setup.log"
+			MBD_TMP_LOGFILE="${MBD_HOME}/log/${MBD_TMP_ID}-setup.log"
 			${MBD_LOG} -s "Setting up chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
 
 			if (lvcreate -L 4G -n "${MBD_TMP_ID}" "`mbdLvmVgName`" &&

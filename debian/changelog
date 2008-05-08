@@ -35,6 +35,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * rep+bld postinstall: Update to new debconf scheme. 
       * 99mini-buildd: Update to new debconf scheme.
       * new cruft added: bld/chroots/*/*.
+      * Move all extra logs (lvm setup, chroot setup, chroot update) log log/.
+      * new cruft added: All logs under bld/chroots/.
 
  --
 

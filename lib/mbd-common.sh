@@ -15,9 +15,9 @@ MBD_HOME="/home/mini-buildd"
 MBD_LIB="/usr/lib/mini-buildd"
 
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
-MBD_REPCONFIGVARS="mbd_rephost mbd_id mbd_dists mbd_bldhosts mbd_archall mbd_mail mbd_httpport mbd_sshport"
+MBD_REPCONFIGVARS="mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_id mbd_dists mbd_archs mbd_archall"
 MBD_BLDCONFIGFILE="${MBD_HOME}/.mini-buildd-bld.conf"
-MBD_BLDCONFIGVARS="mbd_rephttphost mbd_debian_mirror mbd_lvm_vg"
+MBD_BLDCONFIGVARS="mbd_rephttphost mbd_lvm_vg"
 
 MBD_SBUILDCONFIGFILE="${MBD_HOME}/.sbuildrc"
 MBD_DPUTCONFIGFILE="${MBD_HOME}/.dput.cf"

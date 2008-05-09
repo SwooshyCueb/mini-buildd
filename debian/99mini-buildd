@@ -1,60 +1,24 @@
 #!/bin/sh -e
 
-# Manage sources.lists on "setup-start", for user "mini-buildd".
+# Generate sources.lists on "setup-start" for "mini-buildd" chroots.
 
-# Generates sources.list to stdout
-gen_sources_list()
-{
-	# Base distribution
-	local dist="${1}"
-	# Kinds: base, mbd, extra
-	local kinds="${2}"
-	# Arch: Also search for specialised arch sources list
-	local arch="${3}"
-
-	# Generate local source list variable for ourselves (mbd)
-	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
-
-	for k in ${kinds}; do
-		# Prefer arch over any, if defined
-		local srcAny="mbd_src_${dist}_${k}_any"
-		local srcArch="mbd_src_${dist}_${k}_${arch}"
-		local src="${srcAny}"
-		if [ -n "${!srcArch}" ]; then
-			src=${srcArch}
-		fi
-		# Multiple lines my be given separated via \n
-		echo -e "${!src}" |
-		(
-			while read LINE; do
-				if [ -n "${LINE}" ]; then
-					echo "deb ${LINE}"
-					# Respect AUTH_VERBOSITY if we are run from 99mini-buildd
-					if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
-						echo "I: [mini-buildd]: Sources added: ${src}: deb ${LINE}" >&2
-					fi
-				fi
-			done
-		)
-	done
-}
-
-# We only act on chroots having "mini-buildd" in description
-if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
+if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
+	# Bootstrap mbd lib and value support
+	. /usr/lib/mini-buildd/mbd-common.sh
 	. /home/mini-buildd/.mini-buildd.conf
-	if [ "${1}" = "setup-start" ]; then
-		# CHROOT_DEVICE="/DIR/mbd-etch-ab-i386"
-		BASEDIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2`
-		ARCH=`basename "${CHROOT_DEVICE}" | cut -d- -f4-`
 
-		# Sources list file to generate in chroot
-		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
+	# CHROOT_DEVICE="/DIR/mbd-etch-ab-i386"
+	BASEDIST=`basename "${CHROOT_DEVICE}" | cut -d- -f2`
+	ARCH=`basename "${CHROOT_DEVICE}" | cut -d- -f4-`
 
-		# Add extra sources for snapshots driven by mini-buildd only
-		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
-			gen_sources_list "${BASEDIST}" "base mbd extra" "${ARCH}" >"${SOURCES_LIST}"
-		else
-			gen_sources_list "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
-		fi
+	# Sources list file to generate in chroot
+	SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
+
+	if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
+		# Snapshot and user mini-buildd: all sources
+		mbdGenSources "${BASEDIST}" "base mbd extra" "${ARCH}" >"${SOURCES_LIST}"
+	else
+		# Other cases (usually likely -source): Only base.
+		mbdGenSources "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
 	fi
 fi

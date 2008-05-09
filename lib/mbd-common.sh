@@ -250,3 +250,40 @@ mbdLvmVgName()
 		echo -n "${mbd_lvm_vg}"
 	fi
 }
+
+# Generates sources.list to stdout; Info log to stderr.
+mbdGenSources()
+{
+	# Base distribution
+	local dist="${1}"
+	# Kinds: base, mbd, extra
+	local kinds="${2}"
+	# Arch: Also search for specialised arch sources list
+	local arch="${3}"
+
+	# Generate local source list variable for ourselves (mbd)
+	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
+
+	for k in ${kinds}; do
+		# Prefer arch over any, if defined
+		local srcAny="mbd_src_${dist}_${k}_any"
+		local srcArch="mbd_src_${dist}_${k}_${arch}"
+		local src="${srcAny}"
+		if [ -n "${!srcArch}" ]; then
+			src=${srcArch}
+		fi
+		# Multiple lines my be given separated via \n
+		echo -e "${!src}" |
+		(
+			while read LINE; do
+				if [ -n "${LINE}" ]; then
+					echo "deb ${LINE}"
+					# Respect AUTH_VERBOSITY if we are run from schroot setup.
+					if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
+						${MBD_LOG} -s "Sources added: ${src}: deb ${LINE}"
+					fi
+				fi
+			done
+		)
+	done
+}

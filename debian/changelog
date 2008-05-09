@@ -38,6 +38,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * Move all extra logs (lvm setup, chroot setup, chroot update) log log/.
       * new cruft added: All logs under bld/chroots/.
       * lib/*: Update to new syntax of mbd_dists.
+      * mbd lib: New generic function mbdGenSources (moved from 99mini-buildd) to generate
+        sources lists on the fly.
 
  --
 

@@ -2,13 +2,6 @@
 
 # Manage sources.lists on "setup-start", for user "mini-buildd".
 
-log_info()
-{
-	if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
-		echo "I: [mini-buildd]: ${1}" >&2
-	fi
-}
-
 # Generates sources.list to stdout
 gen_sources_list()
 {
@@ -36,7 +29,10 @@ gen_sources_list()
 			while read LINE; do
 				if [ -n "${LINE}" ]; then
 					echo "deb ${LINE}"
-					log_info "Sources added: ${src}: deb ${LINE}"
+					# Respect AUTH_VERBOSITY if we are run from 99mini-buildd
+					if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
+						echo "I: [mini-buildd]: Sources added: ${src}: deb ${LINE}" >&2
+					fi
 				fi
 			done
 		)

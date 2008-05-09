@@ -24,7 +24,6 @@ trap "rmdir ${MBD_TMP_MNTPOINT}" EXIT
 
 # Check/prepare chroots for all dists.
 for dist in `echo "${mbd_dists}" | tr -d ","`; do
-	# @todo: Do it for all configured archs for this bld host
 	for arch in `echo "${mbd_archs}" | tr -d ","`; do
 		# Are we responsible for that arch?
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"

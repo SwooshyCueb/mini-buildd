@@ -41,6 +41,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * mbd lib: New generic function mbdGenSources (moved from 99mini-buildd) to generate
         sources lists on the fly.
       * bld config: Add mbd_bldost ID; suck rep config in config, and add dynamic selection question.
+      * Update mbds-setup-chroots.
 
  --
 

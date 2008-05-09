@@ -17,7 +17,7 @@ MBD_LIB="/usr/lib/mini-buildd"
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
 MBD_REPCONFIGVARS="mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_id mbd_dists mbd_archs mbd_archall"
 MBD_BLDCONFIGFILE="${MBD_HOME}/.mini-buildd-bld.conf"
-MBD_BLDCONFIGVARS="mbd_rephttphost mbd_lvm_vg"
+MBD_BLDCONFIGVARS="mbd_rephttphost mbd_bldhost mbd_lvm_vg"
 
 MBD_SBUILDCONFIGFILE="${MBD_HOME}/.sbuildrc"
 MBD_DPUTCONFIGFILE="${MBD_HOME}/.dput.cf"
@@ -251,6 +251,19 @@ mbdLvmVgName()
 	fi
 }
 
+# Prefer arch over any, if defined
+mbdGetSrcVar() # dist kind arch
+{
+	local srcAny="mbd_src_${1}_${2}_any"
+	local srcArch="mbd_src_${1}_${2}_${arch}"
+	local src="${srcAny}"
+	if [ -n "${!srcArch}" ]; then
+		echo -n "${srcArch}"
+	else
+		echo -n "${srcAny}"
+	fi
+}
+
 # Generates sources.list to stdout; Info log to stderr.
 mbdGenSources()
 {
@@ -264,14 +277,8 @@ mbdGenSources()
 	# Generate local source list variable for ourselves (mbd)
 	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
 
-	for k in ${kinds}; do
-		# Prefer arch over any, if defined
-		local srcAny="mbd_src_${dist}_${k}_any"
-		local srcArch="mbd_src_${dist}_${k}_${arch}"
-		local src="${srcAny}"
-		if [ -n "${!srcArch}" ]; then
-			src=${srcArch}
-		fi
+	for kind in ${kinds}; do
+		local src=`mbdGetSrcVar ${dist} ${kind} ${arch}`
 		# Multiple lines my be given separated via \n
 		echo -e "${!src}" |
 		(

@@ -23,35 +23,42 @@ MBD_TMP_MNTPOINT=`mktemp -d /tmp/mini-buildd.XXXXXX`
 trap "rmdir ${MBD_TMP_MNTPOINT}" EXIT
 
 # Check/prepare chroots for all dists.
-for d in `echo "${mbd_dists}" | tr -d ","`; do
+for dist in `echo "${mbd_dists}" | tr -d ","`; do
 	# @todo: Do it for all configured archs for this bld host
-	for arch in `dpkg --print-architecture`; do
-		MBD_TMP_ID="mbd-${d}-${mbd_id}-${arch}";
-		MBD_TMP_DEV="/dev/`mbdLvmVgName`/${MBD_TMP_ID}"
+	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+		# Are we responsible for that arch?
+		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
+		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
+			MBD_TMP_ID="mbd-${dist}-${mbd_id}-${arch}";
+			MBD_TMP_DEV="/dev/`mbdLvmVgName`/${MBD_TMP_ID}"
 
-		if mbd_opt_given f && lvdisplay | grep -q "${MBD_TMP_ID}"; then
-			${MBD_LOG} -s "LV ${MBD_TMP_ID}: Forcing removal: `lvremove --force "${MBD_TMP_DEV}" 2>&1`"
-		fi
-
-		if lvdisplay | grep -q "${MBD_TMP_ID}"; then
-			${MBD_LOG} -s "LV ${MBD_TMP_ID} exists, leaving alone."
-		else
-			MBD_TMP_LOGFILE="${MBD_HOME}/log/${MBD_TMP_ID}-setup.log"
-			${MBD_LOG} -s "Setting up chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
-
-			if (lvcreate -L 4G -n "${MBD_TMP_ID}" "`mbdLvmVgName`" &&
-					mkfs.ext2 "${MBD_TMP_DEV}" &&
-					mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
-					debootstrap --variant=buildd "${d}" "${MBD_TMP_MNTPOINT}" "`mbdBldGetMirror ${d}`" &&
-					umount -v "${MBD_TMP_MNTPOINT}") >${MBD_TMP_LOGFILE} 2>&1; then
-				${MBD_LOG} -s "LV ${MBD_TMP_ID} created successfully."
-			else
-				umount -v "${MBD_TMP_MNTPOINT}" >/dev/null 2>&1 || true
-				lvremove --force "${MBD_TMP_DEV}" >/dev/null 2>&1 || true
-				${MBD_LOG} -s "FAILURE creating LV ${MBD_TMP_ID}; rerun ${0} as root any time to retry."
+			if mbd_opt_given f && lvdisplay | grep -q "${MBD_TMP_ID}"; then
+				${MBD_LOG} -s "LV ${MBD_TMP_ID}: Forcing removal: `lvremove --force "${MBD_TMP_DEV}" 2>&1`"
 			fi
-		fi
-		cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
+
+			if lvdisplay | grep -q "${MBD_TMP_ID}"; then
+				${MBD_LOG} -s "LV ${MBD_TMP_ID} exists, leaving alone."
+			else
+				MBD_TMP_LOGFILE="${MBD_HOME}/log/${MBD_TMP_ID}-setup.log"
+				${MBD_LOG} -s "Setting up chroot ${MBD_TMP_ID} (logging to ${MBD_TMP_LOGFILE})..."
+
+				MBD_TMP_BASESRC=`mbdGetSrcVar ${dist} base ${arch}`
+				MBD_TMP_MIRROR=`echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1`
+				${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
+
+				if (lvcreate -L 4G -n "${MBD_TMP_ID}" "`mbdLvmVgName`" &&
+						mkfs.ext2 "${MBD_TMP_DEV}" &&
+						mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+						debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
+						umount -v "${MBD_TMP_MNTPOINT}") >${MBD_TMP_LOGFILE} 2>&1; then
+					${MBD_LOG} -s "LV ${MBD_TMP_ID} created successfully."
+				else
+					umount -v "${MBD_TMP_MNTPOINT}" >/dev/null 2>&1 || true
+					lvremove --force "${MBD_TMP_DEV}" >/dev/null 2>&1 || true
+					${MBD_LOG} -s "FAILURE creating LV ${MBD_TMP_ID}; rerun ${0} as root any time to retry."
+				fi
+			fi
+			cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
 [${MBD_TMP_ID}]
 type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_ID} snapshot chroot
@@ -68,6 +75,7 @@ run-setup-scripts=true
 run-exec-scripts=true
 
 EOF
+		fi
 	done
 done
 echo "${MBD_CONFIG_MARK}" >>"${MBD_TMP_SCHROOTCONFIGFILE}"

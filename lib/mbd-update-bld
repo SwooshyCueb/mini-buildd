@@ -70,6 +70,7 @@ EOF
 		${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT} (logging to ${MBD_TMP_LOGFILE})..."
 		if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}" -u root >"${MBD_TMP_LOGFILE}" 2>&1 ; then
 set -e
+apt-get update
 apt-get --yes --ignore-missing dist-upgrade
 [ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
 apt-get clean

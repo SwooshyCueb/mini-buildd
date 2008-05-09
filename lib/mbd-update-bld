@@ -45,7 +45,7 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 			MBD_TMP_LOGFILE="${MBD_HOME}/log/${MBD_TMP_CHROOT}-update.log"
 
 			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT} (logging to ${MBD_TMP_LOGFILE})..."
-			echo "$0 on `date`:" >>"${MBD_TMP_LOGFILE}"
+			echo "=> $0 on `date`:" >>"${MBD_TMP_LOGFILE}"
 			if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root >>"${MBD_TMP_LOGFILE}" 2>&1 ; then
 set -e
 apt-get update

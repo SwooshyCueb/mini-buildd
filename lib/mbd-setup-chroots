@@ -58,11 +58,12 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 					${MBD_LOG} -s "FAILURE creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry."
 				fi
 			fi
-			cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
-[${MBD_TMP_CHROOT}]
+			# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
+			for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT}-experimental; do
+				cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
+[${chroot_name}]
 type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_CHROOT} snapshot chroot
-aliases=${MBD_TMP_CHROOT}-experimental
 priority=3
 groups=sbuild
 users=mini-buildd
@@ -75,6 +76,7 @@ run-setup-scripts=true
 run-exec-scripts=true
 
 EOF
+			done
 		fi
 	done
 done

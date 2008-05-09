@@ -43,6 +43,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
         sources lists on the fly.
       * bld config: Add mbd_bldost ID; suck rep config in config, and add dynamic selection question.
       * Update all lib/*.
+      * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
+        distinguish in schroot setup.
 
  --
 

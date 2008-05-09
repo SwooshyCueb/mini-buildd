@@ -45,6 +45,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * Update all lib/*.
       * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
         distinguish in schroot setup.
+      * Dynamic sources list support for *-experimental.
 
  --
 

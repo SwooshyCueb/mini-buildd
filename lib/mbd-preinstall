@@ -73,8 +73,8 @@ mbdBHRun()
 	local pids=""
 	local retval=0
 
-	for b in ${mbd_bldhosts}; do
-		mbdParseBH "${b}"
+	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+		mbdParseBH "${arch}"
 		${f} &
 		pids="${pids} $!"
 	done

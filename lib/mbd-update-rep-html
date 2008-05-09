@@ -17,7 +17,7 @@ ${MBD_LOG} -s "`ln -s -f -v ../log public_html/ 2>&1`"
 # Rudimentary HTML index
 mbdBldHtml()
 {
-	mbdParseBH "${b}"
+	mbdParseBH "${1}"
 
 	local urlbase="http://${mbdParseBH_host}:${mbd_httpport}/~mini-buildd"
 cat <<EOF
@@ -29,6 +29,7 @@ EOF
 }
 
 MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
+MBD_TMP_ARCHS=`echo "${mbd_archs}" | tr -d ","`
 MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\" on ${mbd_rephost}"
 cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <html>
@@ -70,12 +71,12 @@ cat <<EOF >"${MBD_HTML_INDEXFILE}"
 
 <hr/>
 
-<h2>Builders</h2>
+<h2>Architectures</h2>
 
 <ul>
-`for b in ${mbd_bldhosts}; do
+`for arch in ${MBD_TMP_ARCHS}; do
    echo -n "<li>"
-   mbdBldHtml "${b}"
+   mbdBldHtml "${arch}"
    echo "</li>"
  done`
 </ul>

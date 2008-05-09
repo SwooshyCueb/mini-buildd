@@ -155,30 +155,19 @@ mbdParseCF()
 	mbdParseCF_orig_tarball="${mbdParseCF_source}_${mbdParseCF_upstream_version}.orig.tar.gz"
 }
 
-# Parse build host
-mbdParseBH()
+# Parse build host for arch
+mbdParseBH() # arch
 {
-	local bldhost="${1}"
-	mbdParseBH_arch=`echo "${bldhost}" | cut -d':' -f1`
-	mbdParseBH_host=`echo "${bldhost}" | cut -d':' -f2`
-	if [ "${mbdParseBH_arch}" = "${mbd_archall}" ]; then
+	local arch="${1}"
+	local bldhost="mbd_bldhost_${arch}"
+
+	mbdParseBH_arch="${arch}"
+	mbdParseBH_host="${!bldhost}"
+	if [ "${arch}" = "${mbd_archall}" ]; then
 		mbdParseBH_options="-A"
 	else
 		mbdParseBH_options=""
 	fi
-}
-
-mbdGetBH()
-{
-	local arch="${1}"
-	for b in ${mbd_bldhosts}; do
-		mbdParseBH "${b}"
-		if [ "${mbdParseBH_arch}" = "${arch}" -o "${arch}" = "all" -a "${mbdParseBH_arch}" = "${mbd_archall}" ]; then
-			echo -n "${mbdParseBH_host}"
-			return 0
-		fi
-	done
-	return 1
 }
 
 # Build ID to bld dir converter

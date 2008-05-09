@@ -115,18 +115,17 @@ mbdQACheckUploadDSP()
 	local bDir="bld/builds/`mbdBId2BDir "${MBD_TMP_BUILDID}"`"
 	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
 
-	for b in ${mbd_bldhosts}; do
-		mbdParseBH "${b}"
-		echo "I: Uploading for ${mbdParseBH_host}."
+	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+		local bldhost="mbd_bldhost_${arch}"
+		echo "I: Uploading for ${!bldhost}."
 
-		${MBD_TMP_SSH} "${mbdParseBH_host}" mkdir -p -v "${bDir}"
-		if ! ${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbdParseBH_host}:${bDir}/"; then
-			echo "E: Error uploading DSP to build host ${mbdParseBH_host}."
+		if ! (${MBD_TMP_SSH} "${!bldhost}" mkdir -p -v "${bDir}" && ${MBD_TMP_SCP} -p ${mbdParseCF_files} "${!bldhost}:${bDir}/"); then
+			echo "E: Error uploading DSP to build host ${!bldhost}."
 			retval=2
 		else
 			echo "I: Files from changes uploaded: ${mbdParseCF_files}."
 			if [ ! -e "${mbdParseCF_orig_tarball}" -a -e "${repOrig}" ]; then
-				if ! ${MBD_TMP_SCP} -p "${repOrig}" "${mbdParseBH_host}:${bDir}/"; then
+				if ! ${MBD_TMP_SCP} -p "${repOrig}" "${!bldhost}:${bDir}/"; then
 					echo "E: Error uploading orig tarball from repo."
 					retval=2
 				else

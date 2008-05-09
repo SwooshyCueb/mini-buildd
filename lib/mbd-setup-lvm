@@ -65,11 +65,12 @@ else
 	MBD_TMP_LOGFILE="${MBD_HOME}/log/lvm-setup.log"
 	${MBD_LOG} -s "Setting up lvm ${MBD_SETUPLVM_VGNAME} (logging to ${MBD_TMP_LOGFILE})..."
 
+	echo "$0 on `date`:" >>"${MBD_TMP_LOGFILE}"
 	if (dd if=/dev/zero of="${MBD_SETUPLVM_IMGFILE}" bs=${MBD_SETUPLVM_GIGS}M seek=1024 count=0 &&
 			losetup -v -f ${MBD_SETUPLVM_IMGFILE} >"${MBD_SETUPLVM_IMGDEVICEFILE}" &&
 			mbdGetLoopdev &&
 			pvcreate -v ${MBD_SETUPLVM_LOOPDEV} &&
-			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${MBD_SETUPLVM_LOOPDEV} ) >${MBD_TMP_LOGFILE} 2>&1; then
+			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${MBD_SETUPLVM_LOOPDEV} ) >>${MBD_TMP_LOGFILE} 2>&1; then
 		${MBD_LIB}/mbd-setup-chroots ${1}
 	else
 		${MBD_LOG} -s "FAILURE creating VG ${MBD_SETUPLVM_VGNAME}; rerun \"${0} -f\" as root any time to retry."

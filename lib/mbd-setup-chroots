@@ -45,11 +45,12 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 				MBD_TMP_MIRROR=`echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1`
 				${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
 
+				echo "$0 on `date`:" >>"${MBD_TMP_LOGFILE}"
 				if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "`mbdLvmVgName`" &&
 						mkfs.ext2 "${MBD_TMP_DEV}" &&
 						mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 						debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
-						umount -v "${MBD_TMP_MNTPOINT}") >${MBD_TMP_LOGFILE} 2>&1; then
+						umount -v "${MBD_TMP_MNTPOINT}") >>${MBD_TMP_LOGFILE} 2>&1; then
 					${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} created successfully."
 				else
 					umount -v "${MBD_TMP_MNTPOINT}" >/dev/null 2>&1 || true

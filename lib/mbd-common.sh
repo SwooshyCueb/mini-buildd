@@ -124,19 +124,6 @@ mbdUpdateSshKeyring()
 	fi
 }
 
-mbdBldGetMirror()
-{
-	local dist="${1}"
-	local mirror=""
-	for raw_mirror in ${mbd_debian_mirror}; do
-		local d=`echo "${raw_mirror}" | cut -d: -f1`
-		if [ "${d}" = "all" -o "${d}" = "${dist}" ]; then
-			mirror=`echo -n "${raw_mirror}" | cut -d: -f2-`
-		fi
-	done
-	echo -n "${mirror}"
-}
-
 # Parse changes file
 mbdParseCF()
 {

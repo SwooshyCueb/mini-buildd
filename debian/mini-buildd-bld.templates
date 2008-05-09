@@ -7,6 +7,18 @@ Description: Repository (http) host name:
  .
  If you need to specify a different port than the default (80), use something
  like "my.host.com:8088".
+ .
+ ${ERROR}
+
+Template: mini-buildd-bld/mbd_bldhost
+Type: select
+Choices: ${BLDHOSTS}
+Description: This builder's id:
+ Thr builder's host name; you see the selection from the configuration of
+ mini-buildd-rep. If your host is not listed, you need to reconfigure
+ mini-buildd-rep.
+ .
+ Default is the host matching `hostname -f`.
 
 Template: mini-buildd-bld/mbd_lvm_vg
 Type: string

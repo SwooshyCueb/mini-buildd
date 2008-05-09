@@ -19,6 +19,9 @@ gen_sources_list()
 	# Arch: Also search for specialised arch sources list
 	local arch="${3}"
 
+	# Generate local source list variable for ourselves (mbd)
+	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
+
 	for k in ${kinds}; do
 		# Prefer arch over any, if defined
 		local srcAny="mbd_src_${dist}_${k}_any"
@@ -51,12 +54,11 @@ if echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 		# Sources list file to generate in chroot
 		SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
 
-		# Base is for both, source and snasphots
-		gen_sources_list "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
-
 		# Add extra sources for snapshots driven by mini-buildd only
 		if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
-			gen_sources_list "${BASEDIST}" "mbd extra" "${ARCH}" >>"${SOURCES_LIST}"
+			gen_sources_list "${BASEDIST}" "base mbd extra" "${ARCH}" >"${SOURCES_LIST}"
+		else
+			gen_sources_list "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
 		fi
 	fi
 fi

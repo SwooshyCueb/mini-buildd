@@ -1,6 +1,12 @@
 Blocker:
 ========
 
+****TUE****
+o bld/chroots/maintenance.log.
+o debootstrap sid/etch build-essential?
+o test/fix experimental.
+***
+
 0.7.0:
 ===================
 @todo *-experimental: Integrity checks.

@@ -38,19 +38,18 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 			if lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
 				${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} exists, leaving alone."
 			else
-				MBD_TMP_LOGFILE="${MBD_HOME}/log/${MBD_TMP_CHROOT}-setup.log"
-				${MBD_LOG} -s "Setting up chroot ${MBD_TMP_CHROOT} (logging to ${MBD_TMP_LOGFILE})..."
+				${MBD_LOG} -s "Setting up chroot ${MBD_TMP_CHROOT} (logging to ${MBD_BLDCHROOTS_LOGFILE})..."
 
 				MBD_TMP_BASESRC=`mbdGetSrcVar ${dist} base ${arch}`
 				MBD_TMP_MIRROR=`echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1`
 				${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
 
-				echo "=> $0 on `date`:" >>"${MBD_TMP_LOGFILE}"
+				echo "=> $0(${dist}-${arch}) on `date`:" >>"${MBD_BLDCHROOTS_LOGFILE}"
 				if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "`mbdLvmVgName`" &&
 						mkfs.ext2 "${MBD_TMP_DEV}" &&
 						mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 						debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
-						umount -v "${MBD_TMP_MNTPOINT}") >>${MBD_TMP_LOGFILE} 2>&1; then
+						umount -v "${MBD_TMP_MNTPOINT}") >>"${MBD_BLDCHROOTS_LOGFILE}" 2>&1; then
 					${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} created successfully."
 				else
 					umount -v "${MBD_TMP_MNTPOINT}" >/dev/null 2>&1 || true

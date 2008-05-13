@@ -1,9 +1,7 @@
 mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
 
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
-    @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
   * cron: Send output of nightly updates to configured mail address. Fixes
-    @todo cron: MAILTO (?).
   * sbuild: Set sbuild_mode to user; simplifies error handling in "build" qa test.
   .
   * bld: New chroot management:
@@ -41,11 +39,14 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * lib/*: Update to new syntax of mbd_dists.
       * mbd lib: New generic function mbdGenSources (moved from 99mini-buildd) to generate
         sources lists on the fly.
-      * bld config: Add mbd_bldost ID; suck rep config in config, and add dynamic selection question.
+      * bld config: Add mbd_bldhost ID; suck rep config in config, and add dynamic selection question.
       * Update all lib/*.
       * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
         distinguish in schroot setup.
       * Dynamic sources list support for *-experimental.
+  * Moving fixed items from TODO.Debian:
+    @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
+    @todo cron: MAILTO (?).
 
  --
 

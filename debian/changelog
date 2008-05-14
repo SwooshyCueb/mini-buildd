@@ -3,6 +3,12 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
   * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
   * cron: Send output of nightly updates to configured mail address. Fixes
   * sbuild: Set sbuild_mode to user; simplifies error handling in "build" qa test.
+  * Fix: Add "build-essential" to list of extra packages for base chroots; this is
+    needed because since dpkg-1.14.16, this is checked and hence a requirement for
+    package building.
+    Compare:
+    - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=402901
+    - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=480638
   .
   * bld: New chroot management:
     * bld/chroots: New layout for the sources.lists to use in chroots:

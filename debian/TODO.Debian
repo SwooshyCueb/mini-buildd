@@ -2,7 +2,6 @@ Blocker:
 ========
 
 ****TUE****
-o debootstrap sid/etch build-essential?
 o test/fix experimental.
 ***
 

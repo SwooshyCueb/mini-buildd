@@ -57,6 +57,9 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       Compare:
       - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=402901
       - http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=480638
+    * update-bld: Fix: For chroot updater, add DEBIAN_FRONTEND="noninteractive" env to avoid
+      any debconf questions: Fixes
+      @todo [chroots]: Sarge && debconfig non-interactive per default?
   .
   * Items from TODO.Debian fixed by (above) structural changes:
 

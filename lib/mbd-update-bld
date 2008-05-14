@@ -47,6 +47,7 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 			echo "=> $0(${dist}-${arch}) on `date`:" >>"${MBD_BLDCHROOTS_LOGFILE}"
 			if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root >>"${MBD_BLDCHROOTS_LOGFILE}" 2>&1 ; then
 set -e
+export DEBIAN_FRONTEND="noninteractive"
 apt-get update
 apt-get --yes --ignore-missing dist-upgrade
 [ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}

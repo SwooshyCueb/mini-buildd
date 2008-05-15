@@ -11,7 +11,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       DIST/extra.ARCH.list   nx: Extra sources (special archs).
     * Add hook for schroot: /etc/schroot/setup.d/99mini-buildd:
       * Automates creation of sources list on chroot creation.
-      * Allows different sources.lists for -source and -snapshot.
+      * Allows different sources.lists for -source or build chroots (snapshots),
+        and for snapshots between standard and experimental.
       * Auto-updating of apt cache.
     * mbd-update-bld: Update to new layout (no arch support yet).
     * mbd-cruft: Add now-obsolete files under chroots to cruft.

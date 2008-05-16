@@ -43,9 +43,8 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
-			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT} (logging to ${MBD_BLDCHROOTS_LOGFILE})..."
-			echo "=> $0(${dist}-${arch}) on `date`:" >>"${MBD_BLDCHROOTS_LOGFILE}"
-			if ! cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root >>"${MBD_BLDCHROOTS_LOGFILE}" 2>&1 ; then
+			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT}..."
+			if cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
 set -e
 export DEBIAN_FRONTEND="noninteractive"
 apt-get update
@@ -59,7 +58,9 @@ apt-get clean
 [ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
 [ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
 EOF
-				${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_CHROOT} (see ${MBD_BLDCHROOTS_LOGFILE})."
+				${MBD_LOG} -s "Chroot ${MBD_TMP_CHROOT} successfully updated."
+			else
+				${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_CHROOT}."
 			fi
 		fi
 	done

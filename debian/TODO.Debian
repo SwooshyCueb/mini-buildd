@@ -53,3 +53,4 @@ Wishlist:
 @todo Apt cache of build chroots should be updated before each build run.
 @todo debootstrap: Can we somehow assure we always use the newest version, so all dists can be strapped?
 @todo Some "auto-backport" mechanism for packages known to need no changes would be nice.
+@todo Lintian exceptions: Generalize, add: changelog-should-mention-nmu.

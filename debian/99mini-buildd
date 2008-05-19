@@ -7,26 +7,29 @@ if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-ca
 	. /usr/lib/mini-buildd/mbd-common.sh
 	. /home/mini-buildd/.mini-buildd.conf
 
-	# CHROOT_NAME=mbd-etch-manwe-i386-source
-	# CHROOT_NAME=mbd-etch-manwe-i386-83740be5-2da5-41c8-980d-d9c89064607d
-	# CHROOT_NAME=mbd-etch-manwe-i386-experimental-source
-	# CHROOT_NAME=mbd-etch-manwe-i386-experimental-eeac4e27-4d24-40c3-ad03-671d071c52cb
-
+	# Compute BASEDIST, ARCH, and IS_EXPERIMENTAL
+	# CHROOT_NAME=mbd-etch-ID-ARCH-*
+	# CHROOT_NAME=mbd-etch-ID-experimental-ARCH-*
 	BASEDIST=`echo "${CHROOT_NAME}" | cut -d- -f2`
 	ARCH=`echo "${CHROOT_NAME}" | cut -d- -f4`
-
-	# Sources list file to generate in chroot
-	SOURCES_LIST="${CHROOT_PATH}/etc/apt/sources.list"
-
-	if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
-		# sbuild run using snapshot
-		EXPERIMENTAL=`echo "${CHROOT_NAME}" | cut -d- -f5`
-		if [ "${EXPERIMENTAL}" != "experimental" ]; then
-			EXPERIMENTAL=""
-		fi
-		mbdGenSources "${BASEDIST}" "base mbd extra ${EXPERIMENTAL}" "${ARCH}" >"${SOURCES_LIST}"
-	else
-		# Other cases (usually likely -source): Only base.
-		mbdGenSources "${BASEDIST}" "base" "${ARCH}" >"${SOURCES_LIST}"
+	IS_EXPERIMENTAL="false"
+	if [ "${ARCH}" = "experimental" ]; then
+		IS_EXPERIMENTAL="true"
+		ARCH=`echo "${CHROOT_NAME}" | cut -d- -f5`
 	fi
+
+	# Compute what KINDS of sources we have to add
+	# We always want the basis distribution
+	KINDS="base"
+	if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
+		# sbuild run using snapshot: Add extra (if configured), and ourselves (mbd).
+		KINDS="${KINDS} extra mbd"
+		if ${IS_EXPERIMENTAL}; then
+			# Add our experimental dist (mbd_experimental)
+			KINDS="${KINDS} mbd_experimental"
+		fi
+	fi
+
+	# Finally generate sources list
+	mbdGenSources "${BASEDIST}" "${KINDS}" "${ARCH}" >"${CHROOT_PATH}/etc/apt/sources.list"
 fi

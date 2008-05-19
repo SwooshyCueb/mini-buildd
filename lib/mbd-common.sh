@@ -252,10 +252,11 @@ mbdGenSources()
 
 	# Generate local source list variable for ourselves (mbd)
 	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
-	eval "local mbd_src_${dist}_experimental_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}-experimental/\""
+	eval "local mbd_src_${dist}_mbd_experimental_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}-experimental/\""
 
 	for kind in ${kinds}; do
 		local src=`mbdGetSrcVar ${dist} ${kind} ${arch}`
+		echo "# ${dist}/${kind}/${arch}:"
 		# Multiple lines my be given separated via \n
 		echo -e "${!src}" |
 		(

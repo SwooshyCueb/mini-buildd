@@ -9,6 +9,8 @@ o test/fix experimental.
 ===================
 @todo *-experimental: Integrity checks.
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
+@todo HTML overview: Update for *-experimental.
+@todo HTML overview: Update for new chroot setup (sources lists).
 
 Missing features:
 ===================

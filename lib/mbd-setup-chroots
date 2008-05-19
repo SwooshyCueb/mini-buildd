@@ -29,6 +29,7 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}";
+			MBD_TMP_CHROOT_EXPERIMENTAL="mbd-${dist}-${mbd_id}-experimental-${arch}";
 			MBD_TMP_DEV="/dev/`mbdLvmVgName`/${MBD_TMP_CHROOT}"
 
 			if mbd_opt_given f && lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
@@ -59,7 +60,7 @@ for dist in `echo "${mbd_dists}" | tr -d ","`; do
 				fi
 			fi
 			# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
-			for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT}-experimental; do
+			for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do
 				cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
 [${chroot_name}]
 type=lvm-snapshot

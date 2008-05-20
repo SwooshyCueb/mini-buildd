@@ -73,13 +73,24 @@ mbdQACheckNew()
 	local retval=0
 	local info="${mbdParseCF_package}"
 
-	if [ -e "${MBD_HOME}/rep/${mbdParseCF_dist}/${MBD_TMP_CF}" ]; then
-		echo "E: ${info}: Already installed."
-		echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
-		retval=2
+	# If dist is experimental, we should also check non-experimental and vice versa
+	local distsToCheck=""
+	if echo "${mbdParseCF_dist}" | grep --quiet "-experimental\$"; then
+		distsToCheck="${mbdParseCF_dist} `echo "${mbdParseCF_dist}" | sed "s/-experimental\$//"`"
 	else
-		echo "I: ${info}: New."
+		distsToCheck="${mbdParseCF_dist} ${mbdParseCF_dist}-experimental"
 	fi
+
+	local dist
+	for dist in ${distsToCheck}; do
+		if [ -e "${MBD_HOME}/rep/${dist}/${MBD_TMP_CF}" ]; then
+			echo "E: ${info}: Already installed in ${dist}."
+			echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
+			retval=2
+		else
+			echo "I: ${info}: New for ${dist}."
+		fi
+	done
 	return ${retval}
 }
 

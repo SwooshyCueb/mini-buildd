@@ -43,6 +43,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
         distinguish in schroot setup.
       * Dynamic sources list support for *-experimental.
+      * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Misc fixes:
     * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
@@ -62,11 +63,10 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       @todo [chroots]: Sarge && debconfig non-interactive per default?
     * Fix: .sbuildrc must have "1;" at end ("perl needs this".)
     * .sbuildrc: put all generic options to .sbuildrc.
-    * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Fri, 16 May 2008 17:44:40 +0200
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 20 May 2008 10:54:09 +0200
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

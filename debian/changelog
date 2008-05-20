@@ -62,6 +62,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       @todo [chroots]: Sarge && debconfig non-interactive per default?
     * Fix: .sbuildrc must have "1;" at end ("perl needs this".)
     * .sbuildrc: put all generic options to .sbuildrc.
+    * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
 

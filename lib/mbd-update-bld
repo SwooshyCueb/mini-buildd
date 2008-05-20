@@ -26,6 +26,8 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$nolog = 1;
 # We always want to update the cache as we generate sources.list on thy fly.
 \$apt_update = 1;
+# APT-Policy to "1", so we can satisfy dependencies via all sources we added.
+\$apt_policy = 1;
 
 # Builder identity
 \$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";

@@ -60,6 +60,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     * update-bld: Fix: For chroot updater, add DEBIAN_FRONTEND="noninteractive" env to avoid
       any debconf questions: Fixes
       @todo [chroots]: Sarge && debconfig non-interactive per default?
+    * Fix: .sbuildrc must have "1;" at end ("perl needs this".)
+
   .
   * Items from TODO.Debian fixed by (above) structural changes:
 

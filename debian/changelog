@@ -43,7 +43,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
         distinguish in schroot setup.
       * Dynamic sources list support for *-experimental.
-      * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
+    * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Misc fixes:
     * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes

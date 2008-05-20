@@ -3,7 +3,6 @@ Blocker:
 
 0.7.0:
 ===================
-@todo *-experimental: Integrity checks.
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
 @todo HTML overview: Update for *-experimental.
 @todo HTML overview: Update for new chroot setup (sources lists).
@@ -12,7 +11,6 @@ Missing features:
 ===================
 @todo [brain] Easy staging (tm) (etch-ID-stable ?).
 @todo [mini-dinstall] Configuration of package groups.
-@todo [brain] Minimal dependency building.
 @todo [brain] Upload permissions (ssh, gpg?).
 
 Serious:
@@ -38,7 +36,6 @@ Wishlist:
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
 @todo [deb] Warn before purging package && repository.
-@todo [schroot] Depend on schroot 1.1.4 (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=391319). No bpo yet.
 @todo [deb] rep,bld: Current: manually edit file ${ID}.sources.list.extra on -bld for extra sources list (e.g. bpo);
       make this generically configurable via debconf in -rep.
 @todo [deb] For -rep: debconf finals: Note that points to mini-buildd overview URL.
@@ -47,8 +44,6 @@ Wishlist:
 @todo GPG signing of auto-build packages.
 @todo generic auto-generation stamp/note f. ALL auto-generated files.
 @todo Support for more than one id in one mini-buildd network.
-@todo Support for more than one arch in one bld-host.
-@todo Apt cache of build chroots should be updated before each build run.
 @todo debootstrap: Can we somehow assure we always use the newest version, so all dists can be strapped?
 @todo Some "auto-backport" mechanism for packages known to need no changes would be nice.
 @todo Lintian exceptions: Generalize, add: changelog-should-mention-nmu.

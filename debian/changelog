@@ -69,8 +69,13 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       should also check non-experimental and vice versa.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
+    - @todo *-experimental: Integrity checks.
+    - @todo [brain] Minimal dependency building.
+    - @todo [schroot] Depend on schroot 1.1.4 (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=391319). No bpo yet.
+    - @todo Support for more than one arch in one bld-host.
+    - @todo Apt cache of build chroots should be updated before each build run.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 20 May 2008 10:54:09 +0200
+ --
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

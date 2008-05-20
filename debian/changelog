@@ -63,7 +63,10 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       @todo [chroots]: Sarge && debconfig non-interactive per default?
     * Fix: .sbuildrc must have "1;" at end ("perl needs this".)
     * .sbuildrc: put all generic options to .sbuildrc.
-    * QACheckNew: If dist is -experimental, we should also check non-experimental and vice versa.
+    * QACheckNew: Fix for experimental: If dist is -experimental, we
+      should also check non-experimental and vice versa.
+    * QACheckOrig: Fix for experimental: If dist is -experimental, we
+      should also check non-experimental and vice versa.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
 

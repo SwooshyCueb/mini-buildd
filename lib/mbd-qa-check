@@ -67,22 +67,23 @@ mbdQACheckVersion()
 	return ${retval}
 }
 
+# etch-ID              -> "etch-ID etch-ID-experimental"
+# etch-ID-experimental -> "etch-ID etch-ID-experimental"
+mbdExpandDist()
+{
+	local dist="`echo "${1}" | sed "s/-experimental\$//"`"
+	echo -n "${dist} ${dist}-experimental"
+}
+
 # Check that source package is not in repo yet
 mbdQACheckNew()
 {
 	local retval=0
 	local info="${mbdParseCF_package}"
 
-	# If dist is experimental, we should also check non-experimental and vice versa
-	local distsToCheck=""
-	if echo "${mbdParseCF_dist}" | grep --quiet "-experimental\$"; then
-		distsToCheck="${mbdParseCF_dist} `echo "${mbdParseCF_dist}" | sed "s/-experimental\$//"`"
-	else
-		distsToCheck="${mbdParseCF_dist} ${mbdParseCF_dist}-experimental"
-	fi
-
+	# Always check normal and experimental dist
 	local dist
-	for dist in ${distsToCheck}; do
+	for dist in `mbdExpandDist "${mbdParseCF_dist}"`; do
 		if [ -e "${MBD_HOME}/rep/${dist}/${MBD_TMP_CF}" ]; then
 			echo "E: ${info}: Already installed in ${dist}."
 			echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
@@ -98,21 +99,27 @@ mbdQACheckNew()
 mbdQACheckOrig()
 {
 	local retval=0
-	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
 	local info="Orig tarball: ${mbdParseCF_orig_tarball}"
 
+	local dist
 	if [ -e "${mbdParseCF_orig_tarball}" ]; then
-		if [ -e "${repOrig}" ]; then
-			if cmp "${mbdParseCF_orig_tarball}" "${repOrig}"; then
-				echo "W: ${info}: Re-upload (you don't need this)."
-				retval=1
+		# Always check normal and experimental dist
+		local dist
+		for dist in `mbdExpandDist "${mbdParseCF_dist}"`; do
+			local repOrig="${MBD_HOME}/rep/${dist}/${mbdParseCF_orig_tarball}"
+			if [ -e "${repOrig}" ]; then
+				if cmp "${mbdParseCF_orig_tarball}" "${repOrig}"; then
+					echo "W: ${info}: Already uploaded to ${dist}."
+					retval=1
+				else
+					echo "E: ${info}: Re-upload with a different file in ${dist} (uploader should be punished hard)."
+					retval=2
+					break
+				fi
 			else
-				echo "E: ${info}: Re-upload with a different file (uploader should be punished hard)."
-				retval=2
+				echo "I: Upload with NEW orig tarball for ${dist}: ${mbdParseCF_orig_tarball}."
 			fi
-		else
-			echo "I: Upload with NEW orig tarball: ${mbdParseCF_orig_tarball}."
-		fi
+		done
 	else
 		echo "I: Upload without orig tarball: ${mbdParseCF_orig_tarball}."
 	fi

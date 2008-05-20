@@ -151,7 +151,7 @@ mbdParseBH() # arch
 	mbdParseBH_arch="${arch}"
 	mbdParseBH_host="${!bldhost}"
 	if [ "${arch}" = "${mbd_archall}" ]; then
-		mbdParseBH_options="-A"
+		mbdParseBH_options="--arch-all"
 	else
 		mbdParseBH_options=""
 	fi

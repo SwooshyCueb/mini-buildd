@@ -179,6 +179,16 @@ mbdDeleteMarkedConfig()
 	fi
 }
 
+# etch-ID              -> "etch-ID etch-ID-experimental"
+# etch-ID-experimental -> "etch-ID etch-ID-experimental"
+mbdExpandDists()
+{
+	for dist in ${1}; do
+		local d="`echo "${dist}" | sed "s/-experimental\$//"`"
+		echo -n "${d} ${d}-experimental "
+	done
+}
+
 # Get versions of known basis distributions
 mbdBasedist2Version()
 {
@@ -241,6 +251,7 @@ mbdGetSrcVar() # dist kind arch
 }
 
 # Generates sources.list to stdout; Info log to stderr.
+# Respect env AUTH_VERBOSITY if we are run from schroot setup.
 mbdGenSources()
 {
 	# Base distribution
@@ -249,6 +260,8 @@ mbdGenSources()
 	local kinds="${2}"
 	# Arch: Also search for specialised arch sources list
 	local arch="${3}"
+	# noheader: Omit infor headers.
+	local noheader="${4}"
 
 	# Generate local source list variable for ourselves (mbd)
 	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
@@ -256,19 +269,18 @@ mbdGenSources()
 
 	for kind in ${kinds}; do
 		local src=`mbdGetSrcVar ${dist} ${kind} ${arch}`
-		echo "# ${dist}/${kind}/${arch}:"
-		# Multiple lines my be given separated via \n
-		echo -e "${!src}" |
-		(
-			while read LINE; do
-				if [ -n "${LINE}" ]; then
-					echo "deb ${LINE}"
-					# Respect AUTH_VERBOSITY if we are run from schroot setup.
-					if [ "${AUTH_VERBOSITY}" != "quiet" ]; then
-						${MBD_LOG} -s "Sources added: ${src}: deb ${LINE}"
+		if [ -n "${!src}" ]; then
+			[ "${noheader}" == "noheader" ] || echo "# ${dist}: ${kind}"
+			# Multiple lines my be given separated via \n
+			echo -e "${!src}" |
+			(
+				while read LINE; do
+					if [ -n "${LINE}" ]; then
+						echo "deb ${LINE}"
+						[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "Sources added: ${src}: deb ${LINE}"
 					fi
-				fi
-			done
-		)
+				done
+			)
+		fi
 	done
 }

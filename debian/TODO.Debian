@@ -4,8 +4,6 @@ Blocker:
 0.7.0:
 ===================
 @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
-@todo HTML overview: Update for *-experimental.
-@todo HTML overview: Update for new chroot setup (sources lists).
 
 Missing features:
 ===================

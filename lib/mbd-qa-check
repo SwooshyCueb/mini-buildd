@@ -67,14 +67,6 @@ mbdQACheckVersion()
 	return ${retval}
 }
 
-# etch-ID              -> "etch-ID etch-ID-experimental"
-# etch-ID-experimental -> "etch-ID etch-ID-experimental"
-mbdExpandDist()
-{
-	local dist="`echo "${1}" | sed "s/-experimental\$//"`"
-	echo -n "${dist} ${dist}-experimental"
-}
-
 # Check that source package is not in repo yet
 mbdQACheckNew()
 {
@@ -83,7 +75,7 @@ mbdQACheckNew()
 
 	# Always check normal and experimental dist
 	local dist
-	for dist in `mbdExpandDist "${mbdParseCF_dist}"`; do
+	for dist in `mbdExpandDists "${mbdParseCF_dist}"`; do
 		if [ -e "${MBD_HOME}/rep/${dist}/${MBD_TMP_CF}" ]; then
 			echo "E: ${info}: Already installed in ${dist}."
 			echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
@@ -105,7 +97,7 @@ mbdQACheckOrig()
 	if [ -e "${mbdParseCF_orig_tarball}" ]; then
 		# Always check normal and experimental dist
 		local dist
-		for dist in `mbdExpandDist "${mbdParseCF_dist}"`; do
+		for dist in `mbdExpandDists "${mbdParseCF_dist}"`; do
 			local repOrig="${MBD_HOME}/rep/${dist}/${mbdParseCF_orig_tarball}"
 			if [ -e "${repOrig}" ]; then
 				if cmp "${mbdParseCF_orig_tarball}" "${repOrig}"; then

@@ -21,67 +21,130 @@ mbdBldHtml()
 
 	local urlbase="http://${mbdParseBH_host}:${mbd_httpport}/~mini-buildd"
 cat <<EOF
-<b>${mbdParseBH_arch}</b>: <a href="${urlbase}/bld">${mbdParseBH_host}</a>:
+<a href="${urlbase}/bld">Buildhost ${mbdParseBH_host}</a>:
 <a href="${urlbase}/pgp_key.asc">PGP Key</a>,
-<a href="${urlbase}/ssh_key.asc">SSH Key</a>.
-<br/>
+<a href="${urlbase}/ssh_key.asc">SSH Key</a>
 EOF
 }
 
 MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
 MBD_TMP_ARCHS=`echo "${mbd_archs}" | tr -d ","`
-MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\" on ${mbd_rephost}"
+MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\""
 cat <<EOF >"${MBD_HTML_INDEXFILE}"
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+
 <html>
 <head>
+<meta http-equiv="Content-Style-Type" content="text/css">
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8" >
+
 <title>${MBD_TMP_TITLE}</title>
+
+<style type="text/css">
+  h1 {border-width: 1; border: solid; text-align: center}
+  h2 {border-width: 1; text-align: center}
+  h3 {border-width: 0; text-align: left}
+  pre {background-color:lightgrey;}
+</style>
+
 <body>
+
+<div>
+<input type="checkbox" id="details" onclick="show_details()">
+Show details
+<small>(mini-buildd `dpkg -s mini-buildd-rep | grep ^Version | cut -d: -f2-`)
+</small>
+</div>
+
+<script type="text/javascript">
+
+<!--
+function show_details()
+{
+  var details = (document.getElementById('details').checked == true);
+
+  var divTags = document.getElementsByTagName('div');
+  for (var i=0; i < divTags.length; i++)
+  {
+    if (divTags[i].getAttribute("class") == "details")
+    {
+      if (details)
+      {
+        divTags[i].style.display = '';
+      }
+      else
+      {
+        divTags[i].style.display = 'none';
+      }
+    }
+  }
+}
+//-->
+show_details();
+</script>
+
 <h1>${MBD_TMP_TITLE}</h1>
 
-<hr/>
+<div>
 
-<a href="rep/"><h2>Repository</a></h2>
+<h2>General information</h2>
 
 <ul>
-<li><a href="pgp_key.asc">PGP Signing Key</a> (Users add this to their apt-secure keyring)
-<pre>wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-key add -</pre></li>
+<li><a href="pgp_key.asc">PGP Signing Key</a>: Users may this to their apt-secure keyring like so:
+<pre style="display:inline;">
+wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-key add -
+</pre></li>
 
-<li><a href="dput.cf">Configuration for dput</a> (Uploaders add this to their dput.cf)</li>
+<li><a href="dput.cf">Configuration for dput</a>: Uploaders add this to their ~/dput.cf.</li>
 
 <li><a href="ssh_key.asc">SSH Key</a></li>
 
 <li>Status:
-    <a href="log/">Logs</a>,
+    <a href="log/">Browse Build Logs</a>,
     <a href="rep/mini-dinstall/incoming/">Incoming</a>,
     <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.
 </li>
 </ul>
 
-<hr/>
+</div>
 
-<h2>Distributions</h2>
-
-<ul>
 `for d in ${MBD_TMP_DISTS}; do
-   echo "<li><a href=\"rep/${d}-${mbd_id}\">${d}-${mbd_id}</a>: ${d} packages for ${mbd_id}";
-   echo -n "<small/><em>(Mandatory version part: \""; mbdGetMandatoryVersionPart "${d}"; echo "\")</em></small>"
-   echo "<pre>deb http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/rep ${d}-${mbd_id}/</pre></li>"
+   echo "<div style='background-color: lightblue; '>"
+
+   echo "<h2>Base distribution ${d}</h2>"
+   for e in "" "experimental"; do
+     if [ -n "${e}" ]; then
+       DIST="${DIST}-${e}"
+       KIND="mbd_experimental"
+     else
+       DIST="${d}-${mbd_id}"
+       KIND="mbd"
+     fi
+     echo "<h3><a href=\"rep/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h3>"
+
+     echo "<small><em>Mandatory version part: </em></small><pre style='display:inline'>"
+     mbdGetMandatoryVersionPart "${d}"
+     echo "</pre>"
+     echo "<small><em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apt source line: </em></small><pre style='display:inline'>"
+     AUTH_VERBOSITY='quiet' mbdGenSources ${d} "${KIND}" "" "noheader"
+     echo "</pre>"
+     echo "<div class='details' style='display:none;'>"
+     for a in ${MBD_TMP_ARCHS}; do
+       echo -n "<h4>Build dependencies for <b>${a}</b> ("
+       mbdBldHtml "${a}"
+       echo "):</h4>"
+       echo "<pre>"
+       AUTH_VERBOSITY='quiet' mbdGenSources "${d}" "base extra" "${a}"
+       echo "</pre>"
+     done
+     echo "</div>"
+   done
+   echo "</div>"
  done`
-</ul>
 
-<hr/>
-
-<h2>Architectures</h2>
-
-<ul>
-`for arch in ${MBD_TMP_ARCHS}; do
-   echo -n "<li>"
-   mbdBldHtml "${arch}"
-   echo "</li>"
- done`
-</ul>
-
-<hr/>
+<script  type="text/javascript">
+show_details();
+</script>
 
 </html>
 EOF

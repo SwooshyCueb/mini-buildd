@@ -43,6 +43,11 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       * setup-chroots/schroot.conf: Write two configs, one more for -experimental; else we can't
         distinguish in schroot setup.
       * Dynamic sources list support for *-experimental.
+      * Updated html overview page:
+        - Support to show -expermiental.
+        - Show buld dependencies.
+        - Detailed view via js.
+        - Fix HTML to validated HTML.
     * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Misc fixes:
@@ -74,6 +79,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     - @todo [schroot] Depend on schroot 1.1.4 (http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=391319). No bpo yet.
     - @todo Support for more than one arch in one bld-host.
     - @todo Apt cache of build chroots should be updated before each build run.
+    - @todo HTML overview: Update for *-experimental.
+    - @todo HTML overview: Update for new chroot setup (sources lists).
 
  --
 

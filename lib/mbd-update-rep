@@ -33,6 +33,7 @@ architectures = ${mbd_archs}
 archive_style = flat
 keep_old = 1
 generate_release = 1
+release_notautomatic = 1
 release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
 
 `for d in ${MBD_TMP_DISTS}; do

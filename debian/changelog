@@ -48,6 +48,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
         - Show buld dependencies.
         - Detailed view via js.
         - Fix HTML to validated HTML.
+      * Update dep to mini-dinstall >> 24 (0.6.25 private git branch currently):
+        - mini-dinstall.conf: Add release_notautomatic = 1
     * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
   .
   * Misc fixes:

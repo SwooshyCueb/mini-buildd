@@ -1,15 +1,9 @@
 Blocker:
 ========
 
-0.7.0:
-===================
-@todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
-
 Missing features:
 ===================
 @todo [brain] Easy staging (tm) (etch-ID-stable ?).
-@todo [mini-dinstall] Configuration of package groups.
-@todo [brain] Upload permissions (ssh, gpg?).
 
 Serious:
 ========
@@ -29,7 +23,6 @@ Normal:
 
 Wishlist:
 =========
-@todo [check]: piuparts check if feasible.
 @todo [chroots]: Enable ccache?
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
@@ -45,3 +38,4 @@ Wishlist:
 @todo debootstrap: Can we somehow assure we always use the newest version, so all dists can be strapped?
 @todo Some "auto-backport" mechanism for packages known to need no changes would be nice.
 @todo Lintian exceptions: Generalize, add: changelog-should-mention-nmu.
+@todo [mini-dinstall] Configuration of package groups.

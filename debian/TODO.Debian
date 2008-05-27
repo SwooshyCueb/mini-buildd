@@ -27,8 +27,6 @@ Wishlist:
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
 @todo [deb] Warn before purging package && repository.
-@todo [deb] rep,bld: Current: manually edit file ${ID}.sources.list.extra on -bld for extra sources list (e.g. bpo);
-      make this generically configurable via debconf in -rep.
 @todo [deb] For -rep: debconf finals: Note that points to mini-buildd overview URL.
 @todo [deb] apache2 -- automatic user_dir support?
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).

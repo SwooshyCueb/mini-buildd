@@ -84,6 +84,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     - @todo HTML overview: Update for *-experimental.
     - @todo HTML overview: Update for new chroot setup (sources lists).
     - @todo [mini-dinstall] Experimental (Non-Automatic) support: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=336232
+    - @todo [deb] rep,bld: Current: manually edit file ${ID}.sources.list.extra on -bld for extra sources list (e.g. bpo);
+      make this generically configurable via debconf in -rep.
 
  --
 

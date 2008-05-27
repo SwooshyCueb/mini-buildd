@@ -29,6 +29,9 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 # APT-Policy to "1", so we can satisfy dependencies via all sources we added.
 \$apt_policy = 1;
 
+# Add path for ccache
+\$path = "/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games";
+
 # Builder identity
 \$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";
 \$mailto = "${mbd_mail}";

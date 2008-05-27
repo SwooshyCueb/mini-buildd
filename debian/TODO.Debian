@@ -23,7 +23,6 @@ Normal:
 
 Wishlist:
 =========
-@todo [chroots]: Enable ccache?
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
 @todo [deb] Warn before purging package && repository.

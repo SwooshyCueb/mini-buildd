@@ -56,8 +56,10 @@ for arch in `echo "${mbd_archs}" | tr -d ","`; do
 	mbdParseBH "${arch}"
 	mbdUpdateSshKeyring "${mbdParseBH_host}"
 	# Also update bld hosts
-	${MBD_LOG} -s "Updating ${mbdParseBH_arch} builder on ${mbdParseBH_host} (ignore failures on initial installs)..."
-	ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${mbdParseBH_host}" "${MBD_LIB}/mbd-update-bld" || true
+	${MBD_LOG} -s "Updating ${mbdParseBH_arch} builder on ${mbdParseBH_host} (ignore failures if the build host isn't set up yet)..."
+	if ! ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${mbdParseBH_host}" "${MBD_LIB}/mbd-update-bld"; then
+		${MBD_LOG} -s "Warning: Error updating ${mbdParseBH_host}/${mbdParseBH_arch}, but ignore if the build host isn't set up yet..."
+	fi
 done
 
 if ! mbd_opt_given p; then

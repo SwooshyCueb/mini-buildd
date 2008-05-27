@@ -54,10 +54,10 @@ ${MBD_LIB}/mbd-update-rep-html
 
 for arch in `echo "${mbd_archs}" | tr -d ","`; do
 	mbdParseBH "${arch}"
-	mbdUpdateSshKeyring ${mbdParseBH_host}
+	mbdUpdateSshKeyring "${mbdParseBH_host}"
 	# Also update bld hosts
 	${MBD_LOG} -s "Updating ${mbdParseBH_arch} builder on ${mbdParseBH_host} (ignore failures on initial installs)..."
-	ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "${MBD_LIB}/mbd-update-bld" || true
+	ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${mbdParseBH_host}" "${MBD_LIB}/mbd-update-bld" || true
 done
 
 if ! mbd_opt_given p; then

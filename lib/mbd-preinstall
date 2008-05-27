@@ -81,7 +81,6 @@ mbdBHRun()
 
 	local p
 	for p in ${pids}; do
-		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Waiting for pid $p."
 		if ! wait ${p}; then
 			retval=1
 		fi

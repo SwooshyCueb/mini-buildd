@@ -161,7 +161,8 @@ mbdQACheckLintian()
 	#  - "bad-version" (all bad-version* errors): As in lintian/sarge, Tilde-Versioning results in errors.
 	#  - "no-description-in-changes-file": since dpkg 1.4.16: Changes files in source only uploads have no description field any more.
 	#  - "menu-item-creates-new-root-section": for lintian <= etch, this is an ERROR, but imho should be a WARNING only, and not let builds fail.
-	grep --invert-match "\( bad-distribution-in-changes-file \| bad-version \| no-description-in-changes-file \| menu-item-creates-new-root-section \)" "${lf}" >"${lf}.mbd" || true
+	#  - "changelog-should-mention-nmu": Does not make sense for mini-buildd.
+	grep --invert-match "\( bad-distribution-in-changes-file \| bad-version \| no-description-in-changes-file \| menu-item-creates-new-root-section \| changelog-should-mention-nmu \)" "${lf}" >"${lf}.mbd" || true
 
 	if grep '^E: .*$' "${lf}.mbd"; then
 		retval=2

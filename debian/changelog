@@ -81,6 +81,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       should also check non-experimental and vice versa.
     * -rep: Note after configuration; show URL and important notes.
       Fixes: @todo [deb] For -rep: debconf finals: Note that points to mini-buildd overview URL.
+    * QACheckLintian: Ignore "menu-item-creates-new-root-section": for lintian <= etch, this is
+      an ERROR, but imho should be a WARNING only, and not let builds fail.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
     - @todo *-experimental: Integrity checks.

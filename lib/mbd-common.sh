@@ -190,6 +190,18 @@ mbdGetBldHosts()
 	echo -n "${result}"
 }
 
+# Get list of archs this build host is responsible for
+mbdGetArchs()
+{
+	local bldhost="${1}"
+	for arch in `mbdD2SList "${mbd_archs}"`; do
+		local b="mbd_bldhost_${arch}"
+		if [ "${bldhost}" = "${!b}" ]; then
+			echo -n "${arch} "
+		fi
+	done
+}
+
 # Build ID to bld dir converter
 mbdBId2BDir()
 {

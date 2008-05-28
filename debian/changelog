@@ -19,6 +19,9 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     * setup-chroots: rename lv names for chroots: DIST-ID to mbd-DIST-ID-ARCH. The prefix
       makes more clear what the lvs are for, avoids lv-namesspace pollution;
       the arch postfix allows multiarch chroots on on bld host (e.g., amd64+i386).
+    * preinstall, QABuild: Support for multiarch:
+      - Temporary build dir now has additional -ARCH suffix.
+      - Run checks/builds per arch, not per build host.
     * Update to sbuild 0.57.2 (we need the --chroot option).
     * Update to sbuild 0.57.3 (we need a bug fix from that version).
     * debconf: Adapt to new chroot management:

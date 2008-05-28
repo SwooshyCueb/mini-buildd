@@ -202,10 +202,17 @@ mbdGetArchs()
 	done
 }
 
-# Build ID to bld dir converter
+# Build id to bld dir converter; build dir must be unique for multi-arch host, so we also add -${arch} here.
+# Build id  is "PACKAGE/VERSION/TIMESTAMP"
+# Build dir is "PACKAGE_VERSION_TIMESTAMP-ARCH"
 mbdBId2BDir()
 {
-	echo -n "${1}" | tr "/" "_"
+	local arch="${1}"
+	if [ -z "${arch}" ]; then
+		${MBD_LOG} -s "INTERNAL ERROR: mbdBId2BDir called w/o arch."
+		exit 3
+	fi
+	echo -n "${1}-${arch}" | tr "/" "_"
 }
 
 # Delete marked config snippet from a file

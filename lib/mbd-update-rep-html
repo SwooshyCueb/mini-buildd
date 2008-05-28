@@ -27,8 +27,8 @@ cat <<EOF
 EOF
 }
 
-MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
-MBD_TMP_ARCHS=`echo "${mbd_archs}" | tr -d ","`
+MBD_TMP_DISTS=`mbdD2SList "${mbd_dists}"`
+MBD_TMP_ARCHS=`mbdD2SList "${mbd_archs}"`
 MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\""
 cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">

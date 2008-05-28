@@ -12,7 +12,7 @@ cd "${MBD_HOME}"
 mkdir -p "rep"
 mkdir -p "log"
 
-MBD_TMP_DISTS=`echo "${mbd_dists}" | tr -d ","`
+MBD_TMP_DISTS=`mbdD2SList "${mbd_dists}"`
 cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"
 [DEFAULT]
 archivedir = ${MBD_HOME}/rep
@@ -52,7 +52,7 @@ ${MBD_LOG} -s "${MBD_MDINSTALLCONFIGFILE} updated."
 ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html
 
-for arch in `echo "${mbd_archs}" | tr -d ","`; do
+for arch in `mbdD2SList "${mbd_archs}"`; do
 	mbdParseBH "${arch}"
 	mbdUpdateSshKeyring "${mbdParseBH_host}"
 	# Also update bld hosts

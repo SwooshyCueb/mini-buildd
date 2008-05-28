@@ -157,6 +157,12 @@ mbdParseBH() # arch
 	fi
 }
 
+# Transform a debconf ("a, b") to a shell ("a b") list.
+mbdD2SList()
+{
+	echo -n "${1}" | tr -d ","
+}
+
 mbdInList()
 {
 	local token="${1}"
@@ -174,7 +180,7 @@ mbdGetBldHosts()
 {
 	local result=""
 	local arch=""
-	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+	for arch in `mbdD2SList "${mbd_archs}"`; do
 		local bldhost="mbd_bldhost_${arch}"
 		if ! mbdInList "${!bldhost}" "${result}"; then
 			result="${result} ${!bldhost}"

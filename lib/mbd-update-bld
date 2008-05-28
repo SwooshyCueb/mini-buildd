@@ -50,8 +50,8 @@ ${MBD_LOG} -s "`ln -s -f -v ../bld public_html/ 2>&1`"
 mbdUpdateSshKeyring "${mbd_rephost}"
 
 # Check/prepare chroots for all dists.
-for dist in `echo "${mbd_dists}" | tr -d ","`; do
-	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+for dist in `mbdD2SList "${mbd_dists}"`; do
+	for arch in `mbdD2SList "${mbd_archs}"`; do
 		# Are we responsible for that arch?
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then

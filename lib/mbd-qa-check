@@ -125,7 +125,7 @@ mbdQACheckUploadDSP()
 	local bDir="bld/builds/`mbdBId2BDir "${MBD_TMP_BUILDID}"`"
 	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
 
-	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+	for arch in `mbdD2SList "${mbd_archs}"`; do
 		mbdParseBH "${arch}"
 		echo "I: Uploading for ${mbdParseBH_host}."
 

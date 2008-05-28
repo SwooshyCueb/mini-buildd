@@ -26,7 +26,6 @@ Wishlist:
 @todo [deb] apache2 -- automatic user_dir support?
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
 @todo GPG signing of auto-build packages.
-@todo generic auto-generation stamp/note f. ALL auto-generated files.
 @todo Support for more than one id in one mini-buildd network.
 @todo debootstrap: Can we somehow assure we always use the newest version, so all dists can be strapped?
 @todo Some "auto-backport" mechanism for packages known to need no changes would be nice.

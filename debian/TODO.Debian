@@ -5,15 +5,12 @@ Missing features:
 ===================
 @todo [brain] *-stable manual staging (tm) (etch-ID-stable ?).
 
-Serious:
-========
-@todo [mini-dinstall] Need speed increase for index file creation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
-@todo [mini-dinstall] Keeps only newest changes file in repository (i.e., instead of all source.changes, i386.changes, amd64.changes).
-
 Normal:
 =======
 @todo Rotation on rep: log/ + mini-dinstall.log.
 @todo [brain] Add per package html.
+@todo [mini-dinstall] Need speed increase for index file creation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
+@todo [mini-dinstall] Keeps only newest changes file in repository (i.e., instead of all source.changes, i386.changes, amd64.changes).
 
 Wishlist:
 =========

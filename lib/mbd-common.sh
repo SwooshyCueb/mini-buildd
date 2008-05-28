@@ -176,6 +176,7 @@ mbdInList()
 	return 1
 }
 
+# Generate a shell list of hostnames, omit duplicates (multiarch hosts).
 mbdGetBldHosts()
 {
 	local result=""
@@ -184,8 +185,6 @@ mbdGetBldHosts()
 		local bldhost="mbd_bldhost_${arch}"
 		if ! mbdInList "${!bldhost}" "${result}"; then
 			result="${result} ${!bldhost}"
-		else
-			echo "Duplicate: ${!bldhost}"
 		fi
 	done
 	echo -n "${result}"

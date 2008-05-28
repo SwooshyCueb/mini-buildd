@@ -48,12 +48,13 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
         - Show buld dependencies.
         - Detailed view via js.
         - Fix HTML to validated HTML.
-      * Update dep to mini-dinstall >> 24 (0.6.25 private git branch currently):
-        - mini-dinstall.conf: Add release_notautomatic = 1
+      * update-rep: Fix for multiarch: Only run update-bld per bld host, not arch.
+    * Update dep to mini-dinstall >> 24 (0.6.25 private git branch currently):
+      - mini-dinstall.conf: Add release_notautomatic = 1
     * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
     * Add "ccache" support (add path to .sbuildrc, add ccache to extra packages).
   .
-  * Misc fixes:
+  * Miscellaneous:
     * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes
       @todo [mini-dinstall] Allow apt-get update during index generation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=324855 (NMU fix unstable).
       , among other things.
@@ -88,7 +89,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     - @todo [deb] rep,bld: Current: manually edit file ${ID}.sources.list.extra on -bld for extra sources list (e.g. bpo);
       make this generically configurable via debconf in -rep.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Tue, 27 May 2008 13:56:00 +0200
+ --
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

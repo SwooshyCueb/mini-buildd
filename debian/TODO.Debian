@@ -17,16 +17,12 @@ Normal:
 =======
 @todo Rotation on rep: log/ + mini-dinstall.log.
 @todo [brain] Add per package html.
-@todo [deb] When reconfiguring mini-buildd-rep, adding/removing dists/arch: Chroots are not updated automatically. Fix:
-      1. Call mbd-setup-chroots for all bld hosts.
-      2. Update mbd-setup-chroots to also delete chroots for non-existing dists.
 
 Wishlist:
 =========
 @todo [auto-lvm]: Debug problems on initial setup.
 @todo [deb+auto-lvm]: Purge.
 @todo [deb] Warn before purging package && repository.
-@todo [deb] For -rep: debconf finals: Note that points to mini-buildd overview URL.
 @todo [deb] apache2 -- automatic user_dir support?
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
 @todo GPG signing of auto-build packages.

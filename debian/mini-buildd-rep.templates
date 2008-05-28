@@ -81,3 +81,16 @@ Description: Build host for architecture ${ARCH}:
  Please give a full hostname here.
  .
  You may safely give build host to-be here, and set it up later.
+
+Template: mini-buildd-rep/overview
+Type: note
+Description: Repository configuration finished.
+ After the package installation is complete, visit the new home of your build network:
+ .
+ ${URL}
+ .
+ Please note:
+  * On initial installs, or if you configured new build hosts:
+    *install* package "mini-buildd-bld" on all resp. build hosts.
+  * On reconfiguration with changes to supported dists or archs:
+    *reconfigure* package "mini-buildd-bld" on all build hosts.

@@ -26,6 +26,7 @@ MBD_SSHSECKEYFILE="${MBD_HOME}/.ssh/id_dsa"
 MBD_SSHPUBKEYFILE="${MBD_HOME}/.ssh/id_dsa.pub"
 
 MBD_GNUPGSECRING="${MBD_HOME}/.gnupg/secring.gpg"
+MBD_GNUPG_KEYNAME="Mini-Buildd Automatic Signing Key"
 
 MBD_MDINSTALLCONFIGFILE="${MBD_HOME}/.mini-dinstall.conf"
 

@@ -36,6 +36,7 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";
 \$mailto = "${mbd_mail}";
 \$maintainer_name='${MBD_AUTOBUILD_MAINTAINER}';
+\$pgp_options = "-us -k\"${MBD_GNUPG_KEYNAME}\"";
 
 # don't remove this, Perl needs it:
 1;

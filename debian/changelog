@@ -84,6 +84,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     * QACheckLintian: Ignore "menu-item-creates-new-root-section": for lintian <= etch, this is
       an ERROR, but imho should be a WARNING only, and not let builds fail.
     * QACheckLintian: Ignore "changelog-should-mention-nmu": Does not make sense for mini-buildd.
+    * Autobuild binary packages *.changes files will now be signed with our GPG key.
+      Fixes: @todo GPG signing of auto-build packages.
   .
   * Items from TODO.Debian fixed by (above) structural changes:
     - @todo *-experimental: Integrity checks.

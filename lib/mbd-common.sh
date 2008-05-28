@@ -157,6 +157,34 @@ mbdParseBH() # arch
 	fi
 }
 
+mbdInList()
+{
+	local token="${1}"
+	local list="${2}"
+	local t
+	for t in ${list}; do
+		if [ "${t}" = "${token}" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+mbdGetBldHosts()
+{
+	local result=""
+	local arch=""
+	for arch in `echo "${mbd_archs}" | tr -d ","`; do
+		local bldhost="mbd_bldhost_${arch}"
+		if ! mbdInList "${!bldhost}" "${result}"; then
+			result="${result} ${!bldhost}"
+		else
+			echo "Duplicate: ${!bldhost}"
+		fi
+	done
+	echo -n "${result}"
+}
+
 # Build ID to bld dir converter
 mbdBId2BDir()
 {

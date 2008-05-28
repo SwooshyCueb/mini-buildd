@@ -11,7 +11,6 @@ Serious:
 @todo [mini-dinstall] Keeps only newest changes file in repository (i.e., instead of all source.changes, i386.changes, amd64.changes).
 @bug  [auto-lvm/deb]: When installing -bld only, setup-lvm is called before update-bld, and hence fails:
       /usr/lib/mini-buildd/mbd-setup-lvm: line 4: /home/mini-buildd/.mini-buildd.conf: No such file or directory
-@bug  [qa lintian]: Test must fail when lintian not available.
 
 Normal:
 =======

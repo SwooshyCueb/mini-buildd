@@ -3,7 +3,7 @@ Blocker:
 
 Missing features:
 ===================
-@todo [brain] Easy staging (tm) (etch-ID-stable ?).
+@todo [brain] *-stable manual staging (tm) (etch-ID-stable ?).
 
 Serious:
 ========
@@ -17,7 +17,7 @@ Normal:
 =======
 @todo Rotation on rep: log/ + mini-dinstall.log.
 @todo [brain] Add per package html.
-@todo [deb] When reconfiguring mini-buildd-rep, adding/removing dist: Chroots are not updated automatically. Fix:
+@todo [deb] When reconfiguring mini-buildd-rep, adding/removing dists/arch: Chroots are not updated automatically. Fix:
       1. Call mbd-setup-chroots for all bld hosts.
       2. Update mbd-setup-chroots to also delete chroots for non-existing dists.
 

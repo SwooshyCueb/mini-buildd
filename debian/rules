@@ -42,7 +42,7 @@ binary-arch: build install
 	dh_installdocs
 	dh_installexamples
 	dh_installdebconf
-#	dh_installlogrotate
+	dh_installlogrotate
 	dh_installinit -p mini-buildd-rep
 	dh_installinit -p mini-buildd-bld --no-start -- start 25 S .
 	dh_installcron

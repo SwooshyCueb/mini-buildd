@@ -1,0 +1,6 @@
+/home/mini-buildd/rep/mini-dinstall/mini-dinstall.log {
+	compress
+	weekly
+	rotate 5
+	missingok
+}

@@ -9,6 +9,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       DIST/mbd.any.list      1x: Sources for the mbd repository (any arch).
       DIST/extra.any.list    1x: Extra sources (any arch).
       DIST/extra.ARCH.list   nx: Extra sources (special archs).
+      No extra files involved; all configured on -rep in ~/.mini-buildd.conf.			
     * Add hook for schroot: /etc/schroot/setup.d/99mini-buildd:
       * Automates creation of sources list on chroot creation.
       * Allows different sources.lists for -source or build chroots (snapshots),

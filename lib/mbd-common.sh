@@ -144,17 +144,17 @@ mbdParseCF()
 }
 
 # Parse build host for arch
-mbdParseBH() # arch
+mbdParseArch() # arch
 {
 	local arch="${1}"
 	local bldhost="mbd_bldhost_${arch}"
 
-	mbdParseBH_arch="${arch}"
-	mbdParseBH_host="${!bldhost}"
+	mbdParseArch_arch="${arch}"
+	mbdParseArch_host="${!bldhost}"
 	if [ "${arch}" = "${mbd_archall}" ]; then
-		mbdParseBH_options="--arch-all"
+		mbdParseArch_options="--arch-all"
 	else
-		mbdParseBH_options=""
+		mbdParseArch_options=""
 	fi
 }
 

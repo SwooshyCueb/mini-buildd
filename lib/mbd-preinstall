@@ -43,26 +43,26 @@ mbdQAPrebuild()
 
 mbdArchBuild()
 {
-	${MBD_LIB}/mbd-qa-check -a "${mbdParseBH_arch}" -r -c "${MBD_TMP_SRC_CF_ONANYBLD}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseBH_arch}"
+	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${MBD_TMP_SRC_CF_ONANYBLD}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
 }
 
 mbdArchQAPostbuild()
 {
-	local cf="${MBD_HOME}/bld/builds/`mbdBId2BDir "${mbdParseBH_arch}" "${MBD_TMP_BUILDID}"`/${mbdParseCF_package}_${mbdParseBH_arch}.changes"
+	local cf="${MBD_HOME}/bld/builds/`mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}"`/${mbdParseCF_package}_${mbdParseArch_arch}.changes"
 	# Only run this if we have a changes file on bld host
-	if ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "test -f ${cf}"; then
-		${MBD_LIB}/mbd-qa-check -a "${mbdParseBH_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseBH_arch}"
+	if ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseArch_host} "test -f ${cf}"; then
+		${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseArch_arch}"
 	else
-		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${mbdParseBH_arch}: No changes file (skipping postbuild checks)."
+		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${mbdParseArch_arch}: No changes file (skipping postbuild checks)."
 	fi
 }
 
 mbdArchClean()
 {
-	local buildDir="bld/builds/`mbdBId2BDir "${mbdParseBH_arch}" "${MBD_TMP_BUILDID}"`"
-	local info="${MBD_TMP_LOGPRE}: ${mbdParseBH_host}: ${buildDir}"
+	local buildDir="bld/builds/`mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}"`"
+	local info="${MBD_TMP_LOGPRE}: ${mbdParseArch_host}: ${buildDir}"
 	${MBD_LOG} -s "${info}: Cleaning..."
-	ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseBH_host} "rm -rf ${buildDir}"
+	ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseArch_host} "rm -rf ${buildDir}"
 	${MBD_LOG} -s "${info}: Cleaned."
 }
 
@@ -74,7 +74,7 @@ mbdArchRun()
 	local retval=0
 
 	for arch in `mbdD2SList "${mbd_archs}"`; do
-		mbdParseBH "${arch}"
+		mbdParseArch "${arch}"
 		${f} &
 		pids="${pids} $!"
 	done

@@ -17,11 +17,11 @@ ${MBD_LOG} -s "`ln -s -f -v ../log public_html/ 2>&1`"
 # Rudimentary HTML index
 mbdBldHtml()
 {
-	mbdParseBH "${1}"
+	mbdParseArch "${1}"
 
-	local urlbase="http://${mbdParseBH_host}:${mbd_httpport}/~mini-buildd"
+	local urlbase="http://${mbdParseArch_host}:${mbd_httpport}/~mini-buildd"
 cat <<EOF
-<a href="${urlbase}/bld">Buildhost ${mbdParseBH_host}</a>:
+<a href="${urlbase}/bld">Buildhost ${mbdParseArch_host}</a>:
 <a href="${urlbase}/pgp_key.asc">PGP Key</a>,
 <a href="${urlbase}/ssh_key.asc">SSH Key</a>
 EOF

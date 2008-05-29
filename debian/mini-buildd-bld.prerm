@@ -9,10 +9,15 @@ if [ "${1}" = "remove" ]; then
 	mbdDeleteMarkedConfig "${MBD_SCHROOTCONFIGFILE}"
 
 	# Try to remove our lvm lvs
-	for d in ${mbd_dists}; do
-		ID="${d}-${mbd_id}";
-		DEV="/dev/`mbdLvmVgName`/${ID}"
-		${MBD_LOG} -s "LV ${ID}: Forcing removal: `lvremove --force "${DEV}" 2>&1`"
+	for dist in `echo "${mbd_dists}" | tr -d ","`; do
+		for arch in `echo "${mbd_archs}" | tr -d ","`; do
+			MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
+			if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
+				ID="mbd-${dist}-${mbd_id}-${arch}"
+				DEV="/dev/`mbdLvmVgName`/${ID}"
+				${MBD_LOG} -s "LV ${ID}: Forcing removal: `lvremove --force "${DEV}" 2>&1`"
+			fi
+		done
 	done
 	${MBD_LOG} -s "Note: Possible LV removal failures above ignored; in case, please remove manually."
 fi

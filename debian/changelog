@@ -57,6 +57,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       - mini-dinstall.conf: Add release_notautomatic = 1
     * .sbuildrc: Add apt_policy=1, so we can satisfy dependencies via all sources we added.
     * Add "ccache" support (add path to .sbuildrc, add ccache to extra packages).
+    * update -bld prerm (lvm) for new setup.
   .
   * Miscellaneous:
     * control: Depend on mini-dinstall >> 0.6.23 (ui-etch-bpo available). Fixes

@@ -3,4 +3,7 @@
 	weekly
 	rotate 5
 	missingok
+	postrotate
+		/etc/init.d/mini-buildd-rep restart
+	endscript
 }

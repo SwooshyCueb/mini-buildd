@@ -97,11 +97,12 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
 
 <li><a href="dput.cf">Configuration for dput</a>: Uploaders add this to their ~/dput.cf.</li>
 
-<li><a href="ssh_key.asc">SSH Key</a></li>
+<li><a href="ssh_key.asc">SSH Key</a>.</li>
 
 <li>Status:
-    <a href="log/">Browse Build Logs</a>,
-    <a href="rep/mini-dinstall/incoming/">Incoming</a>,
+    <a href="config">View raw config</a>,
+    <a href="log/">Browse build logs</a>,
+    <a href="rep/mini-dinstall/incoming/">Browse incoming</a>,
     <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.
 </li>
 </ul>

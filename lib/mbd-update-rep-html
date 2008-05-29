@@ -90,12 +90,12 @@ show_details();
 <h2>General information</h2>
 
 <ul>
-<li><a href="pgp_key.asc">PGP Signing Key</a>: Users may this to their apt-secure keyring like so:
+<li><a href="pgp_key.asc">PGP Signing Key</a>: Users of APT add this to their apt-secure keyring like so:
 <pre style="display:inline;">
 wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-key add -
 </pre></li>
 
-<li><a href="dput.cf">Configuration for dput</a>: Uploaders add this to their ~/dput.cf.</li>
+<li><a href="dput.cf">Configuration for dput</a>: Uploaders add this to their ~/.dput.cf.</li>
 
 <li><a href="ssh_key.asc">SSH Key</a>.</li>
 

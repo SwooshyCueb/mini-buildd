@@ -104,7 +104,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     - @bug  [auto-lvm/deb]: When installing -bld only, setup-lvm is called before update-bld, and hence fails:
       /usr/lib/mini-buildd/mbd-setup-lvm: line 4: /home/mini-buildd/.mini-buildd.conf: No such file or directory
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 29 May 2008 15:51:50 +0200
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 29 May 2008 18:00:39 +0200
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

@@ -18,6 +18,7 @@ Description: Minimal debian buildd (common)
 Package: mini-buildd-rep
 Architecture: all
 Depends: ${misc:Depends}, mini-buildd-common, python, mini-dinstall (>> 0.6.24), cron
+Recommends: logrotate
 Description: Minimal debian buildd (repository)
  Mini-buildd lets a bunch of existing standard and debian specific
  tools work together to build a easy-to-setup autobuilder network.
@@ -28,6 +29,7 @@ Description: Minimal debian buildd (repository)
 Package: mini-buildd-bld
 Architecture: all
 Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap, schroot, dput
+Recommends: logrotate
 Description: Minimal debian buildd (builder)
  Mini-buildd lets a bunch of existing standard and debian specific
  tools work together to build a easy-to-setup autobuilder network.

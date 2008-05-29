@@ -86,6 +86,8 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     * QACheckLintian: Ignore "changelog-should-mention-nmu": Does not make sense for mini-buildd.
     * Autobuild binary packages *.changes files will now be signed with our GPG key.
       Fixes: @todo GPG signing of auto-build packages.
+    * Rotating support for the mini-dinstall log file:
+      - Recommend logrotate (rep+bld).
   .
   * Items from TODO.Debian fixed by (above) structural changes:
     - @todo *-experimental: Integrity checks.

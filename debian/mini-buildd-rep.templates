@@ -43,7 +43,7 @@ Description: Basis distributions to support:
 Template: mini-buildd-rep/mbd_archs
 Type: multiselect
 Choices: ${ARCHS}
-Description: Please select the architectures you want to support:
+Description: Architectures to support:
 
 Template: mini-buildd-rep/mbd_archall
 Type: select
@@ -67,7 +67,7 @@ Description: "${KIND}" sources for architecture "${ARCH}":
  Notes:
  .
   * Values are "apt sources lines", just without leading deb[-src].
-  * Our own (mini-buildd's) sources are added automatically on build time; don't add them here.
+  * mini-buildd's own sources are added automatically on build time; don't add them here.
   * Specialized sources for an architecture (!= "any") are only needed if your
     "any" sources do not support this arch; usually, just leave that blank.
   * To specify more than one source, separate via "backslash n".

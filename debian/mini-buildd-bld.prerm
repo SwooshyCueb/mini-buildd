@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-if [ "${1}" = "remove" ]; then
+if [ "${1}" = "purge" ]; then
 	. /usr/lib/mini-buildd/mbd-common.sh
 	. "${MBD_REPCONFIGFILE}"
 	. "${MBD_BLDCONFIGFILE}"

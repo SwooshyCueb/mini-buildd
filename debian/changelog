@@ -94,6 +94,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
     * Add debconf note for *-common in postrm: Warn before purging user mini-buildd if it
       has a repository.
       Fixes: @todo [deb] Warn before purging package && repository.
+    * -bld: Remove chroots on "purge", not "remove".
   .
   * Items from TODO.Debian fixed by (above) structural changes:
     - @todo *-experimental: Integrity checks.

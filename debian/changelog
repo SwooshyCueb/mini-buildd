@@ -96,6 +96,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       Fixes: @todo [deb] Warn before purging package && repository.
     * setup-chroots: Fix: Remove temporary schroot conffile.
     * setup-chroots: Add -d "delete" option (analogous to setup-lvm).
+    * setup-lvm: Fix for -d "delete": Also remove pv via pvremove.
     * -bld, prerm:
       - Call "setup-chroots -d" on "remove" (removing redundant code).
       - Call "setup-lvm -d" on "remove" (new feature: auto-lvm removal).

@@ -49,6 +49,7 @@ mbdGetLoopdev || true
 if mbd_opt_given f || mbd_opt_given d; then
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing lv removal: `lvremove --force "${MBD_SETUPLVM_VGNAME}" 2>&1`"
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing vg removal: `vgremove "${MBD_SETUPLVM_VGNAME}" 2>&1`"
+	[ -z "${MBD_SETUPLVM_LOOPDEV}" ] || ${MBD_LOG} -s "PV ${MBD_SETUPLVM_LOOPDEV}: Forcing pv removal: `pvremove "${MBD_SETUPLVM_VGNAME}" 2>&1`"
 	[ -z "${MBD_SETUPLVM_LOOPDEV}" ] || ${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing ${MBD_SETUPLVM_LOOPDEV} unattach: `losetup -d "${MBD_SETUPLVM_LOOPDEV}" 2>&1`"
 	${MBD_LOG} -s "VG ${MBD_SETUPLVM_VGNAME}: Forcing image removal: `rm -f -v "${MBD_SETUPLVM_IMGFILE}" "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1`"
 	if mbd_opt_given d; then

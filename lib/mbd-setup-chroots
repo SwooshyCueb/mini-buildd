@@ -21,7 +21,7 @@ ${MBD_CONFIG_MARK}
 EOF
 
 MBD_TMP_MNTPOINT=`mktemp -d /tmp/mini-buildd.XXXXXX`
-trap "rmdir -v ${MBD_TMP_MNTPOINT}; rm -v ${MBD_TMP_SCHROOTCONFIGFILE}" EXIT
+trap "rmdir ${MBD_TMP_MNTPOINT}; rm -f ${MBD_TMP_SCHROOTCONFIGFILE}" EXIT
 
 # Check/prepare chroots for all dists.
 for dist in `mbdD2SList "${mbd_dists}"`; do

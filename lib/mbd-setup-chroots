@@ -6,6 +6,7 @@
 
 mbd_opt_init "Mini-buildd: Setup base chroots (root only)."
 mbd_opt_add "f" "Force fresh setup (i.e., delete old setup first)."
+mbd_opt_add "d" "Delete existing setup."
 mbd_opt_parse "$@"
 
 mbdCheckUser root
@@ -20,7 +21,7 @@ ${MBD_CONFIG_MARK}
 EOF
 
 MBD_TMP_MNTPOINT=`mktemp -d /tmp/mini-buildd.XXXXXX`
-trap "rmdir ${MBD_TMP_MNTPOINT}" EXIT
+trap "rmdir -v ${MBD_TMP_MNTPOINT}; rm -v ${MBD_TMP_SCHROOTCONFIGFILE}" EXIT
 
 # Check/prepare chroots for all dists.
 for dist in `mbdD2SList "${mbd_dists}"`; do
@@ -32,36 +33,37 @@ for dist in `mbdD2SList "${mbd_dists}"`; do
 			MBD_TMP_CHROOT_EXPERIMENTAL="mbd-${dist}-${mbd_id}-experimental-${arch}";
 			MBD_TMP_DEV="/dev/`mbdLvmVgName`/${MBD_TMP_CHROOT}"
 
-			if mbd_opt_given f && lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
+			if (mbd_opt_given f || mbd_opt_given d) && lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
 				${MBD_LOG} -s "LV ${MBD_TMP_CHROOT}: Forcing removal: `lvremove --force "${MBD_TMP_DEV}" 2>&1`"
 			fi
 
-			if lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
-				${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} exists, leaving alone."
-			else
-				${MBD_LOG} -s "Setting up chroot ${MBD_TMP_CHROOT}..."
-
-				MBD_TMP_BASESRC=`mbdGetSrcVar ${dist} base ${arch}`
-				MBD_TMP_MIRROR=`echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1`
-				${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
-
-				if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "`mbdLvmVgName`" &&
-						mkfs.ext2 "${MBD_TMP_DEV}" &&
-						mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
-						debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
-						umount -v "${MBD_TMP_MNTPOINT}") 2>&1 | ${MBD_LOG} -s; then
-					${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} created successfully."
+			if ! mbd_opt_given d; then
+				if lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
+					${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} exists, leaving alone."
 				else
-					${MBD_LOG} -s "*ERROR* creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
-					(
-						umount -v "${MBD_TMP_MNTPOINT}" || true
-						lvremove --force "${MBD_TMP_DEV}" || true
-					) 2>&1 | ${MBD_LOG} -s
+					${MBD_LOG} -s "Setting up chroot ${MBD_TMP_CHROOT}..."
+
+					MBD_TMP_BASESRC=`mbdGetSrcVar ${dist} base ${arch}`
+					MBD_TMP_MIRROR=`echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1`
+					${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
+
+					if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "`mbdLvmVgName`" &&
+							mkfs.ext2 "${MBD_TMP_DEV}" &&
+							mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+							debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
+							umount -v "${MBD_TMP_MNTPOINT}") 2>&1 | ${MBD_LOG} -s; then
+						${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} created successfully."
+					else
+						${MBD_LOG} -s "*ERROR* creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
+						(
+							umount -v "${MBD_TMP_MNTPOINT}" || true
+							lvremove --force "${MBD_TMP_DEV}" || true
+						) 2>&1 | ${MBD_LOG} -s
+					fi
 				fi
-			fi
-			# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
-			for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do
-				cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
+				# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
+				for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do
+					cat <<EOF >>"${MBD_TMP_SCHROOTCONFIGFILE}"
 [${chroot_name}]
 type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_CHROOT} snapshot chroot
@@ -77,15 +79,17 @@ run-setup-scripts=true
 run-exec-scripts=true
 
 EOF
-			done
+				done
+			fi
 		fi
 	done
 done
 echo "${MBD_CONFIG_MARK}" >>"${MBD_TMP_SCHROOTCONFIGFILE}"
 
-cat "${MBD_TMP_SCHROOTCONFIGFILE}" >>"${MBD_SCHROOTCONFIGFILE}"
-rm -f "${MBD_TMP_SCHROOTCONFIGFILE}"
-${MBD_LOG} -s "${MBD_SCHROOTCONFIGFILE} updated."
+if ! mbd_opt_given d; then
+	cat "${MBD_TMP_SCHROOTCONFIGFILE}" >>"${MBD_SCHROOTCONFIGFILE}"
+	${MBD_LOG} -s "${MBD_SCHROOTCONFIGFILE} updated."
+	# Trigger a -bld update
+	su - mini-buildd -c "${MBD_LIB}/mbd-update-bld"
+fi
 
-# Trigger a -bld update
-su - mini-buildd -c "${MBD_LIB}/mbd-update-bld"

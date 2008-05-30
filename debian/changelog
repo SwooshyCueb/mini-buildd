@@ -96,6 +96,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       Fixes: @todo [deb] Warn before purging package && repository.
     * -bld: Remove chroots on "purge", not "remove".
     * setup-chroots: Fix: Remove temporary schroot conffile.
+    * setup-chroots: Add -d "delete" option (analogous to setup-lvm).
     * -bld, prerm: Support to remove the auto-lvm volume group on purge.
   .
   * Items from TODO.Debian fixed by (above) structural changes:

@@ -84,7 +84,7 @@ Description: Build host for architecture ${ARCH}:
 
 Template: mini-buildd-rep/overview
 Type: note
-Description: Repository configuration finished.
+Description: Repository configuration finished
  After the package installation is complete, visit the new home of your build network:
  .
  ${URL}

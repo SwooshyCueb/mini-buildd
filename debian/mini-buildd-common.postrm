@@ -1,7 +1,5 @@
 #!/bin/sh -e
 
-#DEBHELPER#
-
 case $1 in
 	purge)
 		if [ -e "/home/mini-buildd/rep" ]; then
@@ -15,5 +13,7 @@ case $1 in
 		deluser --quiet --remove-home mini-buildd >/dev/null || true
 		;;
 esac
+
+#DEBHELPER#
 
 exit 0

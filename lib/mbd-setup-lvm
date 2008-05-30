@@ -13,7 +13,7 @@ mbd_opt_parse "$@"
 mbdCheckUser root
 
 if [ "${mbd_lvm_vg}" != "auto" ]; then
-	${MBD_LOG} -s "INFO: Using given lvm volume group \"`mbdLvmVgName`\"."
+	${MBD_LOG} -s "INFO: Skipping: Using custom lvm volume group \"`mbdLvmVgName`\"."
 	exit 0
 fi
 

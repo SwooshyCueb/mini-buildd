@@ -1,31 +1,10 @@
 #!/bin/sh -e
 
-if [ "${1}" = "purge" ]; then
-	. /usr/lib/mini-buildd/mbd-common.sh
-	. "${MBD_REPCONFIGFILE}"
-	. "${MBD_BLDCONFIGFILE}"
-
-	# Remove auto-generated config in schroot.conf
-	mbdDeleteMarkedConfig "${MBD_SCHROOTCONFIGFILE}"
-
-	# Try to remove our lvm lvs
-	for dist in `echo "${mbd_dists}" | tr -d ","`; do
-		for arch in `echo "${mbd_archs}" | tr -d ","`; do
-			MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
-			if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
-				ID="mbd-${dist}-${mbd_id}-${arch}"
-				DEV="/dev/`mbdLvmVgName`/${ID}"
-				${MBD_LOG} -s "LV ${ID}: Forcing removal: `lvremove --force "${DEV}" 2>&1`"
-			fi
-		done
-	done
-
-	if [ "${mbd_lvm_vg}" = "auto" ]; then
-		# If we use auto lvm: Try to remove vg mini-buildd and loopback.
-		${MBD_LOG} -s "Auto-VG mini-buildd: Trying removal: `vgremove mini-buildd 2>&1`"
-	fi
-
-	${MBD_LOG} -s "NOTE: Possible LV/VG removal failures above ignored (you may need manual postaction)."
+if [ "${1}" = "remove" ]; then
+	# Remove chroots
+	/usr/lib/mini-buildd/mbd-setup-chroots -d
+	# Remove auto-lvm setup (if we have it)
+	/usr/lib/mini-buildd/mbd-setup-lvm -d
 fi
 
 #DEBHELPER#

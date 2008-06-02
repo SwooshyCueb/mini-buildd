@@ -29,7 +29,7 @@ Description: LVM2 volume group to use:
  .
  In that volume group, mini-buildd will automatically maintain chroots named
  mbd-BASEDIST-ID-ARCH (ID is the identity you configured in mini-buildd-rep).
- These names should not collide with exiting logical volumes in that group,
+ These names should not collide with existing logical volumes in that group,
  else any reasonably sized volume group should work. Either
  .
   * Set this to "auto": An image file will be used automagically

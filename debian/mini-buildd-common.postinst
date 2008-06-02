@@ -1,5 +1,6 @@
 #!/bin/sh -e
 
+# Needed: Template does not seem to get installed w/o this.
 . /usr/share/debconf/confmodule
 
 if ! getent passwd mini-buildd >/dev/null; then

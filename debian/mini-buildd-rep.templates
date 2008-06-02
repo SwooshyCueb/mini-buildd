@@ -28,11 +28,13 @@ Description: Mail address (uploads/builds/failures):
 Template: mini-buildd-rep/mbd_id
 Type: string
 Description: Mini-buildd's identity:
- This is the "identity" of the mini-buildd network your (are going to) set
- up.
+ Identity of the mini-buildd network.
  .
- Most importantly, the distributions created will be called "BASEDIST-ID"
- (for example "sarge-mbd, etch-mbd" when ID="mbd").
+ The identity is used on several places; most importantly, the distributions
+ created will be called "BASEDIST-ID". For version strings, it plays the
+ same role as "bpo" as used by backports.org.
+ .
+ Should be a short mnemonic made with letters only.
 
 Template: mini-buildd-rep/mbd_dists
 Type: multiselect

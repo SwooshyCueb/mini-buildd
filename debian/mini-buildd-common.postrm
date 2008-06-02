@@ -9,8 +9,8 @@ case $1 in
 		fi
 
 		# Workaround: deluser does not seem to remove socket files
-		find /home/mini-buildd/ -type s -exec rm -f {} \; || true
-		deluser --quiet --remove-home mini-buildd >/dev/null || true
+		find /home/mini-buildd/ -type s -exec rm -f {} \; >/dev/null 2>&1 || true
+		deluser --quiet --remove-home mini-buildd >/dev/null 2>&1 || true
 		;;
 esac
 

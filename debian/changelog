@@ -1,4 +1,4 @@
-mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
+mini-buildd (0.7.0~ui40+1) etch-ui; urgency=low
 
   * **Happy chroot release**
   .
@@ -117,7 +117,7 @@ mini-buildd (0.7.0~ui40+0experimental1) etch-ui-experimental; urgency=low
       /usr/lib/mini-buildd/mbd-setup-lvm: line 4: /home/mini-buildd/.mini-buildd.conf: No such file or directory
     - @todo [auto-lvm]: Debug problems on initial setup.
 	
- -- Stephan Suerken <stephan.suerken@1und1.de>  Fri, 30 May 2008 19:11:16 +0200
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Tue,  3 Jun 2008 10:49:54 +0200
 
 mini-buildd (0.6.5~ui40+1) etch-ui; urgency=low
 

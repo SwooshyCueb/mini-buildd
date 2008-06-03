@@ -43,7 +43,8 @@ mbdQAPrebuild()
 
 mbdArchBuild()
 {
-	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${MBD_TMP_SRC_CF_ONANYBLD}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
+	local cf="${MBD_HOME}/bld/builds/`mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}"`/${mbdParseCF_package}_source.changes"
+	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
 }
 
 mbdArchQAPostbuild()

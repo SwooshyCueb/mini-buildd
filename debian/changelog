@@ -4,6 +4,7 @@ mini-buildd (0.7.0~ui40+2) etch-ui; urgency=low
   * mbd-update-bld: Use "-o APT::Install-Recommends=false" for apt-get when
     updating the basis chroots (since apt 0.7.7, recommended packages are
     installed per default).
+  * Cosmetics: Fix var order in mini-buildd.conf.
 
  --
 

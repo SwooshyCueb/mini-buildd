@@ -62,10 +62,12 @@ for dist in `mbdD2SList "${mbd_dists}"`; do
 			if cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
 set -e
 export DEBIAN_FRONTEND="noninteractive"
-apt-get update
-apt-get --yes --ignore-missing dist-upgrade
-[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || apt-get --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
-apt-get clean
+APTGET="apt-get -o APT::Install-Recommends=false"
+
+${APTGET} update
+${APTGET} --yes --ignore-missing dist-upgrade
+[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || ${APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
+${APTGET} clean
 
 # Workaround for Debian Bug #327477 (bash building)
 [ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd

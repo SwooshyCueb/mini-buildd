@@ -4,17 +4,17 @@ Blocker:
 Missing features:
 ===================
 @todo [brain] *-stable manual staging (tm) (etch-ID-stable ?).
+@todo [brain] Package maintenance (per web?).
+@todo [brain] Package groups (do we need them still?).
 
 Normal:
 =======
-@todo [brain] Add per package html.
 @todo [mini-dinstall] Need speed increase for index file creation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
 @todo [mini-dinstall] Keeps only newest changes file in repository (i.e., instead of all source.changes, i386.changes, amd64.changes).
 
 Wishlist:
 =========
-@todo [deb] apache2 -- automatic user_dir support?
-@todo [mini-dinstall] Configuration of package groups.
+@todo [deb] apache2/httpd: Assure user_dir support?
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
 
 Future:

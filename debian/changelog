@@ -8,8 +8,9 @@ mini-buildd (0.7.1~ui40+1) etch-ui; urgency=low
     installed per default).
   * Cosmetics: Fix var order in mini-buildd.conf.
   * QALintian: Fix for ignore pattern: Omit trailing space.
+  * .mini-dinstall.conf: Regression: Re-add arch "all".
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  4 Jun 2008 11:48:25 +0200
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  4 Jun 2008 12:54:12 +0200
 
 mini-buildd (0.7.0~ui40+1) etch-ui; urgency=low
 

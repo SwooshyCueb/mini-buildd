@@ -29,7 +29,7 @@ pre_install_script = ${MBD_LIB}/mbd-preinstall
 #post_install_script = ${MBD_LIB}/postinstall
 release_signscript = ${MBD_LIB}/mbd-sign-release
 
-architectures = ${mbd_archs}
+architectures = all, ${mbd_archs}
 archive_style = flat
 keep_old = 1
 generate_release = 1

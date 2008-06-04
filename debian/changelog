@@ -1,3 +1,9 @@
+mini-buildd (0.7.2~ui40+1) etch-ui; urgency=low
+
+  * Fix fix for mbd-update-bld ;(.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  4 Jun 2008 13:22:14 +0200
+
 mini-buildd (0.7.1~ui40+1) etch-ui; urgency=low
 
   * Minor bugfix release.

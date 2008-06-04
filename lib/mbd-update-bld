@@ -59,15 +59,15 @@ for dist in `mbdD2SList "${mbd_dists}"`; do
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
 			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT}..."
+			MBD_APTGET="apt-get -o APT::Install-Recommends=false"
 			if cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
 set -e
 export DEBIAN_FRONTEND="noninteractive"
-APTGET="apt-get -o APT::Install-Recommends=false"
 
-${APTGET} update
-${APTGET} --yes --ignore-missing dist-upgrade
-[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || ${APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
-${APTGET} clean
+${MBD_APTGET} update
+${MBD_APTGET} --yes --ignore-missing dist-upgrade
+[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || ${MBD_APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
+${MBD_APTGET} clean
 
 # Workaround for Debian Bug #327477 (bash building)
 [ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd

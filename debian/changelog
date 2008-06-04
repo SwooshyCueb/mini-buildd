@@ -7,7 +7,7 @@ mini-buildd (0.7.0~ui40+2) etch-ui; urgency=low
   * Cosmetics: Fix var order in mini-buildd.conf.
   * QALintian: Fix for ignore pattern: Omit trailing space.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed,  4 Jun 2008 11:45:49 +0200
 
 mini-buildd (0.7.0~ui40+1) etch-ui; urgency=low
 

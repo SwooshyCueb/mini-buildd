@@ -162,7 +162,8 @@ mbdQACheckLintian()
 	#  - "no-description-in-changes-file": since dpkg 1.4.16: Changes files in source only uploads have no description field any more.
 	#  - "menu-item-creates-new-root-section": for lintian <= etch, this is an ERROR, but imho should be a WARNING only, and not let builds fail.
 	#  - "changelog-should-mention-nmu": Does not make sense for mini-buildd.
-	grep --invert-match "\( bad-distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\)" "${lf}" >"${lf}.mbd" || true
+	#  - "source-nmu-has-incorrect-version-number": Does not make sense for mini-buildd.
+	grep --invert-match "\( bad-distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\| source-nmu-has-incorrect-version-number\)" "${lf}" >"${lf}.mbd" || true
 
 	if grep '^E: .*$' "${lf}.mbd"; then
 		retval=2

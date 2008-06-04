@@ -1,3 +1,9 @@
+mini-buildd (0.7.3~ui40+1) etch-ui; urgency=low
+
+  * QALintian: Yet one more to ignore: source-nmu-has-incorrect-version-number.
+
+ --
+
 mini-buildd (0.7.2~ui40+1) etch-ui; urgency=low
 
   * Fix fix for mbd-update-bld ;(.

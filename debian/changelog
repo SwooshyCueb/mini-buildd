@@ -2,6 +2,8 @@ mini-buildd (0.7.3~ui40+1) etch-ui; urgency=low
 
   * QALintian: Yet one more to ignore: source-nmu-has-incorrect-version-number.
   * -bld: Some typos fixed in debconf template.
+  * setup-chroots: Add linux personality support for schroots; i386=linux32 only
+    for now. [Needed for multiarch builds, i.e. build i386 under amd64].
 
  --
 

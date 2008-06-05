@@ -1,9 +1,15 @@
-mini-buildd (0.7.3~ui40+1) etch-ui; urgency=low
+mini-buildd (0.7.3~ui40+1~test.1) etch-ui; urgency=low
 
   * QALintian: Yet one more to ignore: source-nmu-has-incorrect-version-number.
   * -bld: Some typos fixed in debconf template.
   * setup-chroots: Add linux personality support for schroots; i386=linux32 only
     for now. [Needed for multiarch builds, i.e. build i386 under amd64].
+  * Harden /etc/init.d/mini-buildd-rep:
+    - Depend on procps.
+    - Don't fail if started when already started.
+    - start/stop: Check for pids instead of just sleeping 5 secs.
+    - stop: Hard kill after 20 seconds if normal shutdown fails.
+    - ... and reniced output.
 
  --
 

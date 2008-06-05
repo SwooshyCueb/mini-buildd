@@ -1,5 +1,7 @@
-mini-buildd (0.7.3~ui40+1~test.1) etch-ui; urgency=low
+mini-buildd (0.7.3~ui40+1) etch-ui; urgency=low
 
+  * Minor cleanup release.
+  .
   * QALintian: Yet one more to ignore: source-nmu-has-incorrect-version-number.
   * -bld: Some typos fixed in debconf template.
   * setup-chroots: Add linux personality support for schroots; i386=linux32 only
@@ -11,7 +13,7 @@ mini-buildd (0.7.3~ui40+1~test.1) etch-ui; urgency=low
     - stop: Hard kill after 20 seconds if normal shutdown fails.
     - ... and reniced output.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu,  5 Jun 2008 16:57:54 +0200
 
 mini-buildd (0.7.2~ui40+1) etch-ui; urgency=low
 

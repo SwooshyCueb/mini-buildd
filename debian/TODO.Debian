@@ -14,6 +14,7 @@ Wishlist:
 =========
 @todo [deb] apache2/httpd: Assure user_dir support?
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
+@todo [brain] Package rebuild feature (needs: package maintenance first).
 
 Future:
 =======

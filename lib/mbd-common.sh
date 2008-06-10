@@ -266,6 +266,9 @@ mbdGetMandatoryVersionPart()
 	local version=`mbdBasedist2Version ${dist}`
 	if [ -n "${version}" ]; then
 		echo -n "~${mbd_id}${version}+"
+		if echo -n "${1}" | grep -q ".*-experimental\$"; then
+			echo -n "0"
+		fi
 	fi
 }
 

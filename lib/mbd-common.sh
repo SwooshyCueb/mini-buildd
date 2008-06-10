@@ -268,6 +268,8 @@ mbdGetMandatoryVersionPart()
 		echo -n "~${mbd_id}${version}+"
 		if echo -n "${1}" | grep -q ".*-experimental\$"; then
 			echo -n "0"
+		else
+			echo -n "[1-9]"
 		fi
 	fi
 }

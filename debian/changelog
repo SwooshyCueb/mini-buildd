@@ -7,6 +7,8 @@ mini-buildd (0.7.4~ui40+1) etch-ui; urgency=low
     http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
   * .mini-dinstall.conf: chown_changes_files = 0.
     Fixes: @todo [mini-dinstall] Changes files not readable for public.
+  * .mini-dinstall.conf: keep_old = 0 for *-experimental releases (i.e., only
+    keep newest version).
 
  --
 

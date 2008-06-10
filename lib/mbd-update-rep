@@ -31,7 +31,6 @@ release_signscript = ${MBD_LIB}/mbd-sign-release
 
 architectures = all, ${mbd_archs}
 archive_style = flat
-keep_old = 1
 generate_release = 1
 chown_changes_files = 0
 release_notautomatic = 1
@@ -42,10 +41,12 @@ release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
    echo "[${d}-${mbd_id}]";
    echo "release_description = ${d} packages for ${mbd_id}.";
    echo "release_label = ${d}-${mbd_id}";
+   echo "keep_old = 1";
    echo;
    echo "[${d}-${mbd_id}-experimental]";
    echo "release_description = EXPERIMENTAL ${d} packages for ${mbd_id}.";
    echo "release_label = ${d}-${mbd_id}-experimental";
+   echo "keep_old = 0";
    echo;
  done`
 EOF

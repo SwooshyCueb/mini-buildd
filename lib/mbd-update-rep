@@ -33,6 +33,7 @@ architectures = all, ${mbd_archs}
 archive_style = flat
 keep_old = 1
 generate_release = 1
+chown_changes_files = 0
 release_notautomatic = 1
 apt_ftparchive_usecache = 1
 release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}

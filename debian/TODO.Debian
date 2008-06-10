@@ -9,7 +9,6 @@ Missing features:
 
 Normal:
 =======
-@todo [mini-dinstall] Need speed increase for index file creation: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
 @todo [mini-dinstall] Changes file not readable for public.
 
 Wishlist:

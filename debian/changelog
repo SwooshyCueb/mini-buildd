@@ -3,6 +3,8 @@ mini-buildd (0.7.4~ui40+1) etch-ui; urgency=low
   * Add support for db cache for apt-ftparchive (speeds up index updates);
     - Needs mini-dinstall_0.6.25~ui40+0abgit6 (nop if not installed).
     - mini-dinstall.conf: Add new option.
+    Fixes: @todo [mini-dinstall] Need speed increase for index file creation:
+    http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=225483
 
  --
 

@@ -124,7 +124,7 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
      echo "<h3><a href=\"rep/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h3>"
 
      echo "<small><em>Mandatory version part: </em></small><pre style='display:inline'>"
-     mbdGetMandatoryVersionPart "${d}"
+     mbdGetMandatoryVersionPart "${DIST}"
      echo "</pre>"
      echo "<small><em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apt source line: </em></small><pre style='display:inline'>"
      AUTH_VERBOSITY='quiet' mbdGenSources ${d} "${KIND}" "" "noheader"

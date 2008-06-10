@@ -272,17 +272,6 @@ mbdGetMandatoryVersionPart()
 	fi
 }
 
-mbdCheckVersion()
-{
-	local dist="${1}"
-	local version="${2}"
-	local mandatory=`mbdGetMandatoryVersionPart "${dist}"`
-	if ! echo "${version}" | grep --quiet "${mandatory}"; then
-		${MBD_LOG} -s "Mandatory version part \"${mandatory}\" missing from \"${version}\"."
-		return 1
-	fi
-}
-
 mbdLvmVgName()
 {
 	if [ "${mbd_lvm_vg}" = "auto" ]; then

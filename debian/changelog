@@ -1,4 +1,4 @@
-mini-buildd (0.7.4~ui40+0experimental1) etch-ui; urgency=low
+mini-buildd (0.7.4~ui40+1) etch-ui; urgency=low
 
   * Add support for db cache for apt-ftparchive (speeds up index updates);
     - Needs mini-dinstall_0.6.25~ui40+0abgit6 (nop if not installed).
@@ -17,7 +17,7 @@ mini-buildd (0.7.4~ui40+0experimental1) etch-ui; urgency=low
       so that a "normal" upload "1.2-1~mbd40+1" will always have a higher version. ]
   * Cleanup, purging some obsolete functions: mbdCheckVersion.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 11 Jun 2008 11:01:14 +0200
 
 mini-buildd (0.7.3~ui40+1) etch-ui; urgency=low
 

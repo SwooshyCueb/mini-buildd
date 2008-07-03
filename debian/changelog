@@ -8,7 +8,7 @@ mini-buildd (0.7.5~ui40+1) etch-ui; urgency=low
     - mbd-cruft: Add all ".cache.db" under rep/ for removal
       (other location/name used the debian package's patch).
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu,  3 Jul 2008 17:14:41 +0200
 
 mini-buildd (0.7.4~ui40+1) etch-ui; urgency=low
 

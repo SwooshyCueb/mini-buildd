@@ -1,3 +1,15 @@
+mini-buildd (0.7.5~ui40+1) etch-ui; urgency=low
+
+  * Adapt package to changes now applied to mini-dinstall 0.6.25/debian:
+    - mbd-update-rep: Remove "apt_ftparchive_usecache = 1" (in the debian
+      package's patch, this can not be configured).
+    - mbd-update-rep: Change release_notautomatic to experimental_release
+      (name chaged in the debian package's patch).
+    - mbd-cruft: Add all ".cache.db" under rep/ for removal
+      (other location/name used the debian package's patch).
+
+ --
+
 mini-buildd (0.7.4~ui40+1) etch-ui; urgency=low
 
   * Add support for db cache for apt-ftparchive (speeds up index updates);

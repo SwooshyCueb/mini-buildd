@@ -1,3 +1,9 @@
+mini-buildd (0.7.6~ui40+1) UNRELEASED; urgency=low
+
+  * cron.daily: Fix: If package is removed, but not purged, exit silently.
+
+ --
+
 mini-buildd (0.7.5~ui40+1) etch-ui; urgency=low
 
   * Adapt package to changes now applied to mini-dinstall 0.6.25/debian:

@@ -4,6 +4,6 @@
 	rotate 5
 	missingok
 	postrotate
-		/etc/init.d/mini-buildd-rep restart
+		/etc/init.d/mini-buildd-rep restart >/dev/null
 	endscript
 }

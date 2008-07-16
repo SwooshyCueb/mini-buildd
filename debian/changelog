@@ -1,8 +1,14 @@
-mini-buildd (0.7.6~ui40+1) UNRELEASED; urgency=low
+mini-buildd (0.7.6~ui40+1) etch-ui; urgency=low
 
   * cron.daily: Fix: If package is removed, but not purged, exit silently.
+  * preinstall: On FTBFS, don't auto-retry, but move DSP to directory FTBFS
+    in logs (like for REJECT). Hint to re-upload to retry.
+    Note: Former behaviour makes sense for missing dependencies that will
+    eventually be fullfilled after another build; however, real life shows
+    that the reason is just a plain error in the package for nearly all cases,
+    so it does not really do anything useful but spam us.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 16 Jul 2008 13:32:42 +0200
 
 mini-buildd (0.7.5~ui40+1) etch-ui; urgency=low
 

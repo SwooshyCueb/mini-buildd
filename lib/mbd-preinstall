@@ -89,6 +89,17 @@ mbdArchRun()
 	return ${retval}
 }
 
+mbdMoveFiles()
+{
+	local dir="${1}"
+	echo "I: Uploaded files moved to ${dir}."
+	mkdir "${dir}"
+
+	local f
+	for f in ${mbdParseCF_files}; do
+		mv "`dirname "${MBD_TMP_CF}"`/${f}" "${dir}" || true
+	done
+}
 
 MBD_TMP_LOGPRE="${mbdParseCF_package}(${mbdParseCF_dist})"
 # We propagate source-only uploads to builders, binary uploads are skipped
@@ -130,16 +141,12 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 				cat "${MBD_TMP_CF}"
 				;;
 			FTBFS)
-				echo "W: Fails to build from source (retrying later). Please check failing build qa check."
+				echo "E: Fails to build from source; please re-upload if you need a retry."
+				mbdMoveFiles "${MBD_TMP_LOGDIR}/FTBFS"
 				;;
 			REJECT)
 				echo "E: Mandatory QA-Check failed. Please check failing qa check."
-				MBD_TMP_REJECTDIR="${MBD_TMP_LOGDIR}/REJECT"
-				echo "I: Uploaded files moved to ${MBD_TMP_REJECTDIR}."
-				mkdir "${MBD_TMP_REJECTDIR}"
-				for f in ${mbdParseCF_files}; do
-					mv "`dirname "${MBD_TMP_CF}"`/${f}" "${MBD_TMP_REJECTDIR}" || true
-				done
+				mbdMoveFiles "${MBD_TMP_LOGDIR}/REJECT"
 				;;
 			*)
 				echo "E: Internal error detected. Please check preinstall log."

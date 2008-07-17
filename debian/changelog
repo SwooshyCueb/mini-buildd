@@ -1,9 +1,9 @@
-mini-buildd (0.7.7~ui40+1) UNRELEASED; urgency=low
+mini-buildd (0.7.7~ui40+1) etch-ui; urgency=low
 
   * logrotate: Redirect stdout to /dev/null for restart (avoids unnecesary
     mails from cron).
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 17 Jul 2008 16:21:41 +0200
 
 mini-buildd (0.7.6~ui40+1) etch-ui; urgency=low
 

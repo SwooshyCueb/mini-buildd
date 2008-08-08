@@ -6,8 +6,9 @@ mini-buildd (0.7.9~ui40+1) etch-ui; urgency=low
   * Fix copyright file (lintian warnings).
   * Add LSB sections for both -rep and -bld init scripts.
   * Explicitly use "bash" for *.config scripts, as we use bash addons. 
+  * rules: Fix: Swap arch and indep targets.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>  Fri, 08 Aug 2008 16:15:35 +0200
+ --
 
 mini-buildd (0.7.8~ui40+1) etch-ui; urgency=low
 

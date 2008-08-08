@@ -1,5 +1,14 @@
 #!/bin/sh -e
 
+### BEGIN INIT INFO
+# Provides:          mini-buildd-bld
+# Required-Start:    $remote_fs
+# Required-Stop:
+# Default-Start:     S
+# Default-Stop:
+# Short-Description: Setup loop devices for mini-buildd/lvm if needed
+### END INIT INFO
+
 case "$1" in
 	start)
 		/usr/lib/mini-buildd/mbd-setup-lvm -a

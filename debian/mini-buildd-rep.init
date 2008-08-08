@@ -1,5 +1,14 @@
 #!/bin/sh -e
 
+### BEGIN INIT INFO
+# Provides:          mini-buildd-rep
+# Required-Start:    $remote_fs $syslog lvm2 schroot
+# Required-Stop:     $remote_fs $syslog lvm2 schroot
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start mini-buildd daemon
+### END INIT INFO
+
 . /etc/default/mini-buildd-rep
 if [ "${MBD_ENABLE}" = "0" -a "${1}" != "stop" ]; then
 	echo "Starting mini-buildd disabled, skipping (see /etc/default/mini-buildd-rep)."

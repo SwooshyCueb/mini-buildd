@@ -1,7 +1,7 @@
 mini-buildd (0.7.9~ui40+1) etch-ui; urgency=low
 
-  * Add po-debconf support (but don't set any string translatable yet).
-    Required for lenny and up.
+  * Add po-debconf support; Set strings in -common translatable
+    (nothing else yet). Required for lenny and up.
   * Cosmetic fixes in control (lintian warnings).
   * Fix copyright file (lintian warnings).
   * Add LSB sections for both -rep and -bld init scripts.

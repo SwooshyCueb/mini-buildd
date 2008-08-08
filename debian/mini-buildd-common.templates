@@ -1,6 +1,6 @@
 Template: mini-buildd-common/purging_repository
 Type: note
-Description: About to purge your repository
+_Description: About to purge your repository
  You have selected to purge mini-buildd on a repository host.
  .
  Puging means to remove the mini-buildd user along with all its

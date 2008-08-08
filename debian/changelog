@@ -2,6 +2,7 @@ mini-buildd (0.7.8~ui40+2) etch-ui; urgency=low
 
   * Add po-debconf support (but don't set any string translatable yet).
     Required for lenny and up.
+  * Cosmetic fixes in control (lintian warnings).
 
  --
 

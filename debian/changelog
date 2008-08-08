@@ -1,3 +1,10 @@
+mini-buildd (0.7.8~ui40+2) etch-ui; urgency=low
+
+  * Add po-debconf support (but don't set any string translatable yet).
+    Required for lenny and up.
+
+ --
+
 mini-buildd (0.7.8~ui40+1) etch-ui; urgency=low
 
   * Add numeric version support for lenny (5.0). 

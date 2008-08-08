@@ -1,5 +1,7 @@
 mini-buildd (0.7.9~ui40+1) etch-ui; urgency=low
 
+  Make lenny lintian happy release.
+
   * Add po-debconf support; Set strings in -common translatable
     (nothing else yet). Required for lenny and up.
   * Cosmetic fixes in control (lintian warnings).
@@ -8,7 +10,7 @@ mini-buildd (0.7.9~ui40+1) etch-ui; urgency=low
   * Explicitly use "bash" for *.config scripts, as we use bash addons. 
   * rules: Fix: Swap arch and indep targets.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Fri, 08 Aug 2008 16:25:54 +0200
 
 mini-buildd (0.7.8~ui40+1) etch-ui; urgency=low
 

@@ -254,6 +254,9 @@ mbdBasedist2Version()
 		etch)
 			echo -n "40"
 			;;
+		lenny)
+			echo -n "50"
+			;;
 		*)
 			return 1
 			;;

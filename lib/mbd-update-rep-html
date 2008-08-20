@@ -105,6 +105,11 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
     <a href="rep/mini-dinstall/incoming/">Browse incoming</a>,
     <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.
 </li>
+
+<li>Documentation:
+    <a href="http://${mbd_rephost}:${mbd_httpport}/cgi-bin/dwww/usr/share/doc/mini-buildd-common/">Mini-Buildd</a>
+    `[ -z "${mbd_extdocurl}" ] || echo ", <a href=\"${mbd_extdocurl}\">External for \"${mbd_id}\"</a>"`.
+</li>
 </ul>
 
 </div>

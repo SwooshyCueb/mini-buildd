@@ -36,6 +36,14 @@ Description: Mini-buildd's identity:
  .
  Should be a short mnemonic made with letters only.
 
+Template: mini-buildd-rep/mbd_extdocurl
+Type: string
+Description: External documentation URL:
+ URL to external documentation.
+ .
+ This is just for convenience to provide a link to that URL on the
+ overview page; just leave empty if you don't have any.
+
 Template: mini-buildd-rep/mbd_dists
 Type: multiselect
 Choices: ${DISTS}

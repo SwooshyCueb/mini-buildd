@@ -1,9 +1,10 @@
 Bugs/Caveats:
 =============
-@todo Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time).
+@todo Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) will overwrite ecah other
 
 Features:
 =========
+@todo: Support for DEB_BUILD_OPTIONS per builder.
 @todo: HTML overview: Documentation: README.Debian, TODO.Debian, "external documentation" URL.
 @todo [brain] *-stable manual staging (tm) (etch-ID-stable ?).
 @todo [brain] Package maintenance (per web?).

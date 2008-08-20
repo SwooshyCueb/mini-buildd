@@ -1,47 +1,39 @@
-From milestone 0.6 summary (due to the lack of anything better):
+mini-buildd is a smaller and different automatic Debian build &
+repository system than the proper Debian buildd, dinstall and friends
+(analogous to what mini-dinstall is for "dinstall").
 
-    o Fully automatic "lvm via loop device" configuration option
-      This greatly eases the setup and maintentence of test systems or
-      systems w/o "proper" pre-setup lvm.
-    o Thorough script cleanup; user visible changes:
-      - All scripts prefixed w/ "mbd-" to avoid namespace pollution when
-        adding the library to PATH.
-      - All scripts using a getopt library, proper command line arguments
-        and a usage help (via -h).
-    o Complete new scheme for the autobuild processing:
-      Everything* that is done during the autobuild process is a QA-Check
-      on a debian changes file, resulting each in 0=FINE, 1=WARN or 2=FAIL
-      status code and a log file (* i.e., a build run on arch X is also just
-      a QA-Check).
-      If any of the QA checks in the sequence results in "FAIL", the autobuild
-      run is stopped. If no check results in FAIL, the status is 0=BUILT; if
-      the failing check was a build check, the autobuild run status is 1=FTBFS,
-      else 2=REJECT.
-      The overall status mail's subject now always reflect this (e.g.
-      "FTBS: mypkg_1.2.3-1"); in the body, information adapted to the
-      respective status is delivered. No log output is pasted here
-      directly any more but, if needed, links to repective QA check logs
-      on the repository host.
-      Binary uploads are just installed quietly unless they don't originate
-      from mini-buildd autobuilder hosts; then, the special status "DISCARD"
-      is used.
-      Build run statuses overview:
-       - BUILT  : OK=Source package build, binary packages uploaded.
-       - FTBFS  : Problems building, but retrying later.
-       - REJECT : Unfixable errors, upload moved to REJECT/.
-       - DISCARD: Binary upload not allowed, upload removed.
-       - INTERNAL: Indicates a bug in mini-buildd or its setup.
-    o New QA checks:
-      - New: Check that the to-build source package is not already in repository.
-      - Orig: Warn on reupload, reject on different files.
-    o New file and directory layout:
-      On build hosts, we only have directories "chroots/" (for auto lvm
-      setup when used) and "builds/" under bld/.
-      "builds/" is used as location for temporary build directories;
-      nothing is stored permanently on bld hosts any more (even the orig tarball
-      is copied on demand from the repository).
-      All actual data (log and state of check runs) of an autobuild run is hold on
-      the repository host only in the new directory "log"; under that dir, the
-      data is hold in a structure PACKAGE/VERSION/UTC-STAMP/.
+In essence, it glues together standard and approved Debian/Unix tools
+in dedicated debian packages. It aims for easyness of configuration
+and maintenance.
 
- -- Stephan A Suerken <absurd@lucy>, Wed,  5 Dec 2007 10:00:37 +0100
+Examples of intended usages:
+
+   * build, test and repo system for a debian developer.
+   * build and repo system for private debian package repositories.
+   * build and repo system add-ons packages (to a debian base).
+   * TODO: List incomplete ;).
+
+What it can't do:
+
+   * Automated staging process like in debian.
+   * Probably not suited for very large repositories.
+
+Features:
+
+   * Fully configurable via debconf.
+   * Fully automated setup (repos, chroots).
+   * Uses established debian standard tools to build: schroot, sbuild.
+   * Uses LVM snapshots for efficient and secure chroot handling.
+   * Uploads as source package only, all builds are done in defined chroots.
+   * QA-Checking of packages (lintian and others).
+
+Manual maintenance:
+
+mini-buildd is intended to run unattented (read: (re-)configure
+packages and enjoy). However, if unexplained things happen, or if you
+just want to "checkout" how things work, here is an incomplete list of
+typical tasks:
+
+TODO: Check/repair source chroots; Check/repair repository indexes; Re-setup source chroots, ...
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>, Wed, 20 Aug 2008 16:14:59 +0200

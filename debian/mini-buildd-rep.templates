@@ -1,3 +1,14 @@
+Template: mini-buildd-rep/mbd_id
+Type: string
+Description: Mini-buildd's identity:
+ Identity of the mini-buildd network.
+ .
+ The identity is used on several places; most importantly, the distributions
+ created will be called "BASEDIST-ID". For version strings, it plays the
+ same role as "bpo" as used by backports.org.
+ .
+ Should be a short mnemonic made with letters only.
+
 Template: mini-buildd-rep/mbd_rephost
 Type: string
 Description: Repository host name:
@@ -24,17 +35,6 @@ Type: string
 Description: Mail address (uploads/builds/failures):
  All install, failure or log mails go here; usually, it's a good idea to set
  up a mailing list for that.
-
-Template: mini-buildd-rep/mbd_id
-Type: string
-Description: Mini-buildd's identity:
- Identity of the mini-buildd network.
- .
- The identity is used on several places; most importantly, the distributions
- created will be called "BASEDIST-ID". For version strings, it plays the
- same role as "bpo" as used by backports.org.
- .
- Should be a short mnemonic made with letters only.
 
 Template: mini-buildd-rep/mbd_extdocurl
 Type: string

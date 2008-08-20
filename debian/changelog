@@ -7,6 +7,7 @@ mini-buildd (0.7.10~ui40+0test1) etch-ui; urgency=low
     - Add link to dwww URL of package docs.
     - Add "Recommends" for dwww.
     - Add link to external docs where configured.
+  * -rep: Add DEB_BUILD_OPTIONS for all archs (var+debconf).
 
  --
 

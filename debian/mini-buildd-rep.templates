@@ -92,6 +92,16 @@ Description: Build host for architecture ${ARCH}:
  .
  You may safely give build host to-be here, and set it up later.
 
+Template: mini-buildd-rep/mbd_deb_build_options
+Type: string
+Description: Debian build options for architecture ${ARCH}:
+ Build options as defined for DEB_BUILD_OPTIONS environment variable (see
+ policy, chapter 4.9.1).
+ .
+ The only option that is useful here is "parallel=n"; use this if you have
+ multiple CPUs/Cores at your hand for this archs build host. You will then
+ have parallel builds (i.e. faster builds) for packages that support it.
+
 Template: mini-buildd-rep/overview
 Type: note
 Description: Repository configuration finished

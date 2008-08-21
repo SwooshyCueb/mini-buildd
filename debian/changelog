@@ -1,14 +1,16 @@
 mini-buildd (0.7.10~ui40+0test1) etch-ui; urgency=low
 
-  * README.Debian: Initial proper version.
-  * TODO: Rename from TODO.Debian so dh_installdocs picks it up.
-  * -rep: Add external doc URL support (variable && debconf).
-  * -rep: Add documentation section in overview html:
-    - Add link to dwww URL of package docs.
-    - Add "Recommends" for dwww.
-    - Add link to external docs where configured.
-  * -rep: Add DEB_BUILD_OPTIONS for all archs (var+debconf).
-  * QA build: Add DEB_BUILD_OPTIONS support for sbuild call.
+  * Debian and external doc links support in overview html for convenience:
+    - README.Debian: Initial proper version.
+    - TODO: Rename from TODO.Debian so dh_installdocs picks it up.
+    - -rep: Add external doc URL support (variable && debconf).
+    - -rep: Add documentation section in overview html:
+     - Add link to dwww URL of package docs.
+     - Add "Recommends" for dwww.
+     - Add link to external docs where configured.
+  * DEB_BUILD_OPTIONS support for builds:
+    - -rep: Add DEB_BUILD_OPTIONS for all archs (var+debconf).
+    - QA build: Add DEB_BUILD_OPTIONS support for sbuild call.
 
  --
 

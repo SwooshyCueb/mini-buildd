@@ -1,10 +1,11 @@
 #!/bin/sh -e
 
-# Same code as in mini-buildd-rep.config
+# @hack: Duplicate code in mini-buildd-rep.config, please sync!
 mbdDynConfVars()
 {
 	for arch in `echo "${mbd_archs}" | tr -d ","`; do
 		echo -n "mbd_bldhost_${arch} "
+		echo -n "mbd_deb_build_options_${arch} "
 	done
 	for dist in `echo "${mbd_dists}" | tr -d ","`; do
 		for kind in base extra; do

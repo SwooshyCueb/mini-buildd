@@ -1,3 +1,9 @@
+mini-buildd (0.7.10~ui40+1) etch-ui; urgency=low
+
+  * Rebuild for etch.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Thu, 21 Aug 2008 18:08:11 +0200
+
 mini-buildd (0.7.10~ui50+1) lenny-ui; urgency=low
 
   * Debian and external doc links support in overview html for convenience:

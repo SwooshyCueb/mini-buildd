@@ -148,13 +148,15 @@ mbdParseArch() # arch
 {
 	local arch="${1}"
 	local bldhost="mbd_bldhost_${arch}"
+	local debopts="mbd_deb_build_options_${arch}"
 
 	mbdParseArch_arch="${arch}"
 	mbdParseArch_host="${!bldhost}"
+	mbdParseArch_debopts="${!debopts}"
 	if [ "${arch}" = "${mbd_archall}" ]; then
-		mbdParseArch_options="--arch-all"
+		mbdParseArch_sbuildopts="--arch-all"
 	else
-		mbdParseArch_options=""
+		mbdParseArch_sbuildopts=""
 	fi
 }
 

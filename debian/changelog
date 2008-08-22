@@ -1,3 +1,9 @@
+mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
+
+  * html: Show new build options, and some cosmetics.
+
+ --
+
 mini-buildd (0.7.10~ui40+1) etch-ui; urgency=low
 
   * Rebuild for etch.

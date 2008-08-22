@@ -136,13 +136,17 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
      echo "</pre>"
      echo "<div class='details' style='display:none;'>"
      for a in ${MBD_TMP_ARCHS}; do
-       echo -n "<h4>Build dependencies for <b>${a}</b> ("
+       MBD_TMP_BO="mbd_deb_build_options_${a}"
+
+       echo -n "<h4>${a} builder ("
        mbdBldHtml "${a}"
-       echo "):</h4>"
-       echo "<pre>"
+       echo ", BUILD_OPTIONS=\"${!MBD_TMP_BO}\"):</h4>"
+
+       echo "Dependencies:<pre>"
        AUTH_VERBOSITY='quiet' mbdGenSources "${d}" "base extra" "${a}"
        echo "</pre>"
      done
+     echo "<hr/>"
      echo "</div>"
    done
    echo "</div>"

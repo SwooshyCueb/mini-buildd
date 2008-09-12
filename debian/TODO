@@ -1,6 +1,16 @@
 Bugs/Caveats:
 =============
-@todo Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) will overwrite ecah other
+@todo Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) will overwrite each other
+
+Mini-dinstall fixes:
+====================
+@todo [mini-dinstall] Error mails should not have python exception text, but be human-readable.
+@todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
+@todo [mini-dinstall] New directory layout class: "mbd":
+                      DIST-ID/SRC_PKG/       : All packages of that source package (the actual files).
+                      DIST-ID/SRC_PKG/stable/: All stable-tagged packages of that source package.
+                      DIST-ID/               : All packages repo; symlinks to all files in all SRC_PKG dirs.
+                      DIST-ID/stable/        : Stable repo; Symlinks to all stable.. for manually stable-tagged packages.
 
 Features:
 =========
@@ -10,8 +20,8 @@ Features:
 
 Wishlist:
 =========
+@todo Put lintian QA test on warn-only for experimental.
 @todo [deb] apache2/httpd: Assure user_dir support?
-@todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
 @todo [brain] Package rebuild feature (needs: package maintenance first).
 
 Later:

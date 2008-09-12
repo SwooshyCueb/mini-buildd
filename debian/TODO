@@ -4,7 +4,6 @@ Bugs/Caveats:
 
 Features:
 =========
-@todo Support for DEB_BUILD_OPTIONS per builder.
 @todo HTML overview: Documentation: README.Debian, TODO.Debian, "external documentation" URL.
 @todo [brain] *-stable manual staging (tm) (etch-ID-stable ?).
 @todo [brain] Package maintenance (per web?).

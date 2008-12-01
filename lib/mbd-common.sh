@@ -39,7 +39,7 @@ MBD_SCHROOTCONFIGFILE="/etc/schroot/schroot.conf"
 # Maintainer name of autobuilder (goes to .sbuildrc, and used to reject direct binary uploads).
 MBD_AUTOBUILD_MAINTAINER="Mini-Buildd Builder"
 
-MBD_LOG="logger -t mini-buildd[`basename -- "${0}"`] -p daemon.info"
+MBD_LOG="logger -t mini-buildd[`basename -- "${0}"`] -p user.info"
 
 # For schroot: Marks auto-generated configuration snippets
 MBD_CONFIG_MARK="# MINI-BUILDD AUTOGENERATION MARK"

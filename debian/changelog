@@ -3,6 +3,9 @@ mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
   * html: Show new build options, and some cosmetics.
   * lintian exceptions: Exclude more "unknown distribution" errors.
   * syslog: Log to facility user, not daemon.
+  * ccache fix: Give CCACHE_DIR explicitely as environment for sbuild (some
+    build system change $HOME for whatver reasons (e.g., package "subversion"'s
+    test suite does), effectively disabling gcc.
 
  --
 

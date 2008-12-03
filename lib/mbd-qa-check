@@ -187,8 +187,15 @@ mbdQACheckBuild()
 	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
 	mbdParseArch "${MBD_TMP_ARCH}"
 
-	# sbuild_mode is set to "user"; sbuild failure means build failure, or nothing to build for that arch.
-	if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}" sbuild --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" ${mbdParseArch_sbuildopts} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
+	# Run sbuild. Notes:
+	# * sbuild_mode is set to "user"; sbuild failure means build failure,
+	# or nothing to build for that arch.
+	# * DEB_BUILD_OPTIONS are configured per build host.
+	# * We give CCACHE_DIR explicitely here as build tools may change
+	# $HOME for whatver reasons (e.g., package "subversion"'s test suite
+	# does), effectively disabling gcc.
+	if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}" CCACHE_DIR="${HOME}/.ccache" \
+		sbuild --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" ${mbdParseArch_sbuildopts} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
 		echo "I: Built successful for arch=${MBD_TMP_ARCH} [${mbdParseArch_sbuildopts}]."
 	else
 		# @hack: If this package has no packages to be built for this arch, this is ok, and we get:

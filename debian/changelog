@@ -10,6 +10,8 @@ mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
     * MINI_BUILDD: <CONTROL_OPTION>
     Currently, we support BACKPORT_MODE only; this comes handy for
     lintian-buggy package backports.
+  * copyright: Making this DFSG compatible, license GPL-2+.
+  * copyright: Update to proposed formal format.
 
  --
 

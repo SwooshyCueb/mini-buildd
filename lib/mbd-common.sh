@@ -141,6 +141,11 @@ mbdParseCF()
 	# For convenience
 	mbdParseCF_upstream_version="`echo "${mbdParseCF_version}" | cut -d- -f1`"
 	mbdParseCF_orig_tarball="${mbdParseCF_source}_${mbdParseCF_upstream_version}.orig.tar.gz"
+	# Mini-buildd controls via changelog entries
+	mbdParseCF_mbd_backport_mode=false
+	if grep --quiet "MINI_BUILDD: BACKPORT_MODE" "${cf}"; then
+		mbdParseCF_mbd_backport_mode=true
+	fi
 }
 
 # Parse build host for arch

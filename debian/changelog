@@ -6,6 +6,10 @@ mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
   * ccache fix: Give CCACHE_DIR explicitely as environment for sbuild (some
     build system change $HOME for whatver reasons (e.g., package "subversion"'s
     test suite does), effectively disabling gcc.
+  * [***TEST BEFORE RELEASE***]Add mini-buildd control feature via changelog entry:
+    * MINI_BUILDD: <CONTROL_OPTION>
+    Currently, we support BACKPORT_MODE only; this comes handy for
+    lintian-buggy package backports.
 
  --
 

@@ -152,7 +152,6 @@ mbdQACheckUploadDSP()
 mbdQACheckLintian()
 {
 	local lf="${MBD_TMP_CF}.lintian"
-	local retval=0
 
 	schroot --quiet --chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}" -- /usr/bin/lintian --info "${MBD_TMP_CF}" >"${lf}" || true
 
@@ -165,12 +164,24 @@ mbdQACheckLintian()
 	#  - "source-nmu-has-incorrect-version-number": Does not make sense for mini-buildd.
 	grep --invert-match "\( bad-.*distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\| source-nmu-has-incorrect-version-number\)" "${lf}" >"${lf}.mbd" || true
 
+	# Check if we have errors ans/or warnings; at the same time output
+	# error lines via grep.
+	local errors=0
+	local warnings=0
 	if grep '^E: .*$' "${lf}.mbd"; then
-		retval=2
-		grep '^W: .*$' "${lf}.mbd" || true
-	elif grep '^W: .*$' "${lf}.mbd"; then
-		retval=1
+		if ${mbdParseCF_mbd_backport_mode}; then
+			echo "I: mini-buildd: Backport mode: Treating above lintian errors as warnings."
+			warnings=1
+		else
+			errors=1
+		fi
 	fi
+	if grep '^W: .*$' "${lf}.mbd"; then
+		warnings=1
+	fi
+
+	# Compute the retval
+	local retval=$((warnings+errors))
 
 	echo "I: ----------------------------------------------------------------------"
 	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"

@@ -1,4 +1,4 @@
-mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
+mini-buildd (0.7.11~ui50+1) lenny-ui; urgency=low
 
   * html: Show new build options, and some cosmetics.
   * lintian exceptions: Exclude more "unknown distribution" errors.
@@ -6,7 +6,7 @@ mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
   * ccache fix: Give CCACHE_DIR explicitely as environment for sbuild (some
     build system change $HOME for whatver reasons (e.g., package "subversion"'s
     test suite does), effectively disabling gcc.
-  * [***TEST BEFORE RELEASE***]Add mini-buildd control feature via changelog entry:
+  * Add mini-buildd control feature via changelog entry:
     * MINI_BUILDD: <CONTROL_OPTION>
     Currently, we support BACKPORT_MODE only; this comes handy for
     lintian-buggy package backports.
@@ -15,7 +15,7 @@ mini-buildd (0.7.11~ui40+0test1) UNRELEASED; urgency=low
   * mbd-update-bld: Also run "apt-get autoremove" (errors ignored for when not
     supported) for source chroot update.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon, 08 Dec 2008 15:53:35 +0000
 
 mini-buildd (0.7.10~ui40+1) etch-ui; urgency=low
 

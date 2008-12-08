@@ -1,3 +1,9 @@
+mini-buildd (0.7.11~ui40+1) etch-ui; urgency=low
+
+  * Backport for etch-ui.
+
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Mon, 08 Dec 2008 15:56:16 +0000
+
 mini-buildd (0.7.11~ui50+1) lenny-ui; urgency=low
 
   * html: Show new build options, and some cosmetics.

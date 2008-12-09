@@ -7,7 +7,7 @@ Standards-Version: 3.7.2
 
 Package: mini-buildd-common
 Architecture: all
-Depends: ${misc:Depends}, adduser, mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.57.3)
+Depends: ${misc:Depends}, adduser, mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.57.7)
 Description: Minimal Debian buildd (common)
  Mini-buildd lets a bunch of existing standard and Debian specific
  tools work together to build a easy-to-setup autobuilder network.

@@ -1,3 +1,14 @@
+mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
+
+  * Upgrade sbuild dependency to latest in testing/lenny: 0.57.7.
+  * apt-secure: Fix for sbuild 0.57.5:
+    - Set apt_allow_unauthenticated = 1 in mini-buildd for now.
+    - Add @todo for later:[brain] Make sbuild apt_allow_unauthenticated
+      configurable via debconf; add some infrastructure to add keys when
+      entering chroots, and some way to manage keys.
+
+ --
+
 mini-buildd (0.7.11~ui40+1) etch-ui; urgency=low
 
   * Backport for etch-ui.

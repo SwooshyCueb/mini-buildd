@@ -7,6 +7,7 @@ mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
       configurable via debconf; add some infrastructure to add keys when
       entering chroots, and some way to manage keys.
   * control: Update to standards version 3.8.0 (no changes needed).
+  * mbd-update-bld: Add --purge to autoremove run.
 
  --
 

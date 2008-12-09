@@ -69,7 +69,7 @@ export DEBIAN_FRONTEND="noninteractive"
 ${MBD_APTGET} update
 ${MBD_APTGET} --yes --ignore-missing dist-upgrade
 [ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || ${MBD_APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
-${MBD_APTGET} --yes autoremove || true
+${MBD_APTGET} --yes --purge autoremove || true
 ${MBD_APTGET} clean
 
 # Workaround for Debian Bug #327477 (bash building)

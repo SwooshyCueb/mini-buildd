@@ -8,6 +8,8 @@ mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
       entering chroots, and some way to manage keys.
   * control: Update to standards version 3.8.0 (no changes needed).
   * mbd-update-bld: Add --purge to autoremove run.
+  * 99mini-buildd (schroot setup): Fix: Honor AUTH_VERBOSITY for the one log
+    left in the script.
 
  --
 

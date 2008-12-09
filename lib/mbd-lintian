@@ -1,0 +1,31 @@
+#!/bin/sh -e
+
+. `dirname $0`/mbd-common.sh
+
+mbd_opt_init "Mini-buildd: Run lintian on a changes file in a given chroot."
+mbd_opt_add "C:" "Chroot to run for."
+mbd_opt_add "c:" "Absolute path to changes file."
+mbd_opt_add "v" "Verbose: Don't use --quiet for schroot and apt-get calls."
+mbd_opt_parse "$@"
+
+CHROOT=`mbd_opt_get C`
+CHANGES=`mbd_opt_get c`
+if mbd_opt_given v; then
+	SCHROOT="schroot"
+	APT_GET="apt-get"
+else
+	SCHROOT="schroot --quiet"
+	APT_GET="apt-get --quiet"
+fi
+
+# Prepare a snapshot session
+SESSION=`${SCHROOT} --chroot="${CHROOT}" --begin-session`
+
+# Trap session removal on EXIT
+trap "${SCHROOT} --chroot=\"${SESSION}\" --end-session" EXIT
+
+# Install lintian as root; output to log only
+${SCHROOT} --chroot="${SESSION}" --run-session --user=root -- ${APT_GET} --yes -o APT::Install-Recommends=false install lintian 2>&1 | ${MBD_LOG}
+
+# Run lintian
+${SCHROOT} --chroot="${SESSION}" --run-session -- /usr/bin/lintian --info "${CHANGES}"

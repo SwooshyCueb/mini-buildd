@@ -10,6 +10,7 @@ mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
   * mbd-update-bld: Add --purge to autoremove run.
   * 99mini-buildd (schroot setup): Fix: Honor AUTH_VERBOSITY for the one log
     left in the script.
+  * Add tool "mbd-lintian": Install ltintian and run tests in separate snapshots.
 
  --
 

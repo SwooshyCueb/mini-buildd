@@ -153,7 +153,7 @@ mbdQACheckLintian()
 {
 	local lf="${MBD_TMP_CF}.lintian"
 
-	schroot --quiet --chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}" -- /usr/bin/lintian --info "${MBD_TMP_CF}" >"${lf}" || true
+	${MBD_LIB}/mbd-lintian -C "mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}" -c "${MBD_TMP_CF}" >"${lf}" || true
 
 	# @hack for lintian: Some lintian tests need to be ignored (and -X does not seem to work):
 	#  - "bad-distribution-in-changes-file": As our dists are not supported by lintian.

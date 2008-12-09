@@ -10,7 +10,22 @@ mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
   * mbd-update-bld: Add --purge to autoremove run.
   * 99mini-buildd (schroot setup): Fix: Honor AUTH_VERBOSITY for the one log
     left in the script.
-  * Add tool "mbd-lintian": Install ltintian and run tests in separate snapshots.
+  * Add tool "mbd-lintian": Install lintian and run tests in separate snapshots.
+    - mbd-qa-check: Use mbd-lintian for lintian check.
+    - mbd-common: Remove "lintian" from list of extra packages for source chroots.
+    .
+    Note: Having lintian removed from the extra packages list means that source
+    chroots can now be really minimal (lintian pulled in quite some dependencies)
+    (except for ccache, that is). This solves two problems:
+    .
+    - Source dependency check not tainted by lintian+dependencies any more.
+    - Already installed packages wont be upgraded by sbuild, breaking package
+      builds that need updated versions of installed lintian dependencies.
+    .
+    To gain these advantages, you need manually regenerate your chroots on all
+    build hosts; as root run
+    .
+    /usr/lib/mini-buildd/mbd-setup-chroots -f
 
  --
 

@@ -6,6 +6,7 @@ mini-buildd (0.7.12~ui50+0test1) lenny-ui-experimental; urgency=low
     - Add @todo for later:[brain] Make sbuild apt_allow_unauthenticated
       configurable via debconf; add some infrastructure to add keys when
       entering chroots, and some way to manage keys.
+  * control: Update to standards version 3.8.0 (no changes needed).
 
  --
 

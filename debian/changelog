@@ -1,4 +1,4 @@
-mini-buildd (0.7.12~ui50+0test2) lenny-ui-experimental; urgency=low
+mini-buildd (0.7.12~ui50+1) lenny-ui; urgency=low
 
   * Upgrade sbuild dependency to latest in testing/lenny: 0.57.7.
   * apt-secure: Fix for sbuild 0.57.5:
@@ -29,7 +29,7 @@ mini-buildd (0.7.12~ui50+0test2) lenny-ui-experimental; urgency=low
   * schroots: Use "-o noatime,user_xattr" instead of the default "-o
     atime,sync,user_xattr"; this may speed up things greatly on certain systems.
 
- --
+ -- Stephan Suerken <stephan.suerken@1und1.de>  Wed, 10 Dec 2008 10:44:12 +0100
 
 mini-buildd (0.7.11~ui40+1) etch-ui; urgency=low
 

@@ -1,3 +1,9 @@
+mini-buildd (0.7.13) NOT RELEASED; urgency=low
+
+  * mbd-lintian: Pre-run apt-get update to avoid warnings.
+
+ --
+
 mini-buildd (0.7.12~ui40+1) etch-ui; urgency=low
 
   * Backport for etch-ui.

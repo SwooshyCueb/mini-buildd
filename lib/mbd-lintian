@@ -25,6 +25,7 @@ SESSION=`${SCHROOT} --chroot="${CHROOT}" --begin-session`
 trap "${SCHROOT} --chroot=\"${SESSION}\" --end-session" EXIT
 
 # Install lintian as root; output to log only
+${SCHROOT} --chroot="${SESSION}" --run-session --user=root -- ${APT_GET} update 2>&1 | ${MBD_LOG}
 ${SCHROOT} --chroot="${SESSION}" --run-session --user=root -- ${APT_GET} --yes -o APT::Install-Recommends=false install lintian 2>&1 | ${MBD_LOG}
 
 # Run lintian

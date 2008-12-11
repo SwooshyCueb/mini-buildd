@@ -36,11 +36,10 @@ Features:
      - Propose a version to stable.
      - Degrade a version to unstable.
      - Ancient versions maintenance.
-@todo [discussion] Package groups (do we need them still?).
+@todo [rfc] Package groups (do we need them still?).
 
 Wishlist:
 =========
-@todo [discussion] Put lintian QA tests on warn-only for experimental.
 @todo [deb] apache2/httpd: Assure user_dir support?
 
 Later:

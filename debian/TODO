@@ -12,15 +12,6 @@ Mini-dinstall fixes:
                       DIST-ID/SRC_PKG/stable/: All stable-tagged packages of that source package.
                       DIST-ID/               : All packages repo; symlinks to all files ../SRC_PKG/*.
                       DIST-ID/stable/        : Stable repo; Symlinks to all files ../SRC_PKG/stable/* of all packages.
-@todo [rfc] Lintian check: We currently use the lintian check from the
-      lintian version of the base distribution to build for. Maybe its better to just use
-      a recent version on the system.
-      + technically much simpler to implement;
-      + better for "backport-like" packages;
-      + get lintian bug fixes;
-      + defined version of lintian, use all features;
-      - maybe not conform to policy version of base dist.
-
 Features:
 =========
 @todo [brain] Make sbuild apt_allow_unauthenticated configurable via debconf; add some
@@ -37,6 +28,14 @@ Features:
      - Degrade a version to unstable.
      - Ancient versions maintenance.
 @todo [rfc] Package groups (do we need them still?).
+@todo [rfc] Lintian check: We currently use the lintian check from the
+      lintian version of the base distribution to build for. Maybe its better to just use
+      a recent version on the system.
+      + technically much simpler to implement;
+      + better for "backport-like" packages;
+      + get lintian bug fixes;
+      + defined version of lintian, use all features;
+      - maybe not conform to policy version of base dist.
 
 Wishlist:
 =========

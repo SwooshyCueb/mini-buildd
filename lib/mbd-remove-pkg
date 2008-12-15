@@ -1,0 +1,30 @@
+#!/bin/sh -e
+
+# Showstoppers:
+#
+# BUG: mini-dinstall only keeps latest changes file. see TODO.
+#
+# Missing 0.7.x:
+#  - stop mbd, remove db files, regenerate indexes.
+#
+
+#. `dirname $0`/mbd-common.sh
+. /usr/lib/mini-buildd/mbd-common.sh
+
+mbd_opt_init "Mini-buildd: EXPERIMENTAL: DONT USE THIS. Remove a package from the repository."
+mbd_opt_add "p:" "Source package with version in the form package_version."
+mbd_opt_add "Y:" "Don't ask before removing."
+mbd_opt_parse "$@"
+
+PACKAGE=`mbd_opt_get p`
+
+# Iterate over all changes files
+for c in `find /home/mini-buildd/rep/ -type f -name "${PACKAGE}*.changes"`; do
+	echo "Found changes: $c"
+
+	# Iterate over all files
+	mbdParseCF "${c}"
+	for f in ${mbdParseCF_files}; do
+		echo "File to remove: ${f}"
+	done
+done

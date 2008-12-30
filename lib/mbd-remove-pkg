@@ -31,16 +31,12 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	echo "Changes: ${c}"
 	echo "Files  : ${mbdParseCF_files}"
 	echo
-	answer="n"
-	read -p"Remove this package (y/N)? " answer
 
-	if [ "${answer}" = "y" ]; then
-		for f in ${mbdParseCF_files}; do
-			echo "Would remove: ${dir}/${f}"
-		done
-		echo "Would remove: ${dir}.db"
-		echo "Would remove: ${log}"
-	fi
+	for f in ${mbdParseCF_files}; do
+		echo "Would remove: ${dir}/${f}"
+	done
+	echo "Would remove: ${dir}.db"
+	echo "Would remove: ${log}"
 done
 
 /etc/init.d/mini-buildd-rep restart

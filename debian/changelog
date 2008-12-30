@@ -4,6 +4,9 @@ mini-buildd (0.7.13) NOT RELEASED; urgency=low
   * rules/control/compat: Update to debhelper 7, minimize rules file.
   * mbd-common.sh: Be more smart about MBD_LIB to ease testing scripts
     from svn.
+  * mbd-remove-pkg:
+    - Add interactive security check that this is experimental.
+    - Actually install this tool to -rep package.
 
  --
 

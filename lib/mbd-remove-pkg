@@ -10,8 +10,9 @@ Examples:
  mbd-remove-pkg -p \"package_*\": Remove all versions of package.
  mbd-remove-pkg -p \"package_1.2.3-1\": Remove versions 1.2.3-1 of package."
 mbd_opt_add "p:" "Package pattern (see find); for example PACKAGE_VERSION."
-mbd_opt_add "R" "Actually do removal."
 mbd_opt_add "s" "Stop mini-buildd while running."
+mbd_opt_add "v" "Be verbose."
+mbd_opt_add "R" "Actually do removal."
 mbd_opt_parse "$@"
 
 echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
@@ -20,17 +21,23 @@ echo >&2
 
 PACKAGE=`mbd_opt_get p`
 REMOVEDIR="${MBD_HOME}/REMOVED/`date --utc +%Y%m%d:%H%M%S:%N`"
+ADDARGS=""
+if mbd_opt_given v; then
+	ADDARGS="-v"
+fi
 
 mbd_remove_file()
 {
 	local f="${1}"
-	local cmd="mv ${1} ${REMOVEDIR}/"
+	local cmd="mv ${ADDARGS} \"${1}\" ${REMOVEDIR}/"
 
 	if mbd_opt_given R; then
-		mkdir -p "${REMOVEDIR}"
+		mkdir ${ADDARGS} -p "${REMOVEDIR}"
 		echo "Run (NOT IMPL): ${cmd}"
 	else
-		echo "Would run: ${cmd}"
+		if mbd_opt_given v; then
+			echo "Would run: ${cmd}"
+		fi
 	fi
 }
 
@@ -44,7 +51,7 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	mbdParseCF "${c}"
 	log="${MBD_HOME}/log/`echo "${mbdParseCF_package}" | cut -d_ -f1`/${mbdParseCF_version}"
 
-	echo "Changes: ${c}"
+	echo "Found: ${c}"
 
 	for f in ${mbdParseCF_files}; do
 		mbd_remove_file "${dir}/${f}"

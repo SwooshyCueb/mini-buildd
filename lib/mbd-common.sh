@@ -12,7 +12,12 @@
 #  @bug : Known bug.
 
 MBD_HOME="/home/mini-buildd"
-MBD_LIB="/usr/lib/mini-buildd"
+
+# Use dirname if that's correct (mbd-* scripts); else use system path (postinst et.al.).
+MBD_LIB=`dirname ${0}`
+if ! [ -e "${MBD_LIB}/mbd-common.sh" ]; then
+	MBD_LIB="/usr/lib/mini-buildd"
+fi
 
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
 MBD_REPCONFIGVARS="mbd_id mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_extdocurl mbd_dists mbd_archs mbd_archall"

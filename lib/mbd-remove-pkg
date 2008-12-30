@@ -25,7 +25,7 @@ PACKAGE=`mbd_opt_get p`
 for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	dir=`dirname ${c}`
 	mbdParseCF "${c}"
-	log="${MBD_HOME}/log/${mbdParseCF_package}/${mbdParseCF_version}"
+	log="${MBD_HOME}/log/`echo "${mbdParseCF_package}" | cut -d_ -f1`/${mbdParseCF_version}"
 
 	echo
 	echo "Changes: ${c}"
@@ -36,6 +36,7 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 		echo "Would remove: ${dir}/${f}"
 	done
 	echo "Would remove: ${dir}.db"
+	echo "Would remove: ${log}"
 	echo "Would remove: ${log}"
 done
 

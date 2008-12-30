@@ -11,6 +11,7 @@ Examples:
  mbd-remove-pkg -p \"package_1.2.3-1\": Remove versions 1.2.3-1 of package."
 mbd_opt_add "p:" "Package pattern (see find); for example PACKAGE_VERSION."
 mbd_opt_add "R" "Actually do removal."
+mbd_opt_add "s" "Stop mini-buildd while running."
 mbd_opt_parse "$@"
 
 echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
@@ -33,7 +34,9 @@ mbd_remove_file()
 	fi
 }
 
-/etc/init.d/mini-buildd-rep stop
+if mbd_opt_given s; then
+	/etc/init.d/mini-buildd-rep stop
+fi
 
 # Iterate over all changes files
 for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
@@ -51,4 +54,6 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	mbd_remove_file "${log}"
 done
 
-/etc/init.d/mini-buildd-rep restart
+if mbd_opt_given s; then
+	/etc/init.d/mini-buildd-rep start
+fi

@@ -63,3 +63,7 @@ done
 if mbd_opt_given s; then
 	/etc/init.d/mini-buildd-rep start
 fi
+
+if mbd_opt_given R; then
+	echo "Files moved to ${REMOVEDIR}."
+fi

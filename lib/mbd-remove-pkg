@@ -2,12 +2,19 @@
 
 . `dirname $0`/mbd-common.sh
 
-mbd_opt_init "Mini-buildd: Remove a package from the repository."
+mbd_opt_init "Mini-buildd: Remove package(s) from the repository.
+
+Examples:
+ mbd-remove-pkg -p \"*_*\": Remove ALL packages.
+ mbd-remove-pkg -p \"etch*/*_*\": Remove ALL packages from all etch distributions.
+ mbd-remove-pkg -p \"package_*\": Remove all versions of package.
+ mbd-remove-pkg -p \"package_1.2.3-1\": Remove versions 1.2.3-1 of package."
 mbd_opt_add "p:" "Package pattern (see find); for example PACKAGE_VERSION."
-mbd_opt_add "Y:" "Don't ask before removing."
+mbd_opt_add "R" "Actually do removal."
 mbd_opt_parse "$@"
 
 echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
+echo "WARNING: This depends on changes files present in repo for any upload -- not true for all versions if mini-dinstall." >&2
 echo >&2
 
 PACKAGE=`mbd_opt_get p`
@@ -15,7 +22,7 @@ PACKAGE=`mbd_opt_get p`
 /etc/init.d/mini-buildd-rep stop
 
 # Iterate over all changes files
-for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}*.changes"`; do
+for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	dir=`dirname ${c}`
 	mbdParseCF "${c}"
 	log="${MBD_HOME}/log/${mbdParseCF_package}/${mbdParseCF_version}"

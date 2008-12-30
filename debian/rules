@@ -1,60 +1,12 @@
 #!/usr/bin/make -f
 
-# Uncomment this to turn on verbose mode.
-#export DH_VERBOSE=1
+%:
+	dh $@
 
-configure: configure-stamp
-configure-stamp:
-	dh_testdir
-	# Add here commands to configure the package.
-	touch configure-stamp
-
-
-build: build-stamp
-
-build-stamp: configure-stamp
-	dh_testdir
-	# Add here commands to compile the package.
-	touch $@
-
-clean:
-	dh_testdir
-	dh_testroot
-	rm -f build-stamp configure-stamp
-
-	dh_clean
-
-install: build
-	dh_testdir
-	dh_testroot
-	dh_clean -k
-	dh_install
-
-# Build architecture-independent files here.
 binary-indep: build install
-	dh_testdir
-	dh_testroot
-	dh_installchangelogs
-	dh_installdocs
-	dh_installexamples
-	dh_installdebconf
-	dh_installlogrotate
+	dh binary-indep --before installinit
 	dh_installinit -p mini-buildd-rep
 	dh_installinit -p mini-buildd-bld --no-start -- start 25 S .
-	dh_installcron
-	dh_installman
-	dh_link
-	dh_strip
-	dh_compress
-	dh_fixperms
-	dh_installdeb
-	dh_gencontrol
-	dh_md5sums
-	dh_builddeb
+	dh binary-indep --after installinit
 
-# Build architecture-dependent files here.
-binary-arch: build install
-# We have nothing to do by default.
-
-binary: binary-indep binary-arch
-.PHONY: build clean binary-indep binary-arch binary install configure
+.PHONY: binary-indep

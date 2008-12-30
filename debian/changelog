@@ -1,6 +1,7 @@
 mini-buildd (0.7.13) NOT RELEASED; urgency=low
 
   * mbd-lintian: Pre-run apt-get update to avoid warnings.
+  * rules/control/compat: Update to debhelper 7, minimise rules file.
 
  --
 

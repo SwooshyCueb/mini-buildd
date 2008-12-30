@@ -4,7 +4,7 @@ Bugs/Caveats:
 
 Mini-dinstall fixes:
 ====================
-@bug [mini-dinstall] Only keeps changes file from latest installed architecture (Uploads: source, amd64, i386 => only i386 stays in repo).
+@bug [mini-dinstall] 0.6.25 does not keep the source.changes file in repo.
 @todo [mini-dinstall] Error mails should not have python exception text, but be human-readable.
 @todo [mini-dinstall] Should include script output for pre/postinstall on error mails (we can then cleanup hook scripts).
 @todo [mini-dinstall] Allow parallel builds of different uploaded packages.

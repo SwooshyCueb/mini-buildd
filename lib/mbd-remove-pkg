@@ -18,6 +18,20 @@ echo "WARNING: This depends on changes files present in repo for any upload -- n
 echo >&2
 
 PACKAGE=`mbd_opt_get p`
+REMOVEDIR="${MBD_HOME}/REMOVED/`date --utc +%Y%m%d:%H%M%S:%N`"
+
+mbd_remove_file()
+{
+	local f="${1}"
+	local cmd="mv ${1} ${REMOVEDIR}/"
+
+	if mbd_opt_given R; then
+		mkdir -p "${REMOVEDIR}"
+		echo "Run (NOT IMPL): ${cmd}"
+	else
+		echo "Would run: ${cmd}"
+	fi
+}
 
 /etc/init.d/mini-buildd-rep stop
 
@@ -27,17 +41,14 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	mbdParseCF "${c}"
 	log="${MBD_HOME}/log/`echo "${mbdParseCF_package}" | cut -d_ -f1`/${mbdParseCF_version}"
 
-	echo
 	echo "Changes: ${c}"
-	echo "Files  : ${mbdParseCF_files}"
-	echo
 
 	for f in ${mbdParseCF_files}; do
-		echo "Would remove: ${dir}/${f}"
+		mbd_remove_file "${dir}/${f}"
 	done
-	echo "Would remove: ${dir}.db"
-	echo "Would remove: ${log}"
-	echo "Would remove: ${log}"
+	mbd_remove_file "${dir}.db"
+	mbd_remove_file "${log}"
+	mbd_remove_file "${log}"
 done
 
 /etc/init.d/mini-buildd-rep restart

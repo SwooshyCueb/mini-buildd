@@ -4,20 +4,20 @@
 
 mbd_opt_init "Mini-buildd: Remove package(s) from the repository.
 
+ * Will not actually do anything unless you specify -R.
+ * On -R, package(s) will be removed from repo by moving to a directory in ~/REMOVED.
+ * Depends on changes files; packages (wrongly) installed without cannot be removed.
+
 Examples:
- mbd-remove-pkg -p \"*_*\": Remove ALL packages.
- mbd-remove-pkg -p \"etch*/*_*\": Remove ALL packages from all etch distributions.
- mbd-remove-pkg -p \"package_*\": Remove all versions of package.
- mbd-remove-pkg -p \"package_1.2.3-1\": Remove versions 1.2.3-1 of package."
-mbd_opt_add "p:" "Package pattern (see find); for example PACKAGE_VERSION."
+ mbd-remove-pkg -p \"*_*_*\"            : Remove all packages.
+ mbd-remove-pkg -p \"etch*/*_*_*\"      : Remove all packages from all etch distributions.
+ mbd-remove-pkg -p \"PACKAGE_*_*\"      : Remove all versions of PACKAGE.
+ mbd-remove-pkg -p \"PACKAGE_1.2.3-1_*\": Remove exact version 1.2.3-1 of PACKAGE."
+mbd_opt_add "p:" "Pattern (see find(1)) for package changes file(s) to work on."
 mbd_opt_add "s" "Stop mini-buildd while running."
 mbd_opt_add "v" "Be verbose."
-mbd_opt_add "R" "Actually do removal."
+mbd_opt_add "R" "Actually do removal -- BE SURE YOU GOT THE PACKAGES RIGHT BEFORE DOING THAT."
 mbd_opt_parse "$@"
-
-echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
-echo "WARNING: This depends on changes files present in repo for any upload -- not true for all versions of mini-dinstall." >&2
-echo >&2
 
 PACKAGE=`mbd_opt_get p`
 REMOVEDIR="${MBD_HOME}/REMOVED/`date --utc +%Y%m%d:%H%M%S:%N`"

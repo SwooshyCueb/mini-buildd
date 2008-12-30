@@ -1,28 +1,14 @@
 #!/bin/sh -e
 
-exp_check()
-{
-# Showstoppers:
-#
-# BUG: mini-dinstall only keeps latest changes file. see TODO.
-#
-	local a
-	read -p"WARNING: This is EXPERIMENTAL. Use only for testing. Continue (y/N)? " a
-	if [ "${a}" != "y" ]; then
-		echo "Aborting..." >&2
-		exit 199
-	fi
-}
-
 . `dirname $0`/mbd-common.sh
 
 mbd_opt_init "Mini-buildd: Remove a package from the repository."
-mbd_opt_add "p:" "Package regex; for example PACKAGE_VERSION."
+mbd_opt_add "p:" "Package pattern (see find); for example PACKAGE_VERSION."
 mbd_opt_add "Y:" "Don't ask before removing."
 mbd_opt_parse "$@"
 
-# EXPERIMENTAL CHECK!
-exp_check
+echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
+echo >&2
 
 PACKAGE=`mbd_opt_get p`
 

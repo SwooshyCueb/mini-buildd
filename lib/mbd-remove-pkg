@@ -6,9 +6,6 @@ exp_check()
 #
 # BUG: mini-dinstall only keeps latest changes file. see TODO.
 #
-# Missing 0.7.x:
-#  - stop mbd, remove db files, regenerate indexes.
-#
 	local a
 	read -p"WARNING: This is EXPERIMENTAL. Use only for testing. Continue (y/N)? " a
 	if [ "${a}" != "y" ]; then
@@ -28,6 +25,8 @@ mbd_opt_parse "$@"
 exp_check
 
 PACKAGE=`mbd_opt_get p`
+
+/etc/init.d/mini-buildd-rep stop
 
 # Iterate over all changes files
 for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}*.changes"`; do
@@ -50,3 +49,5 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}*.changes"`; do
 		echo "Would remove: ${log}"
 	fi
 done
+
+/etc/init.d/mini-buildd-rep restart

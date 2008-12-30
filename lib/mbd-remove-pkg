@@ -33,7 +33,7 @@ mbd_remove_file()
 
 	if mbd_opt_given R; then
 		mkdir ${ADDARGS} -p "${REMOVEDIR}"
-		${cmd}
+		[ ! -e "${f}" ] || ${cmd}
 	else
 		if mbd_opt_given v; then
 			echo "Would run: ${cmd}"

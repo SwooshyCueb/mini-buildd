@@ -58,7 +58,6 @@ for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
 	done
 	mbd_remove_file "${dir}.db"
 	mbd_remove_file "${log}"
-	mbd_remove_file "${log}"
 done
 
 if mbd_opt_given s; then

@@ -16,7 +16,7 @@ mbd_opt_add "R" "Actually do removal."
 mbd_opt_parse "$@"
 
 echo "WARNING: This is EXPERIMENTAL. Use only for testing." >&2
-echo "WARNING: This depends on changes files present in repo for any upload -- not true for all versions if mini-dinstall." >&2
+echo "WARNING: This depends on changes files present in repo for any upload -- not true for all versions of mini-dinstall." >&2
 echo >&2
 
 PACKAGE=`mbd_opt_get p`
@@ -33,7 +33,7 @@ mbd_remove_file()
 
 	if mbd_opt_given R; then
 		mkdir ${ADDARGS} -p "${REMOVEDIR}"
-		echo "Run (NOT IMPL): ${cmd}"
+		${cmd}
 	else
 		if mbd_opt_given v; then
 			echo "Would run: ${cmd}"

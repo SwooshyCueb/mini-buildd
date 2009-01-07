@@ -1,3 +1,7 @@
+Pure TODOS:
+===========
+@todo Use /usr/share/mini-buildd, not /usr/lib.
+
 Bugs/Caveats:
 =============
 @todo Incoming/upload: Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) may overwrite each other

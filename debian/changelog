@@ -1,3 +1,9 @@
+mini-buildd (0.7.14~ui50+0unreleased1) unreleased; urgency=low
+
+  * qa-check Build: Don't warn when no packages to build for arch.
+
+ --
+
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 
   * Backport for etch-ui.

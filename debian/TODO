@@ -1,7 +1,8 @@
 Pure TODOS:
 ===========
 @todo Use /usr/share/mini-buildd, not /usr/lib.
-@todo mbd-update-bld: /usr/share/mini-buildd/chroots-update.d/, ~/bld/chroots/update.d/
+@todo mbd-update-bld: /usr/share/mini-buildd/chroots-update.d/,
+   ~/bld/chroots/update.d/; Add java license patch.
 @todo init: Add "reindex" target.
 
 Bugs/Caveats:

@@ -1,10 +1,11 @@
-mini-buildd (0.7.14~fritz0) sid-fritz; urgency=low
+mini-buildd (0.7.14~fritz50+0exp1) lenny-fritz-experimental; urgency=low
 
   * qa-check Build: Don't warn when no packages to build for arch.
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
   * mini-buildd-common.postinst: Don't call sbuild-adduser with full path
     [W:lintian]
   * Add (nop yet) config script for -common [E:lintian].
+  * init: Add "reindex" target.
 
  --
 

@@ -75,6 +75,27 @@ stop()
 	echo "down."
 }
 
+reindex()
+{
+	stop
+
+	local caches=""
+	if [ "${1}" = "all" ]; then
+		caches="/home/mini-buildd/rep/*.db"
+	else
+		caches="/home/mini-buildd/rep/${1}.db"
+	fi
+	rm -v ${caches} || true
+
+	start
+}
+
+usage()
+{
+	echo -e "\nUsage: $0 {start|stop|restart|force-reload|reindex all|DIST}" >&2
+	exit 1
+}
+
 case "$1" in
 	start)
 		start
@@ -86,9 +107,12 @@ case "$1" in
 		stop
 		start
 		;;
+	reindex)
+		[ -n "${2}" ] || usage
+		reindex "${2}"
+		;;
 	*)
-		echo -e "\nUsage: $0 {start|stop|restart|force-reload}" >&2
-		exit 1
+		usage
 		;;
 esac
 

@@ -4,6 +4,7 @@ mini-buildd (0.7.14~fritz0) sid-fritz; urgency=low
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
   * mini-buildd-common.postinst: Don't call sbuild-adduser with full path
     [W:lintian]
+  * Add (nop yet) config script for -common [E:lintian].
 
  --
 

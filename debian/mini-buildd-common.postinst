@@ -8,7 +8,7 @@ if ! getent passwd mini-buildd >/dev/null; then
 fi
 
 # sbuild >= 0.57.2 requires requires the user to be added with this tool.
-/usr/sbin/sbuild-adduser mini-buildd >/dev/null 2>&1
+sbuild-adduser mini-buildd >/dev/null 2>&1
 
 #DEBHELPER#
 

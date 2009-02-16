@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. /usr/lib/mini-buildd/mbd-common.sh
+. /usr/share/mini-buildd/mbd-common.sh
 . /usr/share/debconf/confmodule
 
 # We just rewrite the config file from debconf values here.
@@ -15,13 +15,13 @@ for v in ${MBD_BLDCONFIGVARS}; do
 done
 chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
 
-/usr/lib/mini-buildd/mbd-setup-lvm
+/usr/share/mini-buildd/mbd-setup-lvm
 
-su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-bld"
+su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-bld"
 
 . "${MBD_BLDCONFIGFILE}"
 if vgdisplay | grep -q `mbdLvmVgName`; then
-	/usr/lib/mini-buildd/mbd-setup-chroots || true
+	/usr/share/mini-buildd/mbd-setup-chroots || true
 fi
 
 #DEBHELPER#

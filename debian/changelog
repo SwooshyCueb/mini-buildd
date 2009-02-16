@@ -1,8 +1,9 @@
-mini-buildd (0.7.14~ui50+0unreleased1) UNRELEASED; urgency=low
+mini-buildd (0.7.14~fritz0) sid-fritz; urgency=low
 
   * qa-check Build: Don't warn when no packages to build for arch.
+  * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 16 Feb 2009 16:03:10 +0100
+ --
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

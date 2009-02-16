@@ -2,9 +2,9 @@
 
 if [ "${1}" = "remove" ]; then
 	# Remove chroots
-	/usr/lib/mini-buildd/mbd-setup-chroots -d
+	/usr/share/mini-buildd/mbd-setup-chroots -d
 	# Remove auto-lvm setup (if we have it)
-	/usr/lib/mini-buildd/mbd-setup-lvm -d
+	/usr/share/mini-buildd/mbd-setup-lvm -d
 fi
 
 #DEBHELPER#

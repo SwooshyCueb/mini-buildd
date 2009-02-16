@@ -4,7 +4,7 @@
 
 if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-case --quiet "mini-buildd"; then
 	# Bootstrap mbd lib and value support
-	. /usr/lib/mini-buildd/mbd-common.sh
+	. /usr/share/mini-buildd/mbd-common.sh
 	. /home/mini-buildd/.mini-buildd.conf
 
 	[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "Entering chroot: ${CHROOT_NAME}."

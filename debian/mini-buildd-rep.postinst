@@ -16,7 +16,7 @@ mbdDynConfVars()
 	done
 }
 
-. /usr/lib/mini-buildd/mbd-common.sh
+. /usr/share/mini-buildd/mbd-common.sh
 . /usr/share/debconf/confmodule
 
 # We just rewrite the config file from debconf values here.
@@ -39,7 +39,7 @@ done
 
 chown mini-buildd:sbuild "${MBD_REPCONFIGFILE}"
 
-su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep -p"
+su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep -p"
 
 #DEBHELPER#
 

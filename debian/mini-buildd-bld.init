@@ -11,7 +11,7 @@
 
 case "$1" in
 	start)
-		/usr/lib/mini-buildd/mbd-setup-lvm -a
+		/usr/share/mini-buildd/mbd-setup-lvm -a
 		;;
 	stop|restart|force-reload)
 		echo "Ignored (call with start only)."

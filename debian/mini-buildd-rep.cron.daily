@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 # If package is removed, but not purged, exit silently
-[ -x "/usr/lib/mini-buildd/mbd-update-rep" ] || exit 0
+[ -x "/usr/share/mini-buildd/mbd-update-rep" ] || exit 0
 
 CONF="/home/mini-buildd/.mini-buildd.conf"
 if [ -e "${CONF}" ]; then
@@ -10,4 +10,4 @@ else
 	echo "WARNING: ${0}: No file ${CONF}. mini-buildd not installed/configured?" >&2
 	mbd_mail="root"
 fi
-su - mini-buildd -c "/usr/lib/mini-buildd/mbd-update-rep" 2>&1 | mail -s "mini-buildd daily update" "${mbd_mail}"
+su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep" 2>&1 | mail -s "mini-buildd daily update" "${mbd_mail}"

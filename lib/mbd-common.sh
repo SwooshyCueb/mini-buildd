@@ -16,7 +16,7 @@ MBD_HOME="/home/mini-buildd"
 # Use dirname if that's correct (mbd-* scripts); else use system path (postinst et.al.).
 MBD_LIB=`dirname ${0}`
 if ! [ -e "${MBD_LIB}/mbd-common.sh" ]; then
-	MBD_LIB="/usr/lib/mini-buildd"
+	MBD_LIB="/usr/share/mini-buildd"
 fi
 
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"

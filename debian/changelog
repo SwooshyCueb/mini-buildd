@@ -6,6 +6,7 @@ mini-buildd (0.7.14~fritz50+0exp1) lenny-fritz-experimental; urgency=low
     [W:lintian]
   * Add (nop yet) config script for -common [E:lintian].
   * init: Add "reindex" target.
+  * Experimental auto-backports mode (disabled per default).
 
  --
 

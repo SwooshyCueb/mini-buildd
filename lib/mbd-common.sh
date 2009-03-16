@@ -130,6 +130,29 @@ mbdUpdateSshKeyring()
 	fi
 }
 
+# Parse auto-backports list from changes file (OUCH!).
+mbdParseCFAutoBackports()
+{
+	local cf="${1}"
+
+	local regex="*[[:space:]]*MINI_BUILDD:[[:space:]]*AUTO_BACKPORTS:"
+	grep --max-count=1 -A10 "${regex}" "${cf}" |
+	(
+		while read; do
+			if echo "${REPLY}" | grep --quiet "${regex}"; then
+				# 1st line with identifier
+				echo -n "${REPLY}" | cut -d: -f3-
+			elif [ -z "${REPLY}" ] || echo "${REPLY}" | grep --quiet -e "*" -e "^[^[:space:]]\+"; then
+				# No further entries (changelog), new entry (both), end of entries (changes): break
+				break;
+			else
+				# More lines of this changelog entry
+				echo -n "${REPLY}"
+			fi
+		done
+	)
+}
+
 # Parse changes file
 mbdParseCF()
 {
@@ -151,6 +174,8 @@ mbdParseCF()
 	if grep --quiet "MINI_BUILDD: BACKPORT_MODE" "${cf}"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
+
+	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${cf}" | tr -d '[:space:]' | tr ',' ' '`
 }
 
 # Parse build host for arch

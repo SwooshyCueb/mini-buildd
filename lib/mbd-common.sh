@@ -162,19 +162,20 @@ mbdParseCF()
 	mbdParseCF_arch=`echo "${cf}" | rev | cut -d. -f2 | cut -d_ -f1 | rev`
 	mbdParseCF_package=`echo "${cf}" | rev | cut -d_ -f2- | cut -d/ -f1 | rev`
 	mbdParseCF_files="`basename "${cf}"` `${GREP1} "^Files:" -A100 ${cf} | grep "^ .\+" | rev | cut -d" " -f1 | rev`"
-	mbdParseCF_source="`${GREP1} "^Source: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_version="`${GREP1} "^Version: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_maintainer="`${GREP1} "^Maintainer: " ${cf} | cut -d' ' -f2-`"
-	mbdParseCF_changed_by="`${GREP1} "^Changed-By: " ${cf} | cut -d' ' -f2-`"
+	mbdParseCF_source=`${GREP1} "^Source: " ${cf} | cut -d' ' -f2-`
+	mbdParseCF_version=`${GREP1} "^Version: " ${cf} | cut -d' ' -f2-`
+	mbdParseCF_maintainer=`${GREP1} "^Maintainer: " ${cf} | cut -d' ' -f2-`
+	mbdParseCF_changed_by=`${GREP1} "^Changed-By: " ${cf} | cut -d' ' -f2-`
+
 	# For convenience
-	mbdParseCF_upstream_version="`echo "${mbdParseCF_version}" | cut -d- -f1`"
+	mbdParseCF_upstream_version=`echo "${mbdParseCF_version}" | cut -d- -f1`
 	mbdParseCF_orig_tarball="${mbdParseCF_source}_${mbdParseCF_upstream_version}.orig.tar.gz"
+
 	# Mini-buildd controls via changelog entries
 	mbdParseCF_mbd_backport_mode=false
 	if grep --quiet "MINI_BUILDD: BACKPORT_MODE" "${cf}"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
-
 	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${cf}" | tr -d '[:space:]' | tr ',' ' '`
 }
 

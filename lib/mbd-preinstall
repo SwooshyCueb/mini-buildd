@@ -20,59 +20,16 @@ if [ `hostname -f` = "fritz.use.schlund.de" ]; then
 	MBD_ENABLE_AUTO_BACKPORTS=true
 fi
 
-mbdABSpoolInsert()
-{
-	${MBD_ENABLE_AUTO_BACKPORTS} || return 0
-
-	local b
-	${MBD_LOG} -s "Running auto-backports for: ${mbdParseCF_mbd_auto_backports}"
-	for b in ${mbdParseCF_mbd_auto_backports}; do
-		${MBD_LOG} -s "Auto-backporting for: ${b}"
-		mkdir -p "/home/mini-buildd/rep/mini-dinstall/incoming/mbd-ab-spool/"
-		local buildDir
-		if ! buildDir=`mktemp -d /home/mini-buildd/rep/mini-dinstall/incoming/mbd-ab-spool/${mbdParseCF_package}.XXXXXX`; then
-			${MBD_LOG} -s "XXX1=TEMP FAILED:mktemp -d -p /home/mini-buildd/rep/mini-dinstall/incoming/mbd-ab-spool/${mbdParseCF_package}.XXXXXX "
-			return 1
-		fi
-
-		cd "${buildDir}"
-		local f
-		for f in ${mbdParseCF_files}; do
-			if [ ".dsc" = "${f: -4:4}" ]; then
-				${MBD_LOG} -s "Found DSC=${f}"
-				dpkg-source -x "../../${f}" 2>&1 | ${MBD_LOG} -s
-				break
-			fi
-		done
-		local dst=`find . -type d -mindepth 1 -maxdepth 1`
-		${MBD_LOG} -s "Found DST=${dst}"
-		cd "${dst}"
-		DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}" \
-		DEBEMAIL="mini-buildd@`hostname -f`" \
-		debchange --force-bad-version --newversion "${mbdParseCF_version}`mbdGetMandatoryVersionPart ${b}`" \
-			--force-distribution --distribution="${b}" \
-			"Mini-buildd auto backport from ${mbdParseCF_version}" 2>&1 | ${MBD_LOG} -s
-		debchange --append "MINI_BUILDD: BACKPORT_MODE"
-		${MBD_LOG} -s "XXX6=`pwd`"
-		dpkg-buildpackage -kmini-buildd -d -S -sa  2>&1 | ${MBD_LOG} -s
-		${MBD_LOG} -s "XXX7=`pwd`"
-		cd ${OLDPWD}
-	done
-	${MBD_LOG} -s "Autobackports all DONE"
-}
-
 mbdABSpoolRun()
 {
-	${MBD_ENABLE_AUTO_BACKPORTS} || return 0
-
 	local c
-	for c in `find "/home/mini-buildd/rep/mini-dinstall/incoming/mbd-ab-spool/" -name "*_source.changes"`; do
+	for c in $(find "${MBD_INCOMING_BPO}/" -maxdepth 2 -mindepth 2 -name "*_source.changes"); do
 		mbdParseCF "${c}"
 		local inst=true
 		local f
 		for f in ${mbdParseCF_files}; do
 			${MBD_LOG} -s "Auto-backports `basename $c`: Checking ${f}."
-			if [ -e "/home/mini-buildd/rep/mini-dinstall/incoming/${f}" ]; then
+			if [ -e "${MBD_INCOMING}/${f}" ]; then
 				${MBD_LOG} -s "Auto-backports $c: Can't upload yet (${f})."
 				inst=false
 				continue
@@ -81,9 +38,9 @@ mbdABSpoolRun()
 		if ${inst}; then
 			${MBD_LOG} -s "Auto-backports Uploading ${c}."
 			(
-				cd `dirname "${c}"`
-				mv ${mbdParseCF_files} /home/mini-buildd/rep/mini-dinstall/incoming/   2>&1 | ${MBD_LOG} -s
-				)
+				cd "$(dirname "${c}")"
+				mv -v ${mbdParseCF_files} ${MBD_INCOMING}/ 2>&1 | ${MBD_LOG} -s
+			)
 		fi
 	done
 }
@@ -118,7 +75,7 @@ mbdQAPrebuild()
 mbdArchBuild()
 {
 	local cf="${MBD_HOME}/bld/builds/`mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}"`/${mbdParseCF_package}_source.changes"
-	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
+	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Build Backports" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
 }
 
 mbdArchQAPostbuild()
@@ -206,10 +163,6 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 
   # Cleanup Build area on all build hosts. Always ignore retval; cosmetic only.
 	mbdArchRun mbdArchClean >>"${MBD_TMP_LOGDIR}.log" 2>&1 || true
-
-	if [ "${MBD_PREINSTALL_STATUS}" = "BUILT" ]; then
-		mbdABSpoolInsert
-	fi
 
 	(
 		case ${MBD_PREINSTALL_STATUS} in

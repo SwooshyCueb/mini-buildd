@@ -225,6 +225,77 @@ mbdQACheckBuild()
 	return ${retval}
 }
 
+mbdQACheckBackports()
+{
+	### TEMPORARY; auto backports are experimental and are enabled on fritz for testing only.
+	local MBD_ENABLE_AUTO_BACKPORTS=false
+	if [ `hostname -f` = "fritz.use.schlund.de" ]; then
+		MBD_ENABLE_AUTO_BACKPORTS=true
+	fi
+	${MBD_ENABLE_AUTO_BACKPORTS} || return 0
+	### END TEMPORARY
+
+	local retval=0
+	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
+	mbdParseArch "${MBD_TMP_ARCH}"
+
+	echo "I: ----------------------------------------------------------------------"
+	echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
+	echo "I: ----------------------------------------------------------------------"
+
+	# We only run an arch=all architecture
+	if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
+		echo "I: ${mbdParseArch_arch}: Backports are done on ${mbd_archall} only, skipping."
+	else
+		local b
+		for b in ${mbdParseCF_mbd_auto_backports}; do
+			echo "Auto-backporting for: ${b}"
+
+			# Build in subdir ${b}
+			mkdir -v "${b}"
+			cd "${b}"
+
+			local f
+			for f in ${mbdParseCF_files}; do
+				if [ ".dsc" = "${f: -4:4}" ]; then
+					echo "Found DSC=$(dirname "${MBD_TMP_CFA}")/${f}"
+					dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${f}" dst
+					break
+				fi
+			done
+
+			# Enter DST, taint package changelog
+			cd "dst"
+			# @todo: version handling
+			local version="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${b})"
+			DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}" \
+				DEBEMAIL="mini-buildd@`hostname -f`" \
+				debchange --force-bad-version --newversion "${version}" \
+				--force-distribution --distribution="${b}" \
+				"Mini-buildd auto backport from ${mbdParseCF_version}"
+			debchange --append "MINI_BUILDD: BACKPORT_MODE"
+
+			# Build source package
+			# @todo: use sbuild
+			dpkg-buildpackage -kmini-buildd -d -S -sa
+
+			# @todo: upload handling / spool
+			cd ..
+			local cf=$(find . -maxdepth 1 -name "*.changes")
+			echo "Source package build, uploading: ${cf}"
+			(
+				mbdParseCF "${cf}"
+				UPDIR="${MBD_INCOMING_BPO}/${b}"
+				${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
+				${MBD_TMP_SCP} -v -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
+			)
+			[ $? -eq 0 ] || return 1
+			cd ..
+		done
+	fi
+	return ${retval}
+}
+
 # Download DBP via dput
 mbdQACheckDownloadDBP()
 {

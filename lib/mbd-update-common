@@ -50,7 +50,7 @@ cat <<EOF >"${MBD_DPUTCONFIGFILE}"
 [mini-buildd-${mbd_id}]
 fqdn = ${mbd_rephost}
 login = mini-buildd
-incoming = ${MBD_HOME}/rep/mini-dinstall/incoming/
+incoming = ${MBD_INCOMING}/
 method = scp
 ssh_config_options = Port=${mbd_sshport}
   StrictHostKeyChecking=no

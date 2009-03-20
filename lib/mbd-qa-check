@@ -267,11 +267,11 @@ mbdQACheckBackports()
 			# Enter DST, taint package changelog
 			cd "dst"
 			# @todo: version handling
-			local version="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${b})"
+			local newVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${b})"
 			(
 				export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
 				export DEBEMAIL="mini-buildd@`hostname -f`"
-				debchange --force-bad-version --newversion "${version}" \
+				debchange --force-bad-version --newversion "${newVersion}" \
 					--force-distribution --distribution="${b}" \
 					"Mini-buildd auto backport from ${mbdParseCF_version}"
 				debchange --append "MINI_BUILDD: BACKPORT_MODE"

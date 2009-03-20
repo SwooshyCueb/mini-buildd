@@ -280,7 +280,7 @@ mbdQACheckBackports()
 			# @todo: use sbuild
 			dpkg-buildpackage -kmini-buildd -d -S -sa
 
-			# @todo: upload handling / spool
+			# Upload to back to repository bpo spool
 			cd ..
 			local cf=$(find . -maxdepth 1 -name "*.changes")
 			echo "Source package build, uploading: ${cf}"

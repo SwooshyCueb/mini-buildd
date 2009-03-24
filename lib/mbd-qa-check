@@ -283,7 +283,13 @@ mbdQACheckBackports()
 			# in a dedicated chroot with dependency handling. So we use -d
 			# here; packages that need tze source-deps even for -S will
 			# fail.
-			dpkg-buildpackage -kmini-buildd -d -S -sa
+
+			# @note: We add -v option with third version in CL, so we also
+			# get the changes from the original version in the changes file;
+			# the version number must exist exactly as given in cl, so we
+			# cant just guess a lower version. See Debian Bug #477638.
+			local changesAfterVersion=$(dpkg-parsechangelog --offset 2 --count 1 | grep "^Version" | cut -d" " -f2-)
+			dpkg-buildpackage -kmini-buildd -d -S -sa -v${changesAfterVersion}
 
 			# Upload to back to repository bpo spool
 			cd ..

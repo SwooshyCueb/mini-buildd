@@ -276,8 +276,13 @@ mbdQACheckBackports()
 					"Mini-buildd auto backport from ${mbdParseCF_version}"
 				debchange --append "MINI_BUILDD: BACKPORT_MODE"
 			)
+
 			# Build source package
-			# @todo: use sbuild
+			# @note: sbuild can't be used on a DST directly afaics, so we
+			# can't use it here -- i.e., we can't build the source package
+			# in a dedicated chroot with dependency handling. So we use -d
+			# here; packages that need tze source-deps even for -S will
+			# fail.
 			dpkg-buildpackage -kmini-buildd -d -S -sa
 
 			# Upload to back to repository bpo spool

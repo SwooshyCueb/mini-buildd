@@ -249,7 +249,7 @@ mbdQACheckBackports()
 	else
 		local b
 		for b in ${mbdParseCF_mbd_auto_backports}; do
-			echo "Auto-backporting for: ${b}"
+			echo -e "\n==> Auto-backporting for: ${b}"
 
 			# Build in subdir ${b}
 			mkdir -v "${b}"

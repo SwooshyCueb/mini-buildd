@@ -288,7 +288,7 @@ mbdQACheckBackports()
 				mbdParseCF "${cf}"
 				UPDIR="${MBD_INCOMING_BPO}/${b}"
 				${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
-				${MBD_TMP_SCP} -v -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
+				${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
 			)
 			[ $? -eq 0 ] || return 1
 			cd ..

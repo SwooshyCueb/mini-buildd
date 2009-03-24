@@ -203,7 +203,7 @@ mbdParseCF()
 
 	# Mini-buildd controls via changelog entries
 	mbdParseCF_mbd_backport_mode=false
-	if grep --quiet "MINI_BUILDD: BACKPORT_MODE" "${cf}"; then
+	if mbdParseCFTopChanges "${mbdParseCF_source}" "${cf}" | grep --quiet "MINI_BUILDD: BACKPORT_MODE"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
 	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' ' '`

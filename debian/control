@@ -28,7 +28,7 @@ Description: Minimal Debian buildd (repository)
 
 Package: mini-buildd-bld
 Architecture: all
-Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap, schroot, dput
+Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap, schroot, dput, devscripts (>= 2.10.15)
 Recommends: logrotate
 Description: Minimal Debian buildd (builder)
  Mini-buildd lets a bunch of existing standard and Debian specific

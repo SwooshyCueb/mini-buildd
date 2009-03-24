@@ -133,23 +133,50 @@ mbdUpdateSshKeyring()
 	fi
 }
 
+mbdParseCFTopChanges()
+{
+	local source="${1}"
+	local cf="${2}"
+
+	local regexHeader="^ ${source} (.\+) .\+; urgency=.\+\$"
+
+	grep --max-count=1 -A100 "^Changes:" "${cf}" |
+	(
+		# Skip ^Changes line and topmost header
+		read
+		read
+		while read; do
+			if echo "${REPLY}" | grep --quiet "${regexHeader}"; then
+				# Another header? Leave; we only want the topmost version
+				break
+			fi
+			echo "${REPLY}"
+		done
+	)
+}
+
+
 # Parse auto-backports list from changes file (OUCH!).
 mbdParseCFAutoBackports()
 {
-	local cf="${1}"
+	local source="${1}"
+	local cf="${2}"
 
 	local regex="*[[:space:]]*MINI_BUILDD:[[:space:]]*AUTO_BACKPORTS:"
-	grep --max-count=1 -A10 "${regex}" "${cf}" |
+
+	mbdParseCFTopChanges "${source}" "${cf}" |
 	(
+		local reading=false
 		while read; do
 			if echo "${REPLY}" | grep --quiet "${regex}"; then
-				# 1st line with identifier
+				# Line with identifier
 				echo -n "${REPLY}" | cut -d: -f3-
-			elif [ -z "${REPLY}" ] || echo "${REPLY}" | grep --quiet -e "*" -e "^[^[:space:]]\+"; then
+				reading=true
+			elif ${reading} && ( [ -z "${REPLY}" ] || echo "${REPLY}" | grep --quiet -e "*" -e "^[^[:space:]]\+" ); then
 				# No further entries (changelog), new entry (both), end of entries (changes): break
 				break;
-			else
-				# More lines of this changelog entry
+			elif ${reading}; then
+				# The whole line belongs to us
 				echo -n "${REPLY}"
 			fi
 		done
@@ -179,7 +206,7 @@ mbdParseCF()
 	if grep --quiet "MINI_BUILDD: BACKPORT_MODE" "${cf}"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
-	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${cf}" | tr -d '[:space:]' | tr ',' ' '`
+	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' ' '`
 }
 
 # Parse build host for arch

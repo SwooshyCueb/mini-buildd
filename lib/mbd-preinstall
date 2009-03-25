@@ -14,12 +14,6 @@ mbdCheckFile "${MBD_TMP_CF}"
 
 mbdParseCF "${MBD_TMP_CF}"
 
-# TEMPORARY; auto backports are experimental and are enabled on fritz for testing only.
-MBD_ENABLE_AUTO_BACKPORTS=false
-if [ `hostname -f` = "fritz.use.schlund.de" ]; then
-	MBD_ENABLE_AUTO_BACKPORTS=true
-fi
-
 mbdABSpoolRun()
 {
 	local c

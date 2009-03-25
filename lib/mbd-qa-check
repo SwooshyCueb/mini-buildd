@@ -247,13 +247,13 @@ mbdQACheckBackports()
 	if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
 		echo "I: ${mbdParseArch_arch}: Backports are done on ${mbd_archall} only, skipping."
 	else
-		local b
-		for b in ${mbdParseCF_mbd_auto_backports}; do
-			echo -e "\n==> Auto-backporting for: ${b}"
+		local d
+		for d in ${mbdParseCF_mbd_auto_backports}; do
+			echo -e "\n==> Auto-backporting for: ${d}"
 
-			# Build in subdir ${b}
-			mkdir -v "${b}"
-			cd "${b}"
+			# Build in subdir ${d}
+			mkdir -v "${d}"
+			cd "${d}"
 
 			local f
 			for f in ${mbdParseCF_files}; do
@@ -267,13 +267,13 @@ mbdQACheckBackports()
 			# Enter DST, taint package changelog
 			cd "dst"
 			# @todo: version handling
-			local newVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${b})"
+			local newVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
 			(
 				export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
 				export DEBEMAIL="mini-buildd@`hostname -f`"
 				debchange --force-bad-version --newversion "${newVersion}" \
-					--force-distribution --distribution="${b}" \
-					"Mini-buildd auto backport from ${mbdParseCF_version}"
+					--force-distribution --distribution="${d}" \
+					"Auto-Backport (no changes) for ${d} from ${mbdParseCF_version}"
 				debchange --append "MINI_BUILDD: BACKPORT_MODE"
 			)
 
@@ -297,7 +297,7 @@ mbdQACheckBackports()
 			echo "Source package build, uploading: ${cf}"
 			(
 				mbdParseCF "${cf}"
-				UPDIR="${MBD_INCOMING_BPO}/${b}"
+				UPDIR="${MBD_INCOMING_BPO}/${d}"
 				${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
 				${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
 			)

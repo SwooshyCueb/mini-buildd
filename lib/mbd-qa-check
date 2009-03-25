@@ -258,18 +258,19 @@ mbdQACheckBackports()
 			dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" DST
 			cd "DST"
 
-			# @todo: version handling
+			# Taint DST (CL/Version only)
 			local bpoVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
 			(
 				export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
 				export DEBEMAIL="mini-buildd@`hostname -f`"
-				debchange --force-bad-version --newversion "${bpoVersion}" \
+				debchange \
+					--force-bad-version --newversion "${bpoVersion}" \
 					--force-distribution --distribution="${d}" \
 					"Auto-Backport (no changes) for ${d} from ${mbdParseCF_version}"
 				debchange --append "MINI_BUILDD: BACKPORT_MODE"
 			)
 
-			# Build bpo source package
+			# Build source package
 
 			# @note: sbuild can't be used on a DST directly afaics, so we
 			# can't use it here -- i.e., we can't build the source package

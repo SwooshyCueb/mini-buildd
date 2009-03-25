@@ -227,14 +227,6 @@ mbdQACheckBuild()
 
 mbdQACheckBackports()
 {
-	### TEMPORARY; auto backports are experimental and are enabled on fritz for testing only.
-	local MBD_ENABLE_AUTO_BACKPORTS=false
-	if [ `hostname -f` = "fritz.use.schlund.de" ]; then
-		MBD_ENABLE_AUTO_BACKPORTS=true
-	fi
-	${MBD_ENABLE_AUTO_BACKPORTS} || return 0
-	### END TEMPORARY
-
 	run()
 	{
 		local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"

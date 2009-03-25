@@ -251,21 +251,12 @@ mbdQACheckBackports()
 		for d in ${mbdParseCF_mbd_auto_backports}; do
 			echo -e "\n==> Auto-backporting for: ${d}"
 
-			# Build in subdir ${d}
+			# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
 			mkdir -v "${d}"
 			cd "${d}"
-
-			local f
-			for f in ${mbdParseCF_files}; do
-				if [ ".dsc" = "${f: -4:4}" ]; then
-					echo "Found DSC=$(dirname "${MBD_TMP_CFA}")/${f}"
-					dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${f}" dst
-					break
-				fi
-			done
-
-			# Enter DST, taint package changelog
+			dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" dst
 			cd "dst"
+
 			# @todo: version handling
 			local newVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
 			(

@@ -1,4 +1,4 @@
-mini-buildd (0.7.14~fritz50+0exp1) lenny-fritz-experimental; urgency=low
+mini-buildd (0.7.14~fritz50+0exp1) UNRELEASED; urgency=low
 
   * qa-check Build: Don't warn when no packages to build for arch.
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
@@ -6,10 +6,9 @@ mini-buildd (0.7.14~fritz50+0exp1) lenny-fritz-experimental; urgency=low
     [W:lintian]
   * Add (nop yet) config script for -common [E:lintian].
   * init: Add "reindex" target.
-  * Add check Backports; this actually enables auto backports support
-    ::incomplete::
+  * New qa-check "Backports": This implements the new "auto-backports mode".
 
- --
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 25 Mar 2009 16:30:27 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

@@ -247,6 +247,7 @@ mbdQACheckBackports()
 	if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
 		echo "I: ${mbdParseArch_arch}: Backports are done on ${mbd_archall} only, skipping."
 	else
+		# @todo: error handling 0=ok, 1=warn, else error; e should never error, always warn only.
 		local d
 		for d in ${mbdParseCF_mbd_auto_backports}; do
 			echo -e "\n==> Auto-backporting for: ${d}"
@@ -254,8 +255,8 @@ mbdQACheckBackports()
 			# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
 			mkdir -v "${d}"
 			cd "${d}"
-			dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" dst
-			cd "dst"
+			dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" DST
+			cd "DST"
 
 			# @todo: version handling
 			local newVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
@@ -269,6 +270,7 @@ mbdQACheckBackports()
 			)
 
 			# Build source package
+
 			# @note: sbuild can't be used on a DST directly afaics, so we
 			# can't use it here -- i.e., we can't build the source package
 			# in a dedicated chroot with dependency handling. So we use -d

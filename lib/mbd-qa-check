@@ -235,72 +235,78 @@ mbdQACheckBackports()
 	${MBD_ENABLE_AUTO_BACKPORTS} || return 0
 	### END TEMPORARY
 
-	local retval=0
-	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
-	mbdParseArch "${MBD_TMP_ARCH}"
+	run()
+	{
+		local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
+		mbdParseArch "${MBD_TMP_ARCH}"
 
-	echo "I: ----------------------------------------------------------------------"
-	echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
-	echo "I: ----------------------------------------------------------------------"
+		echo "I: ----------------------------------------------------------------------"
+		echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
+		echo "I: ----------------------------------------------------------------------"
 
-	# We only run an arch=all architecture
-	if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
-		echo "I: ${mbdParseArch_arch}: Backports are done on ${mbd_archall} only, skipping."
-	else
-		# @todo: error handling 0=ok, 1=warn, else error; e should never error, always warn only.
-		local d
-		for d in ${mbdParseCF_mbd_auto_backports}; do
-			echo -e "\n==> Auto-backporting for: ${d}"
+		# We only run an arch=all architecture
+		if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
+			echo "I: ${mbdParseArch_arch}: Auto-Backports are done on ${mbd_archall} only, skipping."
+		else
+			local d
+			for d in ${mbdParseCF_mbd_auto_backports}; do
+				echo -e "\n==> Auto-backporting for: ${d}"
 
-			# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
-			mkdir -v "${d}"
-			cd "${d}"
-			dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" DST
-			cd "DST"
+				# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
+				mkdir -v "${d}"
+				cd "${d}"
+				dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" DST
+				cd "DST"
 
-			# Taint DST (CL/Version only)
-			local bpoVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
-			(
-				export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
-				export DEBEMAIL="mini-buildd@`hostname -f`"
-				debchange \
-					--force-bad-version --newversion "${bpoVersion}" \
-					--force-distribution --distribution="${d}" \
-					"Auto-Backport (no changes) for ${d} from ${mbdParseCF_version}"
-				debchange --append "MINI_BUILDD: BACKPORT_MODE"
-			)
+				# Taint DST (CL/Version only)
+				local bpoVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
+				(
+					export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
+					export DEBEMAIL="mini-buildd@`hostname -f`"
+					debchange \
+						--force-bad-version --newversion "${bpoVersion}" \
+						--force-distribution --distribution="${d}" \
+						"Auto-Backport (no changes) for ${d} from ${mbdParseCF_version}"
+					debchange --append "MINI_BUILDD: BACKPORT_MODE"
+				)
+				[ $? -eq 0 ] || return 1
 
-			# Build source package
+				# Build source package
 
-			# @note: sbuild can't be used on a DST directly afaics, so we
-			# can't use it here -- i.e., we can't build the source package
-			# in a dedicated chroot with dependency handling. So we use -d
-			# here; packages that need the source-deps even for -S will
-			# fail.
-			# @note: We add -v option with third version in CL, so we also
-			# get the changes from the original version in the changes file;
-			# the version number must exist exactly as given in cl, so we
-			# can't just guess a lower version here. See Debian Bug #477638.
-			local changesAfterVersion=$(dpkg-parsechangelog --offset 2 --count 1 | grep "^Version" | cut -d" " -f2-)
-			dpkg-buildpackage -kmini-buildd -d -S -sa -v${changesAfterVersion}
+				# @note: sbuild can't be used on a DST directly afaics, so we
+				# can't use it here -- i.e., we can't build the source package
+				# in a dedicated chroot with dependency handling. So we use -d
+				# here; packages that need the source-deps even for -S will
+				# fail.
+				# @note: We add -v option with third version in CL, so we also
+				# get the changes from the original version in the changes file;
+				# the version number must exist exactly as given in cl, so we
+				# can't just guess a lower version here. See Debian Bug #477638.
+				local changesAfterVersion=$(dpkg-parsechangelog --offset 2 --count 1 | grep "^Version" | cut -d" " -f2-)
+				dpkg-buildpackage -kmini-buildd -d -S -sa -v${changesAfterVersion}
 
-			# Go up from DST, and upload backport back to repository bpo spool
-			cd ..
-			local bpoCF="${mbdParseCF_source}_${bpoVersion}_source.changes"
-			echo "Source package build, uploading: ${bpoCF}"
-			(
-				mbdParseCF "${bpoCF}"
-				UPDIR="${MBD_INCOMING_BPO}/${d}"
-				${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
-				${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
-			)
-			[ $? -eq 0 ] || return 1
+				# Go up from DST, and upload backport back to repository bpo spool
+				cd ..
+				local bpoCF="${mbdParseCF_source}_${bpoVersion}_source.changes"
+				echo "Source package build, uploading: ${bpoCF}"
+				(
+					mbdParseCF "${bpoCF}"
+					UPDIR="${MBD_INCOMING_BPO}/${d}"
+					${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
+					${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
+				)
+				[ $? -eq 0 ] || return 1
 
-			# Done; go up to orig dir for next bpo
-			cd ..
-		done
-	fi
-	return ${retval}
+				# Done; go up to orig dir for next bpo
+				cd ..
+			done
+		fi
+	}
+
+	# Only return success (0) or warn (1).
+	run
+	[ $? -eq 0 ] || return 1
+	return 0
 }
 
 # Download DBP via dput

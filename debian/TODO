@@ -24,7 +24,6 @@ Mini-dinstall fixes:
                       DIST-ID/stable/        : Stable repo; Symlinks to all files ../SRC_PKG/stable/* of all packages.
 Features:
 =========
-@todo Auto-backport option in changelog.
 @todo [brain] Make sbuild apt_allow_unauthenticated configurable via debconf; add some
       infrastructure to add keys when entering chroots, and some way to manage keys.
 @todo [brain] PMS (Package Maintenance System) via web interface.

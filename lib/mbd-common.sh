@@ -39,8 +39,6 @@ MBD_MDINSTALLCONFIGFILE="${MBD_HOME}/.mini-dinstall.conf"
 
 MBD_HTML_INDEXFILE="${MBD_HOME}/public_html/index.html"
 
-# Packages that must be installed in (source) build chroots
-MBD_CHROOT_EXTRA_PACKAGES="build-essential fakeroot ccache"
 MBD_SCHROOTCONFIGFILE="/etc/schroot/schroot.conf"
 
 # Maintainer name of autobuilder (goes to .sbuildrc, and used to reject direct binary uploads).

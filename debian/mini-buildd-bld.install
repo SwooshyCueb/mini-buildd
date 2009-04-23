@@ -1,2 +1,2 @@
-lib/mbd-update-bld lib/mbd-setup-chroots lib/mbd-setup-lvm usr/share/mini-buildd
+lib/mbd-update-bld lib/mbd-setup-chroots lib/mbd-setup-lvm lib/chroots-update.d/ usr/share/mini-buildd
 debian/99mini-buildd etc/schroot/setup.d

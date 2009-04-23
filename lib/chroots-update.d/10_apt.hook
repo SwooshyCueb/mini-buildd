@@ -1,0 +1,11 @@
+APTGET="apt-get -o APT::Install-Recommends=false"
+EXTRA_PACKAGES="build-essential fakeroot ccache"
+
+export DEBIAN_FRONTEND="noninteractive"
+
+${APTGET} update
+${APTGET} --yes --ignore-missing dist-upgrade
+${APTGET} --yes install ${EXTRA_PACKAGES}
+# autoremove is only available lenny+: so dont fail on error
+${APTGET} --yes --purge autoremove || true
+${APTGET} clean

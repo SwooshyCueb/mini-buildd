@@ -68,27 +68,14 @@ for dist in `mbdD2SList "${mbd_dists}"`; do
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
 			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT}..."
-			if cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
-set -e
-APTGET="apt-get -o APT::Install-Recommends=false"
-export DEBIAN_FRONTEND="noninteractive"
-
-\${APTGET} update
-\${APTGET} --yes --ignore-missing dist-upgrade
-[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || \${APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
-\${APTGET} --yes --purge autoremove || true
-\${APTGET} clean
-
-# Workaround for Debian Bug #327477 (bash building)
-[ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd
-[ -e /dev/stdin ] || ln -sv fd/0 /dev/stdin
-[ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
-[ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
-EOF
-				${MBD_LOG} -s "Chroot ${MBD_TMP_CHROOT} successfully updated."
-			else
-				${MBD_LOG} -s "*ERROR* updating chroot ${MBD_TMP_CHROOT}."
-			fi
+			for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook"); do
+				if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
+					HOOK_STATUS="Success"
+				else
+					HOOK_STATUS="ERROR"
+				fi
+				${MBD_LOG} -s "Chroot ${MBD_TMP_CHROOT} update hook ${hook}: ${HOOK_STATUS}."
+			done
 		fi
 	done
 done

@@ -1,8 +1,6 @@
 Pure TODOS:
 ===========
 
-(1) New dir: ~/.mini-buildd/: Local configuration; copied by
-builders from rep.
 (2) New dir: /usr/share/mini-buildd/chroots-update.d/
     - 10_apt.hook: upgrade, autoremove, clean [*apt-secure, *apt-preferences]
     - 20_debconf.hook*

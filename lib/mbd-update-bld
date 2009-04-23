@@ -52,6 +52,13 @@ ${MBD_LOG} -s "`ln -s -f -v ../bld public_html/ 2>&1`"
 
 mbdUpdateSshKeyring "${mbd_rephost}"
 
+# Update local configuration dir
+if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
+	# -bld w/o -rep only; retrieve local config from rephost.
+	rm -rf "${MBD_LOCALCONFIG}"
+	scp -o StrictHostKeyChecking=no -P ${mbd_sshport} -p -r "${mbd_rephost}:${MBD_LOCALCONFIG}" "${MBD_LOCALCONFIG}"
+fi
+
 # Check/prepare chroots for all dists.
 for dist in `mbdD2SList "${mbd_dists}"`; do
 	for arch in `mbdD2SList "${mbd_archs}"`; do
@@ -61,16 +68,16 @@ for dist in `mbdD2SList "${mbd_dists}"`; do
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
 			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT}..."
-			MBD_APTGET="apt-get -o APT::Install-Recommends=false"
 			if cat <<EOF | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
 set -e
+APTGET="apt-get -o APT::Install-Recommends=false"
 export DEBIAN_FRONTEND="noninteractive"
 
-${MBD_APTGET} update
-${MBD_APTGET} --yes --ignore-missing dist-upgrade
-[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || ${MBD_APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
-${MBD_APTGET} --yes --purge autoremove || true
-${MBD_APTGET} clean
+\${APTGET} update
+\${APTGET} --yes --ignore-missing dist-upgrade
+[ -z "${MBD_CHROOT_EXTRA_PACKAGES}" ] || \${APTGET} --yes install ${MBD_CHROOT_EXTRA_PACKAGES}
+\${APTGET} --yes --purge autoremove || true
+\${APTGET} clean
 
 # Workaround for Debian Bug #327477 (bash building)
 [ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd

@@ -10,6 +10,7 @@ cd "${MBD_HOME}"
 
 # Make some items accessible via http
 ${MBD_LOG} -s "`ln -s -f -v ../.mini-buildd.conf public_html/config 2>&1`"
+${MBD_LOG} -s "`rm -f public_html/config-local && ln -s -f -v ../.mini-buildd public_html/config-local 2>&1`"
 ${MBD_LOG} -s "`ln -s -f -v ../.dput.cf public_html/dput.cf 2>&1`"
 ${MBD_LOG} -s "`ln -s -f -v ../rep public_html/ 2>&1`"
 ${MBD_LOG} -s "`ln -s -f -v ../log public_html/ 2>&1`"
@@ -101,6 +102,7 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
 
 <li>Status:
     <a href="config">View raw config</a>,
+    <a href="config-local/">Browse local config</a>,
     <a href="log/">Browse build logs</a>,
     <a href="rep/mini-dinstall/incoming/">Browse incoming</a>,
     <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.

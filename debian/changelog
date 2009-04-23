@@ -6,9 +6,12 @@ mini-buildd (0.7.14~fritz50+0exp1) UNRELEASED; urgency=low
     [W:lintian]
   * Add (nop yet) config script for -common [E:lintian].
   * init: Add "reindex" target.
-  * New qa-check "Backports": This implements the new "auto-backports mode".
+  * Implement Auto-Backports via new qa-check "Backports".
+  * Chroot-Hooks:
+    - New "local config" directory "~/.mini-buildd" on repo, copied by
+      builders.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 25 Mar 2009 16:30:27 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Thu, 23 Apr 2009 17:10:11 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

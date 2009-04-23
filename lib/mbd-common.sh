@@ -24,6 +24,8 @@ MBD_REPCONFIGVARS="mbd_id mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_extd
 MBD_BLDCONFIGFILE="${MBD_HOME}/.mini-buildd-bld.conf"
 MBD_BLDCONFIGVARS="mbd_rephttphost mbd_bldhost mbd_lvm_vg"
 
+MBD_LOCALCONFIG="${MBD_HOME}/.mini-buildd"
+
 MBD_SBUILDCONFIGFILE="${MBD_HOME}/.sbuildrc"
 MBD_DPUTCONFIGFILE="${MBD_HOME}/.dput.cf"
 

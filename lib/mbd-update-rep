@@ -11,6 +11,7 @@ cd "${MBD_HOME}"
 
 mkdir -p "rep"
 mkdir -p "log"
+mkdir -p ".mini-buildd"
 
 MBD_TMP_DISTS=`mbdD2SList "${mbd_dists}"`
 cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"

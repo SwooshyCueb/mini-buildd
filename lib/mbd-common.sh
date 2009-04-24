@@ -304,7 +304,7 @@ mbdDeleteMarkedConfig()
 mbdExpandDists()
 {
 	for dist in ${1}; do
-		local d="`echo "${dist}" | sed "s/-experimental\$//"`"
+		local d="$(echo "${dist}" | sed "s/-experimental\$//")"
 		echo -n "${d} ${d}-experimental "
 	done
 }
@@ -312,23 +312,19 @@ mbdExpandDists()
 # Get versions of known basis distributions
 mbdBasedist2Version()
 {
-	case ${1} in
-		woody)
-			echo -n "30"
-			;;
-		sarge)
-			echo -n "31"
-			;;
-		etch)
-			echo -n "40"
-			;;
-		lenny)
-			echo -n "50"
-			;;
-		*)
-			return 1
-			;;
-	esac
+	# Known base distributions
+	local woody=30
+	local sarge=31
+	local etch=40
+	local lenny=50
+	local sid=SID
+
+	local version=${!1}
+	if [ -z "${version}" ]; then
+		${MBD_LOG} -s "ERROR: Unknown base dist ${1}."
+		return 1
+	fi
+	echo -n "${version}"
 }
 
 mbdGetMandatoryVersionPart()

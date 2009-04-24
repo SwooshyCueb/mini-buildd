@@ -15,8 +15,11 @@ mini-buildd (0.7.14~fritz50+0exp1) UNRELEASED; urgency=low
       - 10_apt: upgrade, install extras, autoremove, clean.
       - 70_bug327477: bug workaround.
       - 99_local: run local scripts via run.d.
+  * Base distribution sid: Add forced version "~idSID"; formerly, sid
+    wasn't restricted which may lead to conflicts with versions in real
+    Debian "sid"
 
- -- Stephan Sürken <absurd@olurdix.de>  Thu, 23 Apr 2009 19:09:54 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Fri, 24 Apr 2009 14:19:12 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

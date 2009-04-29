@@ -1,11 +1,3 @@
-mini-buildd (0.8.0~1~fritzSID+0) sid-fritz-experimental; urgency=low
-
-  * ui-auto-release [Debian only mode]: Package based on 0.8.0.
-  * MINI_BUILDD: AUTO_BACKPORTS: lenny-fritz-experimental,etch-fritz-
-    experimental
-
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 29 Apr 2009 15:00:38 +0000
-
 mini-buildd (0.8.0) UNRELEASED; urgency=low
 
   * qa-check Build: Don't warn when no packages to build for arch.

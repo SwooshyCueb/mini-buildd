@@ -1,7 +1,6 @@
 #!/bin/sh -e
 
 . `dirname $0`/mbd-common.sh
-. "${MBD_REPCONFIGFILE}"
 . "${MBD_BLDCONFIGFILE}"
 
 mbd_opt_init "Mini-buildd: Auto-setup lvm w/ loop device (root only)."

@@ -236,7 +236,7 @@ mbdQACheckBackports()
 		echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
 		echo "I: ----------------------------------------------------------------------"
 
-		# We only run an arch=all architecture
+		# We only run on arch=all architecture
 		if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
 			echo "I: ${mbdParseArch_arch}: Auto-Backports are done on ${mbd_archall} only, skipping."
 		else

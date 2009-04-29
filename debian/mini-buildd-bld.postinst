@@ -15,8 +15,10 @@ for v in ${MBD_BLDCONFIGVARS}; do
 done
 chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
 
+# This will only need ${MBD_BLDCONFIGFILE} (which we now have), and set up lvm if needed.
 /usr/share/mini-buildd/mbd-setup-lvm
 
+# This will get ${MBD_REPCONFIGFILE} and do other updates: chroot updates may fail initially here.
 su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-bld"
 
 . "${MBD_BLDCONFIGFILE}"

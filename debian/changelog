@@ -18,8 +18,10 @@ mini-buildd (0.8.0) UNRELEASED; urgency=low
   * Base distribution sid: Add forced version "~idSID"; formerly, sid
     wasn't restricted which may lead to conflicts with versions in real
     Debian "sid"
+  * mini-buildd-rep.config: Bugfix: We relied on having /home/mini-buildd
+    ready which failed on preconfigure; fixed an simplified config.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 29 Apr 2009 16:14:10 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 29 Apr 2009 17:14:48 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

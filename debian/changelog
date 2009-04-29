@@ -1,4 +1,4 @@
-mini-buildd (0.7.14~fritz50+0exp1) UNRELEASED; urgency=low
+mini-buildd (0.8.0+0local1) UNRELEASED; urgency=low
 
   * qa-check Build: Don't warn when no packages to build for arch.
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
@@ -19,7 +19,7 @@ mini-buildd (0.7.14~fritz50+0exp1) UNRELEASED; urgency=low
     wasn't restricted which may lead to conflicts with versions in real
     Debian "sid"
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Fri, 24 Apr 2009 14:19:12 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 29 Apr 2009 14:17:16 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

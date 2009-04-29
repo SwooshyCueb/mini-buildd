@@ -250,8 +250,8 @@ mbdQACheckBackports()
 				dpkg-source -x "$(dirname "${MBD_TMP_CFA}")/${mbdParseCF_source}_${mbdParseCF_version}.dsc" DST
 				cd "DST"
 
-				# Taint DST (CL/Version only)
-				local bpoVersion="${mbdParseCF_version}$(mbdGetMandatoryVersionPart ${d})"
+				# Taint DST (CL/Version only): Use original version, replace manadatory version parts only.
+				local bpoVersion=${mbdParseCF_version/$(mbdGetMandatoryVersionPart ${mbdParseCF_dist})/$(mbdGetMandatoryVersionPart ${d})}
 				(
 					export DEBFULLNAME="${MBD_AUTOBUILD_MAINTAINER}"
 					export DEBEMAIL="mini-buildd@`hostname -f`"

@@ -139,7 +139,7 @@ mbd_opt_help()
 mbd_opt_given()
 {
 	local varName="MBD_OPT_${1}"
-	if [ -n "${!varName+set}" ]; then return 0; else return 1; fi
+	[ -n "${!varName+set}" ]
 }
 
 # Get option value from char identifier. Returns 1 if the option is
@@ -172,11 +172,7 @@ mbd_opt_set()
 mbd_opt_givenPos()
 {
 	local index="${1}"
-	if [ $((index)) -lt ${#MBD_OPT_positional[*]} ]; then
-		return 0
-	else
-		return 1
-	fi
+	[ $((index)) -lt ${#MBD_OPT_positional[*]} ]
 }
 
 # Get non-option options from index. Other behaviour like mbd_opt_get.

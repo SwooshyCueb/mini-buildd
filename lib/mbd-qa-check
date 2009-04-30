@@ -296,7 +296,7 @@ mbdQACheckBackports()
 	}
 
 	# Only return success (0) or warn (1).
-	run
+	( run )
 	[ $? -eq 0 ] || return 1
 	return 0
 }

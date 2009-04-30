@@ -11,12 +11,12 @@ if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-ca
 	# Compute BASEDIST, ARCH, and IS_EXPERIMENTAL
 	# CHROOT_NAME=mbd-etch-ID-ARCH-*
 	# CHROOT_NAME=mbd-etch-ID-experimental-ARCH-*
-	BASEDIST=`echo "${CHROOT_NAME}" | cut -d- -f2`
-	ARCH=`echo "${CHROOT_NAME}" | cut -d- -f4`
+	BASEDIST=$(echo "${CHROOT_NAME}" | cut -d- -f2)
+	ARCH=$(echo "${CHROOT_NAME}" | cut -d- -f4)
 	IS_EXPERIMENTAL="false"
 	if [ "${ARCH}" = "experimental" ]; then
 		IS_EXPERIMENTAL="true"
-		ARCH=`echo "${CHROOT_NAME}" | cut -d- -f5`
+		ARCH=$(echo "${CHROOT_NAME}" | cut -d- -f5)
 	fi
 
 	# Compute what KINDS of sources we have to add

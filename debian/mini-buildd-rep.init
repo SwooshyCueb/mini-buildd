@@ -17,7 +17,7 @@ fi
 
 DAEMON="/usr/bin/mini-dinstall"
 
-if [ "`id -u -n`" != "root" -a "`id -u -n`" != "mini-buildd" ]; then
+if [ "$(id -u -n)" != "root" -a "$(id -u -n)" != "mini-buildd" ]; then
 	echo "Either user root or mini-buildd must run this." >&2
 	exit 1
 fi
@@ -30,7 +30,7 @@ fi
 mbdMiniDinstall()
 {
 	local pure="${DAEMON} ${1}"
-	if [ "`id -u -n`" = "root" ]; then
+	if [ "$(id -u -n)" = "root" ]; then
 		su - mini-buildd -c "${pure}"
 	else
 		${pure}
@@ -46,7 +46,7 @@ start()
 		echo -n "Starting "
 		mbdMiniDinstall
 	fi
-	echo -n "`basename ${DAEMON}` for user mini-buildd: "
+	echo -n "$(basename ${DAEMON}) for user mini-buildd: "
 	while ! pgrep -U mini-buildd -f "${DAEMON}" >/dev/null; do
 		echo -n "."
 		sleep 1
@@ -56,7 +56,7 @@ start()
 
 stop()
 {
-	echo -n "Stopping `basename ${DAEMON}` for user mini-buildd: "
+	echo -n "Stopping $(basename ${DAEMON}) for user mini-buildd: "
 
 	if pgrep -U mini-buildd -f "${DAEMON}" >/dev/null; then
 		mbdMiniDinstall -k >/dev/null || true

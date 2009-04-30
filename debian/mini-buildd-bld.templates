@@ -18,7 +18,7 @@ Description: This builder's id:
  mini-buildd-rep. If your host is not listed, you need to reconfigure
  mini-buildd-rep.
  .
- Default is the host matching `hostname -f`.
+ Default is the host matching $(hostname -f).
 
 Template: mini-buildd-bld/mbd_lvm_vg
 Type: string

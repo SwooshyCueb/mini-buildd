@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. `dirname $0`/mbd-common.sh
+. $(dirname $0)/mbd-common.sh
 . "${MBD_BLDCONFIGFILE}"
 
 # Update config file; this must be first
@@ -35,7 +35,7 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$path = "/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games";
 
 # Builder identity
-\$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on `hostname -f` <${mbd_mail}>";
+\$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on $(hostname -f) <${mbd_mail}>";
 \$mailto = "${mbd_mail}";
 \$maintainer_name='${MBD_AUTOBUILD_MAINTAINER}';
 \$pgp_options = "-us -k\"${MBD_GNUPG_KEYNAME}\"";
@@ -48,7 +48,7 @@ ${MBD_LOG} -s "${MBD_SBUILDCONFIGFILE} updated."
 ${MBD_LIB}/mbd-update-common
 
 # Make some items accessible via http
-${MBD_LOG} -s "`ln -s -f -v ../bld public_html/ 2>&1`"
+${MBD_LOG} -s "$(ln -s -f -v ../bld public_html/ 2>&1)"
 
 mbdUpdateSshKeyring "${mbd_rephost}"
 
@@ -60,8 +60,8 @@ if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
 fi
 
 # Check/prepare chroots for all dists.
-for dist in `mbdD2SList "${mbd_dists}"`; do
-	for arch in `mbdD2SList "${mbd_archs}"`; do
+for dist in $(mbdD2SList "${mbd_dists}"); do
+	for arch in $(mbdD2SList "${mbd_archs}"); do
 		# Are we responsible for that arch?
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then

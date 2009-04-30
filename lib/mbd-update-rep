@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. `dirname $0`/mbd-common.sh
+. $(dirname $0)/mbd-common.sh
 mbd_opt_init "Mini-buildd: Repository update script."
 mbd_opt_add "p" "Special handling for debian postinstall run."
 mbd_opt_parse "$@"
@@ -13,7 +13,7 @@ mkdir -p "rep"
 mkdir -p "log"
 mkdir -p ".mini-buildd"
 
-MBD_TMP_DISTS=`mbdD2SList "${mbd_dists}"`
+MBD_TMP_DISTS=$(mbdD2SList "${mbd_dists}")
 cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"
 [DEFAULT]
 archivedir = ${MBD_HOME}/rep
@@ -37,7 +37,7 @@ chown_changes_files = 0
 experimental_release = 1
 release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
 
-`for d in ${MBD_TMP_DISTS}; do
+$(for d in ${MBD_TMP_DISTS}; do
    echo "[${d}-${mbd_id}]";
    echo "release_description = ${d} packages for ${mbd_id}.";
    echo "release_label = ${d}-${mbd_id}";
@@ -48,7 +48,7 @@ release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
    echo "release_label = ${d}-${mbd_id}-experimental";
    echo "keep_old = 0";
    echo;
- done`
+ done)
 EOF
 ${MBD_LOG} -s "${MBD_MDINSTALLCONFIGFILE} updated."
 
@@ -56,7 +56,7 @@ ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html
 
 # Run mbd-update-bld on all build hosts
-for host in `mbdGetBldHosts`; do
+for host in $(mbdGetBldHosts); do
 	mbdUpdateSshKeyring "${host}"
 	${MBD_LOG} -s "Updating build hosts ${host}..."
 	if ! ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${host}" "${MBD_LIB}/mbd-update-bld"; then
@@ -65,7 +65,7 @@ for host in `mbdGetBldHosts`; do
 done
 
 if ! mbd_opt_given p; then
-	${MBD_LOG} -s "`/etc/init.d/mini-buildd-rep restart 2>&1`"
+	${MBD_LOG} -s "$(/etc/init.d/mini-buildd-rep restart 2>&1)"
 fi
 
 exit 0

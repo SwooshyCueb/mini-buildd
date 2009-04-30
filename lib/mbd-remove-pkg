@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. `dirname $0`/mbd-common.sh
+. $(dirname $0)/mbd-common.sh
 
 mbd_opt_init "Mini-buildd: Remove package(s) from the repository.
 
@@ -19,8 +19,8 @@ mbd_opt_add "v" "Be verbose."
 mbd_opt_add "R" "Actually do removal -- BE SURE YOU GOT THE PACKAGES RIGHT BEFORE DOING THAT."
 mbd_opt_parse "$@"
 
-PACKAGE=`mbd_opt_get p`
-REMOVEDIR="${MBD_HOME}/REMOVED/`date --utc +%Y%m%d:%H%M%S:%N`"
+PACKAGE=$(mbd_opt_get p)
+REMOVEDIR="${MBD_HOME}/REMOVED/$(date --utc +%Y%m%d:%H%M%S:%N)"
 ADDARGS=""
 if mbd_opt_given v; then
 	ADDARGS="-v"
@@ -46,10 +46,10 @@ if mbd_opt_given s; then
 fi
 
 # Iterate over all changes files
-for c in `find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"`; do
-	dir=`dirname ${c}`
+for c in $(find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"); do
+	dir=$(dirname ${c})
 	mbdParseCF "${c}"
-	log="${MBD_HOME}/log/`echo "${mbdParseCF_package}" | cut -d_ -f1`/${mbdParseCF_version}"
+	log="${MBD_HOME}/log/$(echo "${mbdParseCF_package}" | cut -d_ -f1)/${mbdParseCF_version}"
 
 	echo "Found: ${c}"
 

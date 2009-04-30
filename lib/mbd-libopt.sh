@@ -10,7 +10,7 @@ mbd_opt_init()
 	local name="${3}"
 
 	MBD_OPT_SYNTAX=""
-	MBD_OPT_NAME=`if [ -z "${name}" ]; then basename "${0}"; else echo -n "${name}"; fi`
+	MBD_OPT_NAME=$(if [ -z "${name}" ]; then basename "${0}"; else echo -n "${name}"; fi)
 	MBD_OPT_VERSION="${version}"
 	MBD_OPT_DESC="${desc}"
 	MBD_OPT_POSITIONAL=0
@@ -25,7 +25,7 @@ mbd_opt_add()
 	local implies="${4}"
 
 	local idLetter="${id:0:1}"
-	local syntax="-${idLetter}`if [ "${id:1:1}" = ":" ]; then echo -n " arg"; fi`"
+	local syntax="-${idLetter}$(if [ "${id:1:1}" = ":" ]; then echo -n " arg"; fi)"
 
 	MBD_OPT_SYNTAX="${MBD_OPT_SYNTAX}${id}"
 	eval "MBD_OPT_DESC_${idLetter}=\"${desc}\""
@@ -98,7 +98,7 @@ mbd_opt_usage()
 # Show help
 mbd_opt_help()
 {
-	echo -e "\nHelp for ${MBD_OPT_NAME}`[ -z "${MBD_OPT_VERSION}" ] || echo -e "-${MBD_OPT_VERSION}"`:\n"
+	echo -e "\nHelp for ${MBD_OPT_NAME}$([ -z "${MBD_OPT_VERSION}" ] || echo -e "-${MBD_OPT_VERSION}"):\n"
 
 	[ -z "${MBD_OPT_DESC}" ] || echo -e "${MBD_OPT_DESC}\n"
 
@@ -200,7 +200,7 @@ mbd_opt_assemble()
 {
 	for o in ${1}; do
 		if mbd_opt_given ${o}; then
-			echo -n "-${o} `mbd_opt_get $o` "
+			echo -n "-${o} $(mbd_opt_get $o) "
 		fi
 	done
 }

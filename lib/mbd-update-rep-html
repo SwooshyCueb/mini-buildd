@@ -1,6 +1,6 @@
 #!/bin/sh -e
 
-. `dirname $0`/mbd-common.sh
+. $(dirname $0)/mbd-common.sh
 mbd_opt_init "Mini-buildd: Repository html update script."
 mbd_opt_parse "$@"
 mbdCheckUser mini-buildd
@@ -9,11 +9,11 @@ cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
 # Make some items accessible via http
-${MBD_LOG} -s "`ln -s -f -v ../.mini-buildd.conf public_html/config 2>&1`"
-${MBD_LOG} -s "`rm -f public_html/config-local && ln -s -f -v ../.mini-buildd public_html/config-local 2>&1`"
-${MBD_LOG} -s "`ln -s -f -v ../.dput.cf public_html/dput.cf 2>&1`"
-${MBD_LOG} -s "`ln -s -f -v ../rep public_html/ 2>&1`"
-${MBD_LOG} -s "`ln -s -f -v ../log public_html/ 2>&1`"
+${MBD_LOG} -s "$(ln -s -f -v ../.mini-buildd.conf public_html/config 2>&1)"
+${MBD_LOG} -s "$(rm -f public_html/config-local && ln -s -f -v ../.mini-buildd public_html/config-local 2>&1)"
+${MBD_LOG} -s "$(ln -s -f -v ../.dput.cf public_html/dput.cf 2>&1)"
+${MBD_LOG} -s "$(ln -s -f -v ../rep public_html/ 2>&1)"
+${MBD_LOG} -s "$(ln -s -f -v ../log public_html/ 2>&1)"
 
 # Rudimentary HTML index
 mbdBldHtml()
@@ -28,8 +28,8 @@ cat <<EOF
 EOF
 }
 
-MBD_TMP_DISTS=`mbdD2SList "${mbd_dists}"`
-MBD_TMP_ARCHS=`mbdD2SList "${mbd_archs}"`
+MBD_TMP_DISTS=$(mbdD2SList "${mbd_dists}")
+MBD_TMP_ARCHS=$(mbdD2SList "${mbd_archs}")
 MBD_TMP_TITLE="Mini-Buildd network for \"${mbd_id}\""
 cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
@@ -53,7 +53,7 @@ cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <div>
 <input type="checkbox" id="details" onclick="show_details()">
 Show details
-<small>(mini-buildd `dpkg -s mini-buildd-rep | grep ^Version | cut -d: -f2-`)
+<small>(mini-buildd $(dpkg -s mini-buildd-rep | grep ^Version | cut -d: -f2-))
 </small>
 </div>
 
@@ -110,13 +110,13 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
 
 <li>Documentation:
     <a href="http://${mbd_rephost}:${mbd_httpport}/cgi-bin/dwww/usr/share/doc/mini-buildd-common/">Mini-Buildd</a>
-    `[ -z "${mbd_extdocurl}" ] || echo ", <a href=\"${mbd_extdocurl}\">External for \"${mbd_id}\"</a>"`.
+    $([ -z "${mbd_extdocurl}" ] || echo ", <a href=\"${mbd_extdocurl}\">External for \"${mbd_id}\"</a>").
 </li>
 </ul>
 
 </div>
 
-`for d in ${MBD_TMP_DISTS}; do
+$(for d in ${MBD_TMP_DISTS}; do
    echo "<div style='background-color: lightblue; '>"
 
    echo "<h2>Base distribution ${d}</h2>"
@@ -152,7 +152,7 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
      echo "</div>"
    done
    echo "</div>"
- done`
+ done)
 
 <script  type="text/javascript">
 show_details();

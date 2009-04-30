@@ -227,21 +227,22 @@ mbdQACheckBuild()
 
 mbdQACheckBackports()
 {
-	run()
-	{
-		local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
-		mbdParseArch "${MBD_TMP_ARCH}"
+	local retval=0
 
-		echo "I: ----------------------------------------------------------------------"
-		echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
-		echo "I: ----------------------------------------------------------------------"
+	local chroot="mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}"
+	mbdParseArch "${MBD_TMP_ARCH}"
 
-		# We only run on arch=all architecture
-		if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
-			echo "I: ${mbdParseArch_arch}: Auto-Backports are done on ${mbd_archall} only, skipping."
-		else
-			local d
-			for d in ${mbdParseCF_mbd_auto_backports}; do
+	echo "I: ----------------------------------------------------------------------"
+	echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
+	echo "I: ----------------------------------------------------------------------"
+
+	# We only run on arch=all architecture
+	if [ "${mbdParseArch_arch}" != "${mbd_archall}" ]; then
+		echo "I: ${mbdParseArch_arch}: Auto-Backports are done on ${mbd_archall} only, skipping."
+	else
+		local d
+		for d in ${mbdParseCF_mbd_auto_backports}; do
+			(
 				echo -e "\n==> Auto-backporting for: ${d}"
 
 				# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
@@ -281,24 +282,21 @@ mbdQACheckBackports()
 				cd ..
 				local bpoCF="${mbdParseCF_source}_${bpoVersion}_source.changes"
 				echo "Source package build, uploading: ${bpoCF}"
+				# Use subshell as we run "global" parse
 				(
 					mbdParseCF "${bpoCF}"
 					UPDIR="${MBD_INCOMING_BPO}/${d}"
 					${MBD_TMP_SSH} "${mbd_rephost}" mkdir -v -p ${UPDIR}
 					${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbd_rephost}:${UPDIR}/"
 				)
-				[ $? -eq 0 ] || return 1
-
-				# Done; go up to orig dir for next bpo
-				cd ..
-			done
-		fi
-	}
-
-	# Only return success (0) or warn (1).
-	( run )
-	[ $? -eq 0 ] || return 1
-	return 0
+			)
+			if [ $? -ne 0 ]; then
+				echo "WARNING: Backport for ${d} FAILED (see log above)."
+				retval=1
+			fi
+		done
+	fi
+	return ${retval}
 }
 
 # Download DBP via dput

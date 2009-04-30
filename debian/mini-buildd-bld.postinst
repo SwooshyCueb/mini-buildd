@@ -5,7 +5,7 @@
 
 # We just rewrite the config file from debconf values here.
 cat <<EOF >"${MBD_BLDCONFIGFILE}"
-# Created by postinst on `date`.
+# Created by postinst on $(date).
 # To change, please run 'dpkg-reconfigure mini-buildd-bld'.
 # If you really want to edit by hand, run 'mbd-update-bld' afterwards.
 EOF
@@ -22,7 +22,7 @@ chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
 su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-bld"
 
 . "${MBD_BLDCONFIGFILE}"
-if vgdisplay | grep -q `mbdLvmVgName`; then
+if vgdisplay | grep -q $(mbdLvmVgName); then
 	/usr/share/mini-buildd/mbd-setup-chroots || true
 fi
 

@@ -21,7 +21,7 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * mini-buildd-rep.config: Bugfix: We relied on having /home/mini-buildd
     ready which failed on preconfigure; fixed an simplified config.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Thu, 30 Apr 2009 15:10:54 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Thu, 30 Apr 2009 15:29:31 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

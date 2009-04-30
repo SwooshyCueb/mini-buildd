@@ -14,7 +14,7 @@
 MBD_HOME="/home/mini-buildd"
 
 # Use dirname if that's correct (mbd-* scripts); else use system path (postinst et.al.).
-MBD_LIB=`dirname ${0}`
+MBD_LIB=$(dirname ${0})
 if ! [ -e "${MBD_LIB}/mbd-common.sh" ]; then
 	MBD_LIB="/usr/share/mini-buildd"
 fi
@@ -47,7 +47,7 @@ MBD_AUTOBUILD_MAINTAINER="Mini-Buildd Builder"
 MBD_INCOMING="${MBD_HOME}/rep/mini-dinstall/incoming"
 MBD_INCOMING_BPO="${MBD_INCOMING}/backports"
 
-MBD_LOG="logger -t mini-buildd[`basename -- "${0}"`] -p user.info"
+MBD_LOG="logger -t mini-buildd[$(basename -- "${0}")] -p user.info"
 
 # For schroot: Marks auto-generated configuration snippets
 MBD_CONFIG_MARK="# MINI-BUILDD AUTOGENERATION MARK"
@@ -79,8 +79,8 @@ mbdRetval2Status()
 mbdCheckUser()
 {
 	local user="${1}"
-	if [ "`id -u -n`" != "${user}" ]; then
-		mbd_opt_error "Must run as user ${user}, not `id -u -n`"
+	if [ "$(id -u -n)" != "${user}" ]; then
+		mbd_opt_error "Must run as user ${user}, not $(id -u -n)"
 	fi
 }
 
@@ -120,7 +120,7 @@ mbdGetUrl()
 mbdUpdateSshKeyring()
 {
 	local host="${1}"
-	local key=`mbdCatUrl "http://${host}:${mbd_httpport}/~mini-buildd/ssh_key.asc"`
+	local key=$(mbdCatUrl "http://${host}:${mbd_httpport}/~mini-buildd/ssh_key.asc")
 	if [ -n "${key}" ]; then
 		if ! grep -q "${key}" .ssh/authorized_keys; then
 			echo "${key}" >>.ssh/authorized_keys
@@ -188,17 +188,17 @@ mbdParseCF()
 {
 	local cf="${1}"
 	local GREP1="grep --max-count=1"
-	mbdParseCF_dist=`${GREP1} "^Distribution" "${cf}" | cut -d" " -f2-`
-	mbdParseCF_arch=`echo "${cf}" | rev | cut -d. -f2 | cut -d_ -f1 | rev`
-	mbdParseCF_package=`echo "${cf}" | rev | cut -d_ -f2- | cut -d/ -f1 | rev`
-	mbdParseCF_files="`basename "${cf}"` `${GREP1} "^Files:" -A100 ${cf} | grep "^ .\+" | rev | cut -d" " -f1 | rev`"
-	mbdParseCF_source=`${GREP1} "^Source: " ${cf} | cut -d' ' -f2-`
-	mbdParseCF_version=`${GREP1} "^Version: " ${cf} | cut -d' ' -f2-`
-	mbdParseCF_maintainer=`${GREP1} "^Maintainer: " ${cf} | cut -d' ' -f2-`
-	mbdParseCF_changed_by=`${GREP1} "^Changed-By: " ${cf} | cut -d' ' -f2-`
+	mbdParseCF_dist=$(${GREP1} "^Distribution" "${cf}" | cut -d" " -f2-)
+	mbdParseCF_arch=$(echo "${cf}" | rev | cut -d. -f2 | cut -d_ -f1 | rev)
+	mbdParseCF_package=$(echo "${cf}" | rev | cut -d_ -f2- | cut -d/ -f1 | rev)
+	mbdParseCF_files="$(basename "${cf}") $(${GREP1} "^Files:" -A100 ${cf} | grep "^ .\+" | rev | cut -d" " -f1 | rev)"
+	mbdParseCF_source=$(${GREP1} "^Source: " ${cf} | cut -d' ' -f2-)
+	mbdParseCF_version=$(${GREP1} "^Version: " ${cf} | cut -d' ' -f2-)
+	mbdParseCF_maintainer=$(${GREP1} "^Maintainer: " ${cf} | cut -d' ' -f2-)
+	mbdParseCF_changed_by=$(${GREP1} "^Changed-By: " ${cf} | cut -d' ' -f2-)
 
 	# For convenience
-	mbdParseCF_upstream_version=`echo "${mbdParseCF_version}" | cut -d- -f1`
+	mbdParseCF_upstream_version=$(echo "${mbdParseCF_version}" | cut -d- -f1)
 	mbdParseCF_orig_tarball="${mbdParseCF_source}_${mbdParseCF_upstream_version}.orig.tar.gz"
 
 	# Mini-buildd controls via changelog entries
@@ -206,7 +206,7 @@ mbdParseCF()
 	if mbdParseCFTopChanges "${mbdParseCF_source}" "${cf}" | grep --quiet "MINI_BUILDD: BACKPORT_MODE"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
-	mbdParseCF_mbd_auto_backports=`mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' ' '`
+	mbdParseCF_mbd_auto_backports=$(mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' ' ')
 }
 
 # Parse build host for arch
@@ -250,7 +250,7 @@ mbdGetBldHosts()
 {
 	local result=""
 	local arch=""
-	for arch in `mbdD2SList "${mbd_archs}"`; do
+	for arch in $(mbdD2SList "${mbd_archs}"); do
 		local bldhost="mbd_bldhost_${arch}"
 		if ! mbdInList "${!bldhost}" "${result}"; then
 			result="${result} ${!bldhost}"
@@ -263,7 +263,7 @@ mbdGetBldHosts()
 mbdGetArchs()
 {
 	local bldhost="${1}"
-	for arch in `mbdD2SList "${mbd_archs}"`; do
+	for arch in $(mbdD2SList "${mbd_archs}"); do
 		local b="mbd_bldhost_${arch}"
 		if [ "${bldhost}" = "${!b}" ]; then
 			echo -n "${arch} "
@@ -288,9 +288,9 @@ mbdDeleteMarkedConfig()
 {
 	local conffile="${1}"
 
-	local marks=`grep -n -m 2 "${MBD_CONFIG_MARK}" "${conffile}" | cut -d: -f1`
-	local m0=`echo ${marks} | cut -d" " -f1`
-	local m1=`echo ${marks} | cut -d" " -f2`
+	local marks=$(grep -n -m 2 "${MBD_CONFIG_MARK}" "${conffile}" | cut -d: -f1)
+	local m0=$(echo ${marks} | cut -d" " -f1)
+	local m1=$(echo ${marks} | cut -d" " -f2)
 
 	if [ -n "${m0}" -a -n "${m1}" ]; then
 		sed "${m0},${m1}d" "${conffile}" >"${conffile}.tmp"
@@ -329,8 +329,8 @@ mbdBasedist2Version()
 
 mbdGetMandatoryVersionPart()
 {
-	local dist=`echo "${1}" | cut -d'-' -f1`
-	local version=`mbdBasedist2Version ${dist}`
+	local dist=$(echo "${1}" | cut -d'-' -f1)
+	local version=$(mbdBasedist2Version ${dist})
 	if [ -n "${version}" ]; then
 		echo -n "~${mbd_id}${version}+"
 		if echo -n "${1}" | grep -q ".*-experimental\$"; then
@@ -381,7 +381,7 @@ mbdGenSources()
 	eval "local mbd_src_${dist}_mbd_experimental_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}-experimental/\""
 
 	for kind in ${kinds}; do
-		local src=`mbdGetSrcVar ${dist} ${kind} ${arch}`
+		local src=$(mbdGetSrcVar ${dist} ${kind} ${arch})
 		if [ -n "${!src}" ]; then
 			[ "${noheader}" == "noheader" ] || echo "# ${dist}: ${kind}"
 			# Multiple lines my be given separated via \n

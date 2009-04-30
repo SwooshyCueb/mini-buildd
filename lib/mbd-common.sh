@@ -172,7 +172,7 @@ mbdParseCFAutoBackports()
 				# Line with identifier
 				echo -n "${REPLY}" | cut -d: -f3-
 				reading=true
-			elif ${reading} && ( [ -z "${REPLY}" ] || echo "${REPLY}" | grep --quiet -e "\[" -e "*" -e "^[^[:space:]]\+" ); then
+			elif ${reading} && ( [ -z "${REPLY}" ] || echo "${REPLY}" | grep --quiet -e "^ \." -e "\[" -e "*" -e "^[^[:space:]]\+" ); then
 				# No further entries (changelog), new entry (both), end of entries (changes): break
 				break;
 			elif ${reading}; then

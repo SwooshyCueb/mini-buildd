@@ -66,19 +66,19 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 					MBD_TMP_MIRROR=$(echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1)
 					${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
 
-					if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
-							mkfs.ext2 "${MBD_TMP_DEV}" &&
-							mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
-							debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
-							umount -v "${MBD_TMP_MNTPOINT}") 2>&1 | ${MBD_LOG} -s; then
-						${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} created successfully."
-					else
-						${MBD_LOG} -s "*ERROR* creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
-						(
+					(
+						if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
+								mkfs.ext2 "${MBD_TMP_DEV}" &&
+								mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+								debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
+								umount -v "${MBD_TMP_MNTPOINT}"); then
+							echo "LV ${MBD_TMP_CHROOT} created successfully."
+						else
+							echo "*ERROR* creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
 							umount -v "${MBD_TMP_MNTPOINT}" || true
 							lvremove --force "${MBD_TMP_DEV}" || true
-						) 2>&1 | ${MBD_LOG} -s
-					fi
+						fi
+					) 2>&1 | ${MBD_LOG} -s
 				fi
 				# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
 				for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do

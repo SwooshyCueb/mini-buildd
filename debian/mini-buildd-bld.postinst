@@ -22,7 +22,7 @@ chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
 su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-bld"
 
 . "${MBD_BLDCONFIGFILE}"
-if vgdisplay | grep -q $(mbdLvmVgName); then
+if vgdisplay 2>/dev/null | grep -q $(mbdLvmVgName); then
 	/usr/share/mini-buildd/mbd-setup-chroots || true
 fi
 

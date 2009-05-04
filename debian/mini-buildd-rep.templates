@@ -14,7 +14,7 @@ Type: string
 Description: Repository host name:
  Give the repository's host name; this is usually just the hostname you get
  via "hostname -f". This will be used to create URLs for HTTP acccess, and for
- ssh/scp commands. 
+ ssh/scp commands.
 
 Template: mini-buildd-rep/mbd_httpport
 Type: string

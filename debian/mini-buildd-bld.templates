@@ -1,3 +1,15 @@
+Template: mini-buildd-bld/mbd_defer
+Type: boolean
+Default: false
+Description: Defer builder configuration?
+ You may defer builder configuration at this point in case your
+ mini-buildd repository host is not yet set up correctly at this
+ time. This means all setups (builder name, lvm, chroot setup)
+ on this host will be deferred until you complete the setup
+ running dpkg-reconfigure later.
+ .
+ ${STATUS}
+
 Template: mini-buildd-bld/mbd_rephttphost
 Type: string
 Description: Repository (http) host name:
@@ -7,8 +19,6 @@ Description: Repository (http) host name:
  .
  If you need to specify a different port than the default (80), use something
  like "my.host.com:8088".
- .
- ${ERROR}
 
 Template: mini-buildd-bld/mbd_bldhost
 Type: select

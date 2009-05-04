@@ -11,6 +11,11 @@ mbd_opt_parse "$@"
 
 mbdCheckUser root
 
+if [ "${mbd_defer}" ]; then
+	${MBD_LOG} -s "W: Configuration deferred, skipping."
+	exit 0
+fi
+
 if [ "${mbd_lvm_vg}" != "auto" ]; then
 	${MBD_LOG} -s "INFO: Skipping: Using custom lvm volume group \"$(mbdLvmVgName)\"."
 	exit 0

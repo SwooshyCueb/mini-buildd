@@ -22,7 +22,7 @@ fi
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
 MBD_REPCONFIGVARS="mbd_id mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_extdocurl mbd_dists mbd_archs mbd_archall"
 MBD_BLDCONFIGFILE="${MBD_HOME}/.mini-buildd-bld.conf"
-MBD_BLDCONFIGVARS="mbd_rephttphost mbd_bldhost mbd_lvm_vg"
+MBD_BLDCONFIGVARS="mbd_defer mbd_rephttphost mbd_bldhost mbd_lvm_vg"
 
 MBD_LOCALCONFIG="${MBD_HOME}/.mini-buildd"
 

@@ -9,6 +9,11 @@ mbd_opt_add "f" "Force fresh setup (i.e., delete old setup first)."
 mbd_opt_add "d" "Delete existing setup."
 mbd_opt_parse "$@"
 
+if [ "${mbd_defer}" ]; then
+	${MBD_LOG} -s "W: Configuration deferred, skipping."
+	exit 0
+fi
+
 mbdGetChrootPersonality()
 {
 	local arch="${1}"

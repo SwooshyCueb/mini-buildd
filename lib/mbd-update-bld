@@ -3,6 +3,11 @@
 . $(dirname $0)/mbd-common.sh
 . "${MBD_BLDCONFIGFILE}"
 
+if [ "${mbd_defer}" ]; then
+	${MBD_LOG} -s "W: Configuration deferred, skipping."
+	exit 0
+fi
+
 # Update config file; this must be first
 if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
 	# -bld w/o -rep only; retrieve config from rephost.

@@ -16,9 +16,6 @@ Bugs/Caveats:
 =============
 @todo Incoming/upload: Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) may overwrite each other
 @todo -experimental, any: (think) Prevent upload of version already uploaded.
-@todo [deb] when installing -bld and -rep on the same machine, -rep must be configured first. Solutions:
-            1) -bld needs s.th. like: Configure-First-When-Installed: mini-buildd-rep?
-            2) -bld config needs to postbone somehow when the repo is not yet up?
 
 Mini-dinstall fixes:
 ====================

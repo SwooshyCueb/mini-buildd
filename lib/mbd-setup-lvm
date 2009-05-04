@@ -11,7 +11,7 @@ mbd_opt_parse "$@"
 
 mbdCheckUser root
 
-if [ "${mbd_defer}" ]; then
+if ${mbd_defer}; then
 	${MBD_LOG} -s "W: Configuration deferred, skipping."
 	exit 0
 fi

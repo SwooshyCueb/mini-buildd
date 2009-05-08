@@ -2,14 +2,12 @@ Template: mini-buildd-bld/mbd_defer
 Type: boolean
 Default: false
 Description: Defer builder configuration?
- To configure builder hosts the repository host must already be
+ To configure builder hosts, the repository host must already be
  set up and configured (as we pull all the common configuration
  from there).
  .
  Defer configuration in case your mini-buildd repository host is
- not yet set up correctly at this time.
- .
- If you defer configuration now, you must complete your setup by
+ not yet set up correctly. You must complete your setup by
  running dpkg-reconfigure manually later.
  .
  ${STATUS}

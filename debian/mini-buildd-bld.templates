@@ -2,31 +2,36 @@ Template: mini-buildd-bld/mbd_defer
 Type: boolean
 Default: false
 Description: Defer builder configuration?
- You may defer builder configuration at this point in case your
- mini-buildd repository host is not yet set up correctly at this
- time. This means all setups (builder name, lvm, chroot setup)
- on this host will be deferred until you complete the setup
- running dpkg-reconfigure later.
+ To configure builder hosts the repository host must already be
+ set up and configured (as we pull all the common configuration
+ from there).
+ .
+ Defer configuration in case your mini-buildd repository host is
+ not yet set up correctly at this time.
+ .
+ If you defer configuration now, you must complete your setup by
+ running dpkg-reconfigure manually later.
  .
  ${STATUS}
 
 Template: mini-buildd-bld/mbd_rephttphost
 Type: string
 Description: Repository (http) host name:
- Give the full host name of the repository here -- that is the machine where
- mini-buildd-rep is installed. This will be used to retrieve the configuration
- of the mini-buildd network automatically via http.
+ Give the full host name of the repository here -- that is the
+ machine where mini-buildd-rep is installed. This will be used
+ to retrieve the configuration of the mini-buildd network
+ automatically via http.
  .
- If you need to specify a different port than the default (80), use something
- like "my.host.com:8088".
+ If you need to specify a different port than the default (80),
+ use something like "my.host.com:8088".
 
 Template: mini-buildd-bld/mbd_bldhost
 Type: select
 Choices: ${BLDHOSTS}
 Description: This builder's id:
- This builder's host name; you see the selection from the configuration of
- mini-buildd-rep. If your host is not listed, you need to reconfigure
- mini-buildd-rep.
+ This builder's host name; you see the selection from the
+ configuration of mini-buildd-rep. If your host is not listed,
+ you need to reconfigure mini-buildd-rep.
  .
  Default is the host matching $(hostname -f).
 
@@ -34,16 +39,18 @@ Template: mini-buildd-bld/mbd_lvm_vg
 Type: string
 Default: auto
 Description: LVM2 volume group to use:
- You need a dedicated lvm volume group where the chroots are maintained (via
- schroot).
+ You need a dedicated lvm volume group where the chroots are
+ maintained (via schroot).
  .
- In that volume group, mini-buildd will automatically maintain chroots named
- mbd-BASEDIST-ID-ARCH (ID is the identity you configured in mini-buildd-rep).
- These names should not collide with existing logical volumes in that group,
- else any reasonably sized volume group should work. Either
+ In that volume group, mini-buildd will automatically maintain
+ chroots named mbd-BASEDIST-ID-ARCH (ID is the identity you
+ configured in mini-buildd-rep).  These names should not collide
+ with existing logical volumes in that group, else any
+ reasonably sized volume group should work. Either
  .
   * Set this to "auto": An image file will be used automagically
-    in mini-buildd's home, and a lvm volume group named "mini-buildd"
-    be build on that via a loop device.
-  * Set it to an existing or to-be custom volume group (if your create
-    the volume group manually later, you need to reconfigure this package).
+    in mini-buildd's home, and a lvm volume group named
+    "mini-buildd" be build on that via a loop device.
+  * Set it to an existing or to-be custom volume group (if your
+    create the volume group manually later, you need to
+    reconfigure this package).

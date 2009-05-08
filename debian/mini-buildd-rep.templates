@@ -3,46 +3,49 @@ Type: string
 Description: Mini-buildd's identity:
  Identity of the mini-buildd network.
  .
- The identity is used on several places; most importantly, the distributions
- created will be called "BASEDIST-ID". For version strings, it plays the
- same role as "bpo" as used by backports.org.
+ The identity is used on several places; most importantly, the
+ distributions created will be called "BASEDIST-ID". For version
+ strings, it plays the same role as "bpo" as used by
+ backports.org.
  .
  Should be a short mnemonic made with letters only.
 
 Template: mini-buildd-rep/mbd_rephost
 Type: string
 Description: Repository host name:
- Give the repository's host name; this is usually just the hostname you get
- via "hostname -f". This will be used to create URLs for HTTP acccess, and for
- ssh/scp commands.
+ Give the repository's host name; this is usually just the
+ hostname you get via "hostname -f". This will be used to create
+ URLs for HTTP acccess, and for ssh/scp commands.
 
 Template: mini-buildd-rep/mbd_httpport
 Type: string
 Default: 80
 Description: HTTP port to use:
- If you use a dedicated HTTP server not using a standard port; note that the
- whole network (i.e., build hosts too) must use that port.
+ If you use a dedicated HTTP server not using a standard port;
+ note that the whole network (i.e., build hosts too) must use
+ that port.
 
 Template: mini-buildd-rep/mbd_sshport
 Type: string
 Default: 22
 Description: SSH port to use:
- If you use a dedicated SSH server not using a standard port; note that the
- whole network (i.e., build hosts too) must use that port.
+ If you use a dedicated SSH server not using a standard port;
+ note that the whole network (i.e., build hosts too) must use
+ that port.
 
 Template: mini-buildd-rep/mbd_mail
 Type: string
 Description: Mail address (uploads/builds/failures):
- All install, failure or log mails go here; usually, it's a good idea to set
- up a mailing list for that.
+ All install, failure or log mails go here; usually, it's a good
+ idea to set up a mailing list for that.
 
 Template: mini-buildd-rep/mbd_extdocurl
 Type: string
 Description: External documentation URL:
  URL to external documentation.
  .
- This is just for convenience to provide a link to that URL on the
- overview page; just leave empty if you don't have any.
+ This is just for convenience to provide a link to that URL on
+ the overview page; just leave empty if you don't have any.
 
 Template: mini-buildd-rep/mbd_dists
 Type: multiselect
@@ -59,34 +62,38 @@ Template: mini-buildd-rep/mbd_archall
 Type: select
 Choices: ${ARCHS}
 Description: Arch of builder to build non-arch binary packages:
- One builder machine must have the part to compile arch=all binary packages;
- just give that architecture here.
+ One builder machine must have the part to compile arch=all
+ binary packages; just give that architecture here.
 
 Template: mini-buildd-rep/mbd_source
 Type: string
 Description: "${KIND}" sources for architecture "${ARCH}":
  Apt sources for "${DIST}".
  .
- These sources lines are used for base chroots and build snapshot:
- .
- "base"  sources: Used to create and maintain the base chroots.
-         Example: ftp://ftp.debian.org/debian ${DIST} main contrib non-free
- "extra" sources: Added on build snapshot chroots to satisfy extra dependencies.
-         Example: http://www.backports.org/debian ${DIST}-backports main contrib non-free
+ These sources lines are used for base chroots and build
+ snapshots:
+ * "base" sources: Used to create and maintain the base chroots.
+   Example: "ftp://ftp.debian.org/debian ${DIST} main contrib non-free"
+ * "extra" sources: Added on build snapshot chroots to satisfy
+   extra dependencies.
+   Example: "http://www.backports.org/debian ${DIST}-backports main contrib non-free"
  .
  Notes:
- .
-  * Values are "apt sources lines", just without leading deb[-src].
-  * mini-buildd's own sources are added automatically on build time; don't add them here.
-  * Specialized sources for an architecture (!= "any") are only needed if your
-    "any" sources do not support this arch; usually, just leave that blank.
+  * Values are "apt sources lines", just without leading
+    deb[-src].
+  * mini-buildd's own sources are added automatically on build
+    time; don't add them here.
+  * Specialized sources for an architecture (!= "any") are only
+    needed if your "any" sources do not support this arch;
+    usually, just leave that blank.
   * To specify more than one source, separate via "backslash n".
 
 Template: mini-buildd-rep/mbd_bldhost
 Type: string
 Description: Build host for architecture ${ARCH}:
- Build hosts are installations of mini-buildd-bld for a specific architecture; they
- manage the chroots and building for that architecture.
+ Build hosts are installations of mini-buildd-bld for a specific
+ architecture; they manage the chroots and building for that
+ architecture.
  .
  Please give a full hostname here.
  .
@@ -95,17 +102,19 @@ Description: Build host for architecture ${ARCH}:
 Template: mini-buildd-rep/mbd_deb_build_options
 Type: string
 Description: Debian build options for architecture ${ARCH}:
- Build options as defined for DEB_BUILD_OPTIONS environment variable (see
- policy, chapter 4.9.1).
+ Build options as defined for DEB_BUILD_OPTIONS environment
+ variable (see policy, chapter 4.9.1).
  .
- The only option that is useful here is "parallel=n"; use this if you have
- multiple CPUs/Cores at your hand for this archs build host. You will then
- have parallel builds (i.e. faster builds) for packages that support it.
+ The only option that is useful here is "parallel=n"; use this
+ if you have multiple CPUs/Cores at your hand for this archs
+ build host. You will then have parallel builds (i.e. faster
+ builds) for packages that support it.
 
 Template: mini-buildd-rep/overview
 Type: note
 Description: Repository configuration finished
- After the package installation is complete, visit the new home of your build network:
+ After the package installation is complete, visit the new home
+ of your build network:
  .
  ${URL}
  .

@@ -6,4 +6,6 @@ _Description: About to purge your repository
  Puging means to remove the mini-buildd user along with all its
  files, including the repository in "/home/mini-buildd/rep".
  .
- If you want to keep that data, BACK IT UP NOW BEFORE CONTINUING.
+ If you want to keep that data,
+ .
+       BACK IT UP NOW BEFORE CONTINUING.

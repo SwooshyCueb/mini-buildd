@@ -10,7 +10,7 @@ Description: Defer builder configuration?
  not yet set up correctly. You must complete your setup by
  running dpkg-reconfigure manually later.
  .
- Current value's status: ${STATUS}
+ ${STATUS}
 
 Template: mini-buildd-bld/mbd_rephttphost
 Type: string

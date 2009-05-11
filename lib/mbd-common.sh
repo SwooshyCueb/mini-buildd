@@ -423,10 +423,10 @@ mbdGenConf()
 
 mbdGenSources()
 {
-	mbdGenConf sources $@
+	mbdGenConf sources "${@}"
 }
 
 mbdGenPreferences()
 {
-	mbdGenConf preferences $@
+	mbdGenConf preferences "${@}"
 }

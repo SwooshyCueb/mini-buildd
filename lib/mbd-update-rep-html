@@ -144,8 +144,11 @@ $(for d in ${MBD_TMP_DISTS}; do
        mbdBldHtml "${a}"
        echo ", BUILD_OPTIONS=\"${!MBD_TMP_BO}\"):</h4>"
 
-       echo "Dependencies:<pre>"
+       echo "Sources:<pre>"
        AUTH_VERBOSITY='quiet' mbdGenSources "${d}" "base extra" "${a}"
+       echo "</pre>"
+       echo "Preferences:<pre>"
+       AUTH_VERBOSITY='quiet' mbdGenPreferences "${d}" "base extra" "${a}"
        echo "</pre>"
      done
      echo "<hr/>"

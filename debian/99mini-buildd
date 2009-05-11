@@ -31,6 +31,7 @@ if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-ca
 		fi
 	fi
 
-	# Finally generate sources list
+	# Finally generate sources list and preferences
 	mbdGenSources "${BASEDIST}" "${KINDS}" "${ARCH}" >"${CHROOT_PATH}/etc/apt/sources.list"
+	mbdGenPreferences "${BASEDIST}" "${KINDS}" "${ARCH}" "noheader" >"${CHROOT_PATH}/etc/apt/preferences"
 fi

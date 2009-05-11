@@ -363,18 +363,21 @@ mbdGetSrcVar() # dist kind arch
 	fi
 }
 
-# Generates sources.list to stdout; Info log to stderr.
-# Respect env AUTH_VERBOSITY if we are run from schroot setup.
-mbdGenSources()
+# Generates sources.list or preferences to stdout; Info log to
+# stderr.  Respect env AUTH_VERBOSITY if we are run from schroot
+# setup.
+mbdGenConf()
 {
+	# File type: sources or preferences
+	local ftype="${1}"
 	# Base distribution
-	local dist="${1}"
+	local dist="${2}"
 	# Kinds: base, mbd, extra
-	local kinds="${2}"
+	local kinds="${3}"
 	# Arch: Also search for specialised arch sources list
-	local arch="${3}"
+	local arch="${4}"
 	# noheader: Omit infor headers.
-	local noheader="${4}"
+	local noheader="${5}"
 
 	# Generate local source list variable for ourselves (mbd)
 	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}/\""
@@ -387,13 +390,43 @@ mbdGenSources()
 			# Multiple lines my be given separated via \n
 			echo -e "${!src}" |
 			(
-				while read LINE; do
-					if [ -n "${LINE}" ]; then
-						echo "deb ${LINE}"
-						[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "Sources added: ${src}: deb ${LINE}"
+				while read; do
+					if [ -n "${REPLY}" ]; then
+						OUTPUT=""
+						case ${ftype} in
+							"sources")
+								OUTPUT=$(echo "${REPLY}" | cut -d';' -f1)
+								;;
+							"preferences")
+								PIN_REGEX='^.+\;.+\;[+-0123456789]+$'
+								if [[ "${REPLY}" =~ ${PIN_REGEX} ]]; then
+									APT_PIN=$(echo "${REPLY}" | cut -d';' -f2)
+									APT_PRIO=$(echo "${REPLY}" | cut -d';' -f3)
+									OUTPUT="Package: *\nPin: ${APT_PIN}\nPin-Priority: ${APT_PRIO}\n"
+								fi
+								;;
+							*)
+								${MBD_LOG} -s "ERROR: Wrong internal call of mbdGenFile ${@}"
+								return 1
+								;;
+						esac
+						if [ -n "${OUTPUT}" ]; then
+							echo -e "${OUTPUT}"
+							[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "${ftype} added: ${OUTPUT}"
+						fi
 					fi
 				done
 			)
 		fi
 	done
+}
+
+mbdGenSources()
+{
+	mbdGenConf sources $@
+}
+
+mbdGenPreferences()
+{
+	mbdGenConf preferences $@
 }

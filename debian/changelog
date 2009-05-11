@@ -25,8 +25,9 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * -bld: Bugfix: Fix error recognition on initial chroot setup
     (debootstrap).
   * -bld: Bugfix: Run deboostrap with DEBIAN_FRONTEND="noninteractive".
+  * Add support for prio configuration per source (/etc/apt/preferences).
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 04 May 2009 17:08:06 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 11 May 2009 15:22:24 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

@@ -395,7 +395,7 @@ mbdGenConf()
 						OUTPUT=""
 						case ${ftype} in
 							"sources")
-								OUTPUT=$(echo "${REPLY}" | cut -d';' -f1)
+								OUTPUT="deb $(echo "${REPLY}" | cut -d';' -f1)"
 								;;
 							"preferences")
 								PIN_REGEX='^.+\;.+\;[+-0123456789]+$'

@@ -5,6 +5,7 @@
 @todo: Extra sources: Add archive name and prio, add support for
    preferences in 99mini-buildd.
        etch-backports=1=http://www.backports.org/...
+@todo: Finalize base-chroot hook support.
 
 Pure TODOS:
 ===========

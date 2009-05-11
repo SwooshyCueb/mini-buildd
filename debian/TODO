@@ -1,6 +1,5 @@
 0.8.x items:
 
-@todo: Debconf prio for arch-specific sources: low if empty.
 @todo: Extra sources (cosmetics): config: Give one by one not \n-separated.
 @todo: Extra sources: Add archive name and prio, add support for
    preferences in 99mini-buildd.

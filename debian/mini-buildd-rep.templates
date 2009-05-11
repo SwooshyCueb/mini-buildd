@@ -72,6 +72,7 @@ Description: "${KIND}" sources for architecture "${ARCH}":
  .
  These sources lines are used for base chroots and build
  snapshots:
+ .
  * "base" sources: Used to create and maintain the base chroots.
    Example: "ftp://ftp.debian.org/debian ${DIST} main contrib non-free"
  * "extra" sources: Added on build snapshot chroots to satisfy
@@ -79,14 +80,12 @@ Description: "${KIND}" sources for architecture "${ARCH}":
    Example: "http://www.backports.org/debian ${DIST}-backports main contrib non-free"
  .
  Notes:
-  * Values are "apt sources lines", just without leading
-    deb[-src].
-  * mini-buildd's own sources are added automatically on build
-    time; don't add them here.
+  * Use "apt sources lines" without leading "deb ".
+  * mini-buildd's adds his own sources automatically.
   * Specialized sources for an architecture (!= "any") are only
     needed if your "any" sources do not support this arch;
     usually, just leave that blank.
-  * To specify more than one source, separate via "backslash n".
+  * To specify more than one source, separate via \\n "backslash n".
 
 Template: mini-buildd-rep/mbd_bldhost
 Type: string

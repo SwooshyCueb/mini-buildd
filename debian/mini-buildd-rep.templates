@@ -68,20 +68,16 @@ Description: Arch of builder to build non-arch binary packages:
 Template: mini-buildd-rep/mbd_source
 Type: string
 Description: "${KIND}" sources for architecture "${ARCH}":
- Apt sources for "${DIST}".
- .
- These sources lines are used for base chroots and build
- snapshots:
-  * "base"  sources: Create and maintain the base chroots.
-  * "extra" sources: Build-time add-ons
+ Apt sources for "${DIST}": ${DESC}
  .
  Notes:
-  * Use "apt sources lines" without leading "deb ".
   * mini-buildd's adds his own sources automatically.
   * Specialized sources for an architecture (!= "any") are only
     needed if your "any" sources do not support this arch;
     usually, just leave that blank.
   * To specify more than one source, separate via \\\n \\n "backslash n".
+  .
+  Syntax: [DIST:PRIO=]Apt sources line without leading "deb "
   .
   Example: ${EXAMPLE}
 

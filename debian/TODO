@@ -1,9 +1,5 @@
 0.8.x items:
 
-@todo: Extra sources (cosmetics): config: Give one by one not \n-separated.
-@todo: Extra sources: Add archive name and prio, add support for
-   preferences in 99mini-buildd.
-       etch-backports=1=http://www.backports.org/...
 @todo: Finalize base-chroot hook support.
 
 Pure TODOS:

@@ -71,14 +71,11 @@ Description: "${KIND}" sources for architecture "${ARCH}":
  Apt sources for "${DIST}": ${DESC}
  .
  Notes:
-  * mini-buildd's adds his own sources automatically.
-  * Specialized sources for an architecture (!= "any") are only
-    needed if your "any" sources do not support this arch;
-    usually, just leave that blank.
-  * To specify more than one source, separate via \\\n \\n "backslash n".
-  .
-  Syntax: [DIST:PRIO=]Apt sources line without leading "deb "
-  .
+  * To specify more than one source, separate via "backslash n".
+  * With PIN and PRIO you may optionally set an apt-pin; useful
+    if an extra source is not in "not-automatic" mode.
+  
+  Syntax : Apt sources line without leading "deb "[;PIN;PRIO]
   Example: ${EXAMPLE}
 
 Template: mini-buildd-rep/mbd_bldhost
@@ -90,7 +87,7 @@ Description: Build host for architecture ${ARCH}:
  .
  Please give a full hostname here.
  .
- You may safely give build host to-be here, and set it up later.
+ You may safely give a build host to-be here, and set it up later.
 
 Template: mini-buildd-rep/mbd_deb_build_options
 Type: string

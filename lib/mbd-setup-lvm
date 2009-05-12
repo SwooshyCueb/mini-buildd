@@ -65,7 +65,7 @@ if [ -e "${MBD_SETUPLVM_IMGFILE}" ]; then
 	${MBD_LOG} -s "I: Not touching existing \"${MBD_SETUPLVM_IMGFILE}\"."
 else
 	# On initial installs, we may be called before mbd-update-rep
-  # I.e., we need to make sure the chroots directory exists, although it mbd-u-r's job
+	# I.e., we need to make sure the chroots directory exists, although it mbd-u-r's job
 	su mini-buildd -c "mkdir -p ${MBD_HOME}/bld/chroots"
 	${MBD_LOG} -s "I: Setting up lvm ${MBD_SETUPLVM_VGNAME} on ${MBD_SETUPLVM_LOOPDEV}..."
 

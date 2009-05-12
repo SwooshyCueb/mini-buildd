@@ -71,15 +71,16 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
-			${MBD_LOG} -s "Updating chroot ${MBD_TMP_CHROOT}..."
-			for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort); do
-				if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root 2>&1 | ${MBD_LOG} -s; then
-					HOOK_STATUS="Success"
-				else
-					HOOK_STATUS="ERROR"
-				fi
-				${MBD_LOG} -s "Chroot ${MBD_TMP_CHROOT} update hook ${hook}: ${HOOK_STATUS}."
-			done
+			(
+				echo "I: Updating chroot ${MBD_TMP_CHROOT}..."
+				for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort); do
+					if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root; then
+						echo "E: Chroot update hook \"${hook}\" FAILED."
+					else
+						echo "I: Chroot update hook \"${hook}\" succeeded."
+					fi
+				done
+			) 2>&1 | ${MBD_LOG} -s
 		fi
 	done
 done

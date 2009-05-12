@@ -53,18 +53,18 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 			MBD_TMP_CHROOT_PERSONALITY=$(mbdGetChrootPersonality ${arch});
 
 			if (mbd_opt_given f || mbd_opt_given d) && lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
-				${MBD_LOG} -s "LV ${MBD_TMP_CHROOT}: Forcing removal: $(lvremove --force "${MBD_TMP_DEV}" 2>&1)"
+				${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT}: Forcing removal: $(lvremove --force "${MBD_TMP_DEV}" 2>&1)"
 			fi
 
 			if ! mbd_opt_given d; then
 				if lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
-					${MBD_LOG} -s "LV ${MBD_TMP_CHROOT} exists, leaving alone."
+					${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT} exists, leaving alone."
 				else
-					${MBD_LOG} -s "Setting up chroot ${MBD_TMP_CHROOT}..."
+					${MBD_LOG} -s "I: Setting up chroot ${MBD_TMP_CHROOT}..."
 
 					MBD_TMP_BASESRC=$(mbdGetSrcVar ${dist} base ${arch})
 					MBD_TMP_MIRROR=$(echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1)
-					${MBD_LOG} -s "Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
+					${MBD_LOG} -s "I: Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
 
 					(
 						# For debootstrap
@@ -74,9 +74,9 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 								mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 								debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
 								umount -v "${MBD_TMP_MNTPOINT}"); then
-							echo "LV ${MBD_TMP_CHROOT} created successfully."
+							echo "I: LV ${MBD_TMP_CHROOT} created successfully."
 						else
-							echo "*ERROR* creating LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
+							echo "E: Failed to create LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
 							umount -v "${MBD_TMP_MNTPOINT}" || true
 							lvremove --force "${MBD_TMP_DEV}" || true
 						fi
@@ -110,8 +110,7 @@ echo "${MBD_CONFIG_MARK}" >>"${MBD_TMP_SCHROOTCONFIGFILE}"
 
 if ! mbd_opt_given d; then
 	cat "${MBD_TMP_SCHROOTCONFIGFILE}" >>"${MBD_SCHROOTCONFIGFILE}"
-	${MBD_LOG} -s "${MBD_SCHROOTCONFIGFILE} updated."
+	${MBD_LOG} -s "I: ${MBD_SCHROOTCONFIGFILE} updated."
 	# Trigger a -bld update
 	su - mini-buildd -c "${MBD_LIB}/mbd-update-bld"
 fi
-

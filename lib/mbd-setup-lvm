@@ -67,16 +67,17 @@ else
 	# On initial installs, we may be called before mbd-update-rep
 	# I.e., we need to make sure the chroots directory exists, although it mbd-u-r's job
 	su mini-buildd -c "mkdir -p ${MBD_HOME}/bld/chroots"
-	${MBD_LOG} -s "I: Setting up lvm ${MBD_SETUPLVM_VGNAME} on ${MBD_SETUPLVM_LOOPDEV}..."
 
-	if (dd if=/dev/zero of="${MBD_SETUPLVM_IMGFILE}" bs=${MBD_SETUPLVM_GIGS}M seek=1024 count=0 &&
-			losetup -v -f ${MBD_SETUPLVM_IMGFILE} >"${MBD_SETUPLVM_IMGDEVICEFILE}" &&
-			mbdGetLoopdev &&
-			pvcreate -v ${MBD_SETUPLVM_LOOPDEV} &&
-			vgcreate -v ${MBD_SETUPLVM_VGNAME} ${MBD_SETUPLVM_LOOPDEV}) 2>&1 | ${MBD_LOG} -s; then
-		${MBD_LOG} -s "I: VG ${MBD_SETUPLVM_VGNAME} created successfully on ${MBD_SETUPLVM_LOOPDEV}."
-		${MBD_LIB}/mbd-setup-chroots ${1}
-	else
-		${MBD_LOG} -s "E: FAILED to create VG ${MBD_SETUPLVM_VGNAME}; rerun \"${0} -f\" as root any time to retry."
-	fi
+	(
+		echo "I: Setting up lvm ${MBD_SETUPLVM_VGNAME} on ${MBD_SETUPLVM_LOOPDEV}..."
+		if (dd if=/dev/zero of="${MBD_SETUPLVM_IMGFILE}" bs=${MBD_SETUPLVM_GIGS}M seek=1024 count=0 &&
+				losetup -v -f ${MBD_SETUPLVM_IMGFILE} >"${MBD_SETUPLVM_IMGDEVICEFILE}" &&
+				mbdGetLoopdev &&
+				pvcreate -v ${MBD_SETUPLVM_LOOPDEV} &&
+				vgcreate -v ${MBD_SETUPLVM_VGNAME} ${MBD_SETUPLVM_LOOPDEV}); then
+			echo "I: VG ${MBD_SETUPLVM_VGNAME} created successfully on ${MBD_SETUPLVM_LOOPDEV}."
+		else
+			echo "E: FAILED to create VG ${MBD_SETUPLVM_VGNAME}; rerun \"${0} -f\" as root any time to retry."
+		fi
+	) 2>&1 | ${MBD_LOG} -s
 fi

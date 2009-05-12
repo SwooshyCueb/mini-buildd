@@ -65,7 +65,7 @@ $(for d in ${MBD_TMP_DISTS}; do
    echo;
  done)
 EOF
-${MBD_LOG} -s "${MBD_MDINSTALLCONFIGFILE} updated."
+${MBD_LOG} -s "I: ${MBD_MDINSTALLCONFIGFILE} updated."
 
 ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html
@@ -76,14 +76,14 @@ cat "${MBD_SSHPUBKEYFILE}" >".mini-buildd/apt-secure/auto-mini-buildd.key"
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do
 	mbdUpdateSshKeyring "${host}"
-	${MBD_LOG} -s "Updating build hosts ${host}..."
+	${MBD_LOG} -s "I: Updating build hosts ${host}..."
 	if ! ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${host}" "${MBD_LIB}/mbd-update-bld"; then
-		${MBD_LOG} -s "Warning: Error updating build host ${host} (ignore if not set up yet)"
+		${MBD_LOG} -s "E: Updating build host ${host} FAILED (ignore if not set up yet)"
 	fi
 done
 
 if ! mbd_opt_given p; then
-	${MBD_LOG} -s "$(/etc/init.d/mini-buildd-rep restart 2>&1)"
+	${MBD_LOG} -s "I: $(/etc/init.d/mini-buildd-rep restart 2>&1)"
 fi
 
 exit 0

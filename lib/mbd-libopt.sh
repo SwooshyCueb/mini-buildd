@@ -203,8 +203,8 @@ mbd_opt_assemble()
 
 mbd_opt_error()
 {
-	${MBD_LOG} -s "ERROR: ${1}."
-	${MBD_LOG} -s "Full command was: \"${MBD_OPT_FULLCOMMAND}\""
+	${MBD_LOG} -s "E: ${1}."
+	${MBD_LOG} -s "E: Full command was: \"${MBD_OPT_FULLCOMMAND}\""
 	mbd_opt_help | ${MBD_LOG} -s
 	exit 9
 }

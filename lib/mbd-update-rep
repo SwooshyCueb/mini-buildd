@@ -9,9 +9,23 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep"
-mkdir -p "log"
-mkdir -p ".mini-buildd"
+mkdir -p "rep" "log" ".mini-buildd/apt-secure" ".mini-buildd/chroots-update.d"
+
+# Add README for .mini-buildd/
+cat <<EOF >.mini-buildd/README
+Automatically produced by $(basename $0) on $(date).
+Manual changes to this file are NOT preserved.
+
+README for "~/.mini-buildd/": Place for local configuration
+
+DO CHANGES ON THE REPOSITORY HOST ONLY. On builder-only hosts,
+this directory is SYNCED from the repository host.
+
+You may do the following customizations:
+
+ * "apt-secure/": Add extra keys named "*.key" (used by 05_apt-secure).
+ * "chroots-update.d/": Add scripts to run via run-parts (run from 99_local).
+EOF
 
 MBD_TMP_DISTS=$(mbdD2SList "${mbd_dists}")
 cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"

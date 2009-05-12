@@ -1,12 +1,10 @@
 0.8.x items:
 
-@todo: Finalize base-chroot hook support.
-
 Pure TODOS:
 ===========
 
 (2) New dir: /usr/share/mini-buildd/chroots-update.d/
-    - 10_apt.hook: [*apt-secure, *apt-preferences]
+    - 10_apt.hook: [*apt-secure]
     - 20_debconf.hook*
             *sun-java licenses patch.
             debconf-set-selections <<EOF

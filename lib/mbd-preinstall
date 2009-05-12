@@ -22,15 +22,15 @@ mbdABSpoolRun()
 		local inst=true
 		local f
 		for f in ${mbdParseCF_files}; do
-			${MBD_LOG} -s "Auto-backports $(basename $c): Checking ${f}."
+			${MBD_LOG} -s "I: Auto-backports $(basename $c): Checking ${f}."
 			if [ -e "${MBD_INCOMING}/${f}" ]; then
-				${MBD_LOG} -s "Auto-backports $c: Can't upload yet (${f})."
+				${MBD_LOG} -s "W: Auto-backports $c: Can't upload yet (${f})."
 				inst=false
 				continue
 			fi
 		done
 		if ${inst}; then
-			${MBD_LOG} -s "Auto-backports Uploading ${c}."
+			${MBD_LOG} -s "I: Auto-backports Uploading ${c}."
 			(
 				cd "$(dirname "${c}")"
 				mv -v ${mbdParseCF_files} ${MBD_INCOMING}/ 2>&1 | ${MBD_LOG} -s
@@ -126,7 +126,7 @@ mbdMoveFiles()
 	done
 }
 
-MBD_TMP_LOGPRE="${mbdParseCF_package}(${mbdParseCF_dist})"
+MBD_TMP_LOGPRE="I: ${mbdParseCF_package}(${mbdParseCF_dist})"
 # We propagate source-only uploads to builders, binary uploads are skipped
 if [ "${mbdParseCF_arch}" = "source" ]; then
 	MBD_TMP_BUILDID="${mbdParseCF_source}/${mbdParseCF_version}/$(date --utc +%Y%m%d:%H%M%S:%N)"

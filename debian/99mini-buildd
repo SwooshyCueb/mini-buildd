@@ -7,7 +7,7 @@ if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-ca
 	. /usr/share/mini-buildd/mbd-common.sh
 	. /home/mini-buildd/.mini-buildd.conf
 
-	[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "Entering chroot: ${CHROOT_NAME}."
+	[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "I: Entering chroot: ${CHROOT_NAME}."
 	# Compute BASEDIST, ARCH, and IS_EXPERIMENTAL
 	# CHROOT_NAME=mbd-etch-ID-ARCH-*
 	# CHROOT_NAME=mbd-etch-ID-experimental-ARCH-*

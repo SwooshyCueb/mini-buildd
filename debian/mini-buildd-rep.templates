@@ -58,6 +58,24 @@ Type: multiselect
 Choices: ${ARCHS}
 Description: Architectures to support:
 
+Template: mini-buildd-rep/mbd_apt_allow_unauthenticated
+Type: boolean
+Default: false
+Description: Allow unauthenticated apt:
+ This flag correspondents to the respective apt and sbuild
+ options.
+ .
+ If you set this to false (highly recommended), you will need to
+ manually add the keys for extra sources you might have
+ configured (see ~/.mini-buildd/README for further instructions).
+ .
+ The standard Debian Keys should be managed fine by the
+ *-keyring packages (the paranoid may manually check the
+ fingerprints after initial chroot setups).
+ .
+ Set this to true only if you really trust your configured
+ sources.
+
 Template: mini-buildd-rep/mbd_archall
 Type: select
 Choices: ${ARCHS}

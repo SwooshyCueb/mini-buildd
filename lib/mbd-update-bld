@@ -32,8 +32,8 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$apt_update = 1;
 # APT-Policy to "1", so we can satisfy dependencies via all sources we added.
 \$apt_policy = 1;
-# Allow unauthenticated (sbuild 0.57.5); we need this enabled for now
-\$apt_allow_unauthenticated = 1;
+# Allow unauthenticated apt toggle; see ~/.mini-buildd/README how to set up keys for extra sources.
+\$apt_allow_unauthenticated = $(if ${mbd_apt_allow_unauthenticated}; then echo -n "1"; else echo -n "0"; fi);
 
 # Add path for ccache
 \$path = "/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games";

@@ -105,11 +105,11 @@ mbdGetUrl()
 	local url="${2}"
 	if mbdCatUrl "${url}" >"${file}.tmp"; then
 		mv "${file}.tmp" "${file}"
-		${MBD_LOG} -s "${file} downloaded (from ${url})."
+		${MBD_LOG} -s "I: ${file} downloaded (from ${url})."
 		return 0
 	else
 		rm -f "${file}.tmp"
-		${MBD_LOG} -s "Error retrieving ${url}."
+		${MBD_LOG} -s "E: URL retrieval FAILED for ${url}."
 		if [ ! -e "${file}" ]; then
 			echo "# Error downloading ${file} from ${url}; please reconfigure package or rerun $0." >"${file}"
 		fi
@@ -124,12 +124,12 @@ mbdUpdateSshKeyring()
 	if [ -n "${key}" ]; then
 		if ! grep -q "${key}" .ssh/authorized_keys; then
 			echo "${key}" >>.ssh/authorized_keys
-			${MBD_LOG} -s "SSH keyring: ${host} added."
+			${MBD_LOG} -s "I: SSH keyring: ${host} added."
 		else
-			${MBD_LOG} -s "SSH keyring: ${host} up to date."
+			${MBD_LOG} -s "I: SSH keyring: ${host} up to date."
 		fi
 	else
-		${MBD_LOG} -s "ERROR: Retrieving ssh key for ${host}."
+		${MBD_LOG} -s "E: SSH key retrieval FAILED for ${host}."
 	fi
 }
 
@@ -277,7 +277,7 @@ mbdGetArchs()
 mbdBId2BDir() # arch buildid
 {
 	if [ -z "${1}" ]; then
-		${MBD_LOG} -s "INTERNAL ERROR: mbdBId2BDir called w/o arch."
+		${MBD_LOG} -s "E: INTERNAL: mbdBId2BDir called w/o arch."
 		exit 3
 	fi
 	echo -n "${2}-${1}" | tr "/" "_"
@@ -295,7 +295,7 @@ mbdDeleteMarkedConfig()
 	if [ -n "${m0}" -a -n "${m1}" ]; then
 		sed "${m0},${m1}d" "${conffile}" >"${conffile}.tmp"
 		mv "${conffile}.tmp" "${conffile}"
-		${MBD_LOG} -s "Deleted marked config from ${conffile}."
+		${MBD_LOG} -s "I: Deleted marked config from ${conffile}."
 	fi
 }
 
@@ -321,7 +321,7 @@ mbdBasedist2Version()
 
 	local version=${!1}
 	if [ -z "${version}" ]; then
-		${MBD_LOG} -s "ERROR: Unknown base dist ${1}."
+		${MBD_LOG} -s "E: Unknown base dist ${1}."
 		return 1
 	fi
 	echo -n "${version}"
@@ -406,13 +406,13 @@ mbdGenConf()
 								fi
 								;;
 							*)
-								${MBD_LOG} -s "ERROR: Wrong internal call of mbdGenFile ${@}"
+								${MBD_LOG} -s "E: INTERNAL: Wrong call: mbdGenFile ${@}"
 								return 1
 								;;
 						esac
 						if [ -n "${OUTPUT}" ]; then
 							echo -e "${OUTPUT}"
-							[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "${ftype} added: ${OUTPUT}"
+							[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} -s "I: ${ftype} added: ${OUTPUT}"
 						fi
 					fi
 				done

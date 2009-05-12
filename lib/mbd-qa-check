@@ -334,7 +334,7 @@ else
 	for check in $(mbd_opt_get Q); do
 		MBD_TMP_LOGDIR="${MBD_HOME}/log/${MBD_TMP_BUILDID}"
 		MBD_TMP_LOGBASE="${MBD_TMP_LOGDIR}/$(mbd_opt_get P).$(printf "%02d" ${MBD_TMP_COUNT})_${check}"
-		MBD_TMP_LOGPRE="$(basename "${MBD_TMP_CF}")@${MBD_TMP_ARCHHOST}: \"${check}\""
+		MBD_TMP_LOGPRE="I: $(basename "${MBD_TMP_CF}")@${MBD_TMP_ARCHHOST}: \"${check}\""
 
 		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Checking..."
 

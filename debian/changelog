@@ -28,8 +28,10 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * Add support for prio configuration per source (/etc/apt/preferences).
   * chroots-update.d: 10_apt-upgrade: Only run autoremove for apt versions
     that support it; avoids unecessary warnings.
+  * chroots-update.d: 05_apt-secure: Added; you may now add arbitrary
+    locally configured keys here.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 12 May 2009 12:12:36 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 12 May 2009 12:42:36 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

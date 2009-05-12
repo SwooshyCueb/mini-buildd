@@ -4,15 +4,12 @@ Pure TODOS:
 ===========
 
 (2) New dir: /usr/share/mini-buildd/chroots-update.d/
-    - 10_apt.hook: [*apt-secure]
     - 20_debconf.hook*
             *sun-java licenses patch.
             debconf-set-selections <<EOF
              sun-java5-jdk shared/accepted-sun-dlj-v1-1 boolean true
              sun-java6-jdk shared/accepted-sun-dlj-v1-1 boolean true
             EOF
-@todo [brain] Make sbuild apt_allow_unauthenticated configurable via debconf; add some
-      infrastructure to add keys when entering chroots, and some way to manage keys.
 
 Bugs/Caveats:
 =============

@@ -47,12 +47,12 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 # don't remove this, Perl needs it:
 1;
 EOF
-${MBD_LOG} -s "${MBD_SBUILDCONFIGFILE} updated."
+${MBD_LOG} -s "I: ${MBD_SBUILDCONFIGFILE} updated."
 
 ${MBD_LIB}/mbd-update-common
 
 # Make some items accessible via http
-${MBD_LOG} -s "$(ln -s -f -v ../bld public_html/ 2>&1)"
+${MBD_LOG} -s "I: $(ln -s -f -v ../bld public_html/ 2>&1)"
 
 mbdUpdateSshKeyring "${mbd_rephost}"
 

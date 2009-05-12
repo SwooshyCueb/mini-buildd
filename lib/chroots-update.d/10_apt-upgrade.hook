@@ -1,4 +1,4 @@
-APTGET="apt-get -o APT::Install-Recommends=false"
+APTGET="apt-get -q -o APT::Install-Recommends=false"
 EXTRA_PACKAGES="build-essential fakeroot ccache"
 
 export DEBIAN_FRONTEND="noninteractive"

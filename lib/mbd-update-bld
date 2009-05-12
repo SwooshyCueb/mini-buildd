@@ -21,8 +21,7 @@ fi
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "bld/builds"
-mkdir -p "bld/chroots"
+mkdir -p "bld/builds" "bld/chroots"
 
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 # Mode "user": Use retval to check if build was successful.

@@ -18,9 +18,9 @@ MBD_TMP_OBSOLETE="*.sources.list *.update.log setup-lvm.log lvm_pv0.img gpg_key_
 for f in ${MBD_TMP_OBSOLETE}; do
 	if [ -e "${f}" ]; then
 		if mbd_opt_given u; then
-			${MBD_LOG} -s "Cruft removed: $(rm -rfv "${f}")"
+			${MBD_LOG} -s "I: Cruft removed: $(rm -rfv "${f}")"
 		else
-			${MBD_LOG} -s "Cruft (-u would remove): ${f}"
+			${MBD_LOG} -s "W: Cruft (-u would remove): ${f}"
 		fi
 	fi
 done

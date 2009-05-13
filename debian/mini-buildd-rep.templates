@@ -61,7 +61,7 @@ Description: Architectures to support:
 Template: mini-buildd-rep/mbd_apt_allow_unauthenticated
 Type: boolean
 Default: false
-Description: Allow unauthenticated apt:
+Description: Allow unauthenticated apt?
  This flag correspondents to the respective apt and sbuild
  options.
  .

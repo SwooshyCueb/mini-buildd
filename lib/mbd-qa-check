@@ -180,7 +180,7 @@ mbdQACheckLintian()
 		else
 			retval=2
 		fi
-	elif ${warnings}
+	elif ${warnings}; then
 		retval=1
 	fi
 

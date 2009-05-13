@@ -71,7 +71,7 @@ ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html
 
 # Update repo-host key for 05_apt-secure
-cat "${MBD_SSHPUBKEYFILE}" >".mini-buildd/apt-secure/auto-mini-buildd.key"
+cp "public_html/pgp_key.asc" ".mini-buildd/apt-secure/auto-mini-buildd.key"
 
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do

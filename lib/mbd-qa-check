@@ -166,22 +166,23 @@ mbdQACheckLintian()
 
 	# Check if we have errors ans/or warnings; at the same time output
 	# error lines via grep.
-	local errors=0
-	local warnings=0
-	if grep '^E: .*$' "${lf}.mbd"; then
-		if ${mbdParseCF_mbd_backport_mode}; then
-			echo "I: mini-buildd: Backport mode: Treating above lintian errors as warnings."
-			warnings=1
-		else
-			errors=1
-		fi
-	fi
-	if grep '^W: .*$' "${lf}.mbd"; then
-		warnings=1
-	fi
+	local errors=false
+	local warnings=false
+	! grep '^E: .*$' "${lf}.mbd" || errors=true
+	! grep '^W: .*$' "${lf}.mbd" || warnings=true
 
 	# Compute the retval
-	local retval=$((warnings+errors))
+	local retval=0
+	if ${errors}; then
+		if ${mbdParseCF_mbd_backport_mode}; then
+			echo "I: mini-buildd: Backport mode: Treating above lintian errors as warnings."
+			retval=1
+		else
+			retval=2
+		fi
+	elif ${warnings}
+		retval=1
+	fi
 
 	echo "I: ----------------------------------------------------------------------"
 	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"

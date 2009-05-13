@@ -398,7 +398,7 @@ mbdGenConf()
 								OUTPUT="deb $(echo "${REPLY}" | cut -d';' -f1)"
 								;;
 							"preferences")
-								PIN_REGEX='^.+\;.+\;[+-0123456789]+$'
+								PIN_REGEX='^.+\;.+\;.+$'
 								if [[ "${REPLY}" =~ ${PIN_REGEX} ]]; then
 									APT_PIN=$(echo "${REPLY}" | cut -d';' -f2)
 									APT_PRIO=$(echo "${REPLY}" | cut -d';' -f3)

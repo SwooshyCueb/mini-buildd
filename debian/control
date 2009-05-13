@@ -3,7 +3,7 @@ Section: non-free/devel
 Priority: extra
 Maintainer: Stephan Suerken <stephan.suerken@1und1.de>
 Build-Depends: debhelper (>= 7), man-db (>= 2.5.1), po-debconf
-Standards-Version: 3.8.0
+Standards-Version: 3.8.1
 
 Package: mini-buildd-common
 Architecture: all

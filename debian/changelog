@@ -33,8 +33,9 @@ mini-buildd (0.8.0) etch-ui; urgency=low
       locally configured keys here.
     - Add new config options "mbd_apt_allow_unauthenticated", make it
       configurable via debconf and add support for sbuild.conf.
+  * control: Update to standards version 3.8.1 (no changes needed).
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 12 May 2009 15:47:00 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 13 May 2009 09:43:36 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

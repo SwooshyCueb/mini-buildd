@@ -69,11 +69,11 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 					(
 						# For debootstrap
 						export DEBIAN_FRONTEND="noninteractive"
-						if (lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
-								mkfs.ext2 "${MBD_TMP_DEV}" &&
-								mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
-								debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
-								umount -v "${MBD_TMP_MNTPOINT}"); then
+						if lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
+							mkfs.ext2 "${MBD_TMP_DEV}" &&
+							mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+							debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
+							umount -v "${MBD_TMP_MNTPOINT}"; then
 							echo "I: LV ${MBD_TMP_CHROOT} created successfully."
 						else
 							echo "E: Failed to create LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."

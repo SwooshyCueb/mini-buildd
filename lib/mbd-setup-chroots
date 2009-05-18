@@ -67,12 +67,7 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 					${MBD_LOG} -s "I: Found mirror for ${dist}(${arch}): ${MBD_TMP_MIRROR}"
 
 					(
-						# debootstrap/debconf: Use noninteractive frontend
-						export DEBIAN_FRONTEND="noninteractive"
-						# debootstrap/debconf: Reset some envs that might confuse debconf run in debootstrap
-						unset DEBCONF_RECONFIGURE
-						unset DEBCONF_REDIR
-						unset DEBIAN_HAS_FRONTEND
+						${MBD_APTENV}
 						if lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
 							mkfs.ext2 "${MBD_TMP_DEV}" &&
 							mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&

@@ -74,7 +74,7 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 			(
 				echo "I: Updating chroot ${MBD_TMP_CHROOT}..."
 				for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort); do
-					if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root; then
+					if ( echo "set -e" && echo "${MBD_APTENV}" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root; then
 						echo "I: Chroot update hook \"${hook}\" succeeded."
 					else
 						echo "E: Chroot update hook \"${hook}\" FAILED."

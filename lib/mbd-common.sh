@@ -52,6 +52,11 @@ MBD_LOG="logger -t mini-buildd[$(basename -- "${0}")] -p user.info"
 # For schroot: Marks auto-generated configuration snippets
 MBD_CONFIG_MARK="# MINI-BUILDD AUTOGENERATION MARK"
 
+# For any run in with APT in chroots
+# debootstrap/debconf: Use noninteractive frontend
+# debootstrap/debconf: Reset some envs that might confuse debconf run in debootstrap
+MBD_APTENV="export DEBIAN_FRONTEND=noninteractive && unset DEBCONF_RECONFIGURE && unset DEBCONF_REDIR && unset DEBIAN_HAS_FRONTEND"
+
 # Always source getopt library
 . ${MBD_LIB}/mbd-libopt.sh
 

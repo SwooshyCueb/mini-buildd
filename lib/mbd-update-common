@@ -8,7 +8,7 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-if ! grep -q "PATH=\"${MBD_LIB}" .profile; then
+if ! grep -q "PATH=\"${MBD_LIB}" .profile 2>/dev/null; then
 	echo "PATH=\"${MBD_LIB}:\${PATH}\"" >>.profile
 	echo "export PATH" >>.profile
 	${MBD_LOG} -s "I: .profile patched: Adding ${MBD_LIB} to path."

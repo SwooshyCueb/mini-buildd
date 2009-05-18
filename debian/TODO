@@ -2,8 +2,11 @@ Bugs/Caveats:
 =============
 @todo httpd: On fresh installs (at least for apache2): No user
    dir support (but we need it).
-@todo Incoming/upload: Parallel uploads of the same package (e.g. for etch-* and sarge-* at the same time) may overwrite each other
-@todo -experimental, any: (think) Prevent upload of version already uploaded.
+@todo Incoming/upload: Parallel uploads of the same package
+   (e.g. for etch-* and sarge-* at the same time) may overwrite
+   each other
+@todo -experimental, any: (think) Prevent upload of version
+   already uploaded.
 
 Mini-dinstall fixes:
 ====================

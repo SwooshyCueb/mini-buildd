@@ -35,8 +35,9 @@ mini-buildd (0.8.0) etch-ui; urgency=low
       configurable via debconf and add support for sbuild.conf.
   * control: Update to standards version 3.8.1 (no changes needed).
   * mbd-setup-chroots: Fix/workaround debconf failures on reconfigure.
+  * -rep.config: Fix: Add missing defaults for ssh/http port.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 18 May 2009 15:30:53 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 18 May 2009 15:39:03 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

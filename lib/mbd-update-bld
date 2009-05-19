@@ -61,7 +61,7 @@ if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
 	# -bld w/o -rep only; retrieve local config from rephost.
 	rm -rf "${MBD_LOCALCONFIG}"
 	wget --mirror --no-parent --no-host-directories --reject '*html*' --directory-prefix="${MBD_LOCALCONFIG}" \
-		--cut-dirs 2 "http://${mbd_rephttphost}/~mini-buildd/config-local"
+		--cut-dirs 2 "http://${mbd_rephttphost}/~mini-buildd/config-local/"
 fi
 
 # Check/prepare chroots for all dists.

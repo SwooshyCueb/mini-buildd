@@ -59,8 +59,9 @@ mbdUpdateSshKeyring "${mbd_rephost}"
 # Update local configuration dir on builder-only hosts
 if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
 	# -bld w/o -rep only; retrieve local config from rephost.
+	${MBD_LOG} -s "I: Builder host only: Mirroring local config from repo host ${mbd_rephttphost}."
 	rm -rf "${MBD_LOCALCONFIG}"
-	wget --mirror --no-parent --no-host-directories --reject '*html*' --directory-prefix="${MBD_LOCALCONFIG}" \
+	wget --quiet --mirror --no-parent --no-host-directories --reject '*html*' --directory-prefix="${MBD_LOCALCONFIG}" \
 		--cut-dirs 2 "http://${mbd_rephttphost}/~mini-buildd/config-local/"
 fi
 

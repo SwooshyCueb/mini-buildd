@@ -56,11 +56,16 @@ ${MBD_LOG} -s "I: $(ln -s -f -v ../bld public_html/ 2>&1)"
 
 mbdUpdateSshKeyring "${mbd_rephost}"
 
-# Update local configuration dir
+# Update local configuration dir on builder-only hosts
 if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
-	# -bld w/o -rep only; retrieve local config from rephost.
-	rm -rf "${MBD_LOCALCONFIG}"
-	scp -o StrictHostKeyChecking=no -P ${mbd_sshport} -p -r "${mbd_rephost}:${MBD_LOCALCONFIG}" "${MBD_LOCALCONFIG}"
+	(
+		# -bld w/o -rep only; retrieve local config from rephost.
+		rm -rf "${MBD_LOCALCONFIG}"
+		if ! scp -o StrictHostKeyChecking=no -P ${mbd_sshport} -p -r "${mbd_rephost}:${MBD_LOCALCONFIG}" "${MBD_LOCALCONFIG}"; then
+			echo "E: Could not mirror local config from repo host (scp:${mbd_rephost}:${MBD_LOCALCONFIG})."
+			echo "E: If your ssh key is new, run 'mbd-update-rep' once on the repo host to fix."
+		fi
+	) 2>&1 | ${MBD_LOG} -s
 fi
 
 # Check/prepare chroots for all dists.

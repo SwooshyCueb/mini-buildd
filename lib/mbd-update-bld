@@ -58,14 +58,10 @@ mbdUpdateSshKeyring "${mbd_rephost}"
 
 # Update local configuration dir on builder-only hosts
 if [ ! -e "/etc/init.d/mini-buildd-rep" ]; then
-	(
-		# -bld w/o -rep only; retrieve local config from rephost.
-		rm -rf "${MBD_LOCALCONFIG}"
-		if ! scp -o StrictHostKeyChecking=no -P ${mbd_sshport} -p -r "${mbd_rephost}:${MBD_LOCALCONFIG}" "${MBD_LOCALCONFIG}"; then
-			echo "E: Could not mirror local config from repo host (scp:${mbd_rephost}:${MBD_LOCALCONFIG})."
-			echo "E: If your ssh key is new, run 'mbd-update-rep' once on the repo host to fix."
-		fi
-	) 2>&1 | ${MBD_LOG} -s
+	# -bld w/o -rep only; retrieve local config from rephost.
+	rm -rf "${MBD_LOCALCONFIG}"
+	wget --mirror --no-parent --no-host-directories --reject '*html*' --directory-prefix="${MBD_LOCALCONFIG}" \
+		--cut-dirs 2 "http://${mbd_rephttphost}/~mini-buildd/config-local"
 fi
 
 # Check/prepare chroots for all dists.
@@ -79,7 +75,7 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 			(
 				echo "I: Updating chroot ${MBD_TMP_CHROOT}..."
 				mbdAptEnv
-				for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort); do
+				for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort) $(find ${MBD_HOME}/.mini-buildd/chroots-update.d/  -name "*.hook" | sort); do
 					if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root; then
 						echo "I: Chroot update hook \"${hook}\" succeeded."
 					else

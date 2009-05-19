@@ -21,11 +21,19 @@ README for "~/.mini-buildd/": Place for local configuration
 DO CHANGES ON THE REPOSITORY HOST ONLY. On builder-only hosts,
 this directory is SYNCED from the repository host.
 
-You may do the following customizations:
+Base chroot maintenance customization
+=====================================
+Note that you only need any customization if you need to
+apt-secure extra sources (for example bpo) or have other special
+needs (like pre-seeding debconf variables).
 
- * "apt-secure/": Add extra keys named "*.key" (used by 05_apt-secure).
-   Do not customize "auto-mini-buildd.key".
- * "chroots-update.d/": Add scripts to run via run-parts (run from 99_local).
+ * "apt-secure/*.key":
+   What   : Apt-secure custom keys for extra sources; keys are added to all base chroots.
+   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/05_apt-secure).
+   Note   : Don't touch auto-generated key 'auto-mini-buildd.key'.
+ * "chroots-update.d/*.hook":
+   What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
+   Used by: mbd-update-bld.
 EOF
 
 MBD_TMP_DISTS=$(mbdD2SList "${mbd_dists}")

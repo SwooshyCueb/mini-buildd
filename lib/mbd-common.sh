@@ -432,6 +432,9 @@ mbdGenPreferences()
 }
 
 # Set env for APT in chroots
+# Note: Especially when mbd-setup-chroots is called via
+# dpkg-reconfigure, some set environemt variables harm debconf
+# in debootstrap; that's why we need it primarily.
 mbdAptEnv()
 {
 	# debconf: Use noninteractive frontend

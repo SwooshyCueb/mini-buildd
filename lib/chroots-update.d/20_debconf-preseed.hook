@@ -1,0 +1,13 @@
+SET_SELECTIONS="/usr/bin/debconf-set-selections"
+
+if [ ! -x "${SET_SELECTIONS}" ]; then
+	echo "W: Cannot pre-seed deboconf values: ${SET_SELECTIONS} not found."
+	exit 1
+else
+	CONFDIR="/home/mini-buildd/.mini-buildd/debconf-preseed"
+
+	for c in $(find "${CONFDIR}" -name "*.key"); do
+		echo "I: Pre-seeding debconf values from ${c}..."
+		${SET_SELECTIONS} "${c}"
+	done
+fi

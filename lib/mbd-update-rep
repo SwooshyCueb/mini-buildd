@@ -9,7 +9,7 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep" "log" ".mini-buildd/apt-secure" ".mini-buildd/chroots-update.d"
+mkdir -p "rep" "log" ".mini-buildd/apt-secure" ".mini-buildd/debconf-preseed" ".mini-buildd/chroots-update.d"
 
 # Add README for .mini-buildd/
 cat <<EOF >.mini-buildd/README
@@ -31,6 +31,10 @@ needs (like pre-seeding debconf variables).
    What   : Apt-secure custom keys for extra sources; keys are added to all base chroots.
    Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/05_apt-secure).
    Note   : Don't touch auto-generated key 'auto-mini-buildd.key'.
+ * "debconf-preseed/*.conf":
+   What   : Pre-defined values for debconf (see debconf-set-selections).
+   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/20_debconf-preseed).
+   Note   : One noteable use case are licenses from non-free like in the sun-java packages.
  * "chroots-update.d/*.hook":
    What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
    Used by: mbd-update-bld.

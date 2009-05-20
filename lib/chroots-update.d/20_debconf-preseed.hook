@@ -6,7 +6,7 @@ if [ ! -x "${SET_SELECTIONS}" ]; then
 else
 	CONFDIR="/home/mini-buildd/.mini-buildd/debconf-preseed"
 
-	for c in $(find "${CONFDIR}" -name "*.key"); do
+	for c in $(find "${CONFDIR}" -name "*.conf"); do
 		echo "I: Pre-seeding debconf values from ${c}..."
 		${SET_SELECTIONS} "${c}"
 	done

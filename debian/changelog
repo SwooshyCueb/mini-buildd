@@ -16,12 +16,15 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * Implement Auto-Backports via new qa-check "Backports".
   * Chroot-Hooks:
     - New "local config" directory "~/.mini-buildd" on repo, copied by
-      builders.
+      builders:
+      - README file added with detailed instructions.
+      - apt-secure/: Extra apt keys.
+      - chroots-update.d/: Custom.
     - New dir: /usr/share/mini-buildd/chroots-update.d/, used by
       mbd-update-bld.  Hooks added:
-      - 10_apt: upgrade, install extras, autoremove, clean.
+      - 05_apt-secure: apt-secure keys handling.
+      - 10_apt-upgrade: upgrade, install extras, autoremove, clean.
       - 70_bug327477: bug workaround.
-      - 99_local: run local scripts via run.d.
   * Base distribution sid: Add forced version "~idSID"; formerly, sid
     wasn't restricted which may lead to conflicts with versions in real
     Debian "sid"
@@ -44,7 +47,7 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * mbd-setup-chroots: Fix/workaround debconf failures on reconfigure.
   * -rep|bld.config: Fix: Add some missing debconf default values.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:10:53 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:14:49 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

@@ -4,7 +4,7 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
   * mini-buildd-common.postinst: Don't call sbuild-adduser with full path
     [W:lintian]
-  * Add (nop yet) config script for -common [E:lintian].
+  * Override lintian error for missing config script for -common.
   * init: Add "reindex" target.
   * Implement Auto-Backports via new qa-check "Backports".
   * Chroot-Hooks:
@@ -37,7 +37,7 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * mbd-setup-chroots: Fix/workaround debconf failures on reconfigure.
   * -rep|bld.config: Fix: Add some missing debconf default values.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 18 May 2009 15:53:30 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:04:13 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

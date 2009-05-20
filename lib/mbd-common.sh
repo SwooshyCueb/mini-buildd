@@ -47,7 +47,7 @@ MBD_AUTOBUILD_MAINTAINER="Mini-Buildd Builder"
 MBD_INCOMING="${MBD_HOME}/rep/mini-dinstall/incoming"
 MBD_INCOMING_BPO="${MBD_INCOMING}/backports"
 
-MBD_LOG="logger -t mini-buildd[$(basename -- "${0}")] -p user.info"
+MBD_LOG="logger -t mini-buildd@$(hostname)[$(basename -- "${0}")] -p user.info"
 
 # For schroot: Marks auto-generated configuration snippets
 MBD_CONFIG_MARK="# MINI-BUILDD AUTOGENERATION MARK"

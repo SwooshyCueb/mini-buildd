@@ -47,8 +47,10 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * control: Update to standards version 3.8.1 (no changes needed).
   * mbd-setup-chroots: Fix/workaround debconf failures on reconfigure.
   * -rep|bld.config: Fix: Add some missing debconf default values.
+  * mbd-setup-chroots: Add fs type to schroot mount options so we don't
+    depend on auto-detection.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:53:31 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 15:49:05 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

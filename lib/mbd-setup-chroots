@@ -14,6 +14,8 @@ if ${mbd_defer}; then
 	exit 0
 fi
 
+CHROOT_FS="ext2"
+
 mbdGetChrootPersonality()
 {
 	local arch="${1}"
@@ -69,8 +71,8 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 					(
 						mbdAptEnv
 						if lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
-							mkfs.ext2 "${MBD_TMP_DEV}" &&
-							mount -v -text2 "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
+							mkfs.${CHROOT_FS} "${MBD_TMP_DEV}" &&
+							mount -v -t${CHROOT_FS} "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 							debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
 							umount -v "${MBD_TMP_MNTPOINT}"; then
 							echo "I: LV ${MBD_TMP_CHROOT} created successfully."
@@ -93,7 +95,7 @@ users=mini-buildd
 root-users=mini-buildd
 source-root-users=mini-buildd
 device=${MBD_TMP_DEV}
-mount-options=-o noatime,user_xattr
+mount-options=-t ${CHROOT_FS} -o noatime,user_xattr
 lvm-snapshot-options=--size 4G
 personality=${MBD_TMP_CHROOT_PERSONALITY}
 run-setup-scripts=true

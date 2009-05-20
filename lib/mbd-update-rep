@@ -84,7 +84,7 @@ cp "public_html/pgp_key.asc" ".mini-buildd/apt-secure/auto-mini-buildd.key"
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do
 	mbdUpdateSshKeyring "${host}"
-	${MBD_LOG} -s "I: Updating build hosts ${host}..."
+	${MBD_LOG} -s "I: Updating build host ${host}..."
 	if ! ssh -o StrictHostKeyChecking="no" -p "${mbd_sshport}" "${host}" "${MBD_LIB}/mbd-update-bld"; then
 		${MBD_LOG} -s "E: Updating build host ${host} FAILED (ignore if not set up yet)"
 	fi

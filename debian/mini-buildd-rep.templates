@@ -92,6 +92,8 @@ Description: "${KIND}" sources for architecture "${ARCH}":
   * To specify more than one source, separate via "backslash n".
   * With PIN and PRIO you may optionally set an apt-pin; useful
     if an extra source is not in "not-automatic" mode.
+  * Give arch-specific sources only if needed ("any" is
+    fallback).
   
   Syntax : Apt sources line without leading "deb "[;PIN;PRIO]
   Example: ${EXAMPLE}

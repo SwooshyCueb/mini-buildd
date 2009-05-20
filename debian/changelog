@@ -1,5 +1,12 @@
 mini-buildd (0.8.0) etch-ui; urgency=low
 
+  * 0.8.x summary: Most important changes:
+    - auto-backports mode.
+    - base chroot maintenance via hooks (predefined+custom).
+    - apt-secure support.
+    - apt_preferences support.
+    - a lot of testing and bug fixes.
+   A more detailed albeit confusing changelog below;).
   * qa-check Build: Don't warn when no packages to build for arch.
   * Fix: Use /usr/share (not /usr/lib) for mini-buildd lib.
   * mini-buildd-common.postinst: Don't call sbuild-adduser with full path
@@ -37,7 +44,7 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * mbd-setup-chroots: Fix/workaround debconf failures on reconfigure.
   * -rep|bld.config: Fix: Add some missing debconf default values.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:04:13 +0000
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 13:10:53 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

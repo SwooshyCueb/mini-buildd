@@ -74,14 +74,14 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
 
 			(
-				echo "I: Updating chroot ${MBD_TMP_CHROOT}..."
+				echo "I: ${MBD_TMP_CHROOT}: Updating..."
 				mbdAptEnv
 				for hook in $(find ${MBD_LIB}/chroots-update.d/ -name "*.hook" | sort) $(find ${MBD_HOME}/.mini-buildd/chroots-update.d/ -name "*.hook" | sort); do
-					echo "I: Running chroot update hook \"${hook}\"..."
+					echo "I: ${MBD_TMP_CHROOT}: Running chroot update hook \"${hook}\"..."
 					if ( echo "set -e" && cat "${hook}" ) | schroot -c "${MBD_TMP_CHROOT}-source" -u root; then
-						echo "I: Chroot update hook \"${hook}\" succeeded."
+						echo "I: ${MBD_TMP_CHROOT}: Chroot update hook \"${hook}\" succeeded."
 					else
-						echo "E: Chroot update hook \"${hook}\" FAILED."
+						echo "E: ${MBD_TMP_CHROOT}: Chroot update hook \"${hook}\" FAILED."
 					fi
 				done
 			) 2>&1 | ${MBD_LOG} -s

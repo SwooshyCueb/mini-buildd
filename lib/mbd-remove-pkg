@@ -46,7 +46,7 @@ if mbd_opt_given s; then
 fi
 
 # Iterate over all changes files
-for c in $(find ${MBD_HOME}/rep/ -type f -name "${PACKAGE}.changes"); do
+for c in $(find ${MBD_HOME}/rep/ -type f -wholename "${PACKAGE}.changes"); do
 	dir=$(dirname ${c})
 	mbdParseCF "${c}"
 	log="${MBD_HOME}/log/$(echo "${mbdParseCF_package}" | cut -d_ -f1)/${mbdParseCF_version}"

@@ -49,8 +49,9 @@ mini-buildd (0.8.0) etch-ui; urgency=low
   * -rep|bld.config: Fix: Add some missing debconf default values.
   * mbd-setup-chroots: Add fs type to schroot mount options so we don't
     depend on auto-detection.
+  * mbd-remove-pkgs: Use -wholename rather than -name for find.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 20 May 2009 15:49:05 +0000
+ -- Stephan Sürken <absurd@weslok.olx.intra>  Sat, 23 May 2009 13:34:32 +0000
 
 mini-buildd (0.7.13~ui40+1) etch-ui; urgency=low
 

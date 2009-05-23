@@ -327,16 +327,25 @@ mbdBasedist2Version()
 	echo -n "${version}"
 }
 
+# Get mandatory version part for dist: ~id40+0
+# When "default" is given, gice an explicit default version;
+# else this is a regex to test with.
 mbdGetMandatoryVersionPart()
 {
 	local dist=$(echo "${1}" | cut -d'-' -f1)
 	local version=$(mbdBasedist2Version ${dist})
+	local default="${2}"
+
 	if [ -n "${version}" ]; then
 		echo -n "~${mbd_id}${version}+"
 		if echo -n "${1}" | grep -q ".*-experimental\$"; then
 			echo -n "0"
 		else
-			echo -n "[1-9]"
+			if [ "${default}" = "default" ]; then
+				echo -n "1"
+			else
+				echo -n "[1-9]"
+			fi
 		fi
 	fi
 }

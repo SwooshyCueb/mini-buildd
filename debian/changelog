@@ -1,3 +1,9 @@
+mini-buildd (0.8.0~ui50+1) lenny-ui; urgency=low
+
+  * Backport for lenny-ui (no changes).
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Mon, 25 May 2009 13:37:39 +0000
+
 mini-buildd (0.8.0~uiSID+1) sid-ui; urgency=low
 
   * 0.8.x summary: Most important changes:

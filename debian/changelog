@@ -1,3 +1,9 @@
+mini-buildd (0.8.1) UNRELEASED; urgency=low
+
+  * NOT RELEASED YET
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 26 May 2009 15:49:57 +0000
+
 mini-buildd (0.8.0~ui50+1) lenny-ui; urgency=low
 
   * Backport for lenny-ui (no changes).

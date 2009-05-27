@@ -184,6 +184,7 @@ mbdQACheckLintian()
 		retval=1
 	fi
 
+	echo
 	echo "I: ----------------------------------------------------------------------"
 	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"
 	echo "I: ----------------------------------------------------------------------"

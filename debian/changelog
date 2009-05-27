@@ -1,12 +1,21 @@
-mini-buildd (0.8.1) UNRELEASED; urgency=low
+mini-buildd (0.8.1~uiSID+1) sid-ui; urgency=low
 
+  [ Stephan Sürken ]
   * lintian: Ignore some new lintian version checks:
      maintainer-upload-has-incorrect-version-number
      binary-nmu-debian-revision-in-source
      binary-nmu-uses-old-version-style
   * Better names for local customization dirs.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 27 May 2009 15:13:21 +0000
+  [ Automated changes by ui-auto-release ]
+  * New Debian package based on 0.8.1 (stable): Reusing UNRELEASED
+    section formerly versioned 0.8.1
+  * MINI_BUILDD: AUTO_BACKPORTS: lenny-ui
+
+  [ Stephan Sürken ]
+  * ui-auto-release run by absurd@manwe.use.schlund.de.
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 27 May 2009 16:20:47 +0000
 
 mini-buildd (0.8.0~ui50+1) lenny-ui; urgency=low
 

@@ -1,3 +1,9 @@
+mini-buildd (0.8.2) UNRELEASED; urgency=low
+
+  * Not released.
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 27 May 2009 16:22:54 +0000
+
 mini-buildd (0.8.1~uiSID+1) sid-ui; urgency=low
 
   [ Stephan Sürken ]

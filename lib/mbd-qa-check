@@ -162,7 +162,7 @@ mbdQACheckLintian()
 	#  - "menu-item-creates-new-root-section": for lintian <= etch, this is an ERROR, but imho should be a WARNING only, and not let builds fail.
 	#  - "changelog-should-mention-nmu": Does not make sense for mini-buildd.
 	#  - "source-nmu-has-incorrect-version-number": Does not make sense for mini-buildd.
-	grep --invert-match "\( bad-.*distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\| source-nmu-has-incorrect-version-number\)" "${lf}" >"${lf}.mbd" || true
+	grep --invert-match "\( bad-.*distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\| source-nmu-has-incorrect-version-number\| maintainer-upload-has-incorrect-version-number\| binary-nmu-debian-revision-in-source\| binary-nmu-uses-old-version-style \)" "${lf}" >"${lf}.mbd" || true
 
 	# Check if we have errors ans/or warnings; at the same time output
 	# error lines via grep.

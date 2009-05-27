@@ -9,7 +9,7 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep" "log" ".mini-buildd/apt-secure" ".mini-buildd/debconf-preseed" ".mini-buildd/chroots-update.d"
+mkdir -p "rep" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
 
 # Add README for .mini-buildd/
 cat <<EOF >.mini-buildd/README
@@ -27,11 +27,11 @@ Note that you only need any customization if you need to
 apt-secure extra sources (for example bpo) or have other special
 needs (like pre-seeding debconf variables).
 
- * "apt-secure/*.key":
+ * "apt-secure.d/*.key":
    What   : Apt-secure custom keys for extra sources; keys are added to all base chroots.
    Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/05_apt-secure).
    Note   : Don't touch auto-generated key 'auto-mini-buildd.key'.
- * "debconf-preseed/*.conf":
+ * "debconf-preseed.d/*.conf":
    What   : Pre-defined values for debconf (see debconf-set-selections).
    Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/20_debconf-preseed).
    Note   : One noteable use case are licenses from non-free like in the sun-java packages.
@@ -83,7 +83,7 @@ ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html
 
 # Update repo-host key for 05_apt-secure
-cp "public_html/pgp_key.asc" ".mini-buildd/apt-secure/auto-mini-buildd.key"
+cp "public_html/pgp_key.asc" ".mini-buildd/apt-secure.d/auto-mini-buildd.key"
 
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do

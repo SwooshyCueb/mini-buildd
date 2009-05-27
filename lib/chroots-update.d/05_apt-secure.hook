@@ -1,6 +1,6 @@
 # HOOK: Add local extra keys via apt-key
 
-KEYDIR="/home/mini-buildd/.mini-buildd/apt-secure"
+KEYDIR="/home/mini-buildd/.mini-buildd/apt-secure.d"
 
 # Skip silently if apt version is too old
 APT_VERSION=$(dpkg -s apt | grep "^Version" | cut -d" " -f2-)

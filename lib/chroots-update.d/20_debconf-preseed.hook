@@ -4,7 +4,7 @@ if [ ! -x "${SET_SELECTIONS}" ]; then
 	echo "W: Cannot pre-seed deboconf values: ${SET_SELECTIONS} not found."
 	exit 1
 else
-	CONFDIR="/home/mini-buildd/.mini-buildd/debconf-preseed"
+	CONFDIR="/home/mini-buildd/.mini-buildd/debconf-preseed.d"
 
 	for c in $(find "${CONFDIR}" -name "*.conf"); do
 		echo "I: Pre-seeding debconf values from ${c}..."

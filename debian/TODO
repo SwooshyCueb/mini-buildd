@@ -7,6 +7,9 @@ Bugs/Caveats:
    each other
 @todo -experimental, any: (think) Prevent upload of version
    already uploaded.
+@todo auto-backport queue: Only triggered by new uploads that
+   trigger preinstall. Ideally fixed in mini-dinstall; maybe
+   cron workaround as long as we use it unchanged still.
 
 Mini-dinstall fixes:
 ====================

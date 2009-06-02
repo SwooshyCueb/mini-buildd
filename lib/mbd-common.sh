@@ -206,7 +206,10 @@ mbdParseCF()
 	if mbdParseCFTopChanges "${mbdParseCF_source}" "${cf}" | grep --quiet "MINI_BUILDD: BACKPORT_MODE"; then
 		mbdParseCF_mbd_backport_mode=true
 	fi
-	mbdParseCF_mbd_auto_backports=$(mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' ' ')
+
+	# We get a coma-separated list, maybe with spaces to be ignored. Example: "etch-mbd, lenny-mbd"
+	# Purge spaces, create lines and unify against user giving duplicated dists
+	mbdParseCF_mbd_auto_backports=$(mbdParseCFAutoBackports "${mbdParseCF_source}" "${cf}" | tr -d '[:space:]' | tr ',' '\n' | uniq)
 }
 
 # Parse build host for arch

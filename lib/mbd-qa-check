@@ -244,9 +244,15 @@ mbdQACheckBackports()
 	else
 		local d
 		for d in ${mbdParseCF_mbd_auto_backports}; do
-			(
-				echo -e "\n==> Auto-backporting for: ${d}"
+			echo -e "\n==> Auto-backport requested for: ${d}"
 
+			if [ "${mbdParseCF_dist}" = "${d}" ]; then
+				echo "W: Ignoring backport request for ${d}: Same distribution as the original upload."
+				retval=1
+				break
+			fi
+
+			(
 				# Work in dist subdir to avoid collisions, unpack original DSP and enter DST
 				mkdir -v "${d}"
 				cd "${d}"
@@ -293,7 +299,7 @@ mbdQACheckBackports()
 				)
 			)
 			if [ $? -ne 0 ]; then
-				echo "WARNING: Backport for ${d} FAILED (see log above)."
+				echo "W: Backport for ${d} FAILED (see log above)."
 				retval=1
 			fi
 		done

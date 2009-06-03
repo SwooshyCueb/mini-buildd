@@ -1,5 +1,6 @@
-mini-buildd (0.8.2) UNRELEASED; urgency=low
+mini-buildd (0.8.2~uiSID+1) sid-ui; urgency=low
 
+  [ Stephan Sürken ]
   * Harden backports mode:
     - If user gives duplicate bpo dist, (silently) only use one.
     - If user gives same dist as orig upload, warn and skip.
@@ -7,7 +8,15 @@ mini-buildd (0.8.2) UNRELEASED; urgency=low
       Avoids backport creation even though the original package failed due
       to some qa check _after_ "build".
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 03 Jun 2009 09:21:19 +0000
+  [ Automated changes by ui-auto-release ]
+  * New Debian package based on 0.8.2 (stable): Reusing UNRELEASED
+    section formerly versioned 0.8.2
+  * MINI_BUILDD: AUTO_BACKPORTS: lenny-ui
+
+  [ Stephan Sürken ]
+  * ui-auto-release run by absurd@manwe.use.schlund.de.
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Wed, 03 Jun 2009 11:08:08 +0000
 
 mini-buildd (0.8.1~uiSID+1) sid-ui; urgency=low
 

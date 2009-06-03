@@ -235,7 +235,7 @@ mbdQACheckBackports()
 	mbdParseArch "${MBD_TMP_ARCH}"
 
 	echo "I: ----------------------------------------------------------------------"
-	echo "I: Backports (${mbdParseCF_mbd_auto_backports}) log:"
+	echo "I: Backports requested for:" ${mbdParseCF_mbd_auto_backports}
 	echo "I: ----------------------------------------------------------------------"
 
 	# We only run on arch=all architecture

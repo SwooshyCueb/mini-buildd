@@ -69,7 +69,7 @@ mbdQAPrebuild()
 mbdArchBuild()
 {
 	local cf="${MBD_HOME}/bld/builds/$(mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}")/${mbdParseCF_package}_source.changes"
-	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Build Backports" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
+	${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Build" -I "${MBD_TMP_BUILDID}" -P "30_Build_${mbdParseArch_arch}"
 }
 
 mbdArchQAPostbuild()
@@ -77,7 +77,7 @@ mbdArchQAPostbuild()
 	local cf="${MBD_HOME}/bld/builds/$(mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}")/${mbdParseCF_package}_${mbdParseArch_arch}.changes"
 	# Only run this if we have a changes file on bld host
 	if ssh -o StrictHostKeyChecking=no -p ${mbd_sshport} ${mbdParseArch_host} "test -f ${cf}"; then
-		${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseArch_arch}"
+		${MBD_LIB}/mbd-qa-check -a "${mbdParseArch_arch}" -r -c "${cf}" -Q "Lintian DownloadDBP Backports" -I "${MBD_TMP_BUILDID}" -P "40_Postbuild_${mbdParseArch_arch}"
 	else
 		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${mbdParseArch_arch}: No changes file (skipping postbuild checks)."
 	fi

@@ -1,9 +1,10 @@
 mini-buildd (0.8.3) UNRELEASED; urgency=low
 
   * Bugfix: Backport mode, magic versions: Replace only the nonrevision
-    part like '~id50+' (~id50+5 -> ~id40+5).
+    part like '~id50+' (~id50+5 -> ~id40+5); formerly, only versions with
+    default revisions (0,1) worked correctly.
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 16 Jun 2009 16:54:20 +0200
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 16 Jun 2009 17:12:51 +0200
 
 mini-buildd (0.8.2~uiSID+1) sid-ui; urgency=low
 

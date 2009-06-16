@@ -330,22 +330,21 @@ mbdBasedist2Version()
 	echo -n "${version}"
 }
 
-# Get mandatory version part for dist: ~id40+0
-# When "default" is given, gice an explicit default version;
-# else this is a regex to test with.
+# Get mandatory version part for dist: e.g. "~ui40+[1-9]" or "~id40+0" for experimental.
+#
+# Flags: If "norevision" is given, give the version part w/o the
+# revision number; else this is a regex to test with.
 mbdGetMandatoryVersionPart()
 {
 	local dist=$(echo "${1}" | cut -d'-' -f1)
 	local version=$(mbdBasedist2Version ${dist})
-	local default="${2}"
+	local flag="${2}"
 
 	if [ -n "${version}" ]; then
 		echo -n "~${mbd_id}${version}+"
-		if echo -n "${1}" | grep -q ".*-experimental\$"; then
-			echo -n "0"
-		else
-			if [ "${default}" = "default" ]; then
-				echo -n "1"
+		if [ "${flag}" != "norevision" ]; then
+			if echo -n "${1}" | grep -q ".*-experimental\$"; then
+				echo -n "0"
 			else
 				echo -n "[1-9]"
 			fi

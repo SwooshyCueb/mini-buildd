@@ -1,10 +1,20 @@
-mini-buildd (0.8.3) UNRELEASED; urgency=low
+mini-buildd (0.8.3~uiSID+1) sid-ui; urgency=low
 
+  [ Stephan Sürken ]
   * Bugfix: Backport mode, magic versions: Replace only the nonrevision
     part like '~id50+' (~id50+5 -> ~id40+5); formerly, only versions with
     default revisions (0,1) worked correctly.
+    Thx Henning for reporting this...
 
- -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 16 Jun 2009 17:12:51 +0200
+  [ Automated changes by ui-auto-release ]
+  * New Debian package based on 0.8.3 (stable): Reusing UNRELEASED
+    section formerly versioned 0.8.3
+  * MINI_BUILDD: AUTO_BACKPORTS: lenny-ui
+
+  [ Stephan Sürken ]
+  * ui-auto-release run by absurd@manwe.use.schlund.de.
+
+ -- Stephan Sürken <stephan.suerken@1und1.de>  Tue, 16 Jun 2009 15:50:10 +0000
 
 mini-buildd (0.8.2~uiSID+1) sid-ui; urgency=low
 

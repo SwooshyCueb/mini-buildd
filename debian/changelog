@@ -1,3 +1,9 @@
+mini-buildd (0.8.4) UNRELEASED; urgency=low
+
+  * control: Fix up descriptions.
+
+ -- Stephan Sürken <absurd@olurdix.de>  Mon, 20 Jul 2009 11:59:35 +0000
+
 mini-buildd (0.8.3~uiSID+1) sid-ui; urgency=low
 
   [ Stephan Sürken ]

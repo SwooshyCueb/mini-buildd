@@ -1,39 +1,60 @@
-mini-buildd is a smaller and different automatic Debian build &
-repository system than the proper Debian buildd, dinstall and friends
-(analogous to what mini-dinstall is for "dinstall").
+======================================================================
+What' this?
+======================================================================
+Mini-buildd is an easy-to-setup Debian autobuilder and
+repository. Its general notion is that of addons for a Debian
+base distribution (like etch, lenny, or sid) with an emphasis on
+clean builds and package checking.
 
 In essence, it glues together standard and approved Debian/Unix tools
-in dedicated debian packages. It aims for easyness of configuration
+in dedicated Debian packages. It aims for easyness of configuration
 and maintenance.
 
 Examples of intended usages:
 
-   * build, test and repo system for a debian developer.
-   * build and repo system for private debian package repositories.
-   * build and repo system add-ons packages (to a debian base).
-   * TODO: List incomplete ;).
+   * build, test and repo system for a Debian developer.
+   * build and repo system for private Debian package repositories.
+   * build and repo system for an organisation (add-on packages to a Debian base).
 
-What it can't do:
-
-   * Automated staging process like in debian.
-   * Probably not suited for very large repositories.
-
-Features:
+======================================================================
+Status && Future
+======================================================================
+The 0.8.x are rather stable and used in production. It already features
 
    * Fully configurable via debconf.
    * Fully automated setup (repos, chroots).
-   * Uses established debian standard tools to build: schroot, sbuild.
    * Uses LVM snapshots for efficient and secure chroot handling.
+   * Experimental distribution per base for testing.
+   * Enforce a bpo-like versioning scheme.
    * Uploads as source package only, all builds are done in defined chroots.
    * QA-Checking of packages (lintian and others).
+   * Auto-backports: Allows automated "no-changes" backports
+     with only one upload.
 
+There are also some things mbd does not have, but would like to
+see in future versions:
+
+   * Using mini-dinstall imposes some limitations; especially
+     mbd does not use pooling and cannot build different
+     packages concurrently; we will either drop mini-dinstall at
+     some point, or use a pimped rewritten version.
+   * Staging yet (we would like to see some manual staging facility).
+   * Package maintenance (maybe a very simple web interface).
+   * There's is currently no proper manual (debconf texts is the
+     best you can get at this point ;).
+
+More TODOs (albeit somewhat cryptic) are in the TODO file.
+
+======================================================================
 Manual maintenance:
-
+======================================================================
 mini-buildd is intended to run unattented (read: (re-)configure
-packages and enjoy). However, if unexplained things happen, or if you
-just want to "checkout" how things work, here is an incomplete list of
-typical tasks:
+packages and enjoy). However, if unexplained things happen, or
+if you just want to "checkout" how things work, you may try
+available commands as user mini-buildd (s.th. like "sudo su -
+mini-buildd"):
 
-TODO: Check/repair source chroots; Check/repair repository indexes; Re-setup source chroots, ...
+Commands are in /usr/share/mini-buildd/mbd-*, and all have a
+usage help to hint you what they are doing.
 
- -- Stephan Suerken <stephan.suerken@1und1.de>, Wed, 20 Aug 2008 16:14:59 +0200
+ -- Stephan Sürken <absurd@olurdix.de>, Mon, 20 Jul 2009 12:59:31 +0000

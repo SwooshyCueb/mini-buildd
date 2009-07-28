@@ -1,4 +1,4 @@
-mini-buildd (0.8.4~0localtest1) UNRELEASED; urgency=low
+mini-buildd (0.8.4) experimental; urgency=low
 
   * control,copyright,README.Debian: Updates.
   * Moving vcs to alioth+git+collab-maint; add VCS headers to control.
@@ -7,8 +7,9 @@ mini-buildd (0.8.4~0localtest1) UNRELEASED; urgency=low
   * init: Don't fail if default file is not there.
   * control: -bld: Add note that the repository host must be set up first.
   * -rep tpl: Add caveat note about httpd userdir support.
+  * Initial upload to experimental (Closes: #537721).
 
- -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 13:22:02 +0000
+ -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 15:25:57 +0000
 
 mini-buildd (0.8.3~uiSID+1) sid-ui; urgency=low
 

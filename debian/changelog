@@ -5,8 +5,9 @@ mini-buildd (0.8.4~0localtest1) UNRELEASED; urgency=low
   * control: Fix section to devel (was non-free/devel).
   * control: Update stds-ver to 3.8.2 (no changes needed).
   * init: Don't fail if default file is not there.
+  * control: -bld: Add note that the repository host must be set up first.
 
- -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 13:05:25 +0000
+ -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 13:15:51 +0000
 
 mini-buildd (0.8.3~uiSID+1) sid-ui; urgency=low
 

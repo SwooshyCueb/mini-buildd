@@ -43,4 +43,6 @@ Description: Minimal Debian buildd (builder)
  on clean builds and package checking.
  .
  Install this package on any machine that should act as a
- builder for a specific architecture.
+ builder for a specific architecture. To successfully configure
+ a builder, the repository host (see package mini-buildd-rep)
+ must be fully set up first.

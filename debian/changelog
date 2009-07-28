@@ -1,9 +1,10 @@
-mini-buildd (0.8.4) UNRELEASED; urgency=low
+mini-buildd (0.8.4~0localtest1) UNRELEASED; urgency=low
 
   * control,copyright,README.Debian: Updates.
   * Moving vcs to alioth+git+collab-maint; add VCS headers to control.
+  * control: Fix section to devel (was non-free/devel).
 
- -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 12:28:52 +0000
+ -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 12:52:55 +0000
 
 mini-buildd (0.8.3~uiSID+1) sid-ui; urgency=low
 

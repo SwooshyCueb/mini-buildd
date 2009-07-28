@@ -128,6 +128,8 @@ Description: Repository configuration finished
  .
  ${URL}
  .
+ CAVEAT: You need to enable your httpd's "userdir" option manually.
+ .
  Please note:
   * On initial installs, or if you configured new build hosts:
     *install* package "mini-buildd-bld" on all resp. build hosts.

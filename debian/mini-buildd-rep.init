@@ -9,7 +9,10 @@
 # Short-Description: Start mini-buildd daemon
 ### END INIT INFO
 
-. /etc/default/mini-buildd-rep
+# Default is to run the daemon
+MBD_ENABLE=1
+# Source defaults if given
+[ ! -e /etc/default/mini-buildd-rep ] || . /etc/default/mini-buildd-rep
 if [ "${MBD_ENABLE}" = "0" -a "${1}" != "stop" ]; then
 	echo "Starting mini-buildd disabled, skipping (see /etc/default/mini-buildd-rep)."
 	exit 0

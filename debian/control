@@ -4,6 +4,8 @@ Priority: extra
 Maintainer: Stephan Suerken <stephan.suerken@1und1.de>
 Build-Depends: debhelper (>= 7), man-db (>= 2.5.1), po-debconf
 Standards-Version: 3.8.1
+Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
+Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 
 Package: mini-buildd-common
 Architecture: all

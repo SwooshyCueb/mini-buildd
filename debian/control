@@ -1,7 +1,7 @@
 Source: mini-buildd
 Section: devel
 Priority: extra
-Maintainer: Stephan Suerken <stephan.suerken@1und1.de>
+Maintainer: Stephan Sürken <absurd@debian.org>
 Build-Depends: debhelper (>= 7), man-db (>= 2.5.1), po-debconf
 Standards-Version: 3.8.2
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git

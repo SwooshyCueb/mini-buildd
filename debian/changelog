@@ -1,3 +1,9 @@
+mini-buildd (0.8.5~0unreleased0) UNRELEASED; urgency=low
+
+  * control: Fix maintainer name.
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 16:01:25 +0000
+
 mini-buildd (0.8.4) experimental; urgency=low
 
   * control,copyright,README.Debian: Updates.

@@ -31,7 +31,7 @@ The 0.8.x are rather stable and used in production. It already features
    * Auto-backports: Allows automated "no-changes" backports
      with only one upload.
 
-There are also some things mbd does not have, but would like to
+There are also some things mbd does not have, but I would like to
 see in future versions:
 
    * Using mini-dinstall imposes some limitations; especially
@@ -57,4 +57,4 @@ mini-buildd"):
 Commands are in /usr/share/mini-buildd/mbd-*, and all have a
 usage help to hint you what they are doing.
 
- -- Stephan Sürken <absurd@olurdix.de>, Mon, 20 Jul 2009 12:59:31 +0000
+ -- Stephan Sürken <absurd@debian.org>, Tue, 28 Jul 2009 13:28:45 +0000

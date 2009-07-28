@@ -94,7 +94,7 @@ Description: "${KIND}" sources for architecture "${ARCH}":
     if an extra source is not in "not-automatic" mode.
   * Give arch-specific sources only if needed ("any" is
     fallback).
-  
+  .
   Syntax : Apt sources line without leading "deb "[;PIN;PRIO]
   Example: ${EXAMPLE}
 

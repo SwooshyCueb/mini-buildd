@@ -1,8 +1,11 @@
-mini-buildd (0.8.5~0unreleased0) UNRELEASED; urgency=low
+mini-buildd (0.8.5) experimental; urgency=low
 
-  * control: Fix maintainer name.
+  * [1f2861b] control: Fix maintainer name.
+  * [820f1c7] copyright: Add "Source" URL pointing to the Debian pool
+    (being Debian native).
+  * [4bcfb0d] Support squeeze
 
- -- Stephan Sürken <absurd@debian.org>  Tue, 28 Jul 2009 16:01:25 +0000
+ -- Stephan Sürken <absurd@debian.org>  Fri, 06 Nov 2009 18:31:51 +0100
 
 mini-buildd (0.8.4) experimental; urgency=low
 

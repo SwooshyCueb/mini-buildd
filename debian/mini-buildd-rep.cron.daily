@@ -10,4 +10,21 @@ else
 	echo "WARNING: ${0}: No file ${CONF}. mini-buildd not installed/configured?" >&2
 	mbd_mail="root"
 fi
-su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep" 2>&1 | mail -s "mini-buildd daily update" "${mbd_mail}"
+
+# Run mbd-update-rep as mini-buildd; send a warning email when
+# the script fails, or there is an error log "E: " in the
+# output.
+
+MBD_TMP_LOG=$(mktemp /tmp/mini-buildd-rep.cron.daily.XXXXXX)
+trap "rm -f ${MBD_TMP_LOG}" EXIT
+
+if ! su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep" >${MBD_TMP_LOG} 2>&1 ||
+	grep --quiet "\]: E:" ${MBD_TMP_LOG}; then
+	(
+		echo "=> ERRORS:"
+		grep "\]: E:" ${MBD_TMP_LOG}
+		echo
+		echo "=> COMPLETE LOG:"
+		cat ${MBD_TMP_LOG}
+	) | mail -s "ERRORS in: ${0}" "${mbd_mail}"
+fi

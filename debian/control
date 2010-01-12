@@ -9,7 +9,7 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 
 Package: mini-buildd-common
 Architecture: all
-Depends: ${misc:Depends}, adduser, mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.57.7)
+Depends: ${misc:Depends}, adduser, bsd-mailx | mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.57.7)
 Description: Minimal Debian buildd (common)
  Mini-buildd is an easy-to-setup Debian autobuilder and
  repository. Its general notion is that of addons for a Debian

@@ -1,3 +1,18 @@
+mini-buildd (0.8.6) experimental; urgency=low
+
+  * [a22a1ba] Adding utility mbd-fake-pool: Workaround to use Debian-
+    style sources
+  * [bdbefe4] Fix all scripts that need it from /bin/sh to /bin/bash;
+    this ixes script failures on systems where sh is not bash (like on
+    sid per default).
+  * [8d59a84] Try to detect errors on daily cron script; only sent mail
+    on errors.
+  * [bd72445] Update Std-Ver to 3.8.3 (no changes needed)
+  * [4dd5208] control: Depend on bsd-mailx | mailx, not just mailx
+    (which is now virtual)
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 12 Jan 2010 18:58:25 +0100
+
 mini-buildd (0.8.5) experimental; urgency=low
 
   * [1f2861b] control: Fix maintainer name.

@@ -1,0 +1,46 @@
+#!/bin/sh -e
+
+. $(dirname $0)/mbd-common.sh
+
+mbd_opt_init "Mini-buildd: Fake pool (Debian style) directory setup.
+
+ This is a WORKAROUND ONLY as long as there is no native package
+ pool support; enabling this will enable you to use Debian style
+ sources list and tools like debmirror to mirror Debian archives."
+mbd_opt_addPos "ACTION" "Action to take: 'start' or 'stop'."
+
+mbd_opt_parse "$@"
+mbdCheckUser mini-buildd
+
+cd "${MBD_HOME}"
+. "${MBD_REPCONFIGFILE}"
+
+case $(mbd_opt_getPos 0) in
+	start)
+		(
+			cd rep
+			ln -s -v . dists || true
+			for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
+				mkdir -p ${d}/main
+				(
+					cd ${d}/main
+					ln -s -v .. source || true
+					for a in $(mbdD2SList "${mbd_archs}"); do
+						ln -s -v .. binary-${a} || true
+					done
+				)
+			done
+		)
+		;;
+	stop)
+		cd rep
+		[ ! -h dists ] || rm -v dists
+		for d in $(find . -mindepth 1 -maxdepth 1 -type d); do
+			rm -rfv ${d}/main
+		done
+		;;
+	*)
+		mbd_opt_usage
+		exit 1
+		;;
+esac

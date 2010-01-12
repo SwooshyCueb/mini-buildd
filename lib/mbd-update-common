@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 . $(dirname $0)/mbd-common.sh
 mbd_opt_init "Mini-buildd: Common update script."

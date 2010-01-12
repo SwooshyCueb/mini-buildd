@@ -1,4 +1,4 @@
-#!/bin/sh -e
+#!/bin/bash -e
 
 # @hack: Duplicate code in mini-buildd-rep.config, please sync!
 mbdDynConfVars()

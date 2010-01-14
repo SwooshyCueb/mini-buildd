@@ -1,3 +1,12 @@
+mini-buildd (0.8.7) experimental; urgency=low
+
+  * [eaef293] common: Extend the hilarious changes file parsing routine
+    to work with
+  * [2131d89] cron.daily: Add some more comments.
+  * [437602e] cron.weekly: Add maintenance script doing a full reindex.
+
+ -- Stephan Sürken <absurd@debian.org>  Thu, 14 Jan 2010 18:50:35 +0100
+
 mini-buildd (0.8.6) experimental; urgency=low
 
   * [a22a1ba] Adding utility mbd-fake-pool: Workaround to use Debian-

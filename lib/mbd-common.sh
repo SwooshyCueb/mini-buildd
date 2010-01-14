@@ -140,7 +140,7 @@ mbdParseCFTopChanges()
 
 	local regexHeader="^ ${source} (.\+) .\+; urgency=.\+\$"
 
-	grep --max-count=1 -A100 "^Changes:" "${cf}" |
+	grep --max-count=1 -A255 "^Changes:" "${cf}" |
 	(
 		# Skip ^Changes line and topmost header
 		read

@@ -1,0 +1,27 @@
+#!/bin/sh -e
+
+# Weekly maintenance script for mini-buildd.
+#
+# Do a full re-index weekly. In practice, mini-dinstall is apt
+# to leave broken indices around from time to time, so we fix
+# this automatically at least once a week.
+
+# If package is removed, but not purged, exit silently
+[ -x "/usr/share/mini-buildd/mbd-update-rep" ] || exit 0
+
+# Read configuration (we need it for the configured mail address only)
+CONF="/home/mini-buildd/.mini-buildd.conf"
+if [ -e "${CONF}" ]; then
+	. ${CONF}
+else
+	echo "WARNING: ${0}: No file ${CONF}. mini-buildd not installed/configured?" >&2
+	mbd_mail="root"
+fi
+
+MBD_TMP_LOG=$(mktemp /tmp/mini-buildd-rep.cron.daily.XXXXXX)
+trap "rm -f ${MBD_TMP_LOG}" EXIT
+
+# Send mail on errors only
+if ! /etc/init.d/mini-buildd-rep reindex all >${MBD_TMP_LOG} 2>&1; then
+	cat ${MBD_TMP_LOG} | mail -s "ERRORS in: ${0}" "${mbd_mail}"
+fi

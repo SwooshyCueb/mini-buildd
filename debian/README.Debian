@@ -41,15 +41,18 @@ Development continues in the 0.9.x (unstable) series (git branch
 master). Main topic will be to replace mini-dinstall by reprepro.
 
 ======================================================================
-Manual maintenance:
+Logs, maintenance, error debugging
 ======================================================================
-mini-buildd is intended to run unattented (read: (re-)configure
-packages and enjoy). However, if unexplained things happen, or
-if you just want to "checkout" how things work, you may try
-available commands as user mini-buildd (s.th. like "sudo su -
-mini-buildd"):
+mini-buildd logs to /var/log/user.log; check there first to see
+what is going on.
 
-Commands are in /usr/share/mini-buildd/mbd-*, and all have a
-usage help to hint you what they are doing.
+If you think something's wrong with mini-dinstall, please check
+its log at
+/home/mini-buildd/rep/mini-dinstall/mini-dinstall.log.
 
- -- Stephan Sürken <absurd@debian.org>, Fri, 15 Jan 2010 13:32:56 +0100
+To run mini-buildd maintenance tools
+(/usr/share/mini-buildd/mbd-*) manually if needed, login as user
+mini-buildd (s.th. like "sudo su - mini-buildd"). All mbd-*
+tools have a usage help via '-h' option.
+
+ -- Stephan Sürken <absurd@debian.org>, Fri, 15 Jan 2010 14:53:59 +0100

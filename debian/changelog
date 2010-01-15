@@ -1,3 +1,12 @@
+mini-buildd (0.8.8) unstable; urgency=low
+
+  * Upload to unstable.
+    In the future, 0.8.x "stable" branch will go to unstable, 0.9.x aka
+    "reprepro" development will go to experimental.
+  * [dc13594] README, TODO: Updates, make fit for a release to unstable.
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 15 Jan 2010 13:51:42 +0100
+
 mini-buildd (0.8.7) experimental; urgency=low
 
   * [eaef293] common: Extend the hilarious changes file parsing routine

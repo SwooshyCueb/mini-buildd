@@ -1,5 +1,5 @@
 ======================================================================
-What' this?
+What's this?
 ======================================================================
 Mini-buildd is an easy-to-setup Debian autobuilder and
 repository. Its general notion is that of addons for a Debian
@@ -12,38 +12,33 @@ and maintenance.
 
 Examples of intended usages:
 
-   * build, test and repo system for a Debian developer.
-   * build and repo system for private Debian package repositories.
-   * build and repo system for an organisation (add-on packages to a Debian base).
+	* build, test and repo system for a Debian developer.
+	* build and repo system for private Debian package repositories.
+	* build and repo system for an organisation (add-on packages to a Debian base).
 
 ======================================================================
-Status && Future
+Status 0.8.x
 ======================================================================
-The 0.8.x are rather stable and used in production. It already features
+The 0.8.x is rather stable and used in production. It already features
 
-   * Fully configurable via debconf.
-   * Fully automated setup (repos, chroots).
-   * Uses LVM snapshots for efficient and secure chroot handling.
-   * Experimental distribution per base for testing.
-   * Enforce a bpo-like versioning scheme.
-   * Uploads as source package only, all builds are done in defined chroots.
-   * QA-Checking of packages (lintian and others).
-   * Auto-backports: Allows automated "no-changes" backports
-     with only one upload.
+	* Fully configurable via debconf.
+	* Fully automated setup (repos, chroots).
+	* Uses schroot+LVM snapshots for efficient and secure chroot handling.
+	* Experimental distribution per base for testing.
+	* Enforce a bpo-like versioning scheme.
+	* Uploads as source package only, all builds are done in defined chroots.
+	* QA-Checking of packages (lintian and others).
+	* Auto-backports: Allows automated "no-changes" backports
+	  with only one upload.
 
-There are also some things mbd does not have, but I would like to
-see in future versions:
+However, 0.8.x also has certain limitations and quirks. Please
+see the TODO file.
 
-   * Using mini-dinstall imposes some limitations; especially
-     mbd does not use pooling and cannot build different
-     packages concurrently; we will either drop mini-dinstall at
-     some point, or use a pimped rewritten version.
-   * Staging yet (we would like to see some manual staging facility).
-   * Package maintenance (maybe a very simple web interface).
-   * There's is currently no proper manual (debconf texts is the
-     best you can get at this point ;).
-
-More TODOs (albeit somewhat cryptic) are in the TODO file.
+======================================================================
+Future (0.9.x - reprepro)
+======================================================================
+Development continues in the 0.9.x (unstable) series (git branch
+master). Main topic will be to replace mini-dinstall by reprepro.
 
 ======================================================================
 Manual maintenance:
@@ -57,4 +52,4 @@ mini-buildd"):
 Commands are in /usr/share/mini-buildd/mbd-*, and all have a
 usage help to hint you what they are doing.
 
- -- Stephan Sürken <absurd@debian.org>, Tue, 28 Jul 2009 13:28:45 +0000
+ -- Stephan Sürken <absurd@debian.org>, Fri, 15 Jan 2010 13:32:56 +0100

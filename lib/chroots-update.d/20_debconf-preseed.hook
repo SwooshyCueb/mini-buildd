@@ -1,7 +1,7 @@
 SET_SELECTIONS="/usr/bin/debconf-set-selections"
 
 if [ ! -x "${SET_SELECTIONS}" ]; then
-	echo "W: Cannot pre-seed deboconf values: ${SET_SELECTIONS} not found."
+	echo "W: Cannot pre-seed debconf values: ${SET_SELECTIONS} not found."
 	exit 1
 else
 	CONFDIR="/home/mini-buildd/.mini-buildd/debconf-preseed.d"

@@ -1,3 +1,13 @@
+mini-buildd (0.8.9) unstable; urgency=low
+
+  * [2b39e2c] 20_debconf-presseed.hook: Typo fix.
+  * [1e02a61] README.Debian: Add hints where logs go to.
+  * [1581ee7] debootstrap workaround (see discussion in Bug #562143):
+    Always '--include=apt' when running debootstrap. Fixes base chroot
+    creation for squeeze/sid.
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 22 Jan 2010 18:39:27 +0100
+
 mini-buildd (0.8.8) unstable; urgency=low
 
   * Upload to unstable.

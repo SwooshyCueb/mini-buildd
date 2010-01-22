@@ -73,7 +73,7 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 						if lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
 							mkfs.${CHROOT_FS} "${MBD_TMP_DEV}" &&
 							mount -v -t${CHROOT_FS} "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
-							debootstrap --variant=buildd --arch ${arch} "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
+							debootstrap --variant=buildd --arch ${arch} --include=apt "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
 							umount -v "${MBD_TMP_MNTPOINT}"; then
 							echo "I: LV ${MBD_TMP_CHROOT} created successfully."
 						else

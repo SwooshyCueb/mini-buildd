@@ -3,10 +3,6 @@
 %:
 	dh $@
 
-binary-indep: build install
-	dh binary-indep --before installinit
+override_dh_installinit:
 	dh_installinit -p mini-buildd-rep
 	dh_installinit -p mini-buildd-bld --no-start -- start 25 S .
-	dh binary-indep --after installinit
-
-.PHONY: binary-indep

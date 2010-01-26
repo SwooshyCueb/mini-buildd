@@ -1,3 +1,10 @@
+mini-buildd (0.8.10) unstable; urgency=low
+
+  * [d0c8489] rules: Fix wrong rc.d installation of mini-buildd-bld init
+    script (Fixes: 'no mini-buildd logical volumes after reboot').
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 26 Jan 2010 13:43:28 +0100
+
 mini-buildd (0.8.9) unstable; urgency=low
 
   * [2b39e2c] 20_debconf-presseed.hook: Typo fix.

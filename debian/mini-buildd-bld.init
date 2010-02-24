@@ -2,7 +2,7 @@
 
 ### BEGIN INIT INFO
 # Provides:          mini-buildd-bld
-# Required-Start:    $remote_fs
+# Required-Start:    $remote_fs lvm2
 # Required-Stop:
 # Default-Start:     S
 # Default-Stop:

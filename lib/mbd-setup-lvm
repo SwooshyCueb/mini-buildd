@@ -43,7 +43,8 @@ mbdGetLoopdev()
 
 if mbd_opt_given a; then
 	if ! mbdGetLoopdev; then
-		${MBD_LOG} -s "I: VG ${MBD_SETUPLVM_VGNAME}: Re-attach image file: $(losetup -v -f ${MBD_SETUPLVM_IMGFILE} | tee "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1)"
+		${MBD_LOG} -s "I: VG ${MBD_SETUPLVM_VGNAME}: Reattaching image: $(losetup -v -f ${MBD_SETUPLVM_IMGFILE} | tee "${MBD_SETUPLVM_IMGDEVICEFILE}" 2>&1)"
+		${MBD_LOG} -s "I: VG ${MBD_SETUPLVM_VGNAME}: Updating lvm2: $(vgchange --available y ${MBD_SETUPLVM_VGNAME} 2>&1)"
 	fi
 	exit 0
 fi

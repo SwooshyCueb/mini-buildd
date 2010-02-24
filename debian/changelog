@@ -1,3 +1,13 @@
+mini-buildd (0.8.11) unstable; urgency=low
+
+  * [b5a6b9e] mbd-setup-lvm -a: Call vgchange after reattaching image
+    file (fixes auto mode w/ LSB reboot).
+  * [17aaf55] mini-buildd-bld.init: LSB: Add lvm2 to required start.
+  * [04c5c00] Update to std-ver 3.8.4 (no changes needed).
+  * [de9a578] Update to package format 3.0 (native).
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 24 Feb 2010 15:26:36 +0100
+
 mini-buildd (0.8.10) unstable; urgency=low
 
   * [d0c8489] rules: Fix wrong rc.d installation of mini-buildd-bld init

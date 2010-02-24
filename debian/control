@@ -3,7 +3,7 @@ Section: devel
 Priority: extra
 Maintainer: Stephan Sürken <absurd@debian.org>
 Build-Depends: debhelper (>= 7.0.50~), man-db (>= 2.5.1), po-debconf
-Standards-Version: 3.8.3
+Standards-Version: 3.8.4
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 

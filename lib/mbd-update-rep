@@ -21,6 +21,16 @@ README for "~/.mini-buildd/": Place for local configuration
 DO CHANGES ON THE REPOSITORY HOST ONLY. On builder-only hosts,
 this directory is SYNCED from the repository host.
 
+Preinstall hook
+=====================================
+Putting an executable file "preinstall" here will run this with
+the full path to a "build" (i.e., all tests passed, to-be
+installed) changes-file.
+
+You may use this as temporary workaround to dput packages to
+other repositories or to additionally use another package
+manager like reprepro in parallel.
+
 Base chroot maintenance customization
 =====================================
 Note that you only need any customization if you need to

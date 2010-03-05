@@ -9,6 +9,7 @@ mbd_opt_parse "$@"
 mbdCheckUser mini-buildd
 
 MBD_TMP_CF="$(mbd_opt_getPos 0)"
+MBD_PREINSTALL_HOOK="${MBD_LOCALCONFIG}/preinstall"
 
 mbdCheckFile "${MBD_TMP_CF}"
 
@@ -155,7 +156,7 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 	MBD_PREINSTALL_STATUS=$(mbdRetval2Status PREINSTALL ${MBD_PREINSTALL_RETVAL})
 	echo "${MBD_PREINSTALL_STATUS}" >"${MBD_TMP_LOGDIR}.status"
 
-  # Cleanup Build area on all build hosts. Always ignore retval; cosmetic only.
+	# Cleanup Build area on all build hosts. Always ignore retval; cosmetic only.
 	mbdArchRun mbdArchClean >>"${MBD_TMP_LOGDIR}.log" 2>&1 || true
 
 	(
@@ -164,6 +165,12 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 				echo "I: Built and uploaded for all archs (${mbdParseCF_dist})."
 				echo "----------------------------------------------------------------------"
 				cat "${MBD_TMP_CF}"
+
+				if [ -x "${MBD_PREINSTALL_HOOK}" ]; then
+					echo "----------------------------------------------------------------------"
+					${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Running local hook for ${mbdParseCF_arch}:"
+					${MBD_PREINSTALL_HOOK} "${MBD_TMP_CF}" 2>&1 | ${MBD_LOG} -s || true
+				fi
 				;;
 			FTBFS)
 				echo "E: Fails to build from source; please re-upload if you need a retry."
@@ -179,7 +186,7 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 		esac
 		echo "----------------------------------------------------------------------"
 		mbdShowQAChecks "${MBD_TMP_BUILDID}"
-	) | mail -s "${MBD_PREINSTALL_STATUS}(${mbdParseCF_dist}): ${mbdParseCF_package}" "${mbd_mail}"
+	) 2>&1 | mail -s "${MBD_PREINSTALL_STATUS}(${mbdParseCF_dist}): ${mbdParseCF_package}" "${mbd_mail}"
 	${MBD_LOG} -s "${MBD_TMP_LOGPRE}: ${MBD_PREINSTALL_STATUS}."
 	exit ${MBD_PREINSTALL_RETVAL}
 else
@@ -187,6 +194,12 @@ else
 
 	if [ "${mbdParseCF_maintainer}" = "${MBD_AUTOBUILD_MAINTAINER}" ]; then
 		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: DBP upload ${mbdParseCF_arch}."
+
+		if [ -x "${MBD_PREINSTALL_HOOK}" ]; then
+			${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Running local hook for ${mbdParseCF_arch}:"
+			${MBD_PREINSTALL_HOOK} "${MBD_TMP_CF}" 2>&1 | ${MBD_LOG} -s || true
+		fi
+
 		exit 0
 	else
 		(

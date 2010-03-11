@@ -1,1 +1,2 @@
 lib/mbd-update-rep lib/mbd-update-rep-html lib/mbd-preinstall lib/mbd-sign-release lib/mbd-remove-pkg lib/mbd-fake-pool usr/share/mini-buildd
+debian/tmp/* .

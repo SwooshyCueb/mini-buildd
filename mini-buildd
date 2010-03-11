@@ -1,0 +1,59 @@
+#!/usr/bin/python2.5
+
+import threading
+import Queue
+import signal
+import sys
+import time
+
+from mini_buildd.options import opts
+from mini_buildd.config import config
+from mini_buildd.log import log
+import mini_buildd.misc
+
+from mini_buildd.iwatcher import IWatcher
+from mini_buildd.installer import Installer
+
+class Main():
+    def __init__(self):
+        self._iQueue = Queue.Queue()
+        self._iWatcher  = IWatcher (queue=self._iQueue, idir='/home/mini-buildd/rep/mini-dinstall/incoming')
+        self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
+        self._run = True
+
+    def shutdown(self, signum=-1, frame=-1):
+        log.debug("Got signal: %s" % signum)
+        self._run = False
+
+    def start_thread(self, obj):
+        thread = threading.Thread(target=obj.run)
+        thread.setDaemon(True)
+        thread.start()
+
+    def run(self):
+        # Start watcher and installer
+        self.start_thread(self._iWatcher)
+        self.start_thread(self._installer)
+
+        # Shutdown on SIGTERM or SIGINT
+        signal.signal(signal.SIGTERM, self.shutdown)
+        signal.signal(signal.SIGINT, self.shutdown)
+
+        while self._run:
+            signal.pause()
+
+        log.info("Shutting down (%s active threads)" % threading.activeCount())
+        log.info("Shutdown complete. Bye...")
+
+# Daemonize if configured
+if not opts.foreground:
+    mini_buildd.misc.daemonize()
+
+# Main processing; the only benefit of the master try/catch is
+# that we can generate a error message to log on exception --
+# most importantly, when we cannot start up
+try:
+    Main().run()
+except:
+    log.exception("mini-buildd run failed")
+    sys.exit(1)

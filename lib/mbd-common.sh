@@ -37,6 +37,9 @@ MBD_GNUPG_KEYNAME="Mini-Buildd Automatic Signing Key"
 
 MBD_MDINSTALLCONFIGFILE="${MBD_HOME}/.mini-dinstall.conf"
 
+MBD_REPREPRO_DISTSFILE="${MBD_HOME}/rep/conf/distributions"
+MBD_REPREPRO_INCOMINGFILE="${MBD_HOME}/rep/conf/incoming"
+
 MBD_HTML_INDEXFILE="${MBD_HOME}/public_html/index.html"
 
 MBD_SCHROOTCONFIGFILE="/etc/schroot/schroot.conf"

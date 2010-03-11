@@ -9,7 +9,7 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
+mkdir -p "rep/conf" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
 
 # Add README for .mini-buildd/
 cat <<EOF >.mini-buildd/README
@@ -88,6 +88,37 @@ $(for d in ${MBD_TMP_DISTS}; do
  done)
 EOF
 ${MBD_LOG} -s "I: ${MBD_MDINSTALLCONFIGFILE} updated."
+
+
+cat <<EOF >"${MBD_REPREPRO_DISTSFILE}"
+$(for d in ${MBD_TMP_DISTS}; do
+   echo "Codename: ${d}-${mbd_id}";
+   echo "Suite: ${d}-${mbd_id}";
+   echo "Label: ${d}-${mbd_id}";
+   echo "Origin: mini-buildd-${mbd_id}";
+   echo "Components: main contrib non-free";
+   echo "Architectures: source $(mbdD2SList "${mbd_archs}")";
+   echo "Description: ${d} packages for ${mbd_id}.";
+   echo;
+   echo "Codename: ${d}-${mbd_id}-experimental";
+   echo "Suite: ${d}-${mbd_id}-experimental";
+   echo "Label: ${d}-${mbd_id}-experimental";
+   echo "Origin: mini-buildd-${mbd_id}";
+   echo "Components: main contrib non-free";
+   echo "Architectures: source $(mbdD2SList "${mbd_archs}")";
+   echo "Description: EXPERIMENTAL ${d} packages for ${mbd_id}.";
+   echo;
+ done)
+EOF
+${MBD_LOG} -s "I: ${MBD_REPREPRO_DISTSFILE} updated."
+
+cat <<EOF >"${MBD_REPREPRO_INCOMINGFILE}"
+Name: INCOMING
+TempDir: /tmp
+IncomingDir: ${MBD_INCOMING}
+Allow: $(for d in ${MBD_TMP_DISTS}; do echo -n "${d}-${mbd_id} ${d}-${mbd_id}-experimental "; done)
+EOF
+${MBD_LOG} -s "I: ${MBD_REPREPRO_INCOMINGFILE} updated."
 
 ${MBD_LIB}/mbd-update-common
 ${MBD_LIB}/mbd-update-rep-html

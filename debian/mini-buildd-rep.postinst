@@ -43,7 +43,4 @@ su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep -p"
 
 #DEBHELPER#
 
-# @hack: mini-dinstall should close all inherited file descriptors; calling db_stop is a workaround to make debconf come back.
-db_stop
-
 exit 0

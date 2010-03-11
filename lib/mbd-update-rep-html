@@ -104,8 +104,7 @@ wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-k
     <a href="config">View raw config</a>,
     <a href="config-local/">Browse local config</a>,
     <a href="log/">Browse build logs</a>,
-    <a href="rep/mini-dinstall/incoming/">Browse incoming</a>,
-    <a href="rep/mini-dinstall/mini-dinstall.log">Mini-dinstall logs</a>.
+    <a href="rep/incoming/">Browse incoming</a>,
 </li>
 
 <li>Documentation:

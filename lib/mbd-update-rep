@@ -9,7 +9,7 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep/conf" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
+mkdir -p "rep/conf" "rep/incoming" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
 
 # Add README for .mini-buildd/
 cat <<EOF >.mini-buildd/README
@@ -51,44 +51,6 @@ needs (like pre-seeding debconf variables).
 EOF
 
 MBD_TMP_DISTS=$(mbdD2SList "${mbd_dists}")
-cat <<EOF >"${MBD_MDINSTALLCONFIGFILE}"
-[DEFAULT]
-archivedir = ${MBD_HOME}/rep
-mail_to = ${mbd_mail}
-
-trigger_reindex = 1
-mail_on_success = 0
-# @todo Default is on when debian-keyring package is installed; we don't want this enabled ever (yet)
-verify_sigs = 0
-
-incoming_permissions = 0755
-
-pre_install_script = ${MBD_LIB}/mbd-preinstall
-#post_install_script = ${MBD_LIB}/postinstall
-release_signscript = ${MBD_LIB}/mbd-sign-release
-
-architectures = all, ${mbd_archs}
-archive_style = flat
-generate_release = 1
-chown_changes_files = 0
-experimental_release = 1
-release_origin = Mini-Buildd for ${mbd_id} on ${mbd_rephost}
-
-$(for d in ${MBD_TMP_DISTS}; do
-   echo "[${d}-${mbd_id}]";
-   echo "release_description = ${d} packages for ${mbd_id}.";
-   echo "release_label = ${d}-${mbd_id}";
-   echo "keep_old = 1";
-   echo;
-   echo "[${d}-${mbd_id}-experimental]";
-   echo "release_description = EXPERIMENTAL ${d} packages for ${mbd_id}.";
-   echo "release_label = ${d}-${mbd_id}-experimental";
-   echo "keep_old = 0";
-   echo;
- done)
-EOF
-${MBD_LOG} -s "I: ${MBD_MDINSTALLCONFIGFILE} updated."
-
 
 cat <<EOF >"${MBD_REPREPRO_DISTSFILE}"
 $(for d in ${MBD_TMP_DISTS}; do

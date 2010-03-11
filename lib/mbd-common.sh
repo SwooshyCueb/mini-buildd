@@ -35,8 +35,6 @@ MBD_SSHPUBKEYFILE="${MBD_HOME}/.ssh/id_dsa.pub"
 MBD_GNUPGSECRING="${MBD_HOME}/.gnupg/secring.gpg"
 MBD_GNUPG_KEYNAME="Mini-Buildd Automatic Signing Key"
 
-MBD_MDINSTALLCONFIGFILE="${MBD_HOME}/.mini-dinstall.conf"
-
 MBD_REPREPRO_DISTSFILE="${MBD_HOME}/rep/conf/distributions"
 MBD_REPREPRO_INCOMINGFILE="${MBD_HOME}/rep/conf/incoming"
 
@@ -47,7 +45,7 @@ MBD_SCHROOTCONFIGFILE="/etc/schroot/schroot.conf"
 # Maintainer name of autobuilder (goes to .sbuildrc, and used to reject direct binary uploads).
 MBD_AUTOBUILD_MAINTAINER="Mini-Buildd Builder"
 
-MBD_INCOMING="${MBD_HOME}/rep/mini-dinstall/incoming"
+MBD_INCOMING="${MBD_HOME}/rep/incoming"
 MBD_INCOMING_BPO="${MBD_INCOMING}/backports"
 
 MBD_LOG="logger -t mini-buildd@$(hostname)[$(basename -- "${0}")] -p user.info"

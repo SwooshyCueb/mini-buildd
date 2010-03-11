@@ -12,7 +12,8 @@ cd "${MBD_HOME}"
 
 MBD_TMP_OBSOLETE="*.sources.list *.update.log setup-lvm.log lvm_pv0.img gpg_key_template repository_signing_key.asc *.ssh_key.asc \
                   bld/*.log bld/current* bld/*.dsc bld/*.diff.gz bld/*.tar.gz bld/*.deb bld/*.udeb bld/*.changes bld/*.changes.lintian bld/*.upload bld/logs \
-                  rep/dput.cf rep/mini-dinstall/REJECT $(find bld/chroots/ -mindepth 1 ! -name 'lvm.device' -a ! -name 'lvm.image') \
+                  rep/mini-dinstall .mini-dinstall.conf \
+                  rep/dput.cf $(find bld/chroots/ -mindepth 1 ! -name 'lvm.device' -a ! -name 'lvm.image') \
                   $(find rep/ -name '.cache.db')"
 
 for f in ${MBD_TMP_OBSOLETE}; do

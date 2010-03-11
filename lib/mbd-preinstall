@@ -3,7 +3,7 @@
 . $(dirname $0)/mbd-common.sh
 . "${MBD_REPCONFIGFILE}"
 
-mbd_opt_init "Mini-buildd: Preinstall script for mini-dinstall."
+mbd_opt_init "Mini-buildd: Preinstall script for mini-buildd."
 mbd_opt_addPos "CHANGESFILE" "Full path to changes file."
 mbd_opt_parse "$@"
 mbdCheckUser mini-buildd

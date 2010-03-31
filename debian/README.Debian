@@ -1,4 +1,19 @@
 ======================================================================
+This is 1.0.0 development
+======================================================================
+All 0.9.x releases are UNSTABLE and development for "1.0.0" (stable).
+
+Main goals
+----------------------------------------------------------------------
+* Replace mini-dinstall repo handling by repropro.
+* Replace mini-dinstall incoming handling by dedicated own daemon mini-buildd.
+* Replace as many shell code as possible by python code in mini-buildd.
+----------------------------------------------------------------------
+
+What follows is the old text for 0.8.x, should be updated once
+1.0.0 is released:
+
+======================================================================
 What's this?
 ======================================================================
 Mini-buildd is an easy-to-setup Debian autobuilder and
@@ -55,4 +70,4 @@ To run mini-buildd maintenance tools
 mini-buildd (s.th. like "sudo su - mini-buildd"). All mbd-*
 tools have a usage help via '-h' option.
 
- -- Stephan Sürken <absurd@debian.org>, Fri, 15 Jan 2010 14:53:59 +0100
+ -- Stephan Sürken <absurd@debian.org>, Wed, 31 Mar 2010 18:12:45 +0200

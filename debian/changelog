@@ -1,6 +1,33 @@
-mini-buildd (0.9.0~0local1) UNRELEASED; urgency=low
+mini-buildd (0.9.0) experimental; urgency=low
 
- -- Stephan Sürken <absurd@debian.org>  Wed, 10 Mar 2010 14:02:45 +0100
+  * Initial 0.9.x unstable development release:
+
+  * [2b39e2c] 20_debconf-presseed.hook: Typo fix.
+  * [1e02a61] README.Debian: Add hints where logs go to.
+  * [e229e45] debootstrap workaround (see discussion in Bug #562143):
+    Always '--include=apt' when running debootstrap. Fixes base chroot
+    creation for squeeze/sid.
+  * [734b750] rules: Fix wrong rc.d installation of mini-buildd-bld init
+    script (Fixes: 'no mini-buildd logical volumes after reboot').
+  * [4627827] mbd-setup-lvm -a: Call vgchange after reattaching image
+    file (fixes auto mode w/ LSB reboot).
+  * [7b1c75f] Update to std-ver 3.8.4 (no changes needed).
+  * [a12f4b5] Update to package format 3.0 (native).
+  * [32eb24c] mini-buildd-bld.init: LSB: Add lvm2 to required start.
+  * [2df62f5] mbd-preinstall: Add support to configure local hook for
+    successful builds.
+  * [cd5da02] Initial POC: Use reprepro, replace mini-dinstall by own
+    daemon mini-buildd.
+  * [8de7a48] mini-buildd-rep.cron.weekly: Now obsolete.
+  * [cc5bcf4] mini-buildd-rep.logrotate: Now obsolete, removed.
+  * [6692441] mini-buildd-rep.postinst: Rm db_stop hack needed for
+    dinstall misbehaviour only.
+  * [06a64bb] lib/*: Remove support for mini-dinstall config files and
+    paths
+  * [edaa4cc] * debian/README.Debian: Update for 1.0 development.
+  * [2ee6b51] * debian/TODO:  Update for 1.0 development.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 31 Mar 2010 18:25:55 +0200
 
 mini-buildd (0.8.8) unstable; urgency=low
 

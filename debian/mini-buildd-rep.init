@@ -12,6 +12,7 @@
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/usr/bin/mini-buildd
 NAME=$(basename "${DAEMON}")
+DESC="mini build daemon"
 
 # Default is to run the daemon
 MBD_ENABLE=1
@@ -22,34 +23,36 @@ MBD_ENABLE=1
 
 . /lib/lsb/init-functions
 
-# Shortcut
-lm()
+# run_with_log LOGTXT CMD_WITH_ARGS...
+run_with_log()
 {
-	log_daemon_msg "$1 Mini build daemon" "mini-buildd"
+	log_begin_msg "${1} ${DESC}: ${NAME}"
+	shift
+	local retval=0
+	${@} || retval=$?
+	log_end_msg ${retval}
+	return ${retval}
 }
 
 case "$1" in
 	start)
 		if [ "${MBD_ENABLE}" = "0" ]; then
-			lm "disabled (see /etc/default/mini-buildd-rep)"
-			log_end_msg $?
+			run_with_log "Disabled (see /etc/default/mini-buildd-rep), skipping" true
+		elif $(start-stop-daemon --stop --test --quiet --name ${NAME} --user mini-buildd); then
+			run_with_log "Already running" true
 		else
-			lm "Starting"
-			start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- -v -v
-			log_end_msg $?
+			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- -v -v
 		fi
 		;;
 	stop)
-		lm "Stopping"
-		start-stop-daemon --stop --quiet --name ${NAME} --user mini-buildd --retry 30
-		log_end_msg $?
+		run_with_log "Stopping" start-stop-daemon --stop --oknodo --quiet --name ${NAME} --user mini-buildd --retry 30
 		;;
 	force-reload|restart)
 		$0 stop
 		$0 start
 		;;
 	*)
-		echo "Usage: /etc/init.d/mini-buildd-rep {start|stop|restart|force-reload}"
+		echo "Usage: /etc/init.d/mini-buildd-rep {start|stop|restart|force-reload}" >&2
 		exit 1
 		;;
 esac

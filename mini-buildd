@@ -3,6 +3,7 @@
 import threading
 import Queue
 import signal
+import os
 import sys
 import time
 
@@ -17,7 +18,7 @@ from mini_buildd.installer import Installer
 class Main():
     def __init__(self):
         self._iQueue = Queue.Queue()
-        self._iWatcher  = IWatcher (queue=self._iQueue, idir='/home/mini-buildd/rep/incoming')
+        self._iWatcher  = IWatcher (queue=self._iQueue, idir=os.getenv('HOME', '/home/mini-buildd') + '/rep/incoming')
         self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
         self._run = True
 

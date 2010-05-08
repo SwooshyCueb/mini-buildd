@@ -1,3 +1,22 @@
+mini-buildd (0.9.1) experimental; urgency=low
+
+  * [7a55102] * mini-buildd-rep.preinst: Fix: Manually remove obsoleted
+    conffiles.
+  * [7454852] * debian/mini-buildd-rep.init: Various fixes.
+  * [d6ccc2f] * mini_buildd/iwatcher.py: Also watch for MOVED_TO events
+    (fixes auto backports).
+  * [94be418] * mini-buildd: Use env(HOME) for incoming path (was
+    hardcoded).
+  * [292f37a] * .gitignore: Add .gitignore; ignoring *.pyc.
+  * [da084fd] * mini_buildd/installer.py: Fix: Set _preinstall var even
+    if no script found.
+  * [f9f835d] * mini-buildd: Use python-daemon to daemonize correctly
+    (PEP 3143).
+  * [495fc27] * debian/mini-buildd-rep.init: Make daemon options
+    configurable via defaults.
+
+ -- Stephan Sürken <absurd@debian.org>  Sat, 08 May 2010 18:06:34 +0200
+
 mini-buildd (0.9.0) experimental; urgency=low
 
   * Initial 0.9.x unstable development release:

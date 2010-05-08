@@ -1,2 +1,4 @@
 # Set this to 0 to disable starting the daemon
 MBD_ENABLE=1
+# Set this to any arguments to run the daemon (see mini-buildd --help)
+MBD_OPTS="-v -v"

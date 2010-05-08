@@ -16,6 +16,7 @@ DESC="mini build daemon"
 
 # Default is to run the daemon
 MBD_ENABLE=1
+MBD_OPTS=""
 # Source defaults if given
 [ ! -e /etc/default/mini-buildd-rep ] || . /etc/default/mini-buildd-rep
 
@@ -41,7 +42,7 @@ case "$1" in
 		elif $(start-stop-daemon --stop --test --quiet --name ${NAME} --user mini-buildd); then
 			run_with_log "Already running" true
 		else
-			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- -v -v
+			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- ${MBD_OPTS}
 		fi
 		;;
 	stop)

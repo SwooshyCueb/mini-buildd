@@ -6,6 +6,7 @@ import signal
 import os
 import sys
 import time
+import daemon
 
 from mini_buildd.options import opts
 from mini_buildd.config import config
@@ -48,7 +49,7 @@ class Main():
 
 # Daemonize if configured
 if not opts.foreground:
-    mini_buildd.misc.daemonize()
+    daemon.DaemonContext().open()
 
 # Main processing; the only benefit of the master try/catch is
 # that we can generate a error message to log on exception --

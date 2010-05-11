@@ -17,7 +17,7 @@ case "$1" in
 		echo "Ignored (call with start only)."
 		;;
 	*)
-		echo -e "\nUsage: $0 start" >&2
+		echo "Usage: $0 start" >&2
 		exit 1
 		;;
 esac

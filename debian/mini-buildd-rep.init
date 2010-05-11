@@ -95,7 +95,7 @@ reindex()
 
 usage()
 {
-	echo -e "\nUsage: $0 {start|stop|restart|force-reload|reindex all|DIST}" >&2
+	echo "Usage: $0 {start|stop|restart|force-reload|reindex all|DIST}" >&2
 	exit 1
 }
 

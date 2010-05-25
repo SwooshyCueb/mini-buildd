@@ -1,3 +1,12 @@
+# These templates have been reviewed by the debian-l10n-english
+# team
+#
+# If modifications/additions/rewording are needed, please ask
+# debian-l10n-english@lists.debian.org for advice.
+#
+# Even minor modifications require translation updates and such
+# changes should be coordinated with translators and reviewers.
+
 Template: mini-buildd-rep/mbd_id
 Type: string
 Description: Mini-buildd's identity:
@@ -15,7 +24,7 @@ Type: string
 Description: Repository host name:
  Give the repository's host name; this is usually just the
  hostname you get via "hostname -f". This will be used to create
- URLs for HTTP acccess, and for ssh/scp commands.
+ URLs for HTTP access, and for ssh/scp commands.
 
 Template: mini-buildd-rep/mbd_httpport
 Type: string
@@ -50,8 +59,8 @@ Description: External documentation URL:
 Template: mini-buildd-rep/mbd_dists
 Type: multiselect
 Choices: ${DISTS}
-Description: Basis distributions to support:
- Space separated list of basis distributions to support.
+Description: Base distributions to support:
+ Space separated list of base distributions to support.
 
 Template: mini-buildd-rep/mbd_archs
 Type: multiselect
@@ -62,8 +71,8 @@ Template: mini-buildd-rep/mbd_apt_allow_unauthenticated
 Type: boolean
 Default: false
 Description: Allow unauthenticated apt?
- This flag correspondents to the respective apt and sbuild
- options.
+ This flag is equivalent to the allow_unauthenticated option in
+ APT or sbuild.
  .
  If you set this to false (highly recommended), you will need to
  manually add the keys for extra sources you might have
@@ -80,8 +89,8 @@ Template: mini-buildd-rep/mbd_archall
 Type: select
 Choices: ${ARCHS}
 Description: Arch of builder to build non-arch binary packages:
- One builder machine must have the part to compile arch=all
- binary packages; just give that architecture here.
+ One builder machine must have the role of compiling arch=all
+ binary packages; please specify that architecture here.
 
 Template: mini-buildd-rep/mbd_source
 Type: string
@@ -89,13 +98,13 @@ Description: "${KIND}" sources for architecture "${ARCH}":
  Apt sources for "${DIST}": ${DESC}
  .
  Notes:
-  * To specify more than one source, separate via "backslash n".
+  * To specify more than one source, separate them with "\n".
   * With PIN and PRIO you may optionally set an apt-pin; useful
     if an extra source is not in "not-automatic" mode.
   * Give arch-specific sources only if needed ("any" is
     fallback).
   .
-  Syntax : Apt sources line without leading "deb "[;PIN;PRIO]
+  Syntax: Apt sources line without leading "deb "[;PIN;PRIO]
   Example: ${EXAMPLE}
 
 Template: mini-buildd-rep/mbd_bldhost
@@ -116,9 +125,9 @@ Description: Debian build options for architecture ${ARCH}:
  variable (see policy, chapter 4.9.1).
  .
  The only option that is useful here is "parallel=n"; use this
- if you have multiple CPUs/Cores at your hand for this archs
- build host. You will then have parallel builds (i.e. faster
- builds) for packages that support it.
+ if you have multiple CPUs/cores for this architecture's build
+ host. You will then have fast parallel builds for packages
+ that support it.
 
 Template: mini-buildd-rep/overview
 Type: note
@@ -128,10 +137,11 @@ Description: Repository configuration finished
  .
  ${URL}
  .
- CAVEAT: You need to enable your httpd's "userdir" option manually.
+ (The web server may need to be manually reconfigured to allow the
+ "userdir" option.)
  .
  Please note:
-  * On initial installs, or if you configured new build hosts:
-    *install* package "mini-buildd-bld" on all resp. build hosts.
-  * On reconfiguration with changes to supported dists or archs:
-    *reconfigure* package "mini-buildd-bld" on all build hosts.
+  * On initial installs, or if you configured new build hosts,
+    install the package "mini-buildd-bld" on the appropriate hosts.
+  * On reconfiguration with changes to supported dists or archs,
+    reconfigure the package "mini-buildd-bld" on all build hosts.

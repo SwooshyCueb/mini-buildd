@@ -1,3 +1,21 @@
+mini-buildd (0.8.13) unstable; urgency=low
+
+  * [6216415] * debian/mini-buildd-bld.init: Fix bashism. (Closes:
+    581124)
+  * [b9fdb7f] * debian/mini-buildd-rep.init: Fix bashism. (Closes:
+    581125)
+  * [b9d6831] Debconf templates and debian/control reviewed by the
+    debian-l10n-english team as part of the Smith review project.
+    (Closes: #577850)
+  * [2905311] Debconf translation updates (Closes: #579356, #580146,
+    #565575, #580268, #580387, #580576, #581222, #581535, #581869) -
+    thanks to French (Alexandre Hoïde), Swedish (Martin Bagge), Russian
+    (Yuri Kozlov), Danish (Joe Hansen), Russian (Yuri Kozlov),
+    Portuguese (Pedro Ribeiro), German (Tobias Quathamer), Vietnamese
+    (Clytie Siddall), Spanish (Francisco Javier Cuadrado).
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 25 May 2010 15:09:51 +0200
+
 mini-buildd (0.8.12) unstable; urgency=low
 
   * [3c2bf04] mbd-preinstall: Add support to configure local hook for

@@ -10,9 +10,9 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 Package: mini-buildd-common
 Architecture: all
 Depends: ${misc:Depends}, adduser, bsd-mailx | mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.57.7)
-Description: Minimal Debian buildd (common)
- Mini-buildd is an easy-to-setup Debian autobuilder and
- repository. Its general notion is that of addons for a Debian
+Description: minimal Debian build daemon - common files
+ Mini-buildd is an easy-to-configure Debian autobuilder and
+ repository. Its general notion is that of add-ons for a Debian
  base distribution (like etch, lenny, or sid) with an emphasis
  on clean builds and package checking.
  .
@@ -23,26 +23,24 @@ Package: mini-buildd-rep
 Architecture: all
 Depends: ${misc:Depends}, mini-buildd-common, python, mini-dinstall (>> 0.6.24), cron, procps
 Recommends: logrotate, dwww
-Description: Minimal Debian buildd (repository)
- Mini-buildd is an easy-to-setup Debian autobuilder and
- repository. Its general notion is that of addons for a Debian
+Description: minimal Debian build daemon - repository
+ Mini-buildd is an easy-to-configure Debian autobuilder and
+ repository. Its general notion is that of add-ons for a Debian
  base distribution (like etch, lenny, or sid) with an emphasis
  on clean builds and package checking.
  .
- Install this package on the machine that should hold the
- autobuilder network's repository.
+ This package provides the autobuilder network's repository.
 
 Package: mini-buildd-bld
 Architecture: all
 Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap (>= 1.0.10lenny1), schroot, dput, dpkg-dev, devscripts (>= 2.10.15)
 Recommends: logrotate
-Description: Minimal Debian buildd (builder)
- Mini-buildd is an easy-to-setup Debian autobuilder and
- repository. Its general notion is that of addons for a Debian
+Description: minimal Debian build daemon - builder
+ Mini-buildd is an easy-to-configure Debian autobuilder and
+ repository. Its general notion is that of add-ons for a Debian
  base distribution (like etch, lenny, or sid) with an emphasis
  on clean builds and package checking.
  .
- Install this package on any machine that should act as a
- builder for a specific architecture. To successfully configure
- a builder, the repository host (see package mini-buildd-rep)
- must be fully set up first.
+ This package equips a machine to act as a builder for a specific
+ architecture. Before builders can be set up a repository host
+ must be fully configured (see the package mini-buildd-rep).

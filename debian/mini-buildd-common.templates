@@ -1,11 +1,19 @@
+# These templates have been reviewed by the debian-l10n-english
+# team
+#
+# If modifications/additions/rewording are needed, please ask
+# debian-l10n-english@lists.debian.org for advice.
+#
+# Even minor modifications require translation updates and such
+# changes should be coordinated with translators and reviewers.
+
 Template: mini-buildd-common/purging_repository
 Type: note
-_Description: About to purge your repository
- You have selected to purge mini-buildd on a repository host.
+_Description: Repository purge
+ You have chosen to purge mini-buildd on a repository host.
  .
- Puging means to remove the mini-buildd user along with all its
- files, including the repository in "/home/mini-buildd/rep".
+ This choice means that the mini-buildd user will be removed along
+ with all the files it owns, including the repository in
+ "/home/mini-buildd/rep".
  .
- If you want to keep that data,
- .
-       BACK IT UP NOW BEFORE CONTINUING.
+ To keep this data, you need to back it up now.

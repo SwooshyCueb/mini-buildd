@@ -1,0 +1,48 @@
+# German translation of mini-buildd debconf template.
+# This file is distributed under the same license as the mini-buildd package.
+# Copyright © Tobias Quathamer <toddy@debian.org>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mini-buildd\n"
+"Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
+"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"PO-Revision-Date: 2010-05-04 08:32+0100\n"
+"Last-Translator: Tobias Quathamer <toddy@debian.org>\n"
+"Language-Team: German <debian-l10n-german@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "Repository purge"
+msgstr "Paketdepot vollständig löschen"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "You have chosen to purge mini-buildd on a repository host."
+msgstr ""
+"Sie möchten mini-buildd vollständig von einem Rechner entfernen, auf dem ein "
+"Paketdepot vorhanden ist."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid ""
+"This choice means that the mini-buildd user will be removed along with all "
+"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+msgstr ""
+"Diese Auswahl bedeutet, dass der mini-buildd-Benutzer gemeinsam mit allen "
+"Dateien entfernt wird, die ihm zugeordnet sind. Dies schließt das Paketdepot "
+"im Verzeichnis »/home/mini-buildd/rep« ein."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "To keep this data, you need to back it up now."
+msgstr ""
+"Um diese Daten zu behalten, müssen Sie jetzt eine Sicherheitskopie davon "
+"erstellen."

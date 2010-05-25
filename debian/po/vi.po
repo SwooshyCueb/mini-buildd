@@ -1,0 +1,45 @@
+# Vietnamese translation for MiniBuildD.
+# Copyright © 2010 Free Software Foundation, Inc.
+# Clytie Siddall <clytie@riverland.net.au>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mini-buildd 0.8.13\n"
+"Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
+"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"PO-Revision-Date: 2010-05-13 22:55+0930\n"
+"Last-Translator: Clytie Siddall <clytie@riverland.net.au>\n"
+"Language-Team: Vietnamese <vi-VN@googlegroups.com>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: LocFactoryEditor 1.8\n"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "Repository purge"
+msgstr "Tẩy kho lưu"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "You have chosen to purge mini-buildd on a repository host."
+msgstr "Bạn đã chọn tẩy gói mini-buildd trên một máy chủ kho lưu."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid ""
+"This choice means that the mini-buildd user will be removed along with all "
+"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+msgstr ""
+"Sự chọn này có nghĩa là người dùng mini-buildd sẽ bị gỡ bỏ cùng với tất cả "
+"các tập tin sở hữu, gồm có kho lưu trong « /home/mini-buildd/rep »."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "To keep this data, you need to back it up now."
+msgstr "Để giữ lại dữ liệu này thì bạn cần phải sao lưu ngay bây giờ."

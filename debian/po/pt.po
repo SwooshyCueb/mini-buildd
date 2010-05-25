@@ -1,0 +1,45 @@
+# Portuguese translation of mini-buildd debconf messages
+# Copyright (C) 2010 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the mini-buildd package.
+# Pedro Ribeiro <p.m42.ribeiro@gmail.com>, 2010
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mini-buildd 0.8.13\n"
+"Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
+"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"PO-Revision-Date: 2010-05-04 10:45+0000\n"
+"Last-Translator: Pedro Ribeiro <p.m42.ribeiro@gmail.com>\n"
+"Language-Team: Portuguese <traduz@debianpt.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "Repository purge"
+msgstr "Purgar repositório"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "You have chosen to purge mini-buildd on a repository host."
+msgstr "Escolheu purgar o mini-buildd num servidor de repositórios."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid ""
+"This choice means that the mini-buildd user will be removed along with all "
+"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+msgstr ""
+"Esta escolha significa que o utilizador mini-buildd vai ser removido, bem "
+"como todos os ficheiros que lhe pertences, incluindo o repositório em \"/"
+"home/mini-buildd/rep\"."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "To keep this data, you need to back it up now."
+msgstr "Para manter estes dados, necessita de fazer um backup agora."

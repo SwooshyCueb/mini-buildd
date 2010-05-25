@@ -1,0 +1,66 @@
+# mini-buildd po-debconf translation to Spanish
+# Copyright (C) 2010 Software in the Public Interest
+# This file is distributed under the same license as the mini-buildd package.
+#
+# Changes:
+#   - Initial translation
+#       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2010
+#
+# Traductores, si no conocen el formato PO, merece la pena leer la
+# documentaci??n de gettext, especialmente las secciones dedicadas a este
+# formato, por ejemplo ejecutando:
+#       info -n '(gettext)PO Files'
+#       info -n '(gettext)Header Entry'
+#
+# Equipo de traducci??n al espa??ol, por favor lean antes de traducir
+# los siguientes documentos:
+#
+#   - El proyecto de traducci??n de Debian al espa??ol
+#     http://www.debian.org/intl/spanish/
+#     especialmente las notas y normas de traducci??n en
+#     http://www.debian.org/intl/spanish/notas
+#
+#   - La gu??a de traducci??n de po's de debconf:
+#     /usr/share/doc/po-debconf/README-trans
+#     o http://www.debian.org/intl/l10n/po-debconf/README-trans
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mini-buildd 0.8.13\n"
+"Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
+"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"PO-Revision-Date: 2010-05-16 20:40+0200\n"
+"Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
+"Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "Repository purge"
+msgstr "Purga del repositorio"
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "You have chosen to purge mini-buildd on a repository host."
+msgstr "Ha escogido purgar mini-buildd en un servidor de repositorio."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid ""
+"This choice means that the mini-buildd user will be removed along with all "
+"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+msgstr ""
+"Esta elecci??n borrar?? el usuario de mini-buildd junto a todos los archivos "
+"que le pertenecen, incluyendo el repositorio ubicado en ??/home/mini-buildd/"
+"rep??."
+
+#. Type: note
+#. Description
+#: ../mini-buildd-common.templates:2001
+msgid "To keep this data, you need to back it up now."
+msgstr "Para mantener estos datos, debe realizar una copia de seguridad ahora."

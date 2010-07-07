@@ -25,9 +25,7 @@ mkdir -p "bld/builds" "bld/chroots"
 
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 # Mode "user": Use retval to check if build was successful.
-\$sbuild_mode = "user";
-# We don't use sbuild-generated log files
-\$nolog = 1;
+\$sbuild_mode = 'user';
 # We always want to update the cache as we generate sources.list on thy fly.
 \$apt_update = 1;
 # APT-Policy to "1", so we can satisfy dependencies via all sources we added.
@@ -36,13 +34,13 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$apt_allow_unauthenticated = $(if ${mbd_apt_allow_unauthenticated}; then echo -n "1"; else echo -n "0"; fi);
 
 # Add path for ccache
-\$path = "/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games";
+\$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
 
 # Builder identity
-\$mailfrom = "${MBD_AUTOBUILD_MAINTAINER} on $(hostname -f) <${mbd_mail}>";
-\$mailto = "${mbd_mail}";
-\$maintainer_name='${MBD_AUTOBUILD_MAINTAINER}';
-\$pgp_options = "-us -k\"${MBD_GNUPG_KEYNAME}\"";
+\$mailfrom = '${MBD_AUTOBUILD_MAINTAINER} on $(hostname -f) <${mbd_mail}>';
+\$mailto = '${mbd_mail}';
+\$maintainer_name = '${MBD_AUTOBUILD_MAINTAINER}';
+\$pgp_options = '-us -k"${MBD_GNUPG_KEYNAME}"';
 
 # don't remove this, Perl needs it:
 1;

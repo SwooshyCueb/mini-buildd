@@ -1,3 +1,10 @@
+mini-buildd (0.8.14) unstable; urgency=low
+
+  * [ec83a70] lib/mbd-qa-check+mbd-update-bld: Use "--nolog" command
+    line (Closes: 588264) - thanks to Dominik Schulz
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 07 Jul 2010 16:52:21 +0200
+
 mini-buildd (0.8.13) unstable; urgency=low
 
   * [6216415] * debian/mini-buildd-bld.init: Fix bashism. (Closes:

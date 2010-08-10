@@ -98,8 +98,6 @@ device=${MBD_TMP_DEV}
 mount-options=-t ${CHROOT_FS} -o noatime,user_xattr
 lvm-snapshot-options=--size 4G
 personality=${MBD_TMP_CHROOT_PERSONALITY}
-run-setup-scripts=true
-run-exec-scripts=true
 
 EOF
 				done

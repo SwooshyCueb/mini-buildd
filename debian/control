@@ -35,7 +35,7 @@ Description: minimal Debian build daemon - repository
 
 Package: mini-buildd-bld
 Architecture: all
-Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap (>= 1.0.10lenny1), schroot, dput, dpkg-dev, devscripts (>= 2.10.15)
+Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap (>= 1.0.10lenny1), schroot (>= 1.2.2), dput, dpkg-dev, devscripts (>= 2.10.15)
 Recommends: logrotate
 Description: minimal Debian build daemon - builder
  Mini-buildd is an easy-to-configure Debian autobuilder and

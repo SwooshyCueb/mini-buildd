@@ -23,6 +23,14 @@ cd "${MBD_HOME}"
 
 mkdir -p "bld/builds" "bld/chroots"
 
+# Lenny sbuild compatability hack for pgp_options (see bug
+# #592592). Default is the new format:
+SBUILD_PGP_OPTIONS="['-us', '-k Mini-Buildd Automatic Signing Key']"
+# ...but for sbuild < 0.60 (lenny), use ye olde format
+if dpkg --compare-versions $(dpkg-query --show --showformat='${Version}' sbuild) lt 0.60.0; then
+	SBUILD_PGP_OPTIONS="'-us -k\"${MBD_GNUPG_KEYNAME}\"'"
+fi
+
 cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 # Mode "user": Use retval to check if build was successful.
 \$sbuild_mode = 'user';
@@ -40,7 +48,7 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$mailfrom = '${MBD_AUTOBUILD_MAINTAINER} on $(hostname -f) <${mbd_mail}>';
 \$mailto = '${mbd_mail}';
 \$maintainer_name = '${MBD_AUTOBUILD_MAINTAINER}';
-\$pgp_options = '-us -k"${MBD_GNUPG_KEYNAME}"';
+\$pgp_options = ${SBUILD_PGP_OPTIONS};
 
 # don't remove this, Perl needs it:
 1;

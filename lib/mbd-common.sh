@@ -39,7 +39,9 @@ MBD_MDINSTALLCONFIGFILE="${MBD_HOME}/.mini-dinstall.conf"
 
 MBD_HTML_INDEXFILE="${MBD_HOME}/public_html/index.html"
 
-MBD_SCHROOTCONFIGFILE="/etc/schroot/schroot.conf"
+# Note that you must not use suffix 'conf' here as it is ignored
+# by newer schroot versions
+MBD_SCHROOTCONFIGFILE="/etc/schroot/chroot.d/mini-buildd"
 
 # Maintainer name of autobuilder (goes to .sbuildrc, and used to reject direct binary uploads).
 MBD_AUTOBUILD_MAINTAINER="Mini-Buildd Builder"
@@ -48,9 +50,6 @@ MBD_INCOMING="${MBD_HOME}/rep/mini-dinstall/incoming"
 MBD_INCOMING_BPO="${MBD_INCOMING}/backports"
 
 MBD_LOG="logger -t mini-buildd@$(hostname)[$(basename -- "${0}")] -p user.info"
-
-# For schroot: Marks auto-generated configuration snippets
-MBD_CONFIG_MARK="# MINI-BUILDD AUTOGENERATION MARK"
 
 # Always source getopt library
 . ${MBD_LIB}/mbd-libopt.sh
@@ -284,22 +283,6 @@ mbdBId2BDir() # arch buildid
 		exit 3
 	fi
 	echo -n "${2}-${1}" | tr "/" "_"
-}
-
-# Delete marked config snippet from a file
-mbdDeleteMarkedConfig()
-{
-	local conffile="${1}"
-
-	local marks=$(grep -n -m 2 "${MBD_CONFIG_MARK}" "${conffile}" | cut -d: -f1)
-	local m0=$(echo ${marks} | cut -d" " -f1)
-	local m1=$(echo ${marks} | cut -d" " -f2)
-
-	if [ -n "${m0}" -a -n "${m1}" ]; then
-		sed "${m0},${m1}d" "${conffile}" >"${conffile}.tmp"
-		mv "${conffile}.tmp" "${conffile}"
-		${MBD_LOG} -s "I: Deleted marked config from ${conffile}."
-	fi
 }
 
 # etch-ID              -> "etch-ID etch-ID-experimental"

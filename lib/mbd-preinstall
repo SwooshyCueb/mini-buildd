@@ -137,22 +137,25 @@ if [ "${mbdParseCF_arch}" = "source" ]; then
 
 	${MBD_LOG} -s "${MBD_TMP_LOGPRE}: DSP upload. Build-ID is ${MBD_TMP_BUILDID}."
 
+	# Bash4 will exit-on-error if subshell fails, so we need to diable error exit
+	set +e
 	(
-		(mbdQAPreliminary)
+		mbdQAPreliminary
 		[ $? -eq 0 ] || exit 2  # REJECT
 
-		(mbdQAPrebuild)
+		mbdQAPrebuild
 		[ $? -eq 0 ] || exit 2  # REJECT
 
-		(mbdArchRun mbdArchBuild)
+		mbdArchRun mbdArchBuild
 		[ $? -eq 0 ] || exit 1  # FTBFS
 
-		(mbdArchRun mbdArchQAPostbuild)
+		mbdArchRun mbdArchQAPostbuild
 		[ $? -eq 0 ] || exit 2  # REJECT
 
 	) >"${MBD_TMP_LOGDIR}.log" 2>&1
-
 	MBD_PREINSTALL_RETVAL=$?
+	set -e
+
 	MBD_PREINSTALL_STATUS=$(mbdRetval2Status PREINSTALL ${MBD_PREINSTALL_RETVAL})
 	echo "${MBD_PREINSTALL_STATUS}" >"${MBD_TMP_LOGDIR}.status"
 

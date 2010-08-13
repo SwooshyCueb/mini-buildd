@@ -95,7 +95,6 @@ mbdCatUrl()
 {
 	local url="${1}"
 	wget --quiet --output-document=- "${url}"
-	return $?
 }
 
 mbdGetUrl()

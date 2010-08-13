@@ -46,10 +46,7 @@ MBD_TMP_SCP="scp -o StrictHostKeyChecking=no -P ${mbd_sshport}"
 #  - All output (stdout or stderr) goes to the respective test's log file.
 # Retval:
 #  Check functions must deliver 0 (fine), 1 (warn) or 2 (fail) return status.
-#  Note that all code is run with "set -e" enabled, so if you run any non-trivial
-#  command use s.th. like
-#   myCommand || return 10
-#  to be sure the check function does not return 1 or 2 on that failure.
+#  Note that all checks are run "set +e".
 
 # Check mandatory version part
 mbdQACheckVersion()
@@ -346,8 +343,10 @@ else
 
 		${MBD_LOG} -s "${MBD_TMP_LOGPRE}: Checking..."
 
-		(mbdRunCheck "${check}" >"${MBD_TMP_LOGBASE}.log" 2>&1)
+		set +e
+		mbdRunCheck "${check}" >"${MBD_TMP_LOGBASE}.log" 2>&1
 		MBD_TMP_RETVAL=$?
+		set -e
 
 		MBD_TMP_STATUS=$(mbdRetval2Status QACHECK ${MBD_TMP_RETVAL})
 		echo -n "${MBD_TMP_STATUS}" >"${MBD_TMP_LOGBASE}.status"

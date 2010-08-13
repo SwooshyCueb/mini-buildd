@@ -88,6 +88,9 @@ ${MBD_LIB}/mbd-update-rep-html
 # Update repo-host key for 05_apt-secure
 cp "public_html/pgp_key.asc" ".mini-buildd/apt-secure.d/auto-mini-buildd.key"
 
+# Update all indices (or create on initial install) via reprepro
+(cd rep && reprepro export)
+
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do
 	mbdUpdateSshKeyring "${host}"

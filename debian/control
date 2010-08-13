@@ -21,7 +21,7 @@ Description: minimal Debian build daemon - common files
 
 Package: mini-buildd-rep
 Architecture: all
-Depends: ${misc:Depends}, mini-buildd-common, python, mini-dinstall (>> 0.6.24), cron, procps
+Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}), python, mini-dinstall (>> 0.6.24), cron, procps
 Recommends: logrotate, dwww
 Description: minimal Debian build daemon - repository
  Mini-buildd is an easy-to-configure Debian autobuilder and
@@ -33,7 +33,7 @@ Description: minimal Debian build daemon - repository
 
 Package: mini-buildd-bld
 Architecture: all
-Depends: ${misc:Depends}, mini-buildd-common, lvm2, debootstrap (>= 1.0.10lenny1), schroot (>= 1.2.2), dput, dpkg-dev, devscripts (>= 2.10.15)
+Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}), lvm2, debootstrap (>= 1.0.10lenny1), schroot (>= 1.2.2), dput, dpkg-dev, devscripts (>= 2.10.15)
 Recommends: logrotate
 Description: minimal Debian build daemon - builder
  Mini-buildd is an easy-to-configure Debian autobuilder and

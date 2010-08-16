@@ -1,3 +1,37 @@
+mini-buildd (0.9.2) experimental; urgency=low
+
+  * [469d3f4] * debian/mini-buildd-bld.init: Fix bashism.
+  * [6ae9f6f] * mini_buildd/iwatcher.py: Process incoming once on
+    startup.
+  * [5bb1ffd] Debconf templates and debian/control reviewed by the
+    debian-l10n-english team as part of the Smith review project.
+    (cherry picked from commit b9d683114752bbe8ea75d768a47abd6e5932bd14)
+  * [1022acc] Debconf translation updates (cherry picked from commit
+    290531124dd90919685e75c2d31200b438907cf4)
+  * [35eae48] lib/mbd-qa-check+mbd-update-bld: Use "--nolog" command
+    line (Closes: 588264) - thanks to Dominik Schulz
+  * [913ccec] lib/mbd-setup-chroots: Remove run-setup|exec-scripts from
+    schroot.conf: Obsoleted by schroot.
+  * [11f24df] mbd-setup-chroots: schroot: Use extra config file in
+    "chroot.d" instead of tainting schroot.conf directly.
+  * [00a82db] mbd-update-bld: Update sbuildrc's 'pgp_options' format to
+    sbuild 0.60 (plus compat for lenny)
+  * [ae707d4] lib/mbd-common.sh: Update mbd sources list line to
+    reprepro/pool.
+  * [6f49d16] lib/mbd-update-rep: Update repropo indices.
+  * [760fa54] debian/control: Fix: -rep and -bld binary packages must
+    depend on the exact same -common version.
+  * [ad1cf97] debian/control: Add deps for fakeroot, debhelper and cdbs
+    on builder hosts; this will make auto-backports work out-of-the box
+    for most packages.
+  * [f436114] lib/mbd-qa-check: Update to changed bash4 subshell error
+    handling.
+  * [d6db45c] debian/control: Update to std-ver 3.9.1 (no changes
+    needed).
+  * [7565c5f] debian/po/cs.po: New translation template for common.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 16 Aug 2010 17:51:19 +0200
+
 mini-buildd (0.9.1) experimental; urgency=low
 
   * [7a55102] * mini-buildd-rep.preinst: Fix: Manually remove obsoleted

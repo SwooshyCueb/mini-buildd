@@ -281,7 +281,7 @@ mbdQACheckBackports()
 				# the version number must exist exactly as given in cl, so we
 				# can't just guess a lower version here. See Debian Bug #477638.
 				local changesAfterVersion=$(dpkg-parsechangelog --offset 2 --count 1 | grep "^Version" | cut -d" " -f2-)
-				dpkg-buildpackage -rfakeroot -kmini-buildd -d -S -sa -v${changesAfterVersion}
+				dpkg-buildpackage -rfakeroot -kmini-buildd -d -S -sa $([ -z "${changesAfterVersion}" ] || echo -n "-v${changesAfterVersion}")
 
 				# Go up from DST, and upload backport back to repository bpo spool
 				cd ..

@@ -101,7 +101,6 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 [${chroot_name}]
 type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_CHROOT} snapshot chroot
-priority=3
 groups=sbuild
 users=mini-buildd
 root-users=mini-buildd

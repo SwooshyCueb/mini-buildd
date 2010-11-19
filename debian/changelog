@@ -1,3 +1,17 @@
+mini-buildd (0.8.16) unstable; urgency=low
+
+  * [174f2cd] lib/mbd-setup-chroots: Omit "priority" from schroot
+    configuration. (Closes: 603913)
+  * [6f4200f] lib/mbd-qa-check: Auto-backports: Don't use "-vSINCE"
+    option when SINCE is empty (i.e., one changelog entry only).
+    (Closes: 603919)
+  * [6a0289d] debian/99mini-buildd: Don't log to stderr (as new schroot
+    does not like it); avoids wrong daily error mail. (Closes: 604011)
+  * [dcccef1] debian/po/ja.po: New translation template for common.
+    (Closes: 602154)
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 19 Nov 2010 16:13:51 +0100
+
 mini-buildd (0.8.15) unstable; urgency=low
 
   * [ee74e84] lib/mbd-setup-chroots: Remove run-setup|exec-scripts from

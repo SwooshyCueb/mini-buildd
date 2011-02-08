@@ -1,3 +1,12 @@
+mini-buildd (0.8.17) unstable; urgency=low
+
+  * [6b381aa] debian/po/da.po: Ack NMU 0.8.15+nmu1. (Closes: 610078)
+  * [23b6be3] Add support for wheezy (Debian 7.0).
+  * [966a853] lib/mbd-qa-check: Fix auto-backports for 'epoched'
+    packages. (Closes: 609015) - thanks to Daniel Hermann
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 08 Feb 2011 17:25:09 +0100
+
 mini-buildd (0.8.16) unstable; urgency=low
 
   * [174f2cd] lib/mbd-setup-chroots: Omit "priority" from schroot

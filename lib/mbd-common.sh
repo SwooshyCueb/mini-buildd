@@ -303,6 +303,7 @@ mbdBasedist2Version()
 	local etch=40
 	local lenny=50
 	local squeeze=60
+	local wheezy=70
 	local sid=SID
 
 	local version=${!1}

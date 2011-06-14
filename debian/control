@@ -23,7 +23,8 @@ Description: minimal Debian build daemon - common files
 Package: mini-buildd-rep
 Architecture: all
 XB-Python-Version: ${python:Versions}
-Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}), python, python-daemon, python-pyinotify (>> 0.8.9), reprepro (>> 4.1.0), cron, procps
+Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Version}),
+         python, python-daemon, python-pyinotify (>> 0.8.9), reprepro (>> 4.1.0), cron, procps
 Recommends: logrotate, dwww
 Description: minimal Debian build daemon - repository
  Mini-buildd is an easy-to-configure Debian autobuilder and

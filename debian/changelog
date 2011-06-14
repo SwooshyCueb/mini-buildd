@@ -1,3 +1,22 @@
+mini-buildd (0.9.3) experimental; urgency=low
+
+  * Release with cumulated yet unreleased fixes in master:
+  * [ce29072] lib/mbd-setup-chroots: Omit "priority" from schroot configuration.
+    (Closes: 603913)
+  * [88451eb] lib/mbd-qa-check: Auto-backports: Don't use "-vSINCE" option when SINCE is empty (i.e., one changelog entry only).
+    (Closes: 603919)
+  * [b57602b] debian/99mini-buildd: Don't log to stderr (as new schroot does not like it); fixes false-positive daily mails.
+    (Closes: 604011)
+  * [4bda519] debian/po/ja.po: New translation template for common.
+    (Closes: 602154)
+  * [9ba0ac0] debian/po/da.po: Ack NMU 0.8.15+nmu1. (Closes: 610078)
+  * [d3869dd] Add support for wheezy (Debian 7.0).
+  * [735d3c0] lib/mbd-qa-check: Fix auto-backports for 'epoched' packages.
+    Thanks to Daniel Hermann (Closes: 609015)
+  * [fe3740e] debian/control: Having support for wheezy, update dep on 1st debootstrap w/ wheezy support.
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 14 Jun 2011 17:41:21 +0200
+
 mini-buildd (0.9.2) experimental; urgency=low
 
   * [469d3f4] * debian/mini-buildd-bld.init: Fix bashism.

@@ -1,3 +1,22 @@
+mini-buildd (0.8.18) unstable; urgency=low
+
+  * [ca60a2c] debian/control: Having support for wheezy, update dep on 1st
+    debootstrap w/ wheezy support. (cherry picked from commit
+    fe3740e32931c6d47405bfa37ff62228eeaa6db0)
+  * [5d81518] lib/mbd-lintian: Fix: Always use --force-confold when
+    updating/installing. (cherry picked from commit
+    dd6ff20ac3098a6648439265a721d5f7af53674f)
+  * [16c9300] lib/mbd-setup-chroots: Fix/update for schroot 1.4.22: Also
+    configure 'root-groups' (seems now required to get non-interactive
+    root). (cherry picked from commit
+    506414cba2178b6ca70cc59eb0cc089d33cfa2ab)
+  * [052635c] lib/mbd-qa-check: sbuild call fix: Even with --no-log,
+    '--verbose' should be used to get all relevant logs to
+    stdout/err. (cherry picked from commit
+    ac7209faa27301527d39fdc869b73951425bd014)
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 15 Jun 2011 18:52:07 +0200
+
 mini-buildd (0.8.17) unstable; urgency=low
 
   * [6b381aa] debian/po/da.po: Ack NMU 0.8.15+nmu1. (Closes: 610078)

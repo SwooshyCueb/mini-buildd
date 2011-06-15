@@ -12,10 +12,10 @@ CHROOT=$(mbd_opt_get C)
 CHANGES=$(mbd_opt_get c)
 if mbd_opt_given v; then
 	SCHROOT="schroot"
-	APT_GET="apt-get"
+	APT_GET="apt-get -o Dpkg::Options::=--force-confold"
 else
 	SCHROOT="schroot --quiet"
-	APT_GET="apt-get --quiet"
+	APT_GET="apt-get --quiet -o Dpkg::Options::=--force-confold"
 fi
 
 # Prepare a snapshot session

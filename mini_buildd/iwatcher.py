@@ -44,6 +44,6 @@ class IWatcher():
     def run(self):
         # Scan existing files once
         for f in os.listdir(self._idir):
-            self._handler.processFile(f)
+            self._handler.processFile(os.path.join(self._idir, f))
         # Now, just watch for changes
         self._notifier.loop(daemonize=False)

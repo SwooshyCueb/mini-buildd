@@ -1,3 +1,15 @@
+mini-buildd (0.9.4) experimental; urgency=low
+
+  * [30ac8cd] debian/control: Add missing ${python:Depends} for mini-buildd-rep.
+  * [dd6ff20] lib/mbd-lintian: Fix: Always use --force-confold when updating/installing.
+  * [3db4212] debian/control: b-d: Fix python-dep to >= 2.5, versioned only (omit alternates).
+  * [506414c] lib/mbd-setup-chroots: Fix/update for schroot 1.4.22: Also configure 'root-groups' (seems now required to get non-interactive root).
+  * [ac7209f] lib/mbd-qa-check: sbuild call fix: Even with --no-log, '--verbose' should be used to get all relevant logs to stdout/err.
+  * [be3b1eb] mini-buildd: Use /usr/bin/python (not python2.5).
+  * [734e594] mini_buildd/iwatcher.py: Fix: Use absolute path on initial incoming scan.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 15 Jun 2011 18:57:31 +0200
+
 mini-buildd (0.9.3) experimental; urgency=low
 
   * Release with cumulated yet unreleased fixes in master:

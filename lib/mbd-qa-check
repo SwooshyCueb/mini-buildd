@@ -205,7 +205,7 @@ mbdQACheckBuild()
 	# $HOME for whatver reasons (e.g., package "subversion"'s test suite
 	# does), effectively disabling gcc.
 	if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}" CCACHE_DIR="${HOME}/.ccache" \
-		sbuild --nolog --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" ${mbdParseArch_sbuildopts} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
+		sbuild --verbose --nolog --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" ${mbdParseArch_sbuildopts} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
 		echo "I: Built successful for arch=${MBD_TMP_ARCH} [${mbdParseArch_sbuildopts}]."
 	else
 		# @hack: If this package has no packages to be built for this arch, this is ok, and we get:

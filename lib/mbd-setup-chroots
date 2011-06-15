@@ -103,6 +103,7 @@ type=lvm-snapshot
 description=Mini-Buildd ${MBD_TMP_CHROOT} snapshot chroot
 groups=sbuild
 users=mini-buildd
+root-groups=sbuild
 root-users=mini-buildd
 source-root-users=mini-buildd
 device=${MBD_TMP_DEV}

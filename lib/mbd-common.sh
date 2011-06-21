@@ -383,8 +383,8 @@ mbdGenConf()
 		local src=$(mbdGetSrcVar ${dist} ${kind} ${arch})
 		if [ -n "${!src}" ]; then
 			[ "${noheader}" == "noheader" ] || echo "# ${dist}: ${kind}"
-			# Multiple lines my be given separated via \n
-			echo -e "${!src}" |
+			# Multiple deb lines my be given separated via ','
+			echo "${!src}" | tr ',' '\n' |
 			(
 				while read; do
 					if [ -n "${REPLY}" ]; then

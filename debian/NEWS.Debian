@@ -1,0 +1,12 @@
+mini-buildd-rep (0.8.19) unstable; urgency=low
+
+  * Multiple sources are no longer separated via literal "\n", but now
+    via ",". There is no automatic upgrade path for this.
+
+    Those who actually have multiple sources defined via "\n" separator
+    (mbd_src_* config variables in ~mini-buildd/.mini-buildd.conf) need
+    'dpkg-reconfigure mini-buildd-rep', and check their configuration.
+
+    Compare Bug #625995.
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 21 Jun 2011 17:55:24 +0200

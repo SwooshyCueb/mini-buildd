@@ -1,3 +1,13 @@
+mini-buildd (0.8.19) unstable; urgency=low
+
+  * [aef0c38] debian/mini-buildd-rep.init (LVM): Bugfix: Must not depend
+    on lvm2 or schroot. (cherry picked from commit
+    28b9575bba00bc75903a4205ae31596d1b5bbc9c)
+  * [59212a0] debconf/mini-buildd.conf: Multiple sources are now separated
+    via ",", not "\n".  (Closes: 625995)
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 22 Jun 2011 15:15:06 +0200
+
 mini-buildd (0.8.18) unstable; urgency=low
 
   * [ca60a2c] debian/control: Having support for wheezy, update dep on 1st

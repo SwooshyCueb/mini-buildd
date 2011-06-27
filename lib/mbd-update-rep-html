@@ -127,7 +127,7 @@ $(for d in ${MBD_TMP_DISTS}; do
        DIST="${d}-${mbd_id}"
        KIND="mbd"
      fi
-     echo "<h3><a href=\"rep/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h3>"
+     echo "<h3><a href=\"rep/dists/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h3>"
 
      echo "<small><em>Mandatory version part: </em></small><pre style='display:inline'>"
      mbdGetMandatoryVersionPart "${DIST}"

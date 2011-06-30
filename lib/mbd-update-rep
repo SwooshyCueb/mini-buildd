@@ -62,6 +62,8 @@ $(for d in ${MBD_TMP_DISTS}; do
    echo "Architectures: source $(mbdD2SList "${mbd_archs}")";
    echo "Description: ${d} packages for ${mbd_id}.";
    echo "SignWith: default";
+   echo "NotAutomatic: yes";
+   echo "ButAutomaticUpgrades: yes";
    echo;
    echo "Codename: ${d}-${mbd_id}-experimental";
    echo "Suite: ${d}-${mbd_id}-experimental";
@@ -71,6 +73,7 @@ $(for d in ${MBD_TMP_DISTS}; do
    echo "Architectures: source $(mbdD2SList "${mbd_archs}")";
    echo "Description: EXPERIMENTAL ${d} packages for ${mbd_id}.";
    echo "SignWith: default";
+   echo "NotAutomatic: yes";
    echo;
  done)
 EOF

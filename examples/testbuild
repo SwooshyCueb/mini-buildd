@@ -1,0 +1,21 @@
+#!/bin/bash -e
+
+read -e -i "$(hostname)" -p "Mini-buildd id: " id
+
+PACKAGES="${*}"
+[ -n "${PACKAGES}" ] || PACKAGES=$(find . -maxdepth 1 -mindepth 1 -type d)
+
+printf "Acting on: %s\n" "${PACKAGES}"
+
+for P in ${PACKAGES}; do
+	(
+		cd "${P}"
+		autoreconf --force --install
+		debchange --newversion "$(date +%Y%m%d%H%M%S)~${id}SID+0" --force-distribution --dist "sid-${id}-experimental" "test release for mbd"
+		dpkg-buildpackage -us -uc -S
+	)
+done
+
+printf "Uploads: %s\n" "$(find . -name "*.changes")"
+dput "mini-buildd-${id}" *.changes
+rm -v *.changes

@@ -1,0 +1,6 @@
+mbd-test-cpp for Debian
+-----------------------
+
+This is an example/test package for mini-buildd only.
+
+ -- Stephan Sürken <absurd@debian.org>, Wed,  6 Jul 2011 18:17:27 +0200

@@ -50,6 +50,9 @@ cat <<EOF >"${MBD_SBUILDCONFIGFILE}"
 \$maintainer_name = '${MBD_AUTOBUILD_MAINTAINER}';
 \$pgp_options = ${SBUILD_PGP_OPTIONS};
 
+# Build environment
+\$build_environment = { 'CCACHE_DIR' => '${HOME}/.ccache' };
+
 # don't remove this, Perl needs it:
 1;
 EOF

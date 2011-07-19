@@ -4,7 +4,12 @@
 . /usr/share/debconf/confmodule
 
 if ! getent passwd mini-buildd >/dev/null; then
+	# Add a new system user/group: mini-buildd/mini-buildd
 	adduser --system --group --shell /bin/bash mini-buildd
+else
+	# Compat (<0.9.6): Always fix old-style user/group: mini-buildd/sbuild to mini-buildd/mini-buildd
+	addgroup --system mini-buildd
+	usermod --gid=mini-buildd mini-buildd
 fi
 
 #DEBHELPER#

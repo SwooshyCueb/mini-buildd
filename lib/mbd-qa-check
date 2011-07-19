@@ -201,9 +201,6 @@ mbdQACheckBuild()
 	# * sbuild_mode is set to "user"; sbuild failure means build failure,
 	# or nothing to build for that arch.
 	# * DEB_BUILD_OPTIONS are configured per build host.
-	# * We give CCACHE_DIR explicitely here as build tools may change
-	# $HOME for whatver reasons (e.g., package "subversion"'s test suite
-	# does), effectively disabling gcc.
 	if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}" \
 		sbuild --verbose --nolog --dist="${mbdParseCF_dist}" --arch="${MBD_TMP_ARCH}" --chroot="${chroot}" ${mbdParseArch_sbuildopts} "${mbdParseCF_package}.dsc" >"${lf}" 2>&1; then
 		echo "I: Built successful for arch=${MBD_TMP_ARCH} [${mbdParseArch_sbuildopts}]."

@@ -37,7 +37,7 @@ for v in $(mbdDynConfVars); do
 	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
 done
 
-chown mini-buildd:sbuild "${MBD_REPCONFIGFILE}"
+chown mini-buildd:mini-buildd "${MBD_REPCONFIGFILE}"
 
 su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep -p"
 

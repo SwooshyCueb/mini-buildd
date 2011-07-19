@@ -4,11 +4,8 @@
 . /usr/share/debconf/confmodule
 
 if ! getent passwd mini-buildd >/dev/null; then
-	adduser --system --shell /bin/sh --ingroup sbuild mini-buildd
+	adduser --system --group --shell /bin/sh mini-buildd
 fi
-
-# sbuild >= 0.57.2 requires requires the user to be added with this tool.
-sbuild-adduser mini-buildd >/dev/null 2>&1
 
 #DEBHELPER#
 

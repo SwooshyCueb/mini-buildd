@@ -1,5 +1,8 @@
 #!/bin/bash -e
 
+# sbuild >= 0.57.2 requires the user to be added with this tool.
+sbuild-adduser mini-buildd >/dev/null 2>&1
+
 . /usr/share/mini-buildd/mbd-common.sh
 . /usr/share/debconf/confmodule
 
@@ -13,7 +16,7 @@ for v in ${MBD_BLDCONFIGVARS}; do
 	db_get mini-buildd-bld/${v} || true
 	echo "$v=\"${RET}\"" >>"${MBD_BLDCONFIGFILE}"
 done
-chown mini-buildd:sbuild "${MBD_BLDCONFIGFILE}"
+chown mini-buildd:mini-buildd "${MBD_BLDCONFIGFILE}"
 
 # This will only need ${MBD_BLDCONFIGFILE} (which we now have), and set up lvm if needed.
 /usr/share/mini-buildd/mbd-setup-lvm

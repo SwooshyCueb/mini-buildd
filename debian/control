@@ -11,7 +11,7 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 Package: mini-buildd-common
 Architecture: all
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, adduser, bsd-mailx | mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget, sbuild (>= 0.62.4)
+Depends: ${misc:Depends}, adduser, bsd-mailx | mailx, apache2-mpm-worker | httpd, openssh-client, gnupg, wget
 Description: minimal Debian build daemon - common files
  Mini-buildd is an easy-to-configure Debian autobuilder and
  repository. Its general notion is that of add-ons for a Debian
@@ -39,7 +39,7 @@ Description: minimal Debian build daemon - repository
 Package: mini-buildd-bld
 Architecture: all
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}), lvm2, debootstrap (>= 1.0.24~), schroot (>= 1.4.22), dput, dpkg-dev, fakeroot, debhelper, cdbs, devscripts (>= 2.10.15)
+Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}), lvm2, debootstrap (>= 1.0.24~), schroot (>= 1.4.22), sbuild (>= 0.62.4), dput, dpkg-dev, fakeroot, debhelper, cdbs, devscripts (>= 2.10.15)
 Recommends: logrotate
 Description: minimal Debian build daemon - builder
  Mini-buildd is an easy-to-configure Debian autobuilder and

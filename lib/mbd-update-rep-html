@@ -44,7 +44,8 @@ cat <<EOF >"${MBD_HTML_INDEXFILE}"
 <style type="text/css">
   h1 {border-width: 1; border: solid; text-align: center}
   h2 {border-width: 1; text-align: center}
-  h3 {border-width: 0; text-align: left}
+  h3 {border-width: 1; text-align: center}
+  h4 {border-width: 0; text-align: left}
   pre {background-color:lightgrey;}
 </style>
 
@@ -119,15 +120,13 @@ $(for d in ${MBD_TMP_DISTS}; do
    echo "<div style='background-color: lightblue; '>"
 
    echo "<h2>Base distribution ${d}</h2>"
-   for e in "" "experimental"; do
-     if [ -n "${e}" ]; then
-       DIST="${DIST}-${e}"
-       KIND="mbd_experimental"
-     else
-       DIST="${d}-${mbd_id}"
-       KIND="mbd"
-     fi
-     echo "<h3><a href=\"rep/dists/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h3>"
+
+   echo "<h3>Uploadable distributions</h3>"
+   for e in "experimental" "unstable"; do
+     DIST="${d}-${mbd_id}-${e}"
+     KIND="mbd_${e}"
+
+     echo "<h4><a href=\"rep/dists/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h4>"
 
      echo "<small><em>Mandatory version part: </em></small><pre style='display:inline'>"
      mbdGetMandatoryVersionPart "${DIST}"
@@ -153,6 +152,19 @@ $(for d in ${MBD_TMP_DISTS}; do
      echo "<hr/>"
      echo "</div>"
    done
+   echo "<hr/>"
+   echo "<h3>Staged distributions</h3>"
+   for e in "testing" "stable"; do
+     DIST="${d}-${mbd_id}-${e}"
+     KIND="mbd_${e}"
+
+     echo "<h4><a href=\"rep/dists/${DIST}\">${DIST}</a>: ${d} ${e} packages for ${mbd_id}</h4>"
+
+     echo "<small><em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Apt source line: </em></small><pre style='display:inline'>"
+     AUTH_VERBOSITY='quiet' mbdGenSources ${d} "${KIND}" "" "noheader"
+     echo "</pre>"
+   done
+
    echo "</div>"
  done)
 

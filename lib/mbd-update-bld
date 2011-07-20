@@ -80,7 +80,7 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 		# Are we responsible for that arch?
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
-			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}"
+			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-unstable-${arch}"
 
 			(
 				echo "I: ${MBD_TMP_CHROOT}: Updating..."

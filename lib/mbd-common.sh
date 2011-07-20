@@ -350,8 +350,7 @@ mbdLvmVgName()
 mbdGetSrcVar() # dist kind arch
 {
 	local srcAny="mbd_src_${1}_${2}_any"
-	local srcArch="mbd_src_${1}_${2}_${arch}"
-	local src="${srcAny}"
+	local srcArch="mbd_src_${1}_${2}_${3}"
 	if [ -n "${!srcArch}" ]; then
 		echo -n "${srcArch}"
 	else
@@ -376,8 +375,10 @@ mbdGenConf()
 	local noheader="${5}"
 
 	# Generate local source list variable for ourselves (mbd)
-	eval "local mbd_src_${dist}_mbd_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id} main contrib non-free\""
-	eval "local mbd_src_${dist}_mbd_experimental_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}-experimental main contrib non-free\""
+	local d
+	for d in experimental unstable testing stable; do
+		eval "local mbd_src_${dist}_mbd_${d}_any=\"http://${mbd_rephost}/~mini-buildd/rep ${dist}-${mbd_id}-${d} main contrib non-free\""
+	done
 
 	for kind in ${kinds}; do
 		local src=$(mbdGetSrcVar ${dist} ${kind} ${arch})

@@ -61,20 +61,20 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 		# Are we responsible for that arch?
 		MBD_TMP_BLDHOST="mbd_bldhost_${arch}"
 		if [ "${mbd_bldhost}" = "${!MBD_TMP_BLDHOST}" ]; then
-			MBD_TMP_CHROOT="mbd-${dist}-${mbd_id}-${arch}";
+			MBD_TMP_CHROOT_UNSTABLE="mbd-${dist}-${mbd_id}-unstable-${arch}";
 			MBD_TMP_CHROOT_EXPERIMENTAL="mbd-${dist}-${mbd_id}-experimental-${arch}";
-			MBD_TMP_DEV="/dev/$(mbdLvmVgName)/${MBD_TMP_CHROOT}"
+			MBD_TMP_DEV="/dev/$(mbdLvmVgName)/${MBD_TMP_CHROOT_UNSTABLE}"
 			MBD_TMP_CHROOT_PERSONALITY=$(mbdGetChrootPersonality ${arch});
 
-			if (mbd_opt_given f || mbd_opt_given d) && lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
-				${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT}: Forcing removal: $(lvremove --force "${MBD_TMP_DEV}" 2>&1)"
+			if (mbd_opt_given f || mbd_opt_given d) && lvdisplay | grep -q "${MBD_TMP_CHROOT_UNSTABLE}"; then
+				${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT_UNSTABLE}: Forcing removal: $(lvremove --force "${MBD_TMP_DEV}" 2>&1)"
 			fi
 
 			if ! mbd_opt_given d; then
-				if lvdisplay | grep -q "${MBD_TMP_CHROOT}"; then
-					${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT} exists, leaving alone."
+				if lvdisplay | grep -q "${MBD_TMP_CHROOT_UNSTABLE}"; then
+					${MBD_LOG} -s "I: LV ${MBD_TMP_CHROOT_UNSTABLE} exists, leaving alone."
 				else
-					${MBD_LOG} -s "I: Setting up chroot ${MBD_TMP_CHROOT}..."
+					${MBD_LOG} -s "I: Setting up chroot ${MBD_TMP_CHROOT_UNSTABLE}..."
 
 					MBD_TMP_BASESRC=$(mbdGetSrcVar ${dist} base ${arch})
 					MBD_TMP_MIRROR=$(echo "${!MBD_TMP_BASESRC}" | cut -d' ' -f1)
@@ -82,25 +82,25 @@ for dist in $(mbdD2SList "${mbd_dists}"); do
 
 					(
 						mbdAptEnv
-						if lvcreate -L 4G -n "${MBD_TMP_CHROOT}" "$(mbdLvmVgName)" &&
+						if lvcreate -L 4G -n "${MBD_TMP_CHROOT_UNSTABLE}" "$(mbdLvmVgName)" &&
 							mkfs.${CHROOT_FS} "${MBD_TMP_DEV}" &&
 							mount -v -t${CHROOT_FS} "${MBD_TMP_DEV}" "${MBD_TMP_MNTPOINT}" &&
 							debootstrap --variant=buildd --arch ${arch} --include=apt "${dist}" "${MBD_TMP_MNTPOINT}" "${MBD_TMP_MIRROR}" &&
 							umount -v "${MBD_TMP_MNTPOINT}"; then
-							echo "I: LV ${MBD_TMP_CHROOT} created successfully."
+							echo "I: LV ${MBD_TMP_CHROOT_UNSTABLE} created successfully."
 						else
-							echo "E: Failed to create LV ${MBD_TMP_CHROOT}; rerun ${0} as root any time to retry; rewinding..."
+							echo "E: Failed to create LV ${MBD_TMP_CHROOT_UNSTABLE}; rerun ${0} as root any time to retry; rewinding..."
 							umount -v "${MBD_TMP_MNTPOINT}" || true
 							lvremove --force "${MBD_TMP_DEV}" || true
 						fi
 					) 2>&1 | ${MBD_LOG} -s
 				fi
-				# We need two configs to be able to distinguish experimental for sources setup (does not work with aliases).
-				for chroot_name in ${MBD_TMP_CHROOT} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do
+				# There must be schroot configs for each uploadable distribution (does not work with aliases).
+				for chroot_name in ${MBD_TMP_CHROOT_UNSTABLE} ${MBD_TMP_CHROOT_EXPERIMENTAL}; do
 					cat <<EOF >>"${MBD_SCHROOTCONFIGFILE}"
 [${chroot_name}]
 type=lvm-snapshot
-description=Mini-Buildd ${MBD_TMP_CHROOT} snapshot chroot
+description=Mini-Buildd ${MBD_TMP_CHROOT_UNSTABLE} snapshot chroot
 groups=sbuild
 users=mini-buildd
 root-groups=sbuild

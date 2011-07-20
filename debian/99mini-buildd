@@ -8,24 +8,20 @@ if [ "${1}" = "setup-start" ] && echo "${CHROOT_DESCRIPTION}" | grep --ignore-ca
 	. /home/mini-buildd/.mini-buildd.conf
 
 	[ "${AUTH_VERBOSITY}" == "quiet" ] || ${MBD_LOG} "I: Entering chroot: ${CHROOT_NAME}."
-	# Compute BASEDIST, ARCH, and IS_EXPERIMENTAL
-	# CHROOT_NAME=mbd-etch-ID-ARCH-*
-	# CHROOT_NAME=mbd-etch-ID-experimental-ARCH-*
-	BASEDIST=$(echo "${CHROOT_NAME}" | cut -d- -f2)
-	ARCH=$(echo "${CHROOT_NAME}" | cut -d- -f4)
-	IS_EXPERIMENTAL="false"
-	if [ "${ARCH}" = "experimental" ]; then
-		IS_EXPERIMENTAL="true"
-		ARCH=$(echo "${CHROOT_NAME}" | cut -d- -f5)
-	fi
+	# Compute BASEDIST, DIST, and ARCH
+	# CHROOT_NAME=mbd-squeeze-ID-unstable-ARCH
+	# CHROOT_NAME=mbd-squeeze-ID-experimental-ARCH
+	BASEDIST=$(printf "${CHROOT_NAME}" | cut -d- -f2)
+	DIST=$(printf "${CHROOT_NAME}" | cut -d- -f4)
+	ARCH=$(printf "${CHROOT_NAME}" | cut -d- -f5)
 
 	# Compute what KINDS of sources we have to add
 	# We always want the basis distribution
 	KINDS="base"
 	if [ "${CHROOT_TYPE}" = "lvm-snapshot" -a "${AUTH_USER}" = "mini-buildd" ]; then
 		# sbuild run using snapshot: Add extra (if configured), and ourselves (mbd).
-		KINDS="${KINDS} extra mbd"
-		if ${IS_EXPERIMENTAL}; then
+		KINDS="${KINDS} extra mbd_unstable"
+		if [ "${DIST}" = "experimental" ]; then
 			# Add our experimental dist (mbd_experimental)
 			KINDS="${KINDS} mbd_experimental"
 		fi

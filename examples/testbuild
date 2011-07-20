@@ -1,6 +1,36 @@
 #!/bin/bash -e
 
-read -e -i "$(hostname)" -p "Mini-buildd id: " id
+# Get versions of known basis distributions
+mbdBasedist2Version()
+{
+	# Known base distributions
+	local woody=30
+	local sarge=31
+	local etch=40
+	local lenny=50
+	local squeeze=60
+	local wheezy=70
+	local sid=SID
+
+	local version=${!1}
+	if [ -z "${version}" ]; then
+		${MBD_LOG} -s "E: Unknown base dist ${1}."
+		return 1
+	fi
+	echo -n "${version}"
+}
+
+read -e -i "$(hostname)" -p "mini-buildd id? " id
+read -e -i "sid" -p "upload to base distribution? " dist
+read -e -i "experimental" -p "upload to experimental or unstable? " dest
+read -e -i "squeeze-${id}-${dest}" -p "auto backports for? " backports
+
+version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
+if [ "${dest}" = "experimental" ]; then
+	version+="0"
+else
+	version+="1"
+fi
 
 PACKAGES="${*}"
 [ -n "${PACKAGES}" ] || PACKAGES=$(find . -maxdepth 1 -mindepth 1 -type d)
@@ -11,7 +41,8 @@ for P in ${PACKAGES}; do
 	(
 		cd "${P}"
 		autoreconf --force --install
-		debchange --newversion "$(date +%Y%m%d%H%M%S)~${id}SID+0" --force-distribution --dist "sid-${id}-experimental" "test release for mbd"
+		debchange --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test release for mbd"
+		[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
 		dpkg-buildpackage -us -uc -S
 	)
 done

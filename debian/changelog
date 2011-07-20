@@ -1,3 +1,50 @@
+mini-buildd (0.9.6) experimental; urgency=low
+
+  This release fixes quite a number of glitches due to the reprepro change
+  and newer sbuild/schroot versions, and updates to the new proposed
+  distribution setup featuring experimental, unstable, testing and
+  stable for each base distribution:
+
+  * [cdb1529] lib/mbd-update-rep-html: Fix distribution URL for new
+    repository layout.
+  * [2da5721] mini-buildd-rep.maintscript: Use the new "maintscript"
+    facility of debhelper 8.1; fixes not-removed obsolete conffiles from
+    0.8.
+  * [7a336ec] Remove mbd-fake-pool and mbd-remove-pkg helpers:
+    Obselete/harmful with reprepro/pool.
+  * [abb79f4] lib/mbd-update-rep: Add support for release-signing via
+    reprepro; obsoletes mbd-sign-release helper.
+  * [a93e202] lib/mbd-update-rep: Regression 0.8: Make all dists
+    "NotAutomatic" again; non-exp dists now have "ButAutomaticUpgrades"
+    (this is different from 0.8).
+  * [699f515] debian/control: Decide to narrow to sbuild >= 1.62.4,
+    schroot >= 1.4.22 to ease ironing out compat issues.
+  * [e5f38fc] examples: Add new examples dir; add initial entry
+    mbd-test-cpp.
+  * [a140ba4] Add examples/ directory; add 'mbd-test-cpp' test source
+    package, and helper script.
+  * [8ffaaad] lib/mbd-qa-check|update-bld: sbuild update fix: Put
+    CCACHE_DIR env to .sbuildrc, not sbuild call.
+  * [e3934e4] debian/*: Don't use "sbuild" as primary group for
+    mini-buildd (but add a dedicated extra system group mini-buildd).
+  * [0647cf2] *-common: Depend on bash (as nearly all scripts need it, and
+    it's no longer mandatory in Debian).
+  * [32b7f17] debian/mini-buildd-common.postinst: Use "bash" as default
+    shell for user mini-buildd.
+  * [e55bbc0] debian/mini-buildd-common.postinst: Always upgrade user
+    mini-buildd to new setup w/o sbuild group.
+  * [559fa79] debian/control: Fix overlong lines.
+  * [57f3332] debian/control: logrotate no longer used, remove
+    recommendation.
+  * [a0e0573] examples/testbuild: Improve to support arbitrary id, base
+    dist, target and auto-backports easily (new dist setup).
+  * [5741b33] Update to new proposed distribution setup featuring
+    experimental, unstable, testing and stable for each base distribution,
+    with the latter two managed by manual migration only (see
+    NEWS.Debian).
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 20 Jul 2011 13:39:15 +0200
+
 mini-buildd (0.9.5) experimental; urgency=low
 
   * [28b9575] debian/mini-buildd-rep.init (LVM): Bugfix: Must not depend

@@ -1,3 +1,10 @@
+mini-buildd (0.8.20) unstable; urgency=low
+
+  * [8a55182] debian/mini-buildd-bld|common postinst/postrm: Use adduser
+    (not sbuild-adduser), and userdel (not deluser).  (Closes: 632957)
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 27 Jul 2011 18:18:37 +0200
+
 mini-buildd (0.8.19) unstable; urgency=low
 
   * [aef0c38] debian/mini-buildd-rep.init (LVM): Bugfix: Must not depend

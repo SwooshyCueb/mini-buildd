@@ -7,8 +7,9 @@ if ! getent passwd mini-buildd >/dev/null; then
 	adduser --system --shell /bin/sh --ingroup sbuild mini-buildd
 fi
 
-# sbuild >= 0.57.2 requires requires the user to be added with this tool.
-sbuild-adduser mini-buildd >/dev/null 2>&1
+# sbuild >= 0.57.2 requires the user to be added to the sbuild group.
+# @note: 'sbuild-adduser' has the side effect/bug of creating '$HOME/logs', so this is no longer used here (see bug #632957).
+adduser mini-buildd sbuild
 
 #DEBHELPER#
 

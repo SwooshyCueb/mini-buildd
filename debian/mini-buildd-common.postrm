@@ -7,10 +7,7 @@ case $1 in
 			db_input critical "mini-buildd-common/purging_repository" || true
 			db_go || true
 		fi
-
-		# Workaround: deluser does not seem to remove socket files
-		find /home/mini-buildd/ -type s -exec rm -f {} \; >/dev/null 2>&1 || true
-		deluser --quiet --remove-home mini-buildd >/dev/null 2>&1 || true
+		userdel --force --remove mini-buildd >/dev/null 2>&1 || true
 		;;
 esac
 

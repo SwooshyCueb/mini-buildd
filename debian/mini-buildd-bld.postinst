@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# sbuild >= 0.57.2 requires the user to be added with this tool.
-sbuild-adduser mini-buildd >/dev/null 2>&1
+# sbuild >= 0.57.2 requires the user to be added to the sbuild group.
+# @note: 'sbuild-adduser' has the side effect/bug of creating '$HOME/logs', so this is no longer used here (see bug #632957).
+adduser mini-buildd sbuild
 
 . /usr/share/mini-buildd/mbd-common.sh
 . /usr/share/debconf/confmodule

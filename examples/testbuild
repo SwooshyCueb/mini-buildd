@@ -48,5 +48,5 @@ for P in ${PACKAGES}; do
 done
 
 printf "Uploads: %s\n" "$(find . -name "*.changes")"
-dput "mini-buildd-${id}" *.changes
+dput -u "mini-buildd-${id}" *.changes
 rm -v *.changes

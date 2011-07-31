@@ -1,1 +1,9 @@
+/build/
 *.pyc
+debian/tmp/
+debian/mini-buildd-common/
+debian/mini-buildd-rep/
+debian/mini-buildd-bld/
+debian/mini-buildd-*debhelper*
+debian/mini-buildd-*substvars
+debian/files

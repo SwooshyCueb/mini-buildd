@@ -15,12 +15,14 @@ import mini_buildd.misc
 
 from mini_buildd.iwatcher import IWatcher
 from mini_buildd.installer import Installer
+from mini_buildd.webserver import WebServer
 
 class Main():
     def __init__(self):
         self._iQueue = Queue.Queue()
         self._iWatcher  = IWatcher (queue=self._iQueue, idir=os.getenv('HOME', '/home/mini-buildd') + '/rep/incoming')
         self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
+        self._webserver = WebServer()
         self._run = True
 
     def shutdown(self, signum=-1, frame=-1):
@@ -36,6 +38,7 @@ class Main():
         # Start watcher and installer
         self.start_thread(self._iWatcher)
         self.start_thread(self._installer)
+        self.start_thread(self._webserver)
 
         # Shutdown on SIGTERM or SIGINT
         signal.signal(signal.SIGTERM, self.shutdown)

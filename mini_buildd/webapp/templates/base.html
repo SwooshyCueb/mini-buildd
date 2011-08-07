@@ -1,0 +1,12 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<html lang="en">
+	<head>
+		<title>{% block title %}{% endblock %}</title>
+	</head>
+	<body>
+		<a href="/admin/">Administration</a>|<a href="/rep/">Browse Repository</a>
+		<hr/>
+		{% block content %}{% endblock %}
+		<hr>
+	</body>
+</html>

@@ -61,6 +61,8 @@ group_conf.add_option("-c", "--config", action="store",
                       help="Configuration file [%default].")
 group_conf.add_option("--print-default-config", action="callback", callback=_run_default_config,
                 help="Print internal default configuration; used if you don't have a config file.")
+group_conf.add_option("-H", "--home", action="store",
+                      help="Run with this home dir. The only use case to change this for debugging, really [%default].")
 parser.add_option_group(group_conf)
 
 group_log = optparse.OptionGroup(parser, "Logging")
@@ -76,7 +78,8 @@ parser.add_option_group(group_log)
 
 # Default values
 parser.set_defaults(loglevel=logging.WARNING, console_log=False,
-                    config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf')
+                    config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf',
+                    home=os.getenv('HOME'))
 
 # Parse
 (opts, args) = parser.parse_args()

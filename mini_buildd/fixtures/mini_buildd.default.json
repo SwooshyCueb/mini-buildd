@@ -1,0 +1,216 @@
+[
+  {
+    "pk": "http://ftp.debian.org/debian",
+    "model": "mini_buildd.mirror",
+    "fields": {}
+  },
+  {
+    "pk": 1,
+    "model": "mini_buildd.source",
+    "fields": {
+      "origin": "Debian",
+      "codename": "sid",
+      "mirrors": [
+        "http://ftp.debian.org/debian"
+      ]
+    }
+  },
+  {
+    "pk": 3,
+    "model": "mini_buildd.source",
+    "fields": {
+      "origin": "Debian",
+      "codename": "squeeze",
+      "mirrors": [
+        "http://ftp.debian.org/debian"
+      ]
+    }
+  },
+  {
+    "pk": 4,
+    "model": "mini_buildd.source",
+    "fields": {
+      "origin": "Debian",
+      "codename": "squeeze-backports",
+      "mirrors": [
+        "http://ftp.debian.org/debian"
+      ]
+    }
+  },
+  {
+    "pk": 2,
+    "model": "mini_buildd.source",
+    "fields": {
+      "origin": "Debian",
+      "codename": "wheezy",
+      "mirrors": [
+        "http://ftp.debian.org/debian"
+      ]
+    }
+  },
+  {
+    "pk": 5,
+    "model": "mini_buildd.source",
+    "fields": {
+      "origin": "Unofficial Multimedia Packages",
+      "codename": "sid",
+      "mirrors": []
+    }
+  },
+  {
+    "pk": 1,
+    "model": "mini_buildd.prioritisedsource",
+    "fields": {
+      "source": 5,
+      "prio": 1
+    }
+  },
+  {
+    "pk": "i386",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "amd64",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "powerpc",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "alpha",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "mips",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "mipsel",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "hppa",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "ia64",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "s390",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": "m68k",
+    "model": "mini_buildd.architecture",
+    "fields": {}
+  },
+  {
+    "pk": 1,
+    "model": "mini_buildd.builder",
+    "fields": {
+      "hostname": "weslok.olx.intra",
+      "arch": "i386",
+      "parallel": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "mini_buildd.builder",
+    "fields": {
+      "hostname": "weslok.olx.intra",
+      "arch": "amd64",
+      "parallel": 1
+    }
+  },
+  {
+    "pk": "experimental",
+    "model": "mini_buildd.suite",
+    "fields": {
+      "migrates_from": null
+    }
+  },
+  {
+    "pk": "unstable",
+    "model": "mini_buildd.suite",
+    "fields": {
+      "migrates_from": null
+    }
+  },
+  {
+    "pk": "testing",
+    "model": "mini_buildd.suite",
+    "fields": {
+      "migrates_from": "unstable"
+    }
+  },
+  {
+    "pk": "stable",
+    "model": "mini_buildd.suite",
+    "fields": {
+      "migrates_from": "testing"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "mini_buildd.layout",
+    "fields": {
+      "suites": [
+        "experimental",
+        "stable",
+        "testing",
+        "unstable"
+      ],
+      "name": "Standard"
+    }
+  },
+  {
+    "pk": 1,
+    "model": "mini_buildd.distribution",
+    "fields": {
+      "extra_sources": [
+        1
+      ],
+      "codename": "sid",
+      "base_source": 1
+    }
+  },
+  {
+    "pk": 2,
+    "model": "mini_buildd.distribution",
+    "fields": {
+      "extra_sources": [],
+      "codename": "squeeze",
+      "base_source": 3
+    }
+  },
+  {
+    "pk": "weslok",
+    "model": "mini_buildd.repository",
+    "fields": {
+      "layout": 1,
+      "host": "weslok.olx.intra",
+      "apt_allow_unauthenticated": false,
+      "dists": [
+        1,
+        2
+      ],
+      "extdocurl": "",
+      "mail": "",
+      "archs": [
+        "amd64",
+        "i386"
+      ]
+    }
+  }
+]

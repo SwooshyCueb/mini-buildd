@@ -1,6 +1,4 @@
-from django.shortcuts import render_to_response
+from django.shortcuts import get_object_or_404, render_to_response
 
-from mini_buildd_shconf import *
+from mini_buildd import models
 
-def index(request):
-    return render_to_response('index.html', { 'mbd_id': mbd_id })

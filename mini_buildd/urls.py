@@ -1,15 +1,22 @@
-from django.conf.urls.defaults import patterns, include, url
-from django.contrib import admin
+from django.conf.urls.defaults import *
+from django.views.generic.simple import redirect_to
+import django.views.generic
 
-admin.autodiscover()
+from mini_buildd.options import opts
+import mini_buildd.views
 
-import mini_buildd.webapp.views
+from mini_buildd.models import Repository
+info_dict = {
+    'queryset': Repository.objects.all(),
+}
+
 
 urlpatterns = patterns('',
-                       (r'^$', 'mini_buildd.webapp.views.index'),
-                       url(r'^admin/doc/', include('django.contrib.admindocs.urls')),
-                       url(r'^admin/', include(admin.site.urls)),
-                       (r'^static/admin/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/usr/share/pyshared/django/contrib/admin/media/'}),
-                       (r'^rep/(?P<path>.*)$', 'django.views.static.serve', {'document_root': '/home/mini-buildd/rep/', 'show_indexes': True}),
-#                       ('^admin-media/$', redirect_to, {'file': '/bar/%(id)s/'}),
+                       (r'^$', django.views.generic.simple.redirect_to, {'url': 'repositories/', 'permanent': False}),
+                       (r'^repositories/$', 'django.views.generic.list_detail.object_list', info_dict),
+                       (r'^repositories/(?P<object_id>.+)/$', 'django.views.generic.list_detail.object_detail', info_dict),
+
+                       # @todo: django.views.static.serve should not be used for production
+                       # Compat: Browse olde-style public_html/
+                       (r'^public_html/(?P<path>.*)$', 'django.views.static.serve', {'document_root': opts.home + '/public_html/', 'show_indexes': True})
 )

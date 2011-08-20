@@ -1,0 +1,35 @@
+{% extends "mini_buildd/base.html" %}
+
+{% block title %}mini-buildd repository index{% endblock %}
+
+{% block content %}
+
+<h1>General information</h1>
+
+<ul>
+<li><a href="../public_html/pgp_key.asc">PGP Signing Key</a>: Users of APT add this to their apt-secure keyring like so:
+<pre style="display:inline;">
+wget -O - SERVER/mini_buildd/public_html/pgp_key.asc | apt-key add -
+</pre></li>
+
+<li><a href="../public_html/dput.cf">Configuration for dput</a>: Uploaders add this to their ~/.dput.cf.</li>
+
+<li><a href="../public_html/ssh_key.asc">SSH Key</a>.</li>
+
+<li>Status:
+    <a href="../public_html/config">View raw config</a>,
+    <a href="../public_html/config-local/">Browse local config</a>,
+    <a href="../public_html/log/">Browse build logs</a>,
+    <a href="../public_html/rep/incoming/">Browse incoming</a>,
+</li>
+
+</ul>
+
+
+<h1>Repositories</h1>
+
+{% for r in object_list %}
+<a href="{{ r.id }}/">{{ r.id }}</a><br/>
+{% endfor %}
+
+{% endblock %}

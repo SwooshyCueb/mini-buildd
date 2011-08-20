@@ -1,0 +1,28 @@
+{% extends "mini_buildd/base.html" %}
+
+{% block title %}mini-buildd repository {{ object.id }}{% endblock %}
+
+{% block content %}
+
+<h1>mini-buildd repository {{ object.id }}</h1>
+
+<li>Documentation
+    <a href="{{ object.extdocurl }}">External documentation</a>
+    .
+</li>
+
+<hr/>
+
+{% for d in object.dists.all %}
+
+<h2>Base distribution {{ d.codename }}</h2>
+
+{% for s in object.layout.suites.all %}
+
+{{ d.codename }}-{{ object.id }}-{{ s.name }} <br/>
+
+{% endfor %}
+
+{% endfor %}
+
+{% endblock %}

@@ -9,4 +9,4 @@ setup(name = "mini-buildd",
       author = "Stephan Sürken",
       author_email = "absurd@debian.org",
       scripts = ["mini-buildd"],
-      packages = ["mini_buildd", "mini_buildd.webapp"])
+      packages = ["mini_buildd"])

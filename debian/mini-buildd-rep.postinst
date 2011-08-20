@@ -36,7 +36,6 @@ for v in $(mbdDynConfVars); do
 	db_get mini-buildd-rep/${v} || true
 	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
 done
-ln -s -f -v "${MBD_REPCONFIGFILE}" "${MBD_REPCONFIGFILE_PY}"
 
 chown mini-buildd:mini-buildd "${MBD_REPCONFIGFILE}"
 

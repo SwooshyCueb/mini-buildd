@@ -20,7 +20,6 @@ if ! [ -e "${MBD_LIB}/mbd-common.sh" ]; then
 fi
 
 MBD_REPCONFIGFILE="${MBD_HOME}/.mini-buildd.conf"
-MBD_REPCONFIGFILE_PY="${MBD_HOME}/mini_buildd_shconf.py"
 MBD_REPCONFIGVARS="mbd_id mbd_rephost mbd_httpport mbd_sshport mbd_mail mbd_extdocurl mbd_dists mbd_archs mbd_apt_allow_unauthenticated mbd_archall"
 MBD_BLDCONFIGFILE="${MBD_HOME}/.mini-buildd-bld.conf"
 MBD_BLDCONFIGVARS="mbd_defer mbd_rephttphost mbd_bldhost mbd_lvm_vg"

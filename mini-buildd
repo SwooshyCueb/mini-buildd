@@ -20,7 +20,7 @@ from mini_buildd.webserver import WebServer
 class Main():
     def __init__(self):
         self._iQueue = Queue.Queue()
-        self._iWatcher  = IWatcher (queue=self._iQueue, idir=os.getenv('HOME', '/home/mini-buildd') + '/rep/incoming')
+        self._iWatcher  = IWatcher (queue=self._iQueue, idir=opts.home + '/rep/incoming')
         self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
         self._webserver = WebServer()
         self._run = True

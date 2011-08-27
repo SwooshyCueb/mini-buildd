@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from django.contrib import admin
 
 from mini_buildd.log import log
+from mini_buildd.options import opts
+import mini_buildd.compat08x
 
 
 class Mirror(models.Model):
@@ -135,3 +137,17 @@ class Repository(models.Model):
         model = self.__class__
         if (model.objects.count() > 0 and self.id != model.objects.get().id):
             raise ValidationError("This is temporarily restricted  to 1 %s instance" % model.__name__)
+
+
+# @bug: This creates an unused database table
+class Import08x(models.Model):
+    file = models.CharField(primary_key=True, max_length=512, default=opts.home + "/.mini-buildd.conf")
+
+    def save(self, *args, **kwargs):
+        mini_buildd.compat08x.importConf(self.file)
+
+class Export08x(models.Model):
+    file = models.CharField(primary_key=True, max_length=512, default=opts.home + "/.mini-buildd.conf.exported")
+
+    def save(self, *args, **kwargs):
+        mini_buildd.compat08x.exportConf(self.file)

@@ -37,7 +37,7 @@ class Source(models.Model):
     def get_apt_lines(self, kind='deb', components="main contrib non-free"):
         apt_lines = []
         for m in self.mirrors.all():
-            apt_lines.append(kind + ' ' + m.url + ' ' + self.codename + ' ' + components)
+            apt_lines.append(kind + ' ' if kind else '' + m.url + ' ' + self.codename + ' ' + components)
         log.debug(str(apt_lines))
         return apt_lines
 
@@ -57,6 +57,9 @@ class PrioritisedSource(models.Model):
                                help_text="A apt pin priority value (see 'man apt_preferences')."
                                "Examples: 1=not automatic, 1001=downgrade'")
 
+    class Meta:
+        unique_together = ("source", "prio")
+
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)
 
@@ -71,16 +74,16 @@ class Architecture(models.Model):
 
 
 class Builder(models.Model):
-    hostname = models.CharField(max_length=99, default=socket.getfqdn())
+    host = models.CharField(max_length=99, default=socket.getfqdn())
     arch = models.ForeignKey(Architecture)
     parallel = models.IntegerField(default=1,
                                    help_text="Degree of parallelism this builder supports.")
 
     def __unicode__(self):
-        return self.hostname + " building " + self.arch.arch
+        return self.host + " building " + self.arch.arch
 
     class Meta:
-        unique_together = ("hostname", "arch")
+        unique_together = ("host", "arch")
 
 
 class Suite(models.Model):
@@ -94,7 +97,7 @@ class Suite(models.Model):
 
 
 class Layout(models.Model):
-    name = models.CharField(max_length=128,
+    name = models.CharField(primary_key=True, max_length=128,
                             help_text="Name for the layout.")
     suites = models.ManyToManyField(Suite)
 
@@ -103,17 +106,14 @@ class Layout(models.Model):
 
 
 class Distribution(models.Model):
-    codename = models.CharField(max_length=99,
-                                help_text="Base codename of the distribution.")
-
     # @todo: limit to distribution?  limit_choices_to={'codename': 'sid'})
-    base_source = models.ForeignKey(Source)
+    base_source = models.ForeignKey(Source, primary_key=True)
     # @todo: how to limit to source.kind?
     extra_sources = models.ManyToManyField(PrioritisedSource, blank=True, null=True)
 
     def __unicode__(self):
-        return self.codename + ": FIXME"
-
+        # @todo: somehow indicate extra sources to visible name
+        return self.base_source.origin + ": " + self.base_source.codename
 
 class Repository(models.Model):
     id = models.CharField(primary_key=True, max_length=50, default=socket.gethostname())

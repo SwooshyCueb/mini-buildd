@@ -39,12 +39,6 @@ def _run_default_log_config(option, opt, value, parser):
     print mini_buildd.log.get_default()
     sys.exit(0)
 
-def _inc_loglevel(option, opt, value, parser):
-    parser.values.loglevel = min(logging.CRITICAL, parser.values.loglevel+10)
-
-def _dec_loglevel(option, opt, value, parser):
-    parser.values.loglevel = max(logging.DEBUG, parser.values.loglevel-10)
-
 # Set up parser
 parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
                                version="%prog " + mini_buildd.version.pkg_version,
@@ -75,9 +69,9 @@ group_db.add_option("-E", "--export-db", action="store",
 parser.add_option_group(group_db)
 
 group_log = optparse.OptionGroup(parser, "Logging")
-group_log.add_option("-v", "--verbose", action="callback", dest="loglevel", callback=_dec_loglevel,
+group_log.add_option("-v", "--verbose", dest="verbosity", action="count", default=0,
                      help="Lower log level. Give twice for max logs.")
-group_log.add_option("-q", "--quiet", action="callback", dest="loglevel", callback=_inc_loglevel,
+group_log.add_option("-q", "--quiet", dest="terseness", action="count", default=0,
                      help="Tighten log level. Give twice for min logs.")
 group_log.add_option("-l", "--log-config", action="store",
                      help="Log configuration file [%default].")
@@ -86,8 +80,7 @@ group_log.add_option("--print-default-log-config", action="callback", callback=_
 parser.add_option_group(group_log)
 
 # Default values
-parser.set_defaults(loglevel=logging.WARNING,
-                    config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf',
+parser.set_defaults(config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf',
                     home=os.getenv('HOME'), instdir="/usr/share/pyshared")
 
 # Parse
@@ -98,7 +91,7 @@ opts.config  = _fileopt_post(opts.config, parser.defaults["config"])
 opts.log_config  = _fileopt_post(opts.log_config, parser.defaults["log_config"])
 
 # Now, implicitly configure mini-buildd logger; all code hereafter may use logging
-mini_buildd.log.configure(opts.log_config, opts.loglevel, opts.foreground)
+mini_buildd.log.configure(opts.log_config, logging.WARNING-(10*(opts.verbosity-opts.terseness)), opts.foreground)
 
 # Now, implicitly configure mini-buildd file configuration
 mini_buildd.config.configure(opts.config)

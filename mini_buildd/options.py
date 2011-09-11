@@ -67,6 +67,13 @@ group_conf.add_option("-D", "--instdir", action="store",
                       help="Run with this installation dir (where mini_buildd py mod is located [%default].")
 parser.add_option_group(group_conf)
 
+group_db = optparse.OptionGroup(parser, "Database")
+group_db.add_option("-I", "--import-db", action="store",
+                      help="Import this *.json fixture or *.conf old 0.8.x-style config [%default].")
+group_db.add_option("-E", "--export-db", action="store",
+                      help="Export database [%default].")
+parser.add_option_group(group_db)
+
 group_log = optparse.OptionGroup(parser, "Logging")
 group_log.add_option("-v", "--verbose", action="callback", dest="loglevel", callback=_dec_loglevel,
                      help="Lower log level. Give twice for max logs.")

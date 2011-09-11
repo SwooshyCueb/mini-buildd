@@ -86,7 +86,7 @@ group_log.add_option("--print-default-log-config", action="callback", callback=_
 parser.add_option_group(group_log)
 
 # Default values
-parser.set_defaults(loglevel=logging.WARNING, console_log=False,
+parser.set_defaults(loglevel=logging.WARNING,
                     config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf',
                     home=os.getenv('HOME'), instdir="/usr/share/pyshared")
 

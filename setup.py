@@ -9,4 +9,5 @@ setup(name = "mini-buildd",
       author = "Stephan Sürken",
       author_email = "absurd@debian.org",
       scripts = ["mini-buildd"],
-      packages = ["mini_buildd"])
+      packages = ["mini_buildd"],
+      package_data = { "mini_buildd": ["templates/mini_buildd/*.html", "fixtures/*.json"]})

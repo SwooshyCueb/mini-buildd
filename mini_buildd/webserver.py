@@ -10,12 +10,13 @@ import django.core.handlers.wsgi
 from mini_buildd.log import log
 from mini_buildd.options import opts
 
-class WebServer():
-    def __init__(self, host='', port=8080):
+class Django():
+    def __init__(self, debug=False):
+        log.info("Configuring && generating django app...")
+        self._django = django.core.handlers.wsgi.WSGIHandler()
         settings.configure(
-            # @todo: Always enable debug for now
-            DEBUG = True,
-            TEMPLATE_DEBUG = True,
+            DEBUG = debug,
+            TEMPLATE_DEBUG = debug,
 
             # @todo: Seems this is needed for admin/doc.
             SITE_ID = 1,
@@ -42,11 +43,11 @@ class WebServer():
                 'mini_buildd'
                 ))
 
-        self._django = django.core.handlers.wsgi.WSGIHandler()
-
+class WebServer():
+    def __init__(self, host='', port=8080, debug=False):
         # Http server app
-        self._httpd = wsgiref.simple_server.make_server(host, port, self._django)
-        log.info("WebServer: '%s:%s'." % (host, port))
+        log.info("Starting wsgi web server: '%s:%s'." % (host, port))
+        self._httpd = wsgiref.simple_server.make_server(host, port, Django(debug=debug)._django)
 
     def run(self):
         self._httpd.serve_forever()

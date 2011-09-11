@@ -6,6 +6,7 @@ import wsgiref.simple_server
 
 from django.conf import settings
 import django.core.handlers.wsgi
+from django.core.management import call_command
 
 from mini_buildd.log import log
 from mini_buildd.options import opts
@@ -42,6 +43,18 @@ class Django():
                 'django_extensions',
                 'mini_buildd'
                 ))
+
+    def syncdb(self):
+        log.info("Syncing database...")
+        call_command('syncdb', interactive=False)
+
+    def loaddata(self, db=opts.import_db):
+        log.info("Importing {db}".format(db=opts.import_db))
+        call_command('loaddata', opts.instdir + "/mini_buildd/fixtures/" + opts.import_db)
+
+    def dumpdata(self, f=opts.export_db):
+        log.info("Exporting to file={f}".format(f=f))
+        call_command('dumpdata', "mini_buildd", indent=2, format="json")
 
 class WebServer():
     def __init__(self, host='', port=8080, debug=False):

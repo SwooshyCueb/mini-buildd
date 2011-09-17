@@ -46,11 +46,22 @@ parser.add_option("-n", "--no-act", action="store_true",
                      help="Don't install anything, just log what we would do.")
 
 group_conf = optparse.OptionGroup(parser, "Daemon configuration")
-group_conf.add_option("-H", "--home", action="store",
+group_conf.add_option("-H", "--home", action="store", default=os.getenv('HOME'),
                       help="Run with this home dir. The only use case to change this for debugging, really [%default].")
-group_conf.add_option("-D", "--instdir", action="store",
+group_conf.add_option("-D", "--instdir", action="store", default="/usr/share/pyshared",
                       help="Run with this installation dir (where mini_buildd py mod is located [%default].")
 parser.add_option_group(group_conf)
+
+group_log = optparse.OptionGroup(parser, "Logging")
+group_log.add_option("-v", "--verbose", dest="verbosity", action="count", default=0,
+                     help="Lower log level. Give twice for max logs.")
+group_log.add_option("-q", "--quiet", dest="terseness", action="count", default=0,
+                     help="Tighten log level. Give twice for min logs.")
+group_log.add_option("-l", "--log-config", action="store", default="~/.mini-buildd-daemon.log.conf",
+                     help="Log configuration file [%default].")
+group_log.add_option("--print-default-log-config", action="callback", callback=_run_default_log_config,
+                     help="Print internal default log configuration; used if you don't have a log config file.")
+parser.add_option_group(group_log)
 
 group_db = optparse.OptionGroup(parser, "Database")
 group_db.add_option("-I", "--import-db", action="store",
@@ -58,21 +69,6 @@ group_db.add_option("-I", "--import-db", action="store",
 group_db.add_option("-E", "--export-db", action="store",
                       help="Export database [%default].")
 parser.add_option_group(group_db)
-
-group_log = optparse.OptionGroup(parser, "Logging")
-group_log.add_option("-v", "--verbose", dest="verbosity", action="count", default=0,
-                     help="Lower log level. Give twice for max logs.")
-group_log.add_option("-q", "--quiet", dest="terseness", action="count", default=0,
-                     help="Tighten log level. Give twice for min logs.")
-group_log.add_option("-l", "--log-config", action="store",
-                     help="Log configuration file [%default].")
-group_log.add_option("--print-default-log-config", action="callback", callback=_run_default_log_config,
-                     help="Print internal default log configuration; used if you don't have a log config file.")
-parser.add_option_group(group_log)
-
-# Default values
-parser.set_defaults(log_config='~/.mini-buildd-daemon.log.conf',
-                    home=os.getenv('HOME'), instdir="/usr/share/pyshared")
 
 # Parse
 (opts, args) = parser.parse_args()

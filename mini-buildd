@@ -50,6 +50,14 @@ class Main():
         log.info("Shutting down (%s active threads)" % threading.activeCount())
         log.info("Shutdown complete. Bye...")
 
+# Execute extra options that exit without running Main() daemon
+if opts.import_db:
+    Django().loaddata()
+    sys.exit(0)
+elif opts.export_db:
+    Django().dumpdata()
+    sys.exit(0)
+
 # Daemonize if configured
 if not opts.foreground:
     daemon.DaemonContext().open()

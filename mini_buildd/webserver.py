@@ -57,10 +57,10 @@ class Django():
         call_command('dumpdata', "mini_buildd", indent=2, format="json")
 
 class WebServer():
-    def __init__(self, host='', port=8080, debug=False):
+    def __init__(self, django, host='', port=8080):
         # Http server app
         log.info("Starting wsgi web server: '%s:%s'." % (host, port))
-        self._httpd = wsgiref.simple_server.make_server(host, port, Django(debug=debug)._django)
+        self._httpd = wsgiref.simple_server.make_server(host, port, django)
 
     def run(self):
         self._httpd.serve_forever()

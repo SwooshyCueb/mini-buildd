@@ -14,14 +14,15 @@ import mini_buildd.misc
 
 from mini_buildd.iwatcher import IWatcher
 from mini_buildd.installer import Installer
-from mini_buildd.webserver import WebServer
+from mini_buildd.webserver import WebServer, Django
 
 class Main():
     def __init__(self):
         self._iQueue = Queue.Queue()
         self._iWatcher  = IWatcher (queue=self._iQueue, idir=opts.home + '/rep/incoming')
         self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
-        self._webserver = WebServer()
+        self._django = Django(debug=True)
+        self._webserver = WebServer(self._django._django)
         self._run = True
 
     def shutdown(self, signum=-1, frame=-1):

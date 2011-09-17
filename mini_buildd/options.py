@@ -10,7 +10,6 @@ import sys
 
 # Local
 import mini_buildd.version
-import mini_buildd.config
 
 # Local shortcuts
 from mini_buildd.log import log
@@ -31,10 +30,6 @@ def _fileopt_post(value, default):
             value = None
     return value
 
-def _run_default_config(option, opt, value, parser):
-    print mini_buildd.config.get_default()
-    sys.exit(0)
-
 def _run_default_log_config(option, opt, value, parser):
     print mini_buildd.log.get_default()
     sys.exit(0)
@@ -51,10 +46,6 @@ parser.add_option("-n", "--no-act", action="store_true",
                      help="Don't install anything, just log what we would do.")
 
 group_conf = optparse.OptionGroup(parser, "Daemon configuration")
-group_conf.add_option("-c", "--config", action="store",
-                      help="Configuration file [%default].")
-group_conf.add_option("--print-default-config", action="callback", callback=_run_default_config,
-                help="Print internal default configuration; used if you don't have a config file.")
 group_conf.add_option("-H", "--home", action="store",
                       help="Run with this home dir. The only use case to change this for debugging, really [%default].")
 group_conf.add_option("-D", "--instdir", action="store",
@@ -80,18 +71,14 @@ group_log.add_option("--print-default-log-config", action="callback", callback=_
 parser.add_option_group(group_log)
 
 # Default values
-parser.set_defaults(config='~/.mini-buildd-daemon.conf', log_config='~/.mini-buildd-daemon.log.conf',
+parser.set_defaults(log_config='~/.mini-buildd-daemon.log.conf',
                     home=os.getenv('HOME'), instdir="/usr/share/pyshared")
 
 # Parse
 (opts, args) = parser.parse_args()
 
 # Post-process file name options
-opts.config  = _fileopt_post(opts.config, parser.defaults["config"])
 opts.log_config  = _fileopt_post(opts.log_config, parser.defaults["log_config"])
 
 # Now, implicitly configure mini-buildd logger; all code hereafter may use logging
 mini_buildd.log.configure(opts.log_config, logging.WARNING-(10*(opts.verbosity-opts.terseness)), opts.foreground)
-
-# Now, implicitly configure mini-buildd file configuration
-mini_buildd.config.configure(opts.config)

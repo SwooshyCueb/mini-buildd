@@ -51,11 +51,11 @@ class Main():
         log.info("Shutdown complete. Bye...")
 
 # Execute extra options that exit without running Main() daemon
-if opts.import_db:
-    Django().loaddata()
+if opts.loaddata:
+    Django().loaddata(f=opts.loaddata)
     sys.exit(0)
-elif opts.export_db:
-    Django().dumpdata()
+elif opts.dumpdata:
+    Django().dumpdata(a=opts.dumpdata)
     sys.exit(0)
 
 # Daemonize if configured

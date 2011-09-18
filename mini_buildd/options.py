@@ -18,9 +18,11 @@ parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
 
 # Set up options
 parser.add_option("-f", "--foreground", action="store_true",
-                     help="Don't daemonize, log to console.")
+                  help="Don't daemonize, log to console.")
 parser.add_option("-n", "--no-act", action="store_true",
-                     help="Don't install anything, just log what we would do.")
+                  help="Don't install anything, just log what we would do.")
+parser.add_option("-B", "--bind", action="store", default=":8066",
+                  help="Hostname and port to bind to.")
 
 group_log = optparse.OptionGroup(parser, "Logging")
 group_log.add_option("-v", "--verbose", dest="verbosity", action="count", default=0,

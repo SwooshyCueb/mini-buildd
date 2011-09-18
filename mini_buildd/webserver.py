@@ -1,4 +1,5 @@
 # coding: utf-8
+import string
 import os
 import sys
 
@@ -63,9 +64,10 @@ class Django():
             call_command('dumpdata', a, indent=2, format="json")
 
 class WebServer():
-    def __init__(self, django, host='', port=8080):
-        mini_buildd.log.info("Starting wsgi web server: '%s:%s'." % (host, port))
-        self._httpd = wsgiref.simple_server.make_server(host, port, django)
+    def __init__(self, django):
+        mini_buildd.log.info("Starting wsgi web server: '{b}'.".format(b=mini_buildd.opts.bind))
+        bind = string.split(mini_buildd.opts.bind, ":")
+        self._httpd = wsgiref.simple_server.make_server(bind[0], int(bind[1]), django)
 
     def run(self):
         self._httpd.serve_forever()

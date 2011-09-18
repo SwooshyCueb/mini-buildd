@@ -8,7 +8,7 @@ import re
 import os
 import pyinotify
 
-from mini_buildd.log import log
+import mini_buildd
 
 class IWatcher():
     class Handler(pyinotify.ProcessEvent):
@@ -18,13 +18,13 @@ class IWatcher():
 
         def processFile(self, pathname):
             if self._cfregex.match(pathname):
-                log.info("Queuing file: %s" % pathname);
+                mini_buildd.log.info("Queuing file: %s" % pathname);
                 self._queue.put(pathname)
             else:
-                log.debug("Skipping file: %s" % pathname);
+                mini_buildd.log.debug("Skipping file: %s" % pathname);
 
         def processEvent(self, event):
-            log.debug("IN_CREATE event in incoming: %s" % str(event))
+            mini_buildd.log.debug("IN_CREATE event in incoming: %s" % str(event))
             self.processFile(event.pathname)
 
         def process_IN_CREATE(self, event):
@@ -34,7 +34,7 @@ class IWatcher():
             self.processEvent(event)
 
     def __init__(self, queue, idir):
-        log.info("Watching incoming: %s" % idir)
+        mini_buildd.log.info("Watching incoming: %s" % idir)
         self._idir = idir
         self._handler = self.Handler(queue=queue)
         self._wm = pyinotify.WatchManager()

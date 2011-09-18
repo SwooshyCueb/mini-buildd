@@ -2,23 +2,22 @@ import imp
 import time
 import os
 
-from mini_buildd.options import opts
-from mini_buildd.log import log
+import mini_buildd
 
-def importConf(f=opts.home + '/.mini-buildd.conf'):
+def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
     """ """
     from mini_buildd import models
 
-    log.info("Importing 0.8.x config from: {f}".format(f=f))
+    mini_buildd.log.info("Importing 0.8.x config from: {f}".format(f=f))
     conf08x = imp.load_source('mini_buildd.shconf', f)
 
     def tryImport(f):
         try:
             o = f()
             o.save()
-            log.info("IMPORTED '{f}': '{n}'".format(f=f.__name__, n=o.__unicode__()))
+            mini_buildd.log.info("IMPORTED '{f}': '{n}'".format(f=f.__name__, n=o.__unicode__()))
         except Exception as e:
-            log.warn("{f}: import failed: {e}".format(f=f.__name__, e=str(e)))
+            mini_buildd.log.warn("{f}: import failed: {e}".format(f=f.__name__, e=str(e)))
 
     def Layout():
         l=models.Layout(name="Standard")
@@ -64,7 +63,7 @@ def importConf(f=opts.home + '/.mini-buildd.conf'):
             for a in archs:
                 v="mbd_src_" + d +"_" + t + "_" + a
                 sources = getattr(conf08x, v)
-                log.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
+                mini_buildd.log.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
 
                 if sources:
                     for value in sources.split(","):
@@ -137,11 +136,11 @@ def importConf(f=opts.home + '/.mini-buildd.conf'):
 
 
 
-def exportConf(f=opts.home + '/.mini-buildd.conf.export'):
+def exportConf(f=mini_buildd.opts.home + '/.mini-buildd.conf.export'):
     """ """
     from mini_buildd import models
 
-    log.info("Exporting 0.8.x config to: {f}".format(f=f))
+    mini_buildd.log.info("Exporting 0.8.x config to: {f}".format(f=f))
     f = open(f, 'w')
 
     f.write("# Created by mini-buildd on {date}\n".format(date=time.strftime("%c")))

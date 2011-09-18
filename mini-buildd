@@ -8,25 +8,19 @@ import sys
 import time
 import daemon
 
-from mini_buildd.options import opts
-from mini_buildd.log import log
-import mini_buildd.misc
-
-from mini_buildd.iwatcher import IWatcher
-from mini_buildd.installer import Installer
-from mini_buildd.webserver import WebServer, Django
+import mini_buildd
 
 class Main():
     def __init__(self):
         self._iQueue = Queue.Queue()
-        self._iWatcher  = IWatcher (queue=self._iQueue, idir=opts.home + '/rep/incoming')
-        self._installer = Installer(queue=self._iQueue, no_act=opts.no_act)
-        self._django = Django(debug=True)
-        self._webserver = WebServer(self._django._django)
+        self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
+        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
+        self._django = mini_buildd.Django(debug=True)
+        self._webserver = mini_buildd.WebServer(self._django._django)
         self._run = True
 
     def shutdown(self, signum=-1, frame=-1):
-        log.debug("Got signal: %s" % signum)
+        mini_buildd.log.debug("Got signal: %s" % signum)
         self._run = False
 
     def start_thread(self, obj):
@@ -47,19 +41,19 @@ class Main():
         while self._run:
             signal.pause()
 
-        log.info("Shutting down (%s active threads)" % threading.activeCount())
-        log.info("Shutdown complete. Bye...")
+        mini_buildd.log.info("Shutting down (%s active threads)" % threading.activeCount())
+        mini_buildd.log.info("Shutdown complete. Bye...")
 
 # Execute extra options that exit without running Main() daemon
-if opts.loaddata:
-    Django().loaddata(f=opts.loaddata)
+if mini_buildd.opts.loaddata:
+    mini_buildd.Django().loaddata(f=mini_buildd.opts.loaddata)
     sys.exit(0)
-elif opts.dumpdata:
-    Django().dumpdata(a=opts.dumpdata)
+elif mini_buildd.opts.dumpdata:
+    mini_buildd.Django().dumpdata(a=mini_buildd.opts.dumpdata)
     sys.exit(0)
 
 # Daemonize if configured
-if not opts.foreground:
+if not mini_buildd.opts.foreground:
     daemon.DaemonContext().open()
 
 # Main processing; the only benefit of the master try/catch is
@@ -68,5 +62,5 @@ if not opts.foreground:
 try:
     Main().run()
 except:
-    log.exception("mini-buildd run failed")
+    mini_buildd.log.exception("mini-buildd run failed")
     sys.exit(1)

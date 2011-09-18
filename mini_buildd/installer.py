@@ -2,8 +2,7 @@
 
 import os
 
-from mini_buildd.log import log
-import mini_buildd.misc
+import mini_buildd
 
 class Installer():
     def __init__(self, queue, no_act):
@@ -17,7 +16,7 @@ class Installer():
                 self._preinstall = p
                 break
 
-        log.info("Installer: Using preinstalls script %s" % self._preinstall)
+        mini_buildd.log.info("Installer: Using preinstalls script %s" % self._preinstall)
 
     def install(self, cf):
         if mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act):

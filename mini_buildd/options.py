@@ -2,18 +2,12 @@
 
 """mini-buildd: Command line options handling."""
 
-# Python
 import optparse
 import logging
 import os
 import sys
 
-# Local
-import mini_buildd.version
-
-# Local shortcuts
-from mini_buildd.log import log
-
+import mini_buildd
 
 def _fileopt_post(value, default):
     """Expand and make absolute for later use; check for file existence if not default."""
@@ -36,7 +30,7 @@ def _run_default_log_config(option, opt, value, parser):
 
 # Set up parser
 parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
-                               version="%prog " + mini_buildd.version.pkg_version,
+                               version="%prog-" + mini_buildd.version.pkg_version,
                                description="mini build daemon.")
 
 # Set up options

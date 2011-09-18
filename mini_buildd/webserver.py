@@ -8,14 +8,11 @@ from django.conf import settings
 import django.core.handlers.wsgi
 from django.core.management import call_command
 
-from mini_buildd.log import log
-from mini_buildd.options import opts
-
-import mini_buildd.compat08x
+import mini_buildd
 
 class Django():
     def __init__(self, debug=False):
-        log.info("Configuring && generating django app...")
+        mini_buildd.log.info("Configuring && generating django app...")
         self._django = django.core.handlers.wsgi.WSGIHandler()
         settings.configure(
             DEBUG = debug,
@@ -29,7 +26,7 @@ class Django():
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': opts.home + '/web/config.sqlite',
+                    'NAME': mini_buildd.opts.home + '/web/config.sqlite',
                     }
                 },
             TIME_ZONE = None,
@@ -47,19 +44,19 @@ class Django():
                 ))
 
     def syncdb(self):
-        log.info("Syncing database...")
+        mini_buildd.log.info("Syncing database...")
         call_command('syncdb', interactive=False)
 
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":
-            log.info("Try loading ad 08x.conf: {f}".format(f=f))
+            mini_buildd.log.info("Try loading ad 08x.conf: {f}".format(f=f))
             mini_buildd.compat08x.importConf(f)
         else:
-            prefix = "" if f[0] == "/" else opts.instdir + "/mini_buildd/fixtures/"
+            prefix = "" if f[0] == "/" else mini_buildd.opts.instdir + "/mini_buildd/fixtures/"
             call_command('loaddata', prefix  + f)
 
     def dumpdata(self, a):
-        log.info("Dumping data for: {a}".format(a=a))
+        mini_buildd.log.info("Dumping data for: {a}".format(a=a))
         if a == "08x":
             mini_buildd.compat08x.exportConf("/dev/stdout")
         else:
@@ -67,8 +64,7 @@ class Django():
 
 class WebServer():
     def __init__(self, django, host='', port=8080):
-        # Http server app
-        log.info("Starting wsgi web server: '%s:%s'." % (host, port))
+        mini_buildd.log.info("Starting wsgi web server: '%s:%s'." % (host, port))
         self._httpd = wsgiref.simple_server.make_server(host, port, django)
 
     def run(self):

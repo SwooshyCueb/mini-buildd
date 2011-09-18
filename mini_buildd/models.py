@@ -7,10 +7,7 @@ from django.db import models
 from django.core.exceptions import ValidationError
 from django.contrib import admin
 
-from mini_buildd.log import log
-from mini_buildd.options import opts
-import mini_buildd.compat08x
-
+import mini_buildd
 
 class Mirror(models.Model):
     url = models.URLField(primary_key=True, max_length=512,
@@ -40,7 +37,7 @@ class Source(models.Model):
         apt_lines = []
         for m in self.mirrors.all():
             apt_lines.append(kind + ' ' if kind else '' + m.url + ' ' + self.codename + ' ' + components)
-        log.debug(str(apt_lines))
+        mini_buildd.log.debug(str(apt_lines))
         return apt_lines
 
     def get_apt_pin(self):

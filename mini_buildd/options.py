@@ -2,31 +2,14 @@
 
 """mini-buildd: Command line options handling."""
 
+import string
 import optparse
 import logging
+import logging.handlers
 import os
 import sys
 
 import mini_buildd
-
-def _fileopt_post(value, default):
-    """Expand and make absolute for later use; check for file existence if not default."""
-
-    # Normalize paths
-    value = os.path.abspath(os.path.expanduser(value))
-    default = os.path.abspath(os.path.expanduser(default))
-    if not os.access(value, os.F_OK):
-        if value != default:
-            # Option given on command line
-            print >>sys.stderr, "ERROR: The given file '%s' does not exist." % value
-            sys.exit(1)
-        else:
-            value = None
-    return value
-
-def _run_default_log_config(option, opt, value, parser):
-    print mini_buildd.log.get_default()
-    sys.exit(0)
 
 # Set up parser
 parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
@@ -44,10 +27,8 @@ group_log.add_option("-v", "--verbose", dest="verbosity", action="count", defaul
                      help="Lower log level. Give twice for max logs.")
 group_log.add_option("-q", "--quiet", dest="terseness", action="count", default=0,
                      help="Tighten log level. Give twice for min logs.")
-group_log.add_option("-l", "--log-config", action="store", default="~/.mini-buildd-daemon.log.conf",
-                     help="Log configuration file [%default].")
-group_log.add_option("--print-default-log-config", action="callback", callback=_run_default_log_config,
-                     help="Print internal default log configuration; used if you don't have a log config file.")
+group_log.add_option("-l", "--loggers", action="store", default="syslog",
+                     help="Comma-separated list of loggers (syslog, console, file) to use [%default].")
 parser.add_option_group(group_log)
 
 group_conf = optparse.OptionGroup(parser, "Daemon configuration")
@@ -59,7 +40,7 @@ parser.add_option_group(group_conf)
 
 group_db = optparse.OptionGroup(parser, "Database")
 group_db.add_option("-L", "--loaddata", action="store", metavar="FILE",
-                    help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/')\
+                    help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
 
 group_db.add_option("-D", "--dumpdata", action="store", metavar="APP[.MODEL]",
@@ -69,8 +50,21 @@ parser.add_option_group(group_db)
 # Parse
 (opts, args) = parser.parse_args()
 
-# Post-process file name options
-opts.log_config  = _fileopt_post(opts.log_config, parser.defaults["log_config"])
+# Set up logging
+log = logging.getLogger("mini-buildd")
 
-# Now, implicitly configure mini-buildd logger; all code hereafter may use logging
-mini_buildd.log.configure(opts.log_config, logging.WARNING-(10*(opts.verbosity-opts.terseness)), opts.foreground)
+# Global: Don't propagate exceptions that happen while logging
+logging.raiseExceptions = 0
+
+# Add predefinded handlers: console, syslog, file
+_LOG_FORMAT = "%(levelname)-8s: %(message)s [%(module)s:%(lineno)d]"
+_LOG_HANDLERS = {}
+_LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+_LOG_HANDLERS["console"] = logging.StreamHandler()
+_LOG_HANDLERS["file"] = logging.FileHandler(opts.home + "/.mini-buildd.log")
+for h in string.split(opts.loggers + (",console" if opts.foreground else ""), ","):
+    _LOG_HANDLERS[h].setFormatter(logging.Formatter(("%(name)s " if h == "syslog" else "%(asctime)s ") + _LOG_FORMAT))
+    log.addHandler(_LOG_HANDLERS[h])
+
+# Finally, set log level
+log.setLevel(logging.WARNING-(10*(min(2, opts.verbosity)-min(2, opts.terseness))))

@@ -54,14 +54,16 @@ group_conf = optparse.OptionGroup(parser, "Daemon configuration")
 group_conf.add_option("-H", "--home", action="store", default=os.getenv('HOME'),
                       help="Run with this home dir. The only use case to change this for debugging, really [%default].")
 group_conf.add_option("-I", "--instdir", action="store", default="/usr/share/pyshared",
-                      help="Run with this installation dir (where mini_buildd py mod is located [%default].")
+                      help="Run with this installation dir (where mini_buildd python module is located). [%default].")
 parser.add_option_group(group_conf)
 
 group_db = optparse.OptionGroup(parser, "Database")
-group_db.add_option("-L", "--loaddata", action="store",
-                      help="Import this *.json fixture or *.conf old 0.8.x-style config [%default].")
-group_db.add_option("-E", "--dumpdata", action="store",
-                      help="Export database [%default].")
+group_db.add_option("-L", "--loaddata", action="store", metavar="FILE",
+                    help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/')\
+django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
+
+group_db.add_option("-D", "--dumpdata", action="store", metavar="APP[.MODEL]",
+                    help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 parser.add_option_group(group_db)
 
 # Parse

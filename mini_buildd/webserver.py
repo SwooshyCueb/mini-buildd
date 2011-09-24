@@ -43,6 +43,7 @@ class Django():
                 'django_extensions',
                 'mini_buildd'
                 ))
+        self.syncdb()
 
     def syncdb(self):
         mini_buildd.log.info("Syncing database...")

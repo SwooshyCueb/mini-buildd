@@ -17,35 +17,35 @@ parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
                                description="mini build daemon.")
 
 # Set up options
-parser.add_option("-f", "--foreground", action="store_true",
+parser.add_option("-f", "--foreground", action='store_true',
                   help="Don't daemonize, log to console.")
-parser.add_option("-n", "--no-act", action="store_true",
+parser.add_option("-n", "--no-act", action='store_true',
                   help="Don't install anything, just log what we would do.")
-parser.add_option("-B", "--bind", action="store", default=":8066",
+parser.add_option("-B", "--bind", action='store', default=":8066",
                   help="Hostname and port to bind to.")
 
 group_log = optparse.OptionGroup(parser, "Logging")
-group_log.add_option("-v", "--verbose", dest="verbosity", action="count", default=0,
+group_log.add_option("-v", "--verbose", dest="verbosity", action='count', default=0,
                      help="Lower log level. Give twice for max logs.")
-group_log.add_option("-q", "--quiet", dest="terseness", action="count", default=0,
+group_log.add_option("-q", "--quiet", dest="terseness", action='count', default=0,
                      help="Tighten log level. Give twice for min logs.")
-group_log.add_option("-l", "--loggers", action="store", default="syslog",
+group_log.add_option("-l", "--loggers", action='store', default="syslog",
                      help="Comma-separated list of loggers (syslog, console, file) to use [%default].")
 parser.add_option_group(group_log)
 
 group_conf = optparse.OptionGroup(parser, "Daemon configuration")
-group_conf.add_option("-H", "--home", action="store", default=os.getenv('HOME'),
+group_conf.add_option("-H", "--home", action='store', default=os.getenv('HOME'),
                       help="Run with this home dir. The only use case to change this for debugging, really [%default].")
-group_conf.add_option("-I", "--instdir", action="store", default="/usr/share/pyshared",
+group_conf.add_option("-I", "--instdir", action='store', default="/usr/share/pyshared",
                       help="Run with this installation dir (where mini_buildd python module is located). [%default].")
 parser.add_option_group(group_conf)
 
 group_db = optparse.OptionGroup(parser, "Database")
-group_db.add_option("-L", "--loaddata", action="store", metavar="FILE",
+group_db.add_option("-L", "--loaddata", action='store', metavar="FILE",
                     help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
 
-group_db.add_option("-D", "--dumpdata", action="store", metavar="APP[.MODEL]",
+group_db.add_option("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                     help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 parser.add_option_group(group_db)
 

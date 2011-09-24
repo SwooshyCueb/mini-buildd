@@ -61,7 +61,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
 
             archs.append("any")
             for a in archs:
-                v="mbd_src_" + d +"_" + t + "_" + a
+                v="mbd_src_" + d + "_" + t + "_" + a
                 sources = getattr(conf08x, v)
                 mini_buildd.log.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
 
@@ -136,7 +136,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
 
 
 
-def exportConf(f=mini_buildd.opts.home + '/.mini-buildd.conf.export'):
+def exportConf(f=mini_buildd.opts.home + "/.mini-buildd.conf.export"):
     """ """
     from mini_buildd import models
 

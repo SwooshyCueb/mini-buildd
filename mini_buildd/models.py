@@ -21,7 +21,7 @@ class Mirror(models.Model):
         return self.url
 
     class Admin(admin.ModelAdmin):
-        search_fields = ["url"]
+        search_fields = ['url']
 
 
 class Source(models.Model):
@@ -30,10 +30,10 @@ class Source(models.Model):
     mirrors = models.ManyToManyField('Mirror')
 
     class Meta:
-        unique_together = ("origin", "codename")
-        ordering = ["origin", "codename"]
+        unique_together = ('origin', 'codename')
+        ordering = ['origin', 'codename']
 
-    def get_apt_lines(self, kind='deb', components="main contrib non-free"):
+    def get_apt_lines(self, kind="deb", components="main contrib non-free"):
         apt_lines = []
         for m in self.mirrors.all():
             apt_lines.append(kind + ' ' if kind else '' + m.url + ' ' + self.codename + ' ' + components)
@@ -47,7 +47,7 @@ class Source(models.Model):
         return self.origin + ": " + self.codename + " [" + self.get_apt_pin() + "]"
 
     class Admin(admin.ModelAdmin):
-        search_fields = ["origin", "codename"]
+        search_fields = ['origin', 'codename']
 
 
 class PrioritisedSource(models.Model):
@@ -57,7 +57,7 @@ class PrioritisedSource(models.Model):
                                "Examples: 1=not automatic, 1001=downgrade'")
 
     class Meta:
-        unique_together = ("source", "prio")
+        unique_together = ('source', 'prio')
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)
@@ -82,7 +82,7 @@ class Builder(models.Model):
         return self.host + " building " + self.arch.arch
 
     class Meta:
-        unique_together = ("host", "arch")
+        unique_together = ('host', 'arch')
 
 
 class Suite(models.Model):

@@ -27,12 +27,12 @@ class Django():
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': mini_buildd.opts.home + '/web/config.sqlite',
+                    'NAME': mini_buildd.opts.home + "/web/config.sqlite",
                     }
                 },
             TIME_ZONE = None,
             USE_L10N = True,
-            SECRET_KEY = ')-%wqspscru#-9rl6u0sbbd*yn@$=ic^)-9c$+@@w898co2!7^',
+            SECRET_KEY = ")-%wqspscru#-9rl6u0sbbd*yn@$=ic^)-9c$+@@w898co2!7^",
             ROOT_URLCONF = 'mini_buildd.root_urls',
             INSTALLED_APPS = (
                 'django.contrib.auth',
@@ -62,7 +62,7 @@ class Django():
         if a == "08x":
             mini_buildd.compat08x.exportConf("/dev/stdout")
         else:
-            call_command('dumpdata', a, indent=2, format="json")
+            call_command('dumpdata', a, indent=2, format='json')
 
 class WebServer():
     def __init__(self, django):

@@ -15,7 +15,7 @@ class Main():
         self._iQueue = Queue.Queue()
         self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
-        self._django = mini_buildd.Django(debug=True)
+        self._django = mini_buildd.WebApp(debug=True)
         self._webserver = mini_buildd.WebServer(self._django._django)
         self._run = True
 
@@ -46,10 +46,10 @@ class Main():
 
 # Execute extra options that exit without running Main() daemon
 if mini_buildd.opts.loaddata:
-    mini_buildd.Django().loaddata(f=mini_buildd.opts.loaddata)
+    mini_buildd.WebApp().loaddata(f=mini_buildd.opts.loaddata)
     sys.exit(0)
 elif mini_buildd.opts.dumpdata:
-    mini_buildd.Django().dumpdata(a=mini_buildd.opts.dumpdata)
+    mini_buildd.WebApp().dumpdata(a=mini_buildd.opts.dumpdata)
     sys.exit(0)
 
 # Daemonize if configured

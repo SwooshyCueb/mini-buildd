@@ -1,4 +1,5 @@
 /build/
+/devel-home/
 *.pyc
 debian/tmp/
 debian/mini-buildd-common/

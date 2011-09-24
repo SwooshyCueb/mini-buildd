@@ -1,5 +1,6 @@
 /build/
 /devel-home/
+/mini_buildd/__version__.py
 *.pyc
 debian/tmp/
 debian/mini-buildd-common/

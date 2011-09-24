@@ -13,7 +13,7 @@ import mini_buildd
 
 # Set up parser
 parser = optparse.OptionParser(usage="Usage: %prog [options] [DIRECTORY]",
-                               version="%prog-" + mini_buildd.version.pkg_version,
+                               version="%prog-" + mini_buildd.__version__,
                                description="mini build daemon.")
 
 # Set up options

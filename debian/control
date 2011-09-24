@@ -29,7 +29,8 @@ Architecture: all
 XB-Python-Version: ${python:Versions}
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Version}),
-         python, python-daemon, python-pyinotify (>> 0.8.9), python-django (>= 1.2), python-django-extensions (>= 0.4),
+         python, python-daemon, python-pyinotify (>> 0.8.9), python-debian (>= 0.1.18),
+         python-django (>= 1.2), python-django-extensions (>= 0.4),
          reprepro (>> 4.1.0), cron, procps
 Recommends: dwww
 Description: minimal Debian build daemon - repository

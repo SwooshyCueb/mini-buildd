@@ -1,5 +1,4 @@
-# coding: utf-8
-
+# -*- coding: utf-8 -*-
 """
 Watch incoming and deliver new changes files to a queue.
 """

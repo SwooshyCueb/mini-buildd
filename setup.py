@@ -1,4 +1,4 @@
-# coding=utf-8
+# -*- coding: utf-8 -*-
 from distutils.core import setup
 from debian.changelog import Changelog, Version
 
@@ -8,7 +8,7 @@ from debian.changelog import Changelog, Version
 # __version__.py
 __version__ = str(Changelog(file=open("./debian/changelog", "rb")).version)
 with open("./mini_buildd/__version__.py", "wb") as version_py:
-    version_py.write("__version__ = '{version}'".format(version=__version__))
+    version_py.write("# -*- coding: utf-8 -*-\n__version__ = '{version}'".format(version=__version__))
 print "I: Got version from changelog: {v}".format(v=__version__)
 
 setup(name = "mini-buildd",

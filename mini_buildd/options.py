@@ -1,6 +1,7 @@
-# coding: utf-8
-
-"""mini-buildd: Command line options handling."""
+# -*- coding: utf-8 -*-
+"""
+mini-buildd: Command line options handling.
+"""
 
 import string
 import optparse

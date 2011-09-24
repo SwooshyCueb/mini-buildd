@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import imp
 import time
 import os

@@ -53,21 +53,25 @@ parser.add_option_group(group_db)
 # Parse
 (opts, args) = parser.parse_args()
 
-# Set up logging
+# Set up logging; "log" is global for mini_buildd, django is forced to use the same logging
 log = logging.getLogger("mini-buildd")
+django_log = logging.getLogger("django")
 
 # Global: Don't propagate exceptions that happen while logging
 logging.raiseExceptions = 0
 
 # Add predefinded handlers: console, syslog, file
-_LOG_FORMAT = "%(levelname)-8s: %(message)s [%(module)s:%(lineno)d]"
 _LOG_HANDLERS = {}
 _LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
 _LOG_HANDLERS["console"] = logging.StreamHandler()
 _LOG_HANDLERS["file"] = logging.FileHandler(opts.home + "/.mini-buildd.log")
+
 for h in string.split(opts.loggers + (",console" if opts.foreground else ""), ","):
-    _LOG_HANDLERS[h].setFormatter(logging.Formatter(("%(name)s " if h == "syslog" else "%(asctime)s ") + _LOG_FORMAT))
+    _LOG_HANDLERS[h].setFormatter(logging.Formatter("mini-buildd(%(name)s): %(levelname)-8s: %(message)s [%(module)s:%(lineno)d]"))
     log.addHandler(_LOG_HANDLERS[h])
+    django_log.addHandler(_LOG_HANDLERS[h])
 
 # Finally, set log level
-log.setLevel(logging.WARNING-(10*(min(2, opts.verbosity)-min(2, opts.terseness))))
+loglevel=logging.WARNING-(10*(min(2, opts.verbosity)-min(2, opts.terseness)))
+log.setLevel(loglevel)
+django_log.setLevel(loglevel)

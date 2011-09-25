@@ -15,6 +15,8 @@ urlpatterns = django.conf.urls.defaults.patterns(
     # admin
     django.conf.urls.defaults.url(r"^admin/doc/", django.conf.urls.defaults.include('django.contrib.admindocs.urls')),
     django.conf.urls.defaults.url(r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
-    # @todo: workaround to get static admin data on Debian, at least
-    (r"^static/admin/(?P<path>.*)$", 'django.views.static.serve', {'document_root': "/usr/share/pyshared/django/contrib/admin/media/"})
+    # @todo: Workaround for  static admin data on Debian wheezy, django 1.3
+    (r"^static/admin/(?P<path>.*)$", 'django.views.static.serve', {'document_root': "/usr/share/pyshared/django/contrib/admin/media/"}),
+    # @todo: Workaround for  static admin data on Debian squeeze, django 1.2
+    (r"^media/(?P<path>.*)$", 'django.views.static.serve', {'document_root': "/usr/share/pyshared/django/contrib/admin/media/"})
     )

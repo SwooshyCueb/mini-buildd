@@ -43,7 +43,7 @@ class WebApp():
 
     def syncdb(self):
         mini_buildd.log.info("Syncing database...")
-        django.core.management.call_command('syncdb', interactive=False)
+        django.core.management.call_command('syncdb', interactive=False, verbosity=0)
 
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":

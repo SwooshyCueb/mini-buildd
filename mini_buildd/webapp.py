@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-import string
 import os
 
-from django.conf import settings
+import django.conf
 import django.core.handlers.wsgi
-from django.core.management import call_command
+import django.core.management
 
 import mini_buildd
 
@@ -12,7 +11,7 @@ class WebApp():
     def __init__(self, debug=False):
         mini_buildd.log.info("Configuring && generating django app...")
         self._django = django.core.handlers.wsgi.WSGIHandler()
-        settings.configure(
+        django.conf.settings.configure(
             DEBUG = debug,
             TEMPLATE_DEBUG = debug,
 
@@ -44,7 +43,7 @@ class WebApp():
 
     def syncdb(self):
         mini_buildd.log.info("Syncing database...")
-        call_command('syncdb', interactive=False)
+        django.core.management.call_command('syncdb', interactive=False)
 
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":
@@ -52,11 +51,11 @@ class WebApp():
             mini_buildd.compat08x.importConf(f)
         else:
             prefix = "" if f[0] == "/" else mini_buildd.opts.instdir + "/mini_buildd/fixtures/"
-            call_command('loaddata', prefix  + f)
+            django.core.management.call_command('loaddata', prefix  + f)
 
     def dumpdata(self, a):
         mini_buildd.log.info("Dumping data for: {a}".format(a=a))
         if a == "08x":
             mini_buildd.compat08x.exportConf("/dev/stdout")
         else:
-            call_command('dumpdata', a, indent=2, format='json')
+            django.core.management.call_command('dumpdata', a, indent=2, format='json')

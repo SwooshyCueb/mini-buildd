@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-from django.contrib import admin
-from mini_buildd.models import *
+import django.contrib
+import mini_buildd.models
 
-admin.site.register(Mirror, Mirror.Admin)
-admin.site.register(Source, Source.Admin)
-admin.site.register(PrioritisedSource)
+django.contrib.admin.site.register(mini_buildd.models.Mirror, mini_buildd.models.Mirror.Admin)
+django.contrib.admin.site.register(mini_buildd.models.Source, mini_buildd.models.Source.Admin)
+django.contrib.admin.site.register(mini_buildd.models.PrioritisedSource)
 
-admin.site.register(Architecture)
-admin.site.register(Builder)
+django.contrib.admin.site.register(mini_buildd.models.Architecture)
+django.contrib.admin.site.register(mini_buildd.models.Builder)
 
-admin.site.register(Suite)
-admin.site.register(Layout)
-admin.site.register(Distribution)
-admin.site.register(Repository)
+django.contrib.admin.site.register(mini_buildd.models.Suite)
+django.contrib.admin.site.register(mini_buildd.models.Layout)
+django.contrib.admin.site.register(mini_buildd.models.Distribution)
+django.contrib.admin.site.register(mini_buildd.models.Repository)

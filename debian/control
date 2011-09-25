@@ -2,9 +2,9 @@ Source: mini-buildd
 Section: devel
 Priority: extra
 Maintainer: Stephan Sürken <absurd@debian.org>
-XS-Python-Version: >=2.5
+X-Python-Version: >=2.6
 Build-Depends: debhelper (>= 8.1.0~), man-db (>= 2.5.1), po-debconf,
-               python (>= 2.5), python-support (>= 0.5.3)
+               python (>= 2.6.6-3~)
 Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
@@ -26,7 +26,6 @@ Description: minimal Debian build daemon - common files
 
 Package: mini-buildd-rep
 Architecture: all
-XB-Python-Version: ${python:Versions}
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Version}),
          python, python-daemon, python-pyinotify (>> 0.8.9), python-debian (>= 0.1.18),

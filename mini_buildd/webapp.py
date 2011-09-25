@@ -7,10 +7,10 @@ import django.core.management
 
 import mini_buildd
 
-class WebApp():
+class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def __init__(self, debug=False):
         mini_buildd.log.info("Configuring && generating django app...")
-        self._django = django.core.handlers.wsgi.WSGIHandler()
+        super(WebApp, self).__init__()
         django.conf.settings.configure(
             DEBUG = debug,
             TEMPLATE_DEBUG = debug,

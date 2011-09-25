@@ -15,8 +15,8 @@ class Main():
         self._iQueue = Queue.Queue()
         self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
-        self._django = mini_buildd.WebApp(debug=True)
-        self._webserver = mini_buildd.WebServer(self._django._django)
+        self._webapp = mini_buildd.WebApp(debug=True)
+        self._webserver = mini_buildd.WebServer(self._webapp)
         self._run = True
 
     def shutdown(self, signum=-1, frame=-1):

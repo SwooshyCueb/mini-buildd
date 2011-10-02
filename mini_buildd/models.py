@@ -213,9 +213,5 @@ Name-Email: mini-buildd-{id}@{h}
                 mini_buildd.log.error(report)
                 raise
 
-    # Temporarily, restrict this to one instance
     def clean(self):
         self.updateGpgKey()
-        model = self.__class__
-        if (model.objects.count() > 0 and self.id != model.objects.get().id):
-            raise django.core.exceptions.ValidationError("This is temporarily restricted  to 1 %s instance" % model.__name__)

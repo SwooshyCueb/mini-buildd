@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import socket
+import StringIO
 
 import django.db
 import django.core.exceptions
@@ -88,6 +89,8 @@ class Suite(django.db.models.Model):
                             help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
     migrates_from = django.db.models.ForeignKey('self', blank=True, null=True,
                                       help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+    not_automatic = django.db.models.BooleanField(default=True)
+    but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
     def __unicode__(self):
         return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
@@ -126,6 +129,45 @@ class Repository(django.db.models.Model):
 
     def __unicode__(self):
         return self.id
+
+    def repreproConfig(self):
+        archs = []
+        for a in self.archs.all():
+            archs.append(a.arch)
+
+        result = StringIO.StringIO()
+        for d in self.dists.all():
+            for s in self.layout.suites.all():
+                result.write("""
+Codename: {d}-{id}-{s}
+Suite: {d}-{id}-{s}
+Label: {d}-{id}-{s}
+Origin: mini-buildd-{id}
+Components: main contrib non-free
+Architectures: source {archs}
+Description: {s} {d} packages for {id}
+#SignWith: default
+NotAutomatic: {na}
+ButAutomaticUpgrades: {bau}
+""".format(id=self.id,
+           d=d.base_source.codename,
+           s=s.name,
+           archs=" ".join(archs),
+           na="yes" if s.not_automatic else "no",
+           bau="yes" if s.but_automatic_upgrades else "no"))
+
+        return result.getvalue()
+
+    def repreproUploadableDists(self):
+        result = []
+        for d in self.dists.all():
+            for s in self.layout.suites.all():
+                if s.migrates_from == None:
+                    result.append("{d}-{id}-{s}".format(
+                            id=self.id,
+                            d=d.base_source.codename,
+                            s=s.name))
+        return result
 
     # Temporarily, restrict this to one instance
     def clean(self):

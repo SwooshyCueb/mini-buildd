@@ -22,15 +22,17 @@ class Main():
         self._run = True
 
     def prepHome(self):
-        mini_buildd.log.debug("Preparing home: {h}".format(h=mini_buildd.opts.home))
-        for s in ["rep/conf", "rep/incoming", "log", ".mini-buildd/apt-secure.d", ".mini-buildd/debconf-preseed.d", ".mini-buildd/chroots-update.d"]:
-            mini_buildd.misc.mkdirs(os.path.join(mini_buildd.opts.home, s))
-
         from mini_buildd.models import Repository
         for r in Repository.objects.all():
+            mini_buildd.log.info("Preparing repo: {id}".format(id=r.id))
             p = os.path.join(mini_buildd.opts.home, "rep", r.id, "conf")
             mini_buildd.misc.mkdirs(p)
             mini_buildd.misc.mkdirs(os.path.join(p, "..", "incoming"))
+            mini_buildd.misc.mkdirs(os.path.join(p, "..", "log"))
+            mini_buildd.misc.mkdirs(os.path.join(p, "..", "apt-secure.d"))
+            open(os.path.join(p, "..", "apt-secure.d", "auto-mini-buildd.key"), 'w').write(r.pgp_key_ascii)
+            mini_buildd.misc.mkdirs(os.path.join(p, "..", "debsconf-preseed.d"))
+            mini_buildd.misc.mkdirs(os.path.join(p, "..", "chroots-update.d"))
             open(os.path.join(p, "distributions"), 'w').write(r.repreproConfig())
 
             open(os.path.join(p, "incoming"), 'w').write("""\

@@ -130,6 +130,12 @@ class Repository(django.db.models.Model):
     def __unicode__(self):
         return self.id
 
+    def get_dist(self, dist="", suite=""):
+        return dist + "-" + self.id + "-" + suite
+
+    def get_apt_line(self, kind="deb", dist="", suite="", components="main contrib non-free"):
+        return kind + (' ' if kind else '') + "http://" + self.host + ":8066/mini_buildd/public_html/rep/" + self.id + " " + self.get_dist(dist=dist, suite=suite) + " " + components
+
     def repreproConfig(self):
         archs = []
         for a in self.archs.all():
@@ -146,10 +152,12 @@ Origin: mini-buildd-{id}
 Components: main contrib non-free
 Architectures: source {archs}
 Description: {s} {d} packages for {id}
+#@todo: SignWith: Re-enable this when GPG key thing is worked out
 #SignWith: default
 NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
-""".format(id=self.id,
+""".format(dist=self.get_dist(dist=d.base_source.codename, suite=s.name),
+           id=self.id,
            d=d.base_source.codename,
            s=s.name,
            archs=" ".join(archs),

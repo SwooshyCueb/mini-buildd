@@ -23,7 +23,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': mini_buildd.opts.home + "/web/config.sqlite",
+                    'NAME': mini_buildd.opts.home + "/rep/config.sqlite",
                     }
                 },
             TIME_ZONE = None,

@@ -6,10 +6,19 @@
 
 <h1>mini-buildd repository {{ object.id }}</h1>
 
-<li>Documentation
-    <a href="{{ object.extdocurl }}">External documentation</a>
-    .
-</li>
+<a href="{{ object.extdocurl }}">External documentation</a>
+
+<h2>Configuration for dput (dput.cf)</h2>
+<pre>
+[mini-buildd-{{ object.id }}]
+fqdn = {{ object.host }}
+incoming = {{ object.incoming_path }}
+method = scp
+login = mini-buildd
+# @todo: Port not configurable yet.
+ssh_config_options = Port=22
+StrictHostKeyChecking=no
+</pre>
 
 <hr/>
 

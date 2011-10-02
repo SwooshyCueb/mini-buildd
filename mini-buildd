@@ -38,7 +38,7 @@ Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
-""".format(i=os.path.join(p, "..", "incoming"), allow=" ".join(r.repreproUploadableDists())))
+""".format(i=os.path.join(p, "..", "incoming"), allow=" ".join(r.uploadable_dists)))
 
             open(os.path.join(p, "options"), 'w').write("""\
 gnupghome {h}

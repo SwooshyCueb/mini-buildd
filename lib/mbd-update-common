@@ -21,17 +21,6 @@ else
 	cat "${MBD_SSHPUBKEYFILE}" >>.ssh/authorized_keys
 fi
 
-cat <<EOF >"${MBD_DPUTCONFIGFILE}"
-[mini-buildd-${mbd_id}]
-fqdn = ${mbd_rephost}
-login = mini-buildd
-incoming = ${MBD_INCOMING}/
-method = scp
-ssh_config_options = Port=${mbd_sshport}
-  StrictHostKeyChecking=no
-EOF
-${MBD_LOG} -s "I: ${MBD_DPUTCONFIGFILE} updated."
-
 mkdir -p public_html
 gpg --armor --export "mini-buildd@$(hostname -f)" >public_html/pgp_key.asc
 cat "${MBD_SSHPUBKEYFILE}" >public_html/ssh_key.asc

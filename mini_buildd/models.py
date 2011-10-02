@@ -137,6 +137,21 @@ Expire-Date: 0""")
     mail = django.db.models.EmailField(blank=True)
     extdocurl = django.db.models.URLField(blank=True)
 
+    def __init__(self, *args, **kwargs):
+        super(Repository, self).__init__(*args, **kwargs)
+
+        # Internal convenience variables
+        self.incoming_path = os.path.join(mini_buildd.opts.home, "rep", self.id, "incoming")
+
+        self.uploadable_dists = []
+        for d in self.dists.all():
+            for s in self.layout.suites.all():
+                if s.migrates_from == None:
+                    self.uploadable_dists.append("{d}-{id}-{s}".format(
+                            id=self.id,
+                            d=d.base_source.codename,
+                            s=s.name))
+
     def __unicode__(self):
         return self.id
 
@@ -174,17 +189,6 @@ ButAutomaticUpgrades: {bau}
            bau="yes" if s.but_automatic_upgrades else "no"))
 
         return result.getvalue()
-
-    def repreproUploadableDists(self):
-        result = []
-        for d in self.dists.all():
-            for s in self.layout.suites.all():
-                if s.migrates_from == None:
-                    result.append("{d}-{id}-{s}".format(
-                            id=self.id,
-                            d=d.base_source.codename,
-                            s=s.name))
-        return result
 
     def updateGpgKey(self):
         gnupg = GnuPGInterface.GnuPG()

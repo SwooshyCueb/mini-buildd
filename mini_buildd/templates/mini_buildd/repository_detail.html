@@ -8,6 +8,11 @@
 
 <a href="{{ object.extdocurl }}">External documentation</a>
 
+<h2>Repository GnuPG Key</h2>
+<pre>
+{{ object.pgp_key_ascii }}
+</pre>
+
 <h2>Configuration for dput (dput.cf)</h2>
 <pre>
 [mini-buildd-{{ object.id }}]

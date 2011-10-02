@@ -16,7 +16,6 @@ else
 fi
 
 mkdir -p public_html
-gpg --armor --export "mini-buildd@$(hostname -f)" >public_html/pgp_key.asc
 cat "${MBD_SSHPUBKEYFILE}" >public_html/ssh_key.asc
 
 exit 0

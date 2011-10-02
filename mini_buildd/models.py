@@ -142,6 +142,7 @@ Expire-Date: 0""")
 
         # Internal convenience variables
         self.incoming_path = os.path.join(mini_buildd.opts.home, "rep", self.id, "incoming")
+        self.setGpgPubKey()
 
         self.uploadable_dists = []
         for d in self.dists.all():
@@ -215,6 +216,23 @@ Name-Email: mini-buildd-{id}@{h}
             except:
                 mini_buildd.log.error(report)
                 raise
+
+    def setGpgPubKey(self):
+        self.pgp_key_ascii = "none found"
+        try:
+            gnupg = GnuPGInterface.GnuPG()
+            gnupg.options.meta_interactive = 0
+            gnupg.options.homedir = os.path.join(mini_buildd.opts.home, "rep", self.id, ".gnupg")
+
+            # Always update the ascii armored public key
+            proc = gnupg.run(["--armor", "--export=mini-buildd-{id}@{h}".format(id=self.id, h=self.host)],
+                             create_fhs=['stdin', 'stdout', 'stderr'])
+            report = proc.handles['stderr'].read()
+            proc.handles['stderr'].close()
+            self.pgp_key_ascii = proc.handles['stdout'].read()
+            proc.wait()
+        except:
+            mini_buildd.log.warn("No GNUPG pub key found.")
 
     def clean(self):
         self.updateGpgKey()

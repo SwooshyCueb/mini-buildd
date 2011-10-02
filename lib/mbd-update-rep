@@ -9,8 +9,6 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-mkdir -p "rep/conf" "rep/incoming" "log" ".mini-buildd/apt-secure.d" ".mini-buildd/debconf-preseed.d" ".mini-buildd/chroots-update.d"
-
 # Add README for .mini-buildd/
 cat <<EOF >.mini-buildd/README
 Automatically produced by $(basename $0) on $(date).

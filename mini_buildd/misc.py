@@ -1,10 +1,21 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
+import errno
 import subprocess
 import tempfile
 
 import mini_buildd
+
+def mkdirs(path):
+    try:
+        os.makedirs(path)
+        mini_buildd.log.info("Directory created: {d}".format(d=path))
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+        else:
+            mini_buildd.log.info("Directory already exists, ignoring; {d}".format(d=path))
 
 def run_cmd(cmd, no_act):
     # Run command, keep output

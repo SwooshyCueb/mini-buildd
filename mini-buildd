@@ -17,7 +17,13 @@ class Main():
         self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
         self._webapp = mini_buildd.WebApp(debug=True)
         self._webserver = mini_buildd.WebServer(self._webapp)
+        self.prepHome()
         self._run = True
+
+    def prepHome(self):
+        mini_buildd.log.debug("Preparing home: {h}".format(h=mini_buildd.opts.home))
+        for s in ["rep/conf", "rep/incoming", "log", ".mini-buildd/apt-secure.d", ".mini-buildd/debconf-preseed.d", ".mini-buildd/chroots-update.d"]:
+            mini_buildd.misc.mkdirs(os.path.join(mini_buildd.opts.home, s))
 
     def shutdown(self, signum=-1, frame=-1):
         mini_buildd.log.debug("Got signal: %s" % signum)

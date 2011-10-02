@@ -162,8 +162,7 @@ Origin: mini-buildd-{id}
 Components: main contrib non-free
 Architectures: source {archs}
 Description: {s} {d} packages for {id}
-#@todo: SignWith: Re-enable this when GPG key thing is worked out
-#SignWith: default
+SignWith: default
 NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
 """.format(dist=self.get_dist(dist=d.base_source.codename, suite=s.name),

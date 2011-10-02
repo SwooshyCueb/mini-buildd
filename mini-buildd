@@ -40,6 +40,10 @@ IncomingDir: {i}
 Allow: {allow}
 """.format(i=os.path.join(p, "..", "incoming"), allow=" ".join(r.repreproUploadableDists())))
 
+            open(os.path.join(p, "options"), 'w').write("""\
+gnupghome {h}
+""".format(h=os.path.join(p, "..", ".gnupg")))
+
             # Update all indices (or create on initial install) via reprepro
             mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=os.path.join(p, "..")), False)
             mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=os.path.join(p, "..")), False)

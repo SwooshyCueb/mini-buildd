@@ -28,7 +28,8 @@ Package: mini-buildd-rep
 Architecture: all
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Version}),
-         python-daemon (>= 1.5.5), python-pyinotify (>= 0.8.9), python-debian (>= 0.1.18~),
+         python-daemon (>= 1.5.5), python-pyinotify (>= 0.8.9),
+         python-gnupginterface (>= 0.3.2-9~), python-debian (>= 0.1.18~),
          python-django (>= 1.2), python-django-extensions (>= 0.4),
          reprepro (>= 4.2), cron, procps
 Recommends: dwww

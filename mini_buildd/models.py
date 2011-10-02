@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 import socket
 import StringIO
+import os
+
+import GnuPGInterface
 
 import django.db
 import django.core.exceptions
@@ -123,6 +126,13 @@ class Repository(django.db.models.Model):
     dists = django.db.models.ManyToManyField(Distribution)
     archs = django.db.models.ManyToManyField(Architecture)
 
+    gnupg_template = django.db.models.TextField(default="""
+Key-Type: DSA
+Key-Length: 1024
+Subkey-Type: ELG-E
+Subkey-Length: 1024
+Expire-Date: 0""")
+
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
     mail = django.db.models.EmailField(blank=True)
     extdocurl = django.db.models.URLField(blank=True)
@@ -177,8 +187,35 @@ ButAutomaticUpgrades: {bau}
                             s=s.name))
         return result
 
+    def updateGpgKey(self):
+        gnupg = GnuPGInterface.GnuPG()
+        gnupg.options.meta_interactive = 0
+        gnupg.options.homedir = os.path.join(mini_buildd.opts.home, "rep", self.id, ".gnupg")
+
+        if os.path.exists(gnupg.options.homedir):
+            mini_buildd.log.info("GPG home {h} exists, skipping key generation...".format(h=gnupg.options.homedir))
+        else:
+            proc = gnupg.run(["--gen-key"],
+                          create_fhs=['stdin', 'stdout', 'stderr'])
+
+            proc.handles['stdin'].write('''{tpl}
+Name-Real: mini-buildd-{id} on {h}
+Name-Email: mini-buildd-{id}@{h}
+'''.format(tpl=self.gnupg_template, id=self.id, h=self.host))
+
+            mini_buildd.log.debug("Generating gnupg key...")
+            proc.handles['stdin'].close()
+            report = proc.handles['stderr'].read()
+            proc.handles['stderr'].close()
+            try:
+                proc.wait()
+            except:
+                mini_buildd.log.error(report)
+                raise
+
     # Temporarily, restrict this to one instance
     def clean(self):
+        self.updateGpgKey()
         model = self.__class__
         if (model.objects.count() > 0 and self.id != model.objects.get().id):
             raise django.core.exceptions.ValidationError("This is temporarily restricted  to 1 %s instance" % model.__name__)

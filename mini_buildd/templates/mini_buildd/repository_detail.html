@@ -15,11 +15,11 @@
 
 {% for d in object.dists.all %}
 
-<h2>Base distribution {{ d.codename }}</h2>
+<h2>Base distribution {{ d.base_source.codename }}</h2>
 
 {% for s in object.layout.suites.all %}
 
-{{ d.codename }}-{{ object.id }}-{{ s.name }} <br/>
+{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }} <br/>
 
 {% endfor %}
 

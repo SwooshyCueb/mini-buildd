@@ -6,14 +6,36 @@
 
 <h1>mini-buildd repository {{ object.id }}</h1>
 
-<a href="{{ object.extdocurl }}">External documentation</a>
+<h2>Distributions</h2>
 
-<h2>Repository GnuPG Key</h2>
+{% for d in object.dists.all %}
+
+<h3>Base distribution {{ d.base_source.codename }}</h3>
+
+{% for s in object.layout.suites.all %}
+
+{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }} <br/>
+
+{% endfor %}
+
+{% endfor %}
+
+<h2>Misc</h2>
+
+<ul>
+<li>
+<a href="{{ object.extdocurl }}">External documentation</a>
+</li>
+
+<li>
+<b>Repository GnuPG Key</b>
 <pre>
 {{ object.pgp_key_ascii }}
 </pre>
+</li>
 
-<h2>Configuration for dput (dput.cf)</h2>
+<li>
+<b>Configuration for dput (dput.cf)</b>
 <pre>
 [mini-buildd-{{ object.id }}]
 fqdn = {{ object.host }}
@@ -24,19 +46,9 @@ login = mini-buildd
 ssh_config_options = Port=22
 StrictHostKeyChecking=no
 </pre>
+</li>
+</ul>
 
 <hr/>
-
-{% for d in object.dists.all %}
-
-<h2>Base distribution {{ d.base_source.codename }}</h2>
-
-{% for s in object.layout.suites.all %}
-
-{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }} <br/>
-
-{% endfor %}
-
-{% endfor %}
 
 {% endblock %}

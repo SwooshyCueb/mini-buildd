@@ -8,13 +8,6 @@ mbdCheckUser mini-buildd
 cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
-# Make some items accessible via http
-${MBD_LOG} -s "I: $(ln -s -f -v ../.mini-buildd.conf public_html/config 2>&1)"
-${MBD_LOG} -s "I: $(rm -f public_html/config-local && ln -s -f -v ../.mini-buildd public_html/config-local 2>&1)"
-${MBD_LOG} -s "I: $(ln -s -f -v ../.dput.cf public_html/dput.cf 2>&1)"
-${MBD_LOG} -s "I: $(ln -s -f -v ../rep public_html/ 2>&1)"
-${MBD_LOG} -s "I: $(ln -s -f -v ../log public_html/ 2>&1)"
-
 # Rudimentary HTML index
 mbdBldHtml()
 {
@@ -88,31 +81,6 @@ show_details();
 <h1>${MBD_TMP_TITLE}</h1>
 
 <div>
-
-<h2>General information</h2>
-
-<ul>
-<li><a href="pgp_key.asc">PGP Signing Key</a>: Users of APT add this to their apt-secure keyring like so:
-<pre style="display:inline;">
-wget -O - http://${mbd_rephost}:${mbd_httpport}/~mini-buildd/pgp_key.asc | apt-key add -
-</pre></li>
-
-<li><a href="dput.cf">Configuration for dput</a>: Uploaders add this to their ~/.dput.cf.</li>
-
-<li><a href="ssh_key.asc">SSH Key</a>.</li>
-
-<li>Status:
-    <a href="config">View raw config</a>,
-    <a href="config-local/">Browse local config</a>,
-    <a href="log/">Browse build logs</a>,
-    <a href="rep/incoming/">Browse incoming</a>,
-</li>
-
-<li>Documentation:
-    <a href="http://${mbd_rephost}:${mbd_httpport}/cgi-bin/dwww/usr/share/doc/mini-buildd-common/">Mini-Buildd</a>
-    $([ -z "${mbd_extdocurl}" ] || echo ", <a href=\"${mbd_extdocurl}\">External for \"${mbd_id}\"</a>").
-</li>
-</ul>
 
 </div>
 

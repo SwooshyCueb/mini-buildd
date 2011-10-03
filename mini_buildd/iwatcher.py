@@ -32,13 +32,13 @@ class IWatcher():
         def process_IN_MOVED_TO(self, event):
             self.processEvent(event)
 
-    def __init__(self, queue, idir):
-        mini_buildd.log.info("Watching incoming: %s" % idir)
-        self._idir = idir
+    def __init__(self, queue, repository):
+        self._idir = repository.incoming_path
         self._handler = self.Handler(queue=queue)
         self._wm = pyinotify.WatchManager()
         self._notifier = pyinotify.Notifier(self._wm, default_proc_fun=self._handler)
-        self._wm.add_watch(idir, pyinotify.IN_CREATE | pyinotify.IN_MOVED_TO)
+        self._wm.add_watch(self._idir, pyinotify.IN_CREATE | pyinotify.IN_MOVED_TO)
+        mini_buildd.log.info("Watcher created for: {r} (watching: {i})".format(r=str(repository), i=self._idir))
 
     def run(self):
         # Scan existing files once

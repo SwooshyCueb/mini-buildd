@@ -12,10 +12,15 @@ import mini_buildd
 
 class Main():
     def __init__(self):
-        self._iQueue = Queue.Queue()
-        self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
-        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
         self._webapp = mini_buildd.WebApp(debug=True)
+        self._iQueue = Queue.Queue()
+        from mini_buildd.models import Repository
+        self._iWatchers = []
+        for r in Repository.objects.all():
+            self._iWatchers.append(mini_buildd.IWatcher(queue=self._iQueue, repository=r))
+
+        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
+        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
         self._webserver = mini_buildd.WebServer(self._webapp)
         self.prepare()
         self._run = True
@@ -36,7 +41,8 @@ class Main():
 
     def run(self):
         # Start watcher and installer
-        self.start_thread(self._iWatcher)
+        for w in self._iWatchers:
+            self.start_thread(w)
         self.start_thread(self._installer)
         self.start_thread(self._webserver)
 

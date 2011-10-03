@@ -19,7 +19,9 @@ class Installer():
 
     def install(self, cf):
         if mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act):
-            return mini_buildd.misc.run_cmd("reprepro --basedir=/home/mini-buildd/rep processincoming INCOMING " + os.path.basename(cf), self._no_act)
+            return mini_buildd.misc.run_cmd("reprepro --basedir={b} processincoming INCOMING {cf}".format(
+                    b=os.path.dirname(os.path.dirname(cf)),
+                    cf=os.path.basename(cf)), self._no_act)
 
     def run(self):
         while True:

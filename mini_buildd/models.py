@@ -285,7 +285,7 @@ Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
-""".format(i=os.path.join(path, "..", "incoming"), allow=" ".join(self.uploadable_dists)))
+""".format(i=os.path.join(path, "incoming"), allow=" ".join(self.uploadable_dists)))
 
         open(os.path.join(path, "conf", "options"), 'w').write("""\
 gnupghome {h}

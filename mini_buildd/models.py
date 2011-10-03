@@ -146,8 +146,15 @@ Expire-Date: 0""")
         super(Repository, self).__init__(*args, **kwargs)
 
         # Internal convenience variables
-        self.incoming_path = os.path.join(mini_buildd.opts.home, "rep", self.id, "incoming")
-        self.setGpgPubKey()
+        self.path = os.path.join(mini_buildd.opts.home, "rep", self.id)
+        self.incoming_path = os.path.join(self.path, "incoming")
+
+        self.gnupg = GnuPGInterface.GnuPG()
+        self.gnupg.options.meta_interactive = 0
+        self.gnupg.options.homedir = os.path.join(self.path, ".gnupg")
+
+        # @todo: to be replaced in template; Only as long as we dont know better
+        self.pgp_key_ascii = self.getGpgPubKey()
 
         self.uploadable_dists = []
         for d in self.dists.all():
@@ -196,16 +203,28 @@ ButAutomaticUpgrades: {bau}
 
         return result.getvalue()
 
-    def updateGpgKey(self):
-        gnupg = GnuPGInterface.GnuPG()
-        gnupg.options.meta_interactive = 0
-        gnupg.options.homedir = os.path.join(mini_buildd.opts.home, "rep", self.id, ".gnupg")
+    def getGpgPubKey(self):
+        result = ""
+        try:
+            # Always update the ascii armored public key
+            proc = self.gnupg.run(["--armor", "--export=mini-buildd-{id}@{h}".format(id=self.id, h=self.host)],
+                                  create_fhs=['stdin', 'stdout', 'stderr'])
+            report = proc.handles['stderr'].read()
+            proc.handles['stderr'].close()
+            result = proc.handles['stdout'].read()
+            proc.wait()
+        except:
+            mini_buildd.log.warn("No GNUPG pub key found.")
+            result = ""
+        return result
 
-        if os.path.exists(gnupg.options.homedir):
-            mini_buildd.log.info("GPG home {h} exists, skipping key generation...".format(h=gnupg.options.homedir))
+    def prepareGnuPG(self):
+        if self.getGpgPubKey():
+            mini_buildd.log.info("GPG public key found, skipping key generation...")
         else:
-            proc = gnupg.run(["--gen-key"],
-                          create_fhs=['stdin', 'stdout', 'stderr'])
+            mini_buildd.log.info("Generating new Gnu PG key in '{h}'.".format(h=self.path))
+            proc = self.gnupg.run(["--gen-key"],
+                                  create_fhs=['stdin', 'stdout', 'stderr'])
 
             proc.handles['stdin'].write('''{tpl}
 Name-Real: mini-buildd-{id} on {h}
@@ -222,22 +241,35 @@ Name-Email: mini-buildd-{id}@{h}
                 mini_buildd.log.error(report)
                 raise
 
-    def setGpgPubKey(self):
-        self.pgp_key_ascii = "none found"
-        try:
-            gnupg = GnuPGInterface.GnuPG()
-            gnupg.options.meta_interactive = 0
-            gnupg.options.homedir = os.path.join(mini_buildd.opts.home, "rep", self.id, ".gnupg")
+    def prepare(self):
+        path = os.path.join(mini_buildd.opts.home, "rep", self.id)
+        mini_buildd.log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
-            # Always update the ascii armored public key
-            proc = gnupg.run(["--armor", "--export=mini-buildd-{id}@{h}".format(id=self.id, h=self.host)],
-                             create_fhs=['stdin', 'stdout', 'stderr'])
-            report = proc.handles['stderr'].read()
-            proc.handles['stderr'].close()
-            self.pgp_key_ascii = proc.handles['stdout'].read()
-            proc.wait()
-        except:
-            mini_buildd.log.warn("No GNUPG pub key found.")
+        mini_buildd.misc.mkdirs(path)
+        self.prepareGnuPG()
+        mini_buildd.misc.mkdirs(os.path.join(path, "conf"))
+        mini_buildd.misc.mkdirs(os.path.join(path, "incoming"))
+        mini_buildd.misc.mkdirs(os.path.join(path, "log"))
+        mini_buildd.misc.mkdirs(os.path.join(path, "apt-secure.d"))
+        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
+        mini_buildd.misc.mkdirs(os.path.join(path, "debsconf-preseed.d"))
+        mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
-    def clean(self):
-        self.updateGpgKey()
+        # Reprepro config
+        open(os.path.join(path, "conf", "distributions"), 'w').write(self.repreproConfig())
+        open(os.path.join(path, "conf", "incoming"), 'w').write("""\
+Name: INCOMING
+TempDir: /tmp
+IncomingDir: {i}
+Allow: {allow}
+""".format(i=os.path.join(path, "..", "incoming"), allow=" ".join(self.uploadable_dists)))
+
+        open(os.path.join(path, "conf", "options"), 'w').write("""\
+gnupghome {h}
+""".format(h=os.path.join(path, ".gnupg")))
+
+        # Update all indices (or create on initial install) via reprepro
+        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=path), False)
+        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path), False)
+
+        mini_buildd.log.info("Prepared reprepro config: {d}".format(d=path))

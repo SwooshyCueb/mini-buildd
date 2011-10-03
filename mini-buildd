@@ -18,39 +18,13 @@ class Main():
         self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
         self._webapp = mini_buildd.WebApp(debug=True)
         self._webserver = mini_buildd.WebServer(self._webapp)
-        self.prepHome()
+        self.prepare()
         self._run = True
 
-    def prepHome(self):
+    def prepare(self):
         from mini_buildd.models import Repository
         for r in Repository.objects.all():
-            mini_buildd.log.info("Preparing repo: {id}".format(id=r.id))
-            p = os.path.join(mini_buildd.opts.home, "rep", r.id, "conf")
-            mini_buildd.misc.mkdirs(p)
-            mini_buildd.misc.mkdirs(os.path.join(p, "..", "incoming"))
-            mini_buildd.misc.mkdirs(os.path.join(p, "..", "log"))
-            mini_buildd.misc.mkdirs(os.path.join(p, "..", "apt-secure.d"))
-            open(os.path.join(p, "..", "apt-secure.d", "auto-mini-buildd.key"), 'w').write(r.pgp_key_ascii)
-            mini_buildd.misc.mkdirs(os.path.join(p, "..", "debsconf-preseed.d"))
-            mini_buildd.misc.mkdirs(os.path.join(p, "..", "chroots-update.d"))
-            open(os.path.join(p, "distributions"), 'w').write(r.repreproConfig())
-
-            open(os.path.join(p, "incoming"), 'w').write("""\
-Name: INCOMING
-TempDir: /tmp
-IncomingDir: {i}
-Allow: {allow}
-""".format(i=os.path.join(p, "..", "incoming"), allow=" ".join(r.uploadable_dists)))
-
-            open(os.path.join(p, "options"), 'w').write("""\
-gnupghome {h}
-""".format(h=os.path.join(p, "..", ".gnupg")))
-
-            # Update all indices (or create on initial install) via reprepro
-            mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=os.path.join(p, "..")), False)
-            mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=os.path.join(p, "..")), False)
-
-            mini_buildd.log.info("Prepared reprepro config: {d}".format(d=p))
+            r.prepare()
 
         open(os.path.join(mini_buildd.opts.home, ".mini-buildd/README"), 'w').write("""
 Automatically produced by mini-buildd on {date}.

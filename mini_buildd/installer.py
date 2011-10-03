@@ -18,10 +18,9 @@ class Installer():
         mini_buildd.log.info("Installer: Using preinstalls script %s" % self._preinstall)
 
     def install(self, cf):
+        r = mini_buildd.Reprepro(os.path.dirname(os.path.dirname(cf)))
         if mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act):
-            return mini_buildd.misc.run_cmd("reprepro --basedir={b} processincoming INCOMING {cf}".format(
-                    b=os.path.dirname(os.path.dirname(cf)),
-                    cf=os.path.basename(cf)), self._no_act)
+            return r.processincoming(cf=cf)
 
     def run(self):
         while True:

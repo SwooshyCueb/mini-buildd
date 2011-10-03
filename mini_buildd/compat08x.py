@@ -23,7 +23,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
     def Layout():
         l=models.Layout(name="Standard")
         l.save()
-        e=models.Suite(name="experimental")
+        e=models.Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
         e.save()
         l.suites.add(e)
 

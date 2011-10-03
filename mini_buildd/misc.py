@@ -7,6 +7,21 @@ import tempfile
 
 import mini_buildd
 
+def codename2Version(codename):
+    known = {
+        'woody'  : "30",
+        'sarge'  : "31",
+        'etch'   : "40",
+        'lenny'  : "50",
+        'squeeze': "60",
+        'wheezy' : "70",
+        'sid'    : "SID",
+        }
+    try:
+        return known[codename]
+    except KeyError as e:
+        raise Exception("Unknown codename: {c}".format(c=codename))
+
 def mkdirs(path):
     try:
         os.makedirs(path)

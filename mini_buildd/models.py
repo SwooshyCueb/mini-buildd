@@ -2,6 +2,7 @@
 import socket
 import StringIO
 import os
+import datetime
 
 import GnuPGInterface
 
@@ -295,3 +296,42 @@ gnupghome {h}
         mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path), False)
 
         mini_buildd.log.info("Prepared reprepro config: {d}".format(d=path))
+
+        # @todo This 08x README; please fix.
+        open(os.path.join(path, "README"), 'w').write("""
+Automatically produced by mini-buildd on {date}.
+Manual changes to this file are NOT preserved.
+
+README for "~/.mini-buildd/": Place for local configuration
+
+DO CHANGES ON THE REPOSITORY HOST ONLY. On builder-only hosts,
+this directory is SYNCED from the repository host.
+
+Preinstall hook
+=====================================
+Putting an executable file "preinstall" here will run this with
+the full path to a "build" (i.e., all tests passed, to-be
+installed) changes-file.
+
+You may use this as temporary workaround to dput packages to
+other repositories or to additionally use another package
+manager like reprepro in parallel.
+
+Base chroot maintenance customization
+=====================================
+Note that you only need any customization if you need to
+apt-secure extra sources (for example bpo) or have other special
+needs (like pre-seeding debconf variables).
+
+ * "apt-secure.d/*.key":
+   What   : Apt-secure custom keys for extra sources; keys are added to all base chroots.
+   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/05_apt-secure).
+   Note   : Don't touch auto-generated key 'auto-mini-buildd.key'.
+ * "debconf-preseed.d/*.conf":
+   What   : Pre-defined values for debconf (see debconf-set-selections).
+   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/20_debconf-preseed).
+   Note   : One noteable use case are licenses from non-free like in the sun-java packages.
+ * "chroots-update.d/*.hook":
+   What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
+   Used by: mbd-update-bld.
+""".format(date=datetime.datetime.now()))

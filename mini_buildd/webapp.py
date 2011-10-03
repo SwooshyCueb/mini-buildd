@@ -11,6 +11,11 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def __init__(self, debug=False):
         mini_buildd.log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
+
+        # Be sure database path exists
+        dbpath = os.path.join(mini_buildd.opts.home, "rep")
+        mini_buildd.misc.mkdirs(dbpath)
+
         django.conf.settings.configure(
             DEBUG = debug,
             TEMPLATE_DEBUG = debug,
@@ -23,7 +28,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': mini_buildd.opts.home + "/rep/config.sqlite",
+                    'NAME': os.path.join(dbpath, "config.sqlite"),
                     }
                 },
             TIME_ZONE = None,

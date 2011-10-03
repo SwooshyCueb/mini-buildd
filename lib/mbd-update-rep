@@ -10,7 +10,6 @@ cd "${MBD_HOME}"
 . "${MBD_REPCONFIGFILE}"
 
 ${MBD_LIB}/mbd-update-common
-${MBD_LIB}/mbd-update-rep-html
 
 # Run mbd-update-bld on all build hosts
 for host in $(mbdGetBldHosts); do

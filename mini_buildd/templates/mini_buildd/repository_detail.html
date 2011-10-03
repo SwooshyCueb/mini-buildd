@@ -1,4 +1,5 @@
 {% extends "mini_buildd/base.html" %}
+{% load repository %}
 
 {% block title %}mini-buildd repository {{ object.id }}{% endblock %}
 
@@ -6,15 +7,32 @@
 
 <h1>mini-buildd repository {{ object.id }}</h1>
 
+Architectures: {% repository_archs object %} <br/>
+
 <h2>Distributions</h2>
 
 {% for d in object.dists.all %}
 
-<h3>Base distribution {{ d.base_source.codename }}</h3>
+<h3>{{ d.base_source.codename }}</h3>
 
 {% for s in object.layout.suites.all %}
 
-{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }} <br/>
+<h4>{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }}: {% repository_desc object d s %} </h4>
+
+Mandatory version part: <tt>{% repository_mandatory_version object d s %}</tt> <br/>
+
+Apt source line: <tt>{% repository_apt_line object d s %}</tt> <br/>
+
+{% if s.migrates_from %}
+Migrates from: {{ s.migrates_from.name }}
+{% else %}
+Uploadable.<br>
+Sources:
+<pre>
+{% repository_sources object d s %}
+</pre>
+
+{% endif %}<br>
 
 {% endfor %}
 
@@ -48,7 +66,5 @@ StrictHostKeyChecking=no
 </pre>
 </li>
 </ul>
-
-<hr/>
 
 {% endblock %}

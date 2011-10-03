@@ -1,3 +1,4 @@
+{% load base %}
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
 <html lang="en">
 	<head>
@@ -7,10 +8,10 @@
 		<a href="/mini_buildd/">Home</a> |
 		<a href="/admin/mini_buildd/">Administration</a> |
 		<a href="/mini_buildd/graph_models/">Graph models</a> |
-		<a href="/mini_buildd/public_html/rep/">Browse repositories</a> |
-		<a href="/mini_buildd/public_html/index.html">0.8-compat web page</a>
+		<a href="/mini_buildd/public_html/rep/">Browse repositories</a>
 		<hr/>
 		{% block content %}{% endblock %}
-		<hr>
+		<hr/>
+		<small>mini-buildd-{% mbd_version %}</small>
 	</body>
 </html>

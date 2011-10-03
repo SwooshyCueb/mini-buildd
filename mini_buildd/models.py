@@ -168,36 +168,58 @@ Expire-Date: 0""")
     def __unicode__(self):
         return self.id
 
-    def get_dist(self, dist="", suite=""):
-        return dist + "-" + self.id + "-" + suite
+    def get_dist(self, dist, suite):
+        return dist.base_source.codename + "-" + self.id + "-" + suite.name
 
-    def get_apt_line(self, kind="deb", dist="", suite="", components="main contrib non-free"):
-        return kind + (' ' if kind else '') + "http://" + self.host + ":8066/mini_buildd/public_html/rep/" + self.id + " " + self.get_dist(dist=dist, suite=suite) + " " + components
+    def get_origin(self):
+        return "mini-buildd" + self.id
 
-    def repreproConfig(self):
+    def get_components(self):
+        return "main contrib non-free"
+
+    def get_archs(self):
         archs = []
         for a in self.archs.all():
             archs.append(a.arch)
+        return archs
 
+    def get_desc(self, dist, suite):
+        return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
+
+    def get_apt_line(self, dist, suite):
+        return "http://{h}:8066/mini_buildd/public_html/rep/{id}/ {dist} {components}".format(
+            h=self.host, id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
+
+    def get_sources(self, dist, suite):
+        result = ""
+        result += "Base: " + str(dist.base_source) + "\n"
+        for e in dist.extra_sources.all():
+            result += "Extra: " + str(e) + "\n"
+        return result
+
+    def get_mandatory_version(self, dist, suite):
+        return suite.mandatory_version.format(rid=self.id, nbv=mini_buildd.misc.codename2Version(dist.base_source.codename))
+
+    def repreproConfig(self):
         result = StringIO.StringIO()
         for d in self.dists.all():
             for s in self.layout.suites.all():
                 result.write("""
-Codename: {d}-{id}-{s}
-Suite: {d}-{id}-{s}
-Label: {d}-{id}-{s}
-Origin: mini-buildd-{id}
-Components: main contrib non-free
+Codename: {dist}
+Suite:  {dist}
+Label: {dist}
+Origin: {origin}
+Components: {components}
 Architectures: source {archs}
-Description: {s} {d} packages for {id}
+Description: {desc}
 SignWith: default
 NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
-""".format(dist=self.get_dist(dist=d.base_source.codename, suite=s.name),
-           id=self.id,
-           d=d.base_source.codename,
-           s=s.name,
-           archs=" ".join(archs),
+""".format(dist=self.get_dist(d, s),
+           origin=self.get_origin(),
+           components=self.get_components(),
+           archs=" ".join(self.get_archs()),
+           desc=self.get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))
 

@@ -1,0 +1,36 @@
+#!/bin/bash -e
+
+MBD_HOME="$(readlink -f $(dirname "${0}"))/devel-home"
+MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --no-act"
+
+_head()
+{
+	printf "\n=> ${*}\n"
+}
+
+case "${1}" in
+	reset):
+		_head "Purging ${MBD_HOME}"
+		rm -r "${MBD_HOME}"
+		mkdir -v -p "${MBD_HOME}"
+
+		_head "Loading auth..."
+		${MBD_CMD} --loaddata='auth.user.devel.json'
+		_head "Loading 08x comapt..."
+		${MBD_CMD} --loaddata="${MBD_HOME}/../mini_buildd/fixtures/mini-buildd.weslok.conf"
+
+		shift
+		${0} run ${@}
+		;;
+	run)
+		_head "Running ${MBD_CMD} $@"
+		# Be sure to generate mini_buildd/__version__.py
+		python ./setup.py >/dev/null 2>&1 || true
+		shift
+		${MBD_CMD} "$@"
+		;;
+	*)
+		printf "Usage: $0 reset|run\n" >&2
+		exit 2
+		;;
+esac

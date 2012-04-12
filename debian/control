@@ -32,7 +32,7 @@ Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Vers
          python-gnupginterface (>= 0.3.2-9~), python-debian (>= 0.1.18~),
          python-django (>= 1.2), python-django-extensions (>= 0.4),
          reprepro (>= 4.2), cron, procps
-Recommends: dwww
+Recommends: dwww, python-pygraphviz
 Description: minimal Debian build daemon - repository
  Mini-buildd is an easy-to-configure Debian autobuilder and
  repository. Its general notion is that of add-ons for a Debian

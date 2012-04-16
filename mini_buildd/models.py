@@ -169,6 +169,9 @@ Expire-Date: 0""")
     def __unicode__(self):
         return self.id
 
+    def get_path(self):
+        return os.path.join(mini_buildd.opts.home, "rep", self.id)
+
     def get_dist(self, dist, suite):
         return dist.base_source.codename + "-" + self.id + "-" + suite.name
 
@@ -265,37 +268,18 @@ Name-Email: mini-buildd-{id}@{h}
                 raise
 
     def prepare(self):
-        path = os.path.join(mini_buildd.opts.home, "rep", self.id)
+        path = self.get_path()
         mini_buildd.log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         mini_buildd.misc.mkdirs(path)
         self.prepareGnuPG()
-        mini_buildd.misc.mkdirs(os.path.join(path, "conf"))
-        mini_buildd.misc.mkdirs(os.path.join(path, "incoming"))
         mini_buildd.misc.mkdirs(os.path.join(path, "log"))
         mini_buildd.misc.mkdirs(os.path.join(path, "apt-secure.d"))
         open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
         mini_buildd.misc.mkdirs(os.path.join(path, "debsconf-preseed.d"))
         mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
-        # Reprepro config
-        open(os.path.join(path, "conf", "distributions"), 'w').write(self.repreproConfig())
-        open(os.path.join(path, "conf", "incoming"), 'w').write("""\
-Name: INCOMING
-TempDir: /tmp
-IncomingDir: {i}
-Allow: {allow}
-""".format(i=os.path.join(path, "incoming"), allow=" ".join(self.uploadable_dists)))
-
-        open(os.path.join(path, "conf", "options"), 'w').write("""\
-gnupghome {h}
-""".format(h=os.path.join(path, ".gnupg")))
-
-        # Update all indices (or create on initial install) via reprepro
-        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=path), False)
-        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path), False)
-
-        mini_buildd.log.info("Prepared reprepro config: {d}".format(d=path))
+        self._reprepro = mini_buildd.Reprepro(self)
 
         # @todo This 08x README; please fix.
         open(os.path.join(path, "README"), 'w').write("""

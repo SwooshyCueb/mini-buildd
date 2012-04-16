@@ -9,51 +9,20 @@ Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 
-Package: mini-buildd-common
+Package: mini-buildd
 Architecture: all
 Pre-Depends: ${misc:Pre-Depends}
 Depends: ${misc:Depends}, bash (>= 4), adduser, bsd-mailx | mailx,
          openssh-client, gnupg, wget,
-         apache2-mpm-worker | httpd
-Description: minimal Debian build daemon - common files
- Mini-buildd is an easy-to-configure Debian autobuilder and
- repository. Its general notion is that of add-ons for a Debian
- base distribution (like etch, lenny, or sid) with an emphasis
- on clean builds and package checking.
- .
- This package includes common parts for both repository and
- builder installations.
-
-Package: mini-buildd-rep
-Architecture: all
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, ${python:Depends}, mini-buildd-common (= ${binary:Version}),
+         apache2-mpm-worker | httpd,
          python-daemon (>= 1.5.5), python-pyinotify (>= 0.8.9),
          python-gnupginterface (>= 0.3.2-9~), python-debian (>= 0.1.18~),
          python-django (>= 1.2), python-django-extensions (>= 0.4),
-         reprepro (>= 4.2), cron, procps
-Recommends: dwww, python-pygraphviz
-Description: minimal Debian build daemon - repository
- Mini-buildd is an easy-to-configure Debian autobuilder and
- repository. Its general notion is that of add-ons for a Debian
- base distribution (like etch, lenny, or sid) with an emphasis
- on clean builds and package checking.
- .
- This package provides the autobuilder network's repository.
-
-Package: mini-buildd-bld
-Architecture: all
-Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, mini-buildd-common (= ${binary:Version}),
+         reprepro (>= 4.2), cron, procps,
          adduser, lvm2, debootstrap (>= 1.0.24~),
          schroot (>= 1.4.22), sbuild (>= 0.62.4),
          dput, dpkg-dev, fakeroot, debhelper, cdbs, devscripts (>= 2.10.15)
-Description: minimal Debian build daemon - builder
+Recommends: dwww, python-pygraphviz
+Description: Minimal Debian build daemon
  Mini-buildd is an easy-to-configure Debian autobuilder and
- repository. Its general notion is that of add-ons for a Debian
- base distribution (like etch, lenny, or sid) with an emphasis
- on clean builds and package checking.
- .
- This package equips a machine to act as a builder for a specific
- architecture. Before builders can be set up a repository host
- must be fully configured (see the package mini-buildd-rep).
+ repository.

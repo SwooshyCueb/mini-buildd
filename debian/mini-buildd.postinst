@@ -1,5 +1,9 @@
 #!/bin/sh -e
 
+##############
+# OLD -COMMON
+##############
+
 # Needed: Template does not seem to get installed w/o this.
 . /usr/share/debconf/confmodule
 
@@ -11,6 +15,51 @@ else
 	addgroup --system mini-buildd
 	usermod --gid=mini-buildd mini-buildd
 fi
+
+###########
+# OLD -REP
+###########
+
+# @hack: Duplicate code in mini-buildd-rep.config, please sync!
+mbdDynConfVars()
+{
+	for arch in $(echo "${mbd_archs}" | tr -d ","); do
+		echo -n "mbd_bldhost_${arch} "
+		echo -n "mbd_deb_build_options_${arch} "
+	done
+	for dist in $(echo "${mbd_dists}" | tr -d ","); do
+		for kind in base extra; do
+			for arch in any $(echo "${mbd_archs}" | tr -d ","); do
+				echo -n "mbd_src_$(echo ${dist} | tr "-" "_")_${kind}_${arch} "
+			done
+		done
+	done
+}
+
+. /usr/share/mini-buildd/mbd-common.sh
+. /usr/share/debconf/confmodule
+
+# Rewrite the config file from debconf values here.
+cat <<EOF >"${MBD_REPCONFIGFILE}"
+# Created by postinst on $(date).
+# coding: utf-8
+# To change, please run 'dpkg-reconfigure mini-buildd-rep'.
+# If you really want to edit by hand, run 'mbd-update-rep' afterwards.
+EOF
+for v in ${MBD_REPCONFIGVARS}; do
+	db_get mini-buildd-rep/${v} || true
+	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
+done
+# Do the same again with the dynamic variables
+. "${MBD_REPCONFIGFILE}"
+for v in $(mbdDynConfVars); do
+	db_get mini-buildd-rep/${v} || true
+	echo "$v=\"${RET}\"" >>"${MBD_REPCONFIGFILE}"
+done
+
+chown mini-buildd:mini-buildd "${MBD_REPCONFIGFILE}"
+
+su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep -p"
 
 #DEBHELPER#
 

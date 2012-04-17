@@ -1,2 +1,0 @@
-rm_conffile /etc/logrotate.d/mini-buildd-rep
-rm_conffile /etc/cron.weekly/mini-buildd-rep

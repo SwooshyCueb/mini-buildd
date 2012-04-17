@@ -1,2 +1,0 @@
-lib/mbd-update-rep lib/mbd-update-rep-html lib/mbd-preinstall usr/share/mini-buildd
-debian/tmp/* .

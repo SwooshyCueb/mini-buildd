@@ -1,8 +1,10 @@
 #!/usr/bin/make -f
 
+export DH_VERBOSE = 1
+
 %:
 	dh $@ --with=python2
 
 override_dh_installinit:
-	dh_installinit -p mini-buildd-rep
-	dh_installinit -p mini-buildd-bld --no-start -- start 25 S .
+	dh_installinit --name="mini-buildd-lvmloop"
+	dh_installinit

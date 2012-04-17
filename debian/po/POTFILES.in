@@ -1,3 +1,1 @@
-[type: gettext/rfc822deb] mini-buildd-common.templates
-[type: gettext/rfc822deb] mini-buildd-rep.templates
-[type: gettext/rfc822deb] mini-buildd-bld.templates
+[type: gettext/rfc822deb] mini-buildd.templates

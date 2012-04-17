@@ -1,8 +1,9 @@
-/build/
 /devel-home/
+/build/
 /mini_buildd/__version__.py
 *.pyc
-debian/tmp/
-debian/mini-buildd-*debhelper*
-debian/mini-buildd-*substvars
-debian/files
+/debian/mini-buildd/*
+/debian/mini-buildd.*.debhelper
+/debian/mini-buildd.debhelper.log
+/debian/mini-buildd.substvars
+/debian/files

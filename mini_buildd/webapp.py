@@ -16,7 +16,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             DEBUG = debug,
             TEMPLATE_DEBUG = debug,
 
-            # @todo: Seems this is needed for admin/doc.
+            # @todo: ? Seems this is needed for admin/doc.
             SITE_ID = 1,
 
             DATABASES =

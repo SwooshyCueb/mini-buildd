@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 ### BEGIN INIT INFO
-# Provides:          mini-buildd-rep
+# Provides:          mini-buildd
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -15,10 +15,9 @@ NAME=$(basename "${DAEMON}")
 DESC="mini build daemon"
 
 # Default is to run the daemon
-MBD_ENABLE=1
-MBD_OPTS=""
+MINI_BUILDD_OPTIONS=""
 # Source defaults if given
-[ ! -e /etc/default/mini-buildd-rep ] || . /etc/default/mini-buildd-rep
+[ ! -e /etc/default/mini-buildd ] || . /etc/default/mini-buildd
 
 [ -x "${DAEMON}" ] || exit 0
 
@@ -37,12 +36,10 @@ run_with_log()
 
 case "$1" in
 	start)
-		if [ "${MBD_ENABLE}" = "0" ]; then
-			run_with_log "Disabled (see /etc/default/mini-buildd-rep), skipping" true
-		elif $(start-stop-daemon --stop --test --quiet --name ${NAME} --user mini-buildd); then
+		if $(start-stop-daemon --stop --test --quiet --name ${NAME} --user mini-buildd); then
 			run_with_log "Already running" true
 		else
-			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- ${MBD_OPTS}
+			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- ${MINI_BUILDD_OPTIONS}
 		fi
 		;;
 	stop)
@@ -53,7 +50,7 @@ case "$1" in
 		$0 start
 		;;
 	*)
-		echo "Usage: /etc/init.d/mini-buildd-rep {start|stop|restart|force-reload}" >&2
+		echo "Usage: /etc/init.d/mini-buildd {start|stop|restart|force-reload}" >&2
 		exit 1
 		;;
 esac

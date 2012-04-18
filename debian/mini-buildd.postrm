@@ -1,12 +1,13 @@
 #!/bin/sh -e
 
-case $1 in
+case ${1} in
 	purge)
-		if [ -e "/home/mini-buildd/rep" ]; then
-			. /usr/share/debconf/confmodule
-			db_input critical "mini-buildd-common/purging_repository" || true
-			db_go || true
-		fi
+		# On purge, force-remove user mini-buildd along with all files.
+		# Be sure to give the user a warning, though, as he might
+		# lose valuable data like repositories
+		. /usr/share/debconf/confmodule
+		db_input critical "mini-buildd/purge_warning" || true
+		db_go || true
 		userdel --force --remove mini-buildd >/dev/null 2>&1 || true
 		;;
 esac

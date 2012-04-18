@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd 0.8.13\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"POT-Creation-Date: 2012-04-18 13:55+0200\n"
 "PO-Revision-Date: 2010-05-04 17:30+01:00\n"
 "Last-Translator: Joe Hansen <joedalton2@yahoo.dk>\n"
 "Language-Team: Danish <debian-l10n-danish@lists.debian.org> \n"
@@ -18,28 +18,75 @@ msgstr ""
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
-msgid "Repository purge"
-msgstr "Oprydning i arkiv"
+#: ../mini-buildd.templates:1001
+msgid "Data purge warning"
+msgstr ""
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
-msgid "You have chosen to purge mini-buildd on a repository host."
+#: ../mini-buildd.templates:1001
+#, fuzzy
+#| msgid "You have chosen to purge mini-buildd on a repository host."
+msgid "You have chosen to purge mini-buildd."
 msgstr "Du har valgt at rydde op i mini-buildd hos en arkivvært."
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
+#: ../mini-buildd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "This choice means that the mini-buildd user will be removed along with "
+#| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
+#| "\"."
 msgid ""
 "This choice means that the mini-buildd user will be removed along with all "
-"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+"the files it owns, possibly including Debian repositories."
 msgstr ""
 "Dette valg betyder, at brugeren af mini-buildd vil blive fjernet sammen med "
 "alle de filer brugeren ejer, inklusiv arkivet i »/home/mini-buildd/rep«."
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
+#: ../mini-buildd.templates:1001
 msgid "To keep this data, you need to back it up now."
 msgstr "For at beholde disse data, skal du lave en sikkerhedskopi af dem nu."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:2001
+msgid "Home path:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:2001
+msgid ""
+"This is mini-buildd's UNIX user home, and the place where all data is kept. "
+"This path should have enough space for all repositories and/or builders data "
+"you plan to use."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid "Extra options:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"You may add any mini-buildd command line option here (see 'mini-buildd --"
+"help')."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"However, the only really recommended option to give here is to increase/"
+"decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
+msgstr ""
+
+#~ msgid "Repository purge"
+#~ msgstr "Oprydning i arkiv"

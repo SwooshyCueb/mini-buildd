@@ -7,42 +7,90 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd 0.8.13\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2010-04-19 07:17+0200\n"
+"POT-Creation-Date: 2012-04-18 13:55+0200\n"
 "PO-Revision-Date: 2010-05-05 21:28+0400\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
+"Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "X-Generator: KBabel 1.11.4\n"
-"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%"
-"10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
-msgid "Repository purge"
-msgstr "Вычистка репозитория"
+#: ../mini-buildd.templates:1001
+msgid "Data purge warning"
+msgstr ""
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
-msgid "You have chosen to purge mini-buildd on a repository host."
+#: ../mini-buildd.templates:1001
+#, fuzzy
+#| msgid "You have chosen to purge mini-buildd on a repository host."
+msgid "You have chosen to purge mini-buildd."
 msgstr "Вы выбрали вычистку mini-buildd на машине с репозиторием."
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
+#: ../mini-buildd.templates:1001
+#, fuzzy
+#| msgid ""
+#| "This choice means that the mini-buildd user will be removed along with "
+#| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
+#| "\"."
 msgid ""
 "This choice means that the mini-buildd user will be removed along with all "
-"the files it owns, including the repository in \"/home/mini-buildd/rep\"."
+"the files it owns, possibly including Debian repositories."
 msgstr ""
 "При вычистке удаляется учётная запись mini-buildd вместе с принадлежащими ей "
 "файлами, включая репозиторий в \"/home/mini-buildd/rep\"."
 
 #. Type: note
 #. Description
-#: ../mini-buildd-common.templates:2001
+#: ../mini-buildd.templates:1001
 msgid "To keep this data, you need to back it up now."
 msgstr ""
 "Чтобы сохранить данные, вам нужно сделать их резервную копию прямо сейчас."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:2001
+msgid "Home path:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:2001
+msgid ""
+"This is mini-buildd's UNIX user home, and the place where all data is kept. "
+"This path should have enough space for all repositories and/or builders data "
+"you plan to use."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid "Extra options:"
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"You may add any mini-buildd command line option here (see 'mini-buildd --"
+"help')."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"However, the only really recommended option to give here is to increase/"
+"decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
+msgstr ""
+
+#~ msgid "Repository purge"
+#~ msgstr "Вычистка репозитория"

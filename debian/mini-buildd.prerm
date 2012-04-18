@@ -1,10 +1,10 @@
 #!/bin/sh -e
 
 if [ "${1}" = "remove" ]; then
-	# Remove chroots
-	/usr/share/mini-buildd/mbd-setup-chroots -d
-	# Remove auto-lvm setup (if we have it)
-	/usr/share/mini-buildd/mbd-setup-lvm -d
+	# Remove chroots ### 0.8.x deprecated
+	/usr/share/mini-buildd/mbd-setup-chroots -d || true
+	# Remove auto-lvm setup (if we have it) ### 0.8.x deprecated
+	/usr/share/mini-buildd/mbd-setup-lvm -d || true
 fi
 
 #DEBHELPER#

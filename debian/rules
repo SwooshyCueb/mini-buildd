@@ -6,5 +6,5 @@ export DH_VERBOSE = 1
 	dh $@ --with=python2
 
 override_dh_installinit:
-	dh_installinit --name="mini-buildd-lvmloop"
+	dh_installinit --name="mini-buildd-lvmloop" --update-rcd-params='start 12 S . stop 12 .'
 	dh_installinit

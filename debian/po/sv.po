@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2012-04-18 13:55+0200\n"
+"POT-Creation-Date: 2012-04-18 19:10+0200\n"
 "PO-Revision-Date: 2010-05-03 23:06+0100\n"
 "Last-Translator: Martin Bagge <brother@bsnet.se>\n"
 "Language-Team: Swedish <debian-l10n-swedish@lists.debian.org>\n"
@@ -68,15 +68,43 @@ msgid ""
 "you plan to use."
 msgstr ""
 
-#. Type: string
+#. Type: password
 #. Description
 #: ../mini-buildd.templates:3001
+msgid "Administrator's password:"
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"You may later login into the admin area of the web application via user "
+"'admin' and the password you give here."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"Entering a password will also trigger the (needed) initial creation of the "
+"'admin' user."
+msgstr ""
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:3001
+msgid "If you leave this empty, nothing will be done."
+msgstr ""
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:4001
 msgid "Extra options:"
 msgstr ""
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:3001
+#: ../mini-buildd.templates:4001
 msgid ""
 "You may add any mini-buildd command line option here (see 'mini-buildd --"
 "help')."
@@ -84,7 +112,7 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:3001
+#: ../mini-buildd.templates:4001
 msgid ""
 "However, the only really recommended option to give here is to increase/"
 "decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."

@@ -17,12 +17,12 @@ case "${1}" in
 		[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
 		mkdir -v -p "${MBD_HOME}"
 
-		_head "Loading auth..."
-		${MBD_CMD} --loaddata='auth.user.devel.json'
+		_head "Create superuser admin/admin..."
+		${MBD_CMD} --set-admin-password="admin"
 
 		# Uncomment this to test importing old 0.8.x config
-		_head "Importing olde 08x config..."
-		${MBD_CMD} --loaddata="${MBD_HOME}/../mini_buildd/fixtures/08x.conf"
+		#_head "Importing olde 08x config..."
+		#${MBD_CMD} --loaddata="${MBD_HOME}/../mini_buildd/fixtures/08x.conf"
 
 		shift
 		${0} run ${@}

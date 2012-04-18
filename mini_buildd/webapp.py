@@ -43,6 +43,17 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 ))
         self.syncdb()
 
+    def set_admin_password(self, password):
+        import django.contrib.auth.models
+        try:
+            user = django.contrib.auth.models.User.objects.get(username='admin')
+            mini_buildd.log.info("Updating 'admin' user password...")
+            user.set_password(password)
+            user.save()
+        except django.contrib.auth.models.User.DoesNotExist:
+            mini_buildd.log.info("Creating initial 'admin' user...")
+            django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
+
     def syncdb(self):
         mini_buildd.log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)

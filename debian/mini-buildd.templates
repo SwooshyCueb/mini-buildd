@@ -17,6 +17,17 @@ _Description: Home path:
  data is kept. This path should have enough space for all
  repositories and/or builders data you plan to use.
 
+Template: mini-buildd/admin_password
+Type: password
+_Description: Administrator's password:
+ You may later login into the admin area of the web application
+ via user 'admin' and the password you give here.
+ .
+ Entering a password will also trigger the (needed) initial
+ creation of the 'admin' user.
+ .
+ If you leave this empty, nothing will be done.
+
 Template: mini-buildd/options
 Type: string
 _Description: Extra options:

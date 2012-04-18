@@ -1,2 +1,2 @@
 # Set this to any extra options to run the daemon (see 'mini-buildd --help')
-MINI_BUILDD_OPTIONS="--verbose --verbose"
+MINI_BUILDD_OPTIONS=""

@@ -20,26 +20,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
         except Exception as e:
             mini_buildd.log.warn("{f}: import failed: {e}".format(f=f.__name__, e=str(e)))
 
-    def Layout():
-        l=models.Layout(name="Standard")
-        l.save()
-        e=models.Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
-        e.save()
-        l.suites.add(e)
-
-        u=models.Suite(name="unstable")
-        u.save()
-        l.suites.add(u)
-
-        t=models.Suite(name="testing", migrates_from=u)
-        t.save()
-        l.suites.add(t)
-
-        s=models.Suite(name="stable", migrates_from=t)
-        s.save()
-        l.suites.add(s)
-        return l
-    tryImport(Layout);
+    tryImport(models.create_default_layout);
 
     # Wander all dists...
     for d in conf08x.mbd_dists.split(", "):
@@ -122,7 +103,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
 
     def Repository():
         r = models.Repository(id=conf08x.mbd_id, host=conf08x.mbd_rephost,
-                              layout=models.Layout.objects.get(name="Standard"),
+                              layout=models.Layout.objects.get(name="Default"),
                               apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
                               mail=conf08x.mbd_mail,
                               extdocurl=conf08x.mbd_extdocurl)

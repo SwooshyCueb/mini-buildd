@@ -54,6 +54,9 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             mini_buildd.log.info("Creating initial 'admin' user...")
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
+    def create_default_config(self, mirror):
+        mini_buildd.models.create_default(mirror)
+
     def syncdb(self):
         mini_buildd.log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)

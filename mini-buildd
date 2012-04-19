@@ -60,6 +60,9 @@ class Main():
 if mini_buildd.opts.set_admin_password:
     mini_buildd.WebApp().set_admin_password(password=mini_buildd.opts.set_admin_password)
     sys.exit(0)
+elif mini_buildd.opts.create_default_config:
+    mini_buildd.WebApp().create_default_config(mirror=mini_buildd.opts.create_default_config)
+    sys.exit(0)
 elif mini_buildd.opts.loaddata:
     mini_buildd.WebApp().loaddata(f=mini_buildd.opts.loaddata)
     sys.exit(0)

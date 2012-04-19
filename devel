@@ -1,7 +1,10 @@
 #!/bin/bash -e
 
+# Change env MIRROR for the default config before calling this
+[ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian/debian"
+
 MBD_HOME="$(readlink -f $(dirname "${0}"))/devel-home"
-MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --no-act"
+MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose --no-act"
 
 printf "MBD-Command: ${MBD_CMD}\n"
 
@@ -18,22 +21,24 @@ case "${1}" in
 		_head "Purging ${MBD_HOME}"
 		[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
 		mkdir -v -p "${MBD_HOME}"
+		;;
+
+	default)
+		${0} reset
 
 		_head "Create superuser admin/admin..."
 		${MBD_CMD} --set-admin-password="admin"
 
-		# Uncomment this to test importing old 0.8.x config
-		#_head "Importing olde 08x config..."
-		#${MBD_CMD} --loaddata="${MBD_HOME}/../mini_buildd/fixtures/08x.conf"
+		_head "Create default config..."
+		${MBD_CMD} --create-default-config="${MIRROR}"
 
 		shift
 		${0} run ${@}
 		;;
+
 	run)
 		_head "Running ${MBD_CMD} $@"
 
-		# Be sure to generate mini_buildd/__version__.py
-		python ./setup.py >/dev/null 2>&1 || true
 		shift
 		${MBD_CMD} "$@"
 		;;

@@ -44,11 +44,11 @@ parser.add_option_group(group_conf)
 group_db = optparse.OptionGroup(parser, "Database")
 group_db.add_option("-P", "--set-admin-password", action='store', metavar="PASSWORD",
                     help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-
+group_db.add_option("-C", "--create-default-config", action='store', metavar="MIRROR_URL",
+                    help="Create an initial default config.")
 group_db.add_option("-L", "--loaddata", action='store', metavar="FILE",
                     help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
-
 group_db.add_option("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                     help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 parser.add_option_group(group_db)

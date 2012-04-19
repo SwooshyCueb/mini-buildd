@@ -50,3 +50,14 @@ def run_cmd(cmd, no_act):
     l("Command '%s' run with retval %s" % (cmd, retval))
 
     return retval == 0
+
+def get_cmd_stdout(cmd):
+    output = tempfile.TemporaryFile()
+    mini_buildd.log.info("Running system command: '%s'" % cmd)
+    retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
+    if retval == 0:
+        output.seek(0)
+        return output.read()
+    else:
+        mini_buildd.log.error("Command failed: %s" % cmd)
+        return ""

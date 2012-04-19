@@ -100,6 +100,25 @@ class Layout(django.db.models.Model):
     def __unicode__(self):
         return self.name
 
+def create_default_layout():
+    l=Layout(name="Default")
+    l.save()
+    e=Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
+    e.save()
+    l.suites.add(e)
+
+    u=Suite(name="unstable")
+    u.save()
+    l.suites.add(u)
+
+    t=Suite(name="testing", migrates_from=u)
+    t.save()
+    l.suites.add(t)
+
+    s=Suite(name="stable", migrates_from=t)
+    s.save()
+    l.suites.add(s)
+    return l
 
 class Distribution(django.db.models.Model):
     # @todo: limit to distribution?  limit_choices_to={'codename': 'sid'})
@@ -313,7 +332,7 @@ class Builder(django.db.models.Model):
     SCHROOT_MODES = (
         ('lvm_loop', 'LVM via loop device'),
     )
-    schroot_mode = django.db.models.CharField(max_length=20, choices=SCHROOT_MODES)
+    schroot_mode = django.db.models.CharField(max_length=20, choices=SCHROOT_MODES, default="lvm_loop")
 
     max_parallel_builds = django.db.models.IntegerField(default=4,
                                    help_text="Maximum number of parallel builds.")
@@ -330,3 +349,31 @@ class Remote(django.db.models.Model):
 
     def __unicode__(self):
         return "Remote: " + self.host
+
+
+def create_default(mirror):
+    m=Mirror(url=mirror)
+    m.save()
+
+    s=Source(codename=mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip())
+    s.save()
+    s.mirrors.add(m)
+    s.save()
+
+    d=Distribution(base_source=s)
+    d.save()
+
+    a=Architecture(arch=mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip())
+    a.save()
+
+    l=create_default_layout()
+    l.save()
+
+    r=Repository(layout=l)
+    r.save()
+    r.archs.add(a)
+    r.dists.add(d)
+    r.save()
+
+    b=Builder(arch=a)
+    b.save()

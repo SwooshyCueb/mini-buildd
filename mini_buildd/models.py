@@ -75,19 +75,6 @@ class Architecture(django.db.models.Model):
         return self.arch
 
 
-class Builder(django.db.models.Model):
-    host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
-    arch = django.db.models.ForeignKey(Architecture)
-    parallel = django.db.models.IntegerField(default=1,
-                                   help_text="Degree of parallelism this builder supports.")
-
-    def __unicode__(self):
-        return self.host + " building " + self.arch.arch
-
-    class Meta:
-        unique_together = ('host', 'arch')
-
-
 class Suite(django.db.models.Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=50,
@@ -319,3 +306,27 @@ needs (like pre-seeding debconf variables).
    What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
    Used by: mbd-update-bld.
 """.format(date=datetime.datetime.now()))
+
+
+class Builder(django.db.models.Model):
+    arch = django.db.models.ForeignKey(Architecture)
+    SCHROOT_MODES = (
+        ('lvm_loop', 'LVM via loop device'),
+    )
+    schroot_mode = django.db.models.CharField(max_length=20, choices=SCHROOT_MODES)
+
+    max_parallel_builds = django.db.models.IntegerField(default=4,
+                                   help_text="Maximum number of parallel builds.")
+
+    sbuild_parallel = django.db.models.IntegerField(default=1,
+                                   help_text="Degree of parallelism per build.")
+
+    def __unicode__(self):
+        return "Builder for " + self.arch.arch
+
+
+class Remote(django.db.models.Model):
+    host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
+
+    def __unicode__(self):
+        return "Remote: " + self.host

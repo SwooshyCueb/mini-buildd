@@ -3,6 +3,8 @@
 MBD_HOME="$(readlink -f $(dirname "${0}"))/devel-home"
 MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --no-act"
 
+printf "MBD-Command: ${MBD_CMD}\n"
+
 _head()
 {
 	printf "\n=> ${*}\n"

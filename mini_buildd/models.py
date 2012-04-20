@@ -352,10 +352,15 @@ class Remote(django.db.models.Model):
 
 
 def create_default(mirror):
+    codename = mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip()
+    arch = mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip()
+
+    mini_buildd.log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
+
     m=Mirror(url=mirror)
     m.save()
 
-    s=Source(codename=mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip())
+    s=Source(codename=codename)
     s.save()
     s.mirrors.add(m)
     s.save()
@@ -363,7 +368,7 @@ def create_default(mirror):
     d=Distribution(base_source=s)
     d.save()
 
-    a=Architecture(arch=mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip())
+    a=Architecture(arch=arch)
     a.save()
 
     l=create_default_layout()

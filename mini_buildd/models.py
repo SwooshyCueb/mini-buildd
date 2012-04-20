@@ -151,6 +151,7 @@ Expire-Date: 0""")
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
+        mini_buildd.log.debug("Initializing repository '{id}'".format(id=self.id))
 
         # Internal convenience variables
         self.path = os.path.join(mini_buildd.opts.home, "rep", self.id)

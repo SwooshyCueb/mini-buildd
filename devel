@@ -4,46 +4,37 @@
 [ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian/debian"
 
 MBD_HOME="$(readlink -f $(dirname "${0}"))/devel-home"
-MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose --no-act"
-
-printf "MBD-Command: ${MBD_CMD}\n"
+MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose"
 
 _head()
 {
 	printf "\n=> ${*}\n"
 }
 
+mbd_reset()
+{
+	_head "Purging ${MBD_HOME}"
+	[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
+	mkdir -v -p "${MBD_HOME}"
+}
+
+mbd_default()
+{
+	mbd_reset
+
+	_head "Creating superuser admin/admin..."
+	${MBD_CMD} --set-admin-password="admin"
+
+	_head "Creating default config..."
+	${MBD_CMD} --create-default-config="${MIRROR}"
+}
+
+trap "printf '\nUsage: ${0} [reset|default]\n' >&2" ERR
+
 # Be sure to generate mini_buildd/__version__.py
 python ./setup.py >/dev/null 2>&1 || true
 
-case "${1}" in
-	reset):
-		_head "Purging ${MBD_HOME}"
-		[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
-		mkdir -v -p "${MBD_HOME}"
-		;;
+[ -z "${1}" ] || mbd_${1}
 
-	default)
-		${0} reset
-
-		_head "Create superuser admin/admin..."
-		${MBD_CMD} --set-admin-password="admin"
-
-		_head "Create default config..."
-		${MBD_CMD} --create-default-config="${MIRROR}"
-
-		shift
-		${0} run ${@}
-		;;
-
-	run)
-		_head "Running ${MBD_CMD} $@"
-
-		shift
-		${MBD_CMD} "$@"
-		;;
-	*)
-		printf "Usage: $0 reset|run\n" >&2
-		exit 2
-		;;
-esac
+_head "Running: ${MBD_CMD}"
+${MBD_CMD}

@@ -153,13 +153,9 @@ Expire-Date: 0""")
         super(Repository, self).__init__(*args, **kwargs)
         mini_buildd.log.debug("Initializing repository '{id}'".format(id=self.id))
 
-        # Internal convenience variables
-        self.path = os.path.join(mini_buildd.opts.home, "rep", self.id)
-        self.incoming_path = os.path.join(self.path, "incoming")
-
         self.gnupg = GnuPGInterface.GnuPG()
         self.gnupg.options.meta_interactive = 0
-        self.gnupg.options.homedir = os.path.join(self.path, ".gnupg")
+        self.gnupg.options.homedir = os.path.join(self.get_path(), ".gnupg")
 
         # @todo: to be replaced in template; Only as long as we dont know better
         self.pgp_key_ascii = self.getGpgPubKey()
@@ -177,7 +173,10 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(mini_buildd.opts.home, "rep", self.id)
+        return os.path.join(mini_buildd.opts.home, "repositories", self.id)
+
+    def get_incoming_path(self):
+        return os.path.join(self.get_path(), "incoming")
 
     def get_dist(self, dist, suite):
         return dist.base_source.codename + "-" + self.id + "-" + suite.name
@@ -255,7 +254,7 @@ ButAutomaticUpgrades: {bau}
         if self.getGpgPubKey():
             mini_buildd.log.info("GPG public key found, skipping key generation...")
         else:
-            mini_buildd.log.info("Generating new Gnu PG key in '{h}'.".format(h=self.path))
+            mini_buildd.log.info("Generating new Gnu PG key in '{h}'.".format(h=self.get_path()))
             proc = self.gnupg.run(["--gen-key"],
                                   create_fhs=['stdin', 'stdout', 'stderr'])
 

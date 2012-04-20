@@ -13,14 +13,14 @@ class Reprepro():
         path = repository.get_path()
 
         mini_buildd.misc.mkdirs(os.path.join(path, "conf"))
-        mini_buildd.misc.mkdirs(os.path.join(path, "incoming"))
+        mini_buildd.misc.mkdirs(repository.get_incoming_path())
         open(os.path.join(path, "conf", "distributions"), 'w').write(repository.repreproConfig())
         open(os.path.join(path, "conf", "incoming"), 'w').write("""\
 Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
-""".format(i=os.path.join(path, "incoming"), allow=" ".join(repository.uploadable_dists)))
+""".format(i=repository.get_incoming_path(), allow=" ".join(repository.uploadable_dists)))
 
         open(os.path.join(path, "conf", "options"), 'w').write("""\
 gnupghome {h}

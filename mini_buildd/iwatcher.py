@@ -33,7 +33,7 @@ class IWatcher():
             self.processEvent(event)
 
     def __init__(self, queue, repository):
-        self._idir = repository.incoming_path
+        self._idir = repository.get_incoming_path()
         self._handler = self.Handler(queue=queue)
         self._wm = pyinotify.WatchManager()
         self._notifier = pyinotify.Notifier(self._wm, default_proc_fun=self._handler)

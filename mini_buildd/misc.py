@@ -32,7 +32,7 @@ def mkdirs(path):
         else:
             mini_buildd.log.info("Directory already exists, ignoring; {d}".format(d=path))
 
-def run_cmd(cmd, no_act):
+def run_cmd(cmd, no_act=False):
     # Run command, keep output
     output = tempfile.TemporaryFile()
     if no_act:

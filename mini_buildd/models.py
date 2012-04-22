@@ -11,6 +11,7 @@ import django.core.exceptions
 import django.contrib
 
 import mini_buildd
+import mini_buildd.schroot
 
 class Mirror(django.db.models.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
@@ -339,6 +340,14 @@ class Builder(django.db.models.Model):
 
     sbuild_parallel = django.db.models.IntegerField(default=1,
                                    help_text="Degree of parallelism per build.")
+
+    def get_path(self):
+        return os.path.join(mini_buildd.opts.home, "builders", self.arch.arch)
+
+    def prepare(self):
+        mini_buildd.log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))
+        s = mini_buildd.schroot.Schroot(self)
+        s.prepare()
 
     def __unicode__(self):
         return "Builder for " + self.arch.arch

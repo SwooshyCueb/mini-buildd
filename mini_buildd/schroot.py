@@ -5,6 +5,7 @@ Manage schroots for mini-buildd.
 
 import os
 import glob
+import tempfile
 
 import mini_buildd
 
@@ -18,6 +19,9 @@ class LVMLoop():
         self._backing_file = os.path.join(path, "lvm.image")
         self._size = 100
         mini_buildd.log.debug("LVMLoop on {b}, size {s} G".format(b=self._backing_file, s=size))
+
+    def get_vgname(self):
+        return self._vgname
 
     def get_loop_device(self):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
@@ -56,16 +60,84 @@ class LVMLoop():
         mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
         mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
 
+
 class Schroot():
     def __init__(self, builder):
+        self.CHROOT_FS="ext2"
+
         path = builder.get_path()
         mini_buildd.misc.mkdirs(path)
-
+        self.builder = builder
+        print "P=" + self.get_personality()
         if builder.schroot_mode == "lvm_loop":
             self._backend = LVMLoop(path, builder.arch, 100);
+
+    def get_personality(self):
+        """
+        On 64bit hosts, 32bit schroots must be configured
+        with a 'linux32' personality to work.
+        @todo This may be needed for other 32-bit archs, too?
+        @todo We currently assume we build under linux only.
+        """
+        personalities = { 'i386': 'linux32' }
+        try:
+            return personalities[self.builder.arch.arch]
+        except:
+            return "linux"
 
     def prepare(self):
         self._backend.prepare()
 
+        for dist in self.builder.dists.all():
+            name = "mini-buildd-{d}-{a}".format(d=dist.base_source.codename, a=self.builder.arch.arch)
+            device = "/dev/{v}/{n}".format(v=self._backend.get_vgname(), n=name)
+
+            if mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name)):
+                mini_buildd.log.info("LV {c} exists, leaving alone".format(c=name))
+            else:
+                mini_buildd.log.info("Setting up LV {c}...".format(c=name))
+
+                mirror=dist.base_source.mirrors.all()[0]
+                mini_buildd.log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
+
+                # @todo aptenv ??
+                #mbdAptEnv
+
+                try:
+                    # @todo exception on command fail
+                    mount_point = tempfile.mkdtemp()
+
+                    mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=self._backend.get_vgname()))
+                    mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
+                    mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
+                    mini_buildd.misc.run_cmd("sudo debootstrap --variant=buildd --arch {a} --include=apt '{d}' '{m}' '{M}'".\
+                                                 format(a=self.builder.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
+                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                    mini_buildd.log.info("LV {n} created successfully...".format(n=name))
+                    # There must be schroot configs for each uploadable distribution (does not work with aliases).
+                    open(os.path.join(self.builder.get_path(), "schroot.conf"), 'w').write("""
+[{n}]
+type=lvm-snapshot
+description=Mini-Buildd {n} LVM snapshot chroot
+groups=sbuild
+users=mini-buildd
+root-groups=sbuild
+root-users=mini-buildd
+source-root-users=mini-buildd
+device={d}
+mount-options=-t {f} -o noatime,user_xattr
+lvm-snapshot-options=--size 4G
+personality={p}
+""".format(n=name, d=device, f=self.CHROOT_FS, p=self.get_personality()))
+                except:
+                    mini_buildd.log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
+                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                    raise
+
+
     def purge(self):
+        # @todo
+        MBD_TMP_DEV="/dev/$(mbdLvmVgName)/${name}"
+        mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=MBD_TMP_DEV))
         self._backend.purge()

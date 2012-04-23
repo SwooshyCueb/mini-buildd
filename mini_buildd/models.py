@@ -329,7 +329,9 @@ needs (like pre-seeding debconf variables).
 
 
 class Builder(django.db.models.Model):
-    arch = django.db.models.ForeignKey(Architecture)
+    arch = django.db.models.ForeignKey(Architecture, primary_key=True)
+    dists = django.db.models.ManyToManyField(Distribution)
+
     SCHROOT_MODES = (
         ('lvm_loop', 'LVM via loop device'),
     )
@@ -390,4 +392,5 @@ def create_default(mirror):
     r.save()
 
     b=Builder(arch=a)
+    b.dists.add(d)
     b.save()

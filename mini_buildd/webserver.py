@@ -3,7 +3,7 @@ import mini_buildd
 
 class WebServerBase(object):
     def __init__(self, django):
-        bind = mini_buildd.args.bind.split(":")
+        bind = mini_buildd.args.webserver_bind.split(":")
         self._host = bind[0]
         self._port = int(bind[1])
         self._django = django

@@ -21,6 +21,7 @@ class Main():
 
         #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.args.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.args.no_act)
+        self._ftpserver = mini_buildd.FtpServer()
         self._webserver = mini_buildd.WebServer(self._webapp)
         self.prepare()
         self._run = True
@@ -46,6 +47,7 @@ class Main():
         for w in self._iWatchers:
             self.start_thread(w)
         self.start_thread(self._installer)
+        self.start_thread(self._ftpserver)
         self.start_thread(self._webserver)
 
         # Shutdown on SIGTERM or SIGINT

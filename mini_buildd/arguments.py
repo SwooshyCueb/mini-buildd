@@ -24,8 +24,10 @@ parser.add_argument("-f", "--foreground", action='store_true',
                     help="Don't daemonize, log to console.")
 parser.add_argument("-n", "--no-act", action='store_true',
                     help="Don't install anything, just log what we would do.")
-parser.add_argument("-B", "--bind", action='store', default="0.0.0.0:8066",
-                    help="IP/Hostname and port to bind to.")
+parser.add_argument("-W", "--webserver-bind", action='store', default="0.0.0.0:8066",
+                    help="Web Server IP/Hostname and port to bind to.")
+parser.add_argument("-F", "--ftpserver-bind", action='store', default="0.0.0.0:8067",
+                    help="FTP Server IP/Hostname and port to bind to.")
 
 group_log = parser.add_argument_group("Logging")
 group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,

@@ -24,7 +24,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': os.path.join(mini_buildd.opts.home, "config.sqlite"),
+                    'NAME': os.path.join(mini_buildd.args.home, "config.sqlite"),
                     }
                 },
             TIME_ZONE = None,
@@ -66,7 +66,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             mini_buildd.log.info("Try loading ad 08x.conf: {f}".format(f=f))
             mini_buildd.compat08x.importConf(f)
         else:
-            prefix = "" if f[0] == "/" else mini_buildd.opts.instdir + "/mini_buildd/fixtures/"
+            prefix = "" if f[0] == "/" else mini_buildd.args.instdir + "/mini_buildd/fixtures/"
             django.core.management.call_command('loaddata', prefix  + f)
 
     def dumpdata(self, a):

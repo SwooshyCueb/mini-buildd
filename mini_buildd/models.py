@@ -174,7 +174,7 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(mini_buildd.opts.home, "repositories", self.id)
+        return os.path.join(mini_buildd.args.home, "repositories", self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
@@ -344,7 +344,7 @@ class Builder(django.db.models.Model):
                                    help_text="Degree of parallelism per build.")
 
     def get_path(self):
-        return os.path.join(mini_buildd.opts.home, "builders", self.arch.arch)
+        return os.path.join(mini_buildd.args.home, "builders", self.arch.arch)
 
     def prepare(self):
         mini_buildd.log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))

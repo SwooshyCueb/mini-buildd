@@ -19,8 +19,8 @@ class Main():
         for r in Repository.objects.all():
             self._iWatchers.append(mini_buildd.IWatcher(queue=self._iQueue, repository=r))
 
-        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.opts.home + '/rep/incoming')
-        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.opts.no_act)
+        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.args.home + '/rep/incoming')
+        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.args.no_act)
         self._webserver = mini_buildd.WebServer(self._webapp)
         self.prepare()
         self._run = True
@@ -59,21 +59,21 @@ class Main():
         mini_buildd.log.info("Shutdown complete. Bye...")
 
 # Execute extra options that exit without running Main() daemon
-if mini_buildd.opts.set_admin_password:
-    mini_buildd.WebApp().set_admin_password(password=mini_buildd.opts.set_admin_password)
+if mini_buildd.args.set_admin_password:
+    mini_buildd.WebApp().set_admin_password(password=mini_buildd.args.set_admin_password)
     sys.exit(0)
-elif mini_buildd.opts.create_default_config:
-    mini_buildd.WebApp().create_default_config(mirror=mini_buildd.opts.create_default_config)
+elif mini_buildd.args.create_default_config:
+    mini_buildd.WebApp().create_default_config(mirror=mini_buildd.args.create_default_config)
     sys.exit(0)
-elif mini_buildd.opts.loaddata:
-    mini_buildd.WebApp().loaddata(f=mini_buildd.opts.loaddata)
+elif mini_buildd.args.loaddata:
+    mini_buildd.WebApp().loaddata(f=mini_buildd.args.loaddata)
     sys.exit(0)
-elif mini_buildd.opts.dumpdata:
-    mini_buildd.WebApp().dumpdata(a=mini_buildd.opts.dumpdata)
+elif mini_buildd.args.dumpdata:
+    mini_buildd.WebApp().dumpdata(a=mini_buildd.args.dumpdata)
     sys.exit(0)
 
 # Daemonize if configured
-if not mini_buildd.opts.foreground:
+if not mini_buildd.args.foreground:
     daemon.DaemonContext().open()
 
 # Main processing; the only benefit of the master try/catch is

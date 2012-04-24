@@ -5,7 +5,7 @@ import os
 
 import mini_buildd
 
-def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
+def importConf(f=mini_buildd.args.home + '/.mini-buildd.conf'):
     """ """
     from mini_buildd import models
 
@@ -118,7 +118,7 @@ def importConf(f=mini_buildd.opts.home + '/.mini-buildd.conf'):
 
 
 
-def exportConf(f=mini_buildd.opts.home + "/.mini-buildd.conf.export"):
+def exportConf(f=mini_buildd.args.home + "/.mini-buildd.conf.export"):
     """ """
     from mini_buildd import models
 

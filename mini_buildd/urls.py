@@ -2,7 +2,7 @@ from django.conf.urls.defaults import *
 from django.views.generic.simple import redirect_to
 import django.views.generic
 
-from mini_buildd.options import opts
+from mini_buildd.arguments import args
 import mini_buildd.views
 
 from mini_buildd.models import Repository
@@ -18,5 +18,5 @@ urlpatterns = patterns('',
 
                        # @todo: django.views.static.serve should not be used for production
                        # Compat: Browse olde-style public_html/
-                       (r"^public_html/(?P<path>.*)$", 'django.views.static.serve', {'document_root': opts.home + "/public_html/", 'show_indexes': True})
+                       (r"^public_html/(?P<path>.*)$", 'django.views.static.serve', {'document_root': args.home + "/public_html/", 'show_indexes': True})
 )

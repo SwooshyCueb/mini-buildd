@@ -1,4 +1,2 @@
-lib/mbd-common.sh lib/mbd-libopt.sh lib/mbd-update-common lib/mbd-cruft lib/mbd-lintian lib/mbd-qa-check usr/share/mini-buildd
-lib/mbd-update-rep lib/mbd-preinstall usr/share/mini-buildd
-lib/mbd-update-bld lib/mbd-setup-chroots lib/chroots-update.d/ usr/share/mini-buildd
+lib/mbd-common.sh lib/mbd-libopt.sh lib/mbd-update-common lib/mbd-cruft lib/mbd-lintian lib/mbd-qa-check lib/mbd-update-rep lib/mbd-preinstall lib/mbd-update-bld lib/chroots-update.d/ usr/share/mini-buildd
 debian/99mini-buildd etc/schroot/setup.d

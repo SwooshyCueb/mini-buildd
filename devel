@@ -3,7 +3,8 @@
 # Change env MIRROR for the default config before calling this
 [ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian/debian"
 
-MBD_HOME="$(readlink -f $(dirname "${0}"))/devel-home"
+# Test home is in '..' to avoid problems with large files in the Debian Source Tree
+MBD_HOME="$(readlink -f $(dirname "${0}"))/../mini-buildd-devel-home"
 MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose"
 
 _head()

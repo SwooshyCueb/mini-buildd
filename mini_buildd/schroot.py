@@ -46,7 +46,9 @@ class LVMLoop():
             mini_buildd.log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self._backing_file))
 
         # Check lvm
-        if not mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self._vgname)):
+        try:
+            mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self._vgname))
+        except:
             mini_buildd.log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
             mini_buildd.misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
             mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self._vgname, dev=self.get_loop_device()))
@@ -54,11 +56,14 @@ class LVMLoop():
         mini_buildd.log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
 
     def purge(self):
-        mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=self._vgname))
-        mini_buildd.misc.run_cmd("sudo vgremove --force {v}".format(v=self._vgname))
-        mini_buildd.misc.run_cmd("sudo pvremove {v}".format(v=self._vgname))
-        mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
-        mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
+        try:
+            mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=self._vgname))
+            mini_buildd.misc.run_cmd("sudo vgremove --force {v}".format(v=self._vgname))
+            mini_buildd.misc.run_cmd("sudo pvremove {v}".format(v=self._vgname))
+            mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
+            mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
+        except:
+            mini_buildd.log.warn("[@todo: better log:] Some purging steps may have failed")
 
 
 class Schroot():
@@ -92,9 +97,10 @@ class Schroot():
             name = "mini-buildd-{d}-{a}".format(d=dist.base_source.codename, a=self.builder.arch.arch)
             device = "/dev/{v}/{n}".format(v=self._backend.get_vgname(), n=name)
 
-            if mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name)):
+            try:
+                mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name))
                 mini_buildd.log.info("LV {c} exists, leaving alone".format(c=name))
-            else:
+            except:
                 mini_buildd.log.info("Setting up LV {c}...".format(c=name))
 
                 mirror=dist.base_source.mirrors.all()[0]
@@ -103,10 +109,8 @@ class Schroot():
                 # @todo aptenv ??
                 #mbdAptEnv
 
+                mount_point = tempfile.mkdtemp()
                 try:
-                    # @todo exception on command fail
-                    mount_point = tempfile.mkdtemp()
-
                     mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=self._backend.get_vgname()))
                     mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
                     mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
@@ -131,13 +135,15 @@ personality={p}
 """.format(n=name, d=device, f=self.CHROOT_FS, p=self.get_personality()))
                 except:
                     mini_buildd.log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
-                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                    try:
+                        mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                        mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                    except:
+                        pass
                     raise
-
 
     def purge(self):
         # @todo
-        MBD_TMP_DEV="/dev/$(mbdLvmVgName)/${name}"
-        mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=MBD_TMP_DEV))
-        self._backend.purge()
+        for dist in self.builder.dists.all():
+            mini_buildd.log.error("@todo NOT IMPL PURGE")
+        #self._backend.purge()

@@ -32,8 +32,8 @@ class Installer():
         d = deb822.Changes(file(cf))
         mini_buildd.log.info("CF for {d}: {s}-{v}:{a}".format(d=d["Distribution"], s=d["Source"], v=d["Version"], a=d["Architecture"]))
         r = self.get_repository_from_dist(d["Distribution"])
-        if mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act):
-            return r.processincoming(cf=cf)
+        mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act)
+        return r.processincoming(cf=cf)
 
     def run(self):
         while True:

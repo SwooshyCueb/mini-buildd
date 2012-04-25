@@ -47,9 +47,9 @@ def run_cmd(cmd, no_act=False):
     output.seek(0)
     for line in output:
         l("Command output: %s" % line.replace("\n", ""))
-    l("Command '%s' run with retval %s" % (cmd, retval))
 
-    return retval == 0
+    if retval != 0:
+        raise Exception("Command '{c}' failed with retval {r}".format(c=cmd, r=retval))
 
 def get_cmd_stdout(cmd):
     output = tempfile.TemporaryFile()

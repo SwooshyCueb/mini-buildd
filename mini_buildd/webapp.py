@@ -8,12 +8,17 @@ import django.core.management
 import mini_buildd
 
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
-    def __init__(self, sqlite_db, instdir, debug=False):
+    def __init__(self, home, instdir, debug=False):
         mini_buildd.log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
         self._instdir = instdir
 
         django.conf.settings.configure(
+            # Settings that need to be known to model code go here
+            # with prefix 'MINI_BUILDD_'
+            MINI_BUILDD_HOME=home,
+
+            # Django settings
             DEBUG = debug,
             TEMPLATE_DEBUG = debug,
 
@@ -25,7 +30,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': sqlite_db,
+                    'NAME': os.path.join(home, "config.sqlite"),
                     }
                 },
             TIME_ZONE = None,

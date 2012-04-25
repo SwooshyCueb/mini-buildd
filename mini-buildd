@@ -12,7 +12,7 @@ import mini_buildd
 
 class Main():
     def __init__(self):
-        self._webapp = mini_buildd.WebApp(sqlite_db=os.path.join(mini_buildd.args.home, "config.sqlite"), instdir=mini_buildd.args.instdir, debug=True)
+        self._webapp = mini_buildd.WebApp(mini_buildd.args.home, instdir=mini_buildd.args.instdir, debug=True)
         self._iQueue = Queue.Queue()
         from mini_buildd.models import Repository
         self._iWatchers = []

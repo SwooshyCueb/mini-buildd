@@ -7,6 +7,7 @@ import datetime
 import GnuPGInterface
 
 import django.db
+import django.conf
 import django.core.exceptions
 import django.contrib
 
@@ -174,10 +175,11 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(mini_buildd.args.home, "repositories", self.id)
+        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "repositories", self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
+
 
     def get_dist(self, dist, suite):
         return dist.base_source.codename + "-" + self.id + "-" + suite.name
@@ -344,7 +346,7 @@ class Builder(django.db.models.Model):
                                    help_text="Degree of parallelism per build.")
 
     def get_path(self):
-        return os.path.join(mini_buildd.args.home, "builders", self.arch.arch)
+        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "builders", self.arch.arch)
 
     def prepare(self):
         mini_buildd.log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))

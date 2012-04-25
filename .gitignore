@@ -1,8 +1,21 @@
+# Python
 /build/
 /mini_buildd/__version__.py
 *.pyc
+
+# Debian package
 /debian/mini-buildd/*
 /debian/mini-buildd.*.debhelper
 /debian/mini-buildd.debhelper.log
 /debian/mini-buildd.substvars
 /debian/files
+
+# Cruft from test uploads
+/examples/*_*.upload
+/examples/*_*.dsc
+/examples/*_*.changes
+/examples/*_*.tar.gz
+/examples/mbd-test-cpp/aclocal.m4
+/examples/mbd-test-cpp/config.h.in
+/examples/mbd-test-cpp/configure
+/examples/mbd-test-cpp/ltmain.sh

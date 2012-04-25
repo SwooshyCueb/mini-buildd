@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 import os
 
+from debian import deb822
+
 import mini_buildd
 
 class Installer():
@@ -17,8 +19,19 @@ class Installer():
 
         mini_buildd.log.info("Installer: Using preinstalls script %s" % self._preinstall)
 
+    def get_repository_from_dist(self, dist):
+        from mini_buildd.models import Repository
+        r_id = dist.split("-")[1]
+        mini_buildd.log.debug(dist + "/" + r_id)
+
+        r = Repository.objects.get(id=r_id)
+        # @todo Check that base dist is really supported by this repo
+        return r
+
     def install(self, cf):
-        r = mini_buildd.Repository.objects.get(id=os.path.basename(os.path.dirname(cf)))
+        d = deb822.Changes(file(cf))
+        mini_buildd.log.info("CF for {d}: {s}-{v}:{a}".format(d=d["Distribution"], s=d["Source"], v=d["Version"], a=d["Architecture"]))
+        r = self.get_repository_from_dist(d["Distribution"])
         if mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act):
             return r.processincoming(cf=cf)
 

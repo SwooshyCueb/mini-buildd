@@ -25,7 +25,7 @@ class LVMLoop():
 
     def get_loop_device(self):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if rfile(f).strip() == self._backing_file:
+            if os.path.realpath(rfile(f).strip()) == os.path.realpath(self._backing_file):
                 return "/dev/" + f.split("/")[3]
 
     def get_lvm_device(self):

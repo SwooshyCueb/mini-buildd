@@ -12,7 +12,7 @@ import mini_buildd
 
 class Main():
     def __init__(self):
-        self._webapp = mini_buildd.WebApp(debug=True)
+        self._webapp = mini_buildd.WebApp(sqlite_db=os.path.join(mini_buildd.args.home, "config.sqlite"), instdir=mini_buildd.args.instdir, debug=True)
         self._iQueue = Queue.Queue()
         from mini_buildd.models import Repository
         self._iWatchers = []
@@ -21,10 +21,12 @@ class Main():
 
         #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.args.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue)
-        self._ftpserver = mini_buildd.FtpServer(queue=self._iQueue)
-        self._webserver = mini_buildd.WebServer(self._webapp)
-        self.prepare()
+        self._ftpserver = mini_buildd.FtpServer(bind=mini_buildd.args.ftpserver_bind, path=os.path.join(mini_buildd.args.home, "incoming"), queue=self._iQueue)
+        self._webserver = mini_buildd.WebServer(mini_buildd.args.webserver_bind, self._webapp)
         self._run = True
+
+    def get_webapp(self):
+        return self._webapp
 
     def prepare(self):
         from mini_buildd.models import Repository, Builder
@@ -43,6 +45,8 @@ class Main():
         thread.start()
 
     def run(self):
+        self.prepare()
+
         # Start watcher and installer
         for w in self._iWatchers:
             self.start_thread(w)
@@ -60,18 +64,21 @@ class Main():
         mini_buildd.log.info("Shutting down (%s active threads)" % threading.activeCount())
         mini_buildd.log.info("Shutdown complete. Bye...")
 
+# Create main
+main = Main()
+
 # Execute extra options that exit without running Main() daemon
 if mini_buildd.args.set_admin_password:
-    mini_buildd.WebApp().set_admin_password(password=mini_buildd.args.set_admin_password)
+    main.get_webapp().set_admin_password(password=mini_buildd.args.set_admin_password)
     sys.exit(0)
 elif mini_buildd.args.create_default_config:
-    mini_buildd.WebApp().create_default_config(mirror=mini_buildd.args.create_default_config)
+    main.get_webapp().create_default_config(mirror=mini_buildd.args.create_default_config)
     sys.exit(0)
 elif mini_buildd.args.loaddata:
-    mini_buildd.WebApp().loaddata(f=mini_buildd.args.loaddata)
+    main.get_webapp().loaddata(f=mini_buildd.args.loaddata)
     sys.exit(0)
 elif mini_buildd.args.dumpdata:
-    mini_buildd.WebApp().dumpdata(a=mini_buildd.args.dumpdata)
+    main.get_webapp().dumpdata(a=mini_buildd.args.dumpdata)
     sys.exit(0)
 
 # Daemonize if configured
@@ -82,7 +89,7 @@ if not mini_buildd.args.foreground:
 # that we can generate a error message to log on exception --
 # most importantly, when we cannot start up
 try:
-    Main().run()
+    main.run()
 except:
     mini_buildd.log.exception("mini-buildd run failed")
     sys.exit(1)

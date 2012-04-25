@@ -8,9 +8,10 @@ import django.core.management
 import mini_buildd
 
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
-    def __init__(self, debug=False):
+    def __init__(self, sqlite_db, instdir, debug=False):
         mini_buildd.log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
+        self._instdir = instdir
 
         django.conf.settings.configure(
             DEBUG = debug,
@@ -24,7 +25,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': os.path.join(mini_buildd.args.home, "config.sqlite"),
+                    'NAME': sqlite_db,
                     }
                 },
             TIME_ZONE = None,
@@ -66,7 +67,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             mini_buildd.log.info("Try loading ad 08x.conf: {f}".format(f=f))
             mini_buildd.compat08x.importConf(f)
         else:
-            prefix = "" if f[0] == "/" else mini_buildd.args.instdir + "/mini_buildd/fixtures/"
+            prefix = "" if f[0] == "/" else self._instdir + "/mini_buildd/fixtures/"
             django.core.management.call_command('loaddata', prefix  + f)
 
     def dumpdata(self, a):

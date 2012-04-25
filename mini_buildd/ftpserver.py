@@ -14,11 +14,11 @@ class FtpHandler(ftpserver.FTPHandler):
             mini_buildd.log.debug("Skipping incoming file: %s" % file);
 
 class FtpServer(ftpserver.FTPServer):
-    def __init__(self, queue):
-        bind = mini_buildd.args.ftpserver_bind.split(":")
-        self._host = bind[0]
-        self._port = int(bind[1])
-        path = os.path.join(mini_buildd.args.home, "incoming")
+    def __init__(self, bind, path, queue):
+        self._bind = bind.split(":")
+        self._host = self._bind[0]
+        self._port = int(self._bind[1])
+
         mini_buildd.misc.mkdirs(path)
 
         self._handler = FtpHandler

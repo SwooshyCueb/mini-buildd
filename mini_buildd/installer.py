@@ -6,9 +6,8 @@ from debian import deb822
 import mini_buildd
 
 class Installer():
-    def __init__(self, queue, no_act):
+    def __init__(self, queue):
         self._queue = queue
-        self._no_act = no_act
 
         # Temporary: Try to find preinstall script as long as it's not converted to python
         self._preinstall = "No preinstall script found!!"
@@ -32,7 +31,7 @@ class Installer():
         d = deb822.Changes(file(cf))
         mini_buildd.log.info("CF for {d}: {s}-{v}:{a}".format(d=d["Distribution"], s=d["Source"], v=d["Version"], a=d["Architecture"]))
         r = self.get_repository_from_dist(d["Distribution"])
-        mini_buildd.misc.run_cmd(self._preinstall + " " + cf, self._no_act)
+        mini_buildd.misc.run_cmd(self._preinstall + " " + cf)
         return r.processincoming(cf=cf)
 
     def run(self):

@@ -29,9 +29,9 @@ gnupghome {h}
         # Update all indices (or create on initial install) via reprepro
         self._cmd = "reprepro --verbose --basedir='{b}' ".format(b=path)
 
-        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=path), False)
-        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path), False)
+        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=path))
+        mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path))
         mini_buildd.log.info("Prepared reprepro config: {d}".format(d=path))
 
     def processincoming(self, cf=""):
-        return mini_buildd.misc.run_cmd(self._cmd + "processincoming INCOMING \"{cf}\"".format(cf=os.path.basename(cf)), False)
+        return mini_buildd.misc.run_cmd(self._cmd + "processincoming INCOMING \"{cf}\"".format(cf=os.path.basename(cf)))

@@ -20,7 +20,7 @@ class Main():
             self._iWatchers.append(mini_buildd.IWatcher(queue=self._iQueue, repository=r))
 
         #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.args.home + '/rep/incoming')
-        self._installer = mini_buildd.Installer(queue=self._iQueue, no_act=mini_buildd.args.no_act)
+        self._installer = mini_buildd.Installer(queue=self._iQueue)
         self._ftpserver = mini_buildd.FtpServer(queue=self._iQueue)
         self._webserver = mini_buildd.WebServer(self._webapp)
         self.prepare()

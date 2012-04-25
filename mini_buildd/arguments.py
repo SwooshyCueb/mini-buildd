@@ -22,8 +22,6 @@ parser.add_argument('--version', action='version', version=mini_buildd.__version
 # Set up arguments
 parser.add_argument("-f", "--foreground", action='store_true',
                     help="Don't daemonize, log to console.")
-parser.add_argument("-n", "--no-act", action='store_true',
-                    help="Don't install anything, just log what we would do.")
 parser.add_argument("-W", "--webserver-bind", action='store', default="0.0.0.0:8066",
                     help="Web Server IP/Hostname and port to bind to.")
 parser.add_argument("-F", "--ftpserver-bind", action='store', default="0.0.0.0:8067",

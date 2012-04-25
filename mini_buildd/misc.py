@@ -32,15 +32,11 @@ def mkdirs(path):
         else:
             mini_buildd.log.info("Directory already exists, ignoring; {d}".format(d=path))
 
-def run_cmd(cmd, no_act=False):
+def run_cmd(cmd):
     # Run command, keep output
     output = tempfile.TemporaryFile()
-    if no_act:
-        output.write("No-act mode: '%s' not run" % cmd)
-        retval = 0
-    else:
-        mini_buildd.log.info("Running system command: '%s'" % cmd)
-        retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
+    mini_buildd.log.info("Running system command: '%s'" % cmd)
+    retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
 
     # Log command output
     l = mini_buildd.log.info if (retval == 0) else mini_buildd.log.error

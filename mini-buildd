@@ -4,29 +4,74 @@ import threading
 import Queue
 import signal
 import os
+import argparse
 import sys
 import time
 import daemon
 
 import mini_buildd
+import mini_buildd.arguments
 
 class Main():
     def __init__(self):
-        self._webapp = mini_buildd.WebApp(mini_buildd.args.home, instdir=mini_buildd.args.instdir, debug=True)
+        self._args = self.parse_args()
+        mini_buildd.arguments.init_logging(self._args)
+        self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=True)
         self._iQueue = Queue.Queue()
         from mini_buildd.models import Repository
         self._iWatchers = []
         for r in Repository.objects.all():
             self._iWatchers.append(mini_buildd.IWatcher(queue=self._iQueue, repository=r))
 
-        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=mini_buildd.args.home + '/rep/incoming')
+        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=self._args.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue)
-        self._ftpserver = mini_buildd.FtpServer(bind=mini_buildd.args.ftpserver_bind, path=os.path.join(mini_buildd.args.home, "incoming"), queue=self._iQueue)
-        self._webserver = mini_buildd.WebServer(mini_buildd.args.webserver_bind, self._webapp)
+        self._ftpserver = mini_buildd.FtpServer(bind=self._args.ftpserver_bind, path=os.path.join(self._args.home, "incoming"), queue=self._iQueue)
+        self._webserver = mini_buildd.WebServer(self._args.webserver_bind, self._webapp)
         self._run = True
 
     def get_webapp(self):
         return self._webapp
+
+    def parse_args(self):
+        parser = argparse.ArgumentParser(prog="mini-buildd",
+                                         description="mini build daemon.",
+                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
+
+        parser.add_argument("-f", "--foreground", action='store_true',
+                            help="Don't daemonize, log to console.")
+        parser.add_argument("-W", "--webserver-bind", action='store', default="0.0.0.0:8066",
+                            help="Web Server IP/Hostname and port to bind to.")
+        parser.add_argument("-F", "--ftpserver-bind", action='store', default="0.0.0.0:8067",
+                            help="FTP Server IP/Hostname and port to bind to.")
+
+        group_log = parser.add_argument_group("Logging")
+        group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
+                               help="Lower log level. Give twice for max logs.")
+        group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
+                               help="Tighten log level. Give twice for min logs.")
+        group_log.add_argument("-l", "--loggers", action='store', default="syslog",
+                               help="Comma-separated list of loggers (syslog, console, file) to use.")
+
+        group_conf = parser.add_argument_group("Daemon configuration")
+        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
+                                help="Run with this home dir. The only use case to change this for debugging, really.")
+        group_conf.add_argument("-I", "--instdir", action='store', default="/usr/share/pyshared",
+                                help="Run with this installation dir (where mini_buildd python module is located).")
+
+        group_db = parser.add_argument_group("Database")
+        group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
+                              help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
+        group_db.add_argument("-C", "--create-default-config", action='store', metavar="MIRROR_URL",
+                              help="Create an initial default config.")
+        group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
+                              help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/') \
+django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
+        group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
+                              help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
+
+        return parser.parse_args()
 
     def prepare(self):
         from mini_buildd.models import Repository, Builder
@@ -45,6 +90,24 @@ class Main():
         thread.start()
 
     def run(self):
+        # Execute extra options that exit without running Main() daemon
+        if self._args.set_admin_password:
+            main.get_webapp().set_admin_password(password=self._args.set_admin_password)
+            sys.exit(0)
+        elif self._args.create_default_config:
+            main.get_webapp().create_default_config(mirror=self._args.create_default_config)
+            sys.exit(0)
+        elif self._args.loaddata:
+            main.get_webapp().loaddata(f=self._args.loaddata)
+            sys.exit(0)
+        elif self._args.dumpdata:
+            main.get_webapp().dumpdata(a=self._args.dumpdata)
+            sys.exit(0)
+
+        # Daemonize if configured
+        if not self._args.foreground:
+            daemon.DaemonContext().open()
+
         self.prepare()
 
         # Start watcher and installer
@@ -64,32 +127,11 @@ class Main():
         mini_buildd.log.info("Shutting down (%s active threads)" % threading.activeCount())
         mini_buildd.log.info("Shutdown complete. Bye...")
 
-# Create main
-main = Main()
-
-# Execute extra options that exit without running Main() daemon
-if mini_buildd.args.set_admin_password:
-    main.get_webapp().set_admin_password(password=mini_buildd.args.set_admin_password)
-    sys.exit(0)
-elif mini_buildd.args.create_default_config:
-    main.get_webapp().create_default_config(mirror=mini_buildd.args.create_default_config)
-    sys.exit(0)
-elif mini_buildd.args.loaddata:
-    main.get_webapp().loaddata(f=mini_buildd.args.loaddata)
-    sys.exit(0)
-elif mini_buildd.args.dumpdata:
-    main.get_webapp().dumpdata(a=mini_buildd.args.dumpdata)
-    sys.exit(0)
-
-# Daemonize if configured
-if not mini_buildd.args.foreground:
-    daemon.DaemonContext().open()
-
 # Main processing; the only benefit of the master try/catch is
 # that we can generate a error message to log on exception --
 # most importantly, when we cannot start up
 try:
-    main.run()
+    Main().run()
 except:
     mini_buildd.log.exception("mini-buildd run failed")
     sys.exit(1)

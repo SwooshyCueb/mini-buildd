@@ -1,17 +1,22 @@
 # coding: utf-8
 import os
 import re
+import logging
+
+from pyftpdlib import ftpserver
 
 import mini_buildd
-from pyftpdlib import ftpserver
+
+log = logging.getLogger(__name__)
+
 
 class FtpHandler(ftpserver.FTPHandler):
     def on_file_received(self, file):
         if self._mini_buildd_cfregex.match(file):
-            mini_buildd.log.info("Queuing incoming changes file: %s" % file);
+            log.info("Queuing incoming changes file: %s" % file);
             self._mini_buildd_queue.put(file)
         else:
-            mini_buildd.log.debug("Skipping incoming file: %s" % file);
+            log.debug("Skipping incoming file: %s" % file);
 
 class FtpServer(ftpserver.FTPServer):
     def __init__(self, bind, path, queue):
@@ -31,5 +36,5 @@ class FtpServer(ftpserver.FTPServer):
         self._server = ftpserver.FTPServer((self._host, self._port), self._handler)
 
     def run(self):
-        mini_buildd.log.info("Starting Ftp Server on '{h}:{p}'.".format(t=self.__class__.__name__, h=self._host, p=self._port))
+        log.info("Starting Ftp Server on '{h}:{p}'.".format(t=self.__class__.__name__, h=self._host, p=self._port))
         self._server.serve_forever()

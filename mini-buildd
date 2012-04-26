@@ -1,5 +1,6 @@
 #!/usr/bin/python
 
+import string
 import threading
 import Queue
 import signal
@@ -8,14 +9,19 @@ import argparse
 import sys
 import time
 import daemon
+import logging
+import logging.handlers
+
 
 import mini_buildd
-import mini_buildd.arguments
+
+log = logging.getLogger("mini_buildd")
 
 class Main():
     def __init__(self):
         self._args = self.parse_args()
-        mini_buildd.arguments.init_logging(self._args)
+        self.configure_log()
+
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=True)
         self._iQueue = Queue.Queue()
         from mini_buildd.models import Repository
@@ -31,6 +37,24 @@ class Main():
 
     def get_webapp(self):
         return self._webapp
+
+    def configure_log(self):
+        # Add predefinded handlers: console, syslog, file
+        self._LOG_HANDLERS = {}
+        self._LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+        self._LOG_HANDLERS["console"] = logging.StreamHandler()
+        self._LOG_HANDLERS["file"] = logging.FileHandler(self._args.home + "/.mini-buildd.log")
+
+        # Global: Don't propagate exceptions that happen while logging
+        logging.raiseExceptions = 0
+
+        for h in string.split(self._args.loggers + (",console" if self._args.foreground else ""), ","):
+            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("mini-buildd(%(name)s): %(levelname)-8s: %(message)s [%(module)s:%(lineno)d]"))
+            log.addHandler(self._LOG_HANDLERS[h])
+
+        # Finally, set log level
+        loglevel=logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
+        log.setLevel(loglevel)
 
     def parse_args(self):
         parser = argparse.ArgumentParser(prog="mini-buildd",
@@ -81,7 +105,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             b.prepare()
 
     def shutdown(self, signum=-1, frame=-1):
-        mini_buildd.log.debug("Got signal: %s" % signum)
+        log.debug("Got signal: %s" % signum)
         self._run = False
 
     def start_thread(self, obj):
@@ -92,17 +116,17 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
     def run(self):
         # Execute extra options that exit without running Main() daemon
         if self._args.set_admin_password:
-            main.get_webapp().set_admin_password(password=self._args.set_admin_password)
-            sys.exit(0)
+            self.get_webapp().set_admin_password(password=self._args.set_admin_password)
+            return
         elif self._args.create_default_config:
-            main.get_webapp().create_default_config(mirror=self._args.create_default_config)
-            sys.exit(0)
+            self.get_webapp().create_default_config(mirror=self._args.create_default_config)
+            return
         elif self._args.loaddata:
-            main.get_webapp().loaddata(f=self._args.loaddata)
-            sys.exit(0)
+            self.get_webapp().loaddata(f=self._args.loaddata)
+            return
         elif self._args.dumpdata:
-            main.get_webapp().dumpdata(a=self._args.dumpdata)
-            sys.exit(0)
+            self.get_webapp().dumpdata(a=self._args.dumpdata)
+            return
 
         # Daemonize if configured
         if not self._args.foreground:
@@ -124,8 +148,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         while self._run:
             signal.pause()
 
-        mini_buildd.log.info("Shutting down (%s active threads)" % threading.activeCount())
-        mini_buildd.log.info("Shutdown complete. Bye...")
+        log.info("Shutting down (%s active threads)" % threading.activeCount())
+        log.info("Shutdown complete. Bye...")
 
 # Main processing; the only benefit of the master try/catch is
 # that we can generate a error message to log on exception --
@@ -133,5 +157,5 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 try:
     Main().run()
 except:
-    mini_buildd.log.exception("mini-buildd run failed")
+    log.exception("mini-buildd run failed")
     sys.exit(1)

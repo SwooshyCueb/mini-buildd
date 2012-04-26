@@ -1,5 +1,8 @@
 # coding: utf-8
 import mini_buildd
+import logging
+
+log = logging.getLogger(__name__)
 
 class WebServerBase(object):
     def __init__(self, bind, wsgi_app):
@@ -9,7 +12,7 @@ class WebServerBase(object):
         self._wsgi_app = wsgi_app
 
     def run(self):
-        mini_buildd.log.info("Starting Web Server ({t}) on '{h}:{p}'.".format(t=self.__class__.__name__, h=self._host, p=self._port))
+        log.info("Starting Web Server ({t}) on '{h}:{p}'.".format(t=self.__class__.__name__, h=self._host, p=self._port))
         self._run()
 
 

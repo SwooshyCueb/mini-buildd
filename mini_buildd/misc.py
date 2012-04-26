@@ -4,8 +4,11 @@ import os
 import errno
 import subprocess
 import tempfile
+import logging
 
 import mini_buildd
+
+log = logging.getLogger(__name__)
 
 def codename2Version(codename):
     known = {
@@ -25,21 +28,21 @@ def codename2Version(codename):
 def mkdirs(path):
     try:
         os.makedirs(path)
-        mini_buildd.log.info("Directory created: {d}".format(d=path))
+        log.info("Directory created: {d}".format(d=path))
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
         else:
-            mini_buildd.log.info("Directory already exists, ignoring; {d}".format(d=path))
+            log.info("Directory already exists, ignoring; {d}".format(d=path))
 
 def run_cmd(cmd):
     # Run command, keep output
     output = tempfile.TemporaryFile()
-    mini_buildd.log.info("Running system command: '%s'" % cmd)
+    log.info("Running system command: '%s'" % cmd)
     retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
 
     # Log command output
-    l = mini_buildd.log.info if (retval == 0) else mini_buildd.log.error
+    l = log.info if (retval == 0) else log.error
     output.seek(0)
     for line in output:
         l("Command output: %s" % line.replace("\n", ""))
@@ -49,11 +52,11 @@ def run_cmd(cmd):
 
 def get_cmd_stdout(cmd):
     output = tempfile.TemporaryFile()
-    mini_buildd.log.info("Running system command: '%s'" % cmd)
+    log.info("Running system command: '%s'" % cmd)
     retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
     if retval == 0:
         output.seek(0)
         return output.read()
     else:
-        mini_buildd.log.error("Command failed: %s" % cmd)
+        log.error("Command failed: %s" % cmd)
         return ""

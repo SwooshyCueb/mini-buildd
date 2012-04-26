@@ -6,8 +6,11 @@ Manage schroots for mini-buildd.
 import os
 import glob
 import tempfile
+import logging
 
 import mini_buildd
+
+log = logging.getLogger(__name__)
 
 def rfile(path):
     with open(path) as f:
@@ -18,7 +21,7 @@ class LVMLoop():
         self._vgname = "mini-buildd-loop-{a}".format(a=arch)
         self._backing_file = os.path.join(path, "lvm.image")
         self._size = 100
-        mini_buildd.log.debug("LVMLoop on {b}, size {s} G".format(b=self._backing_file, s=size))
+        log.debug("LVMLoop on {b}, size {s} G".format(b=self._backing_file, s=size))
 
     def get_vgname(self):
         return self._vgname
@@ -38,22 +41,22 @@ class LVMLoop():
         if not os.path.exists(self._backing_file):
             mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
                     imgfile=self._backing_file, gigs=self._size))
-            mini_buildd.log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self._backing_file, s=self._size))
+            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self._backing_file, s=self._size))
 
         # Check loop dev
         if self.get_loop_device() == None:
             mini_buildd.misc.run_cmd("sudo losetup -v -f {img}".format(img=self._backing_file))
-            mini_buildd.log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self._backing_file))
+            log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self._backing_file))
 
         # Check lvm
         try:
             mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self._vgname))
         except:
-            mini_buildd.log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
+            log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
             mini_buildd.misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
             mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self._vgname, dev=self.get_loop_device()))
 
-        mini_buildd.log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
+        log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
 
     def purge(self):
         try:
@@ -63,7 +66,7 @@ class LVMLoop():
             mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
             mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
         except:
-            mini_buildd.log.warn("[@todo: better log:] Some purging steps may have failed")
+            log.warn("[@todo: better log:] Some purging steps may have failed")
 
 
 class Schroot():
@@ -99,12 +102,12 @@ class Schroot():
 
             try:
                 mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name))
-                mini_buildd.log.info("LV {c} exists, leaving alone".format(c=name))
+                log.info("LV {c} exists, leaving alone".format(c=name))
             except:
-                mini_buildd.log.info("Setting up LV {c}...".format(c=name))
+                log.info("Setting up LV {c}...".format(c=name))
 
                 mirror=dist.base_source.mirrors.all()[0]
-                mini_buildd.log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
+                log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
 
                 # @todo aptenv ??
                 #mbdAptEnv
@@ -117,7 +120,7 @@ class Schroot():
                     mini_buildd.misc.run_cmd("sudo debootstrap --variant=buildd --arch {a} --include=apt '{d}' '{m}' '{M}'".\
                                                  format(a=self.builder.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
                     mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    mini_buildd.log.info("LV {n} created successfully...".format(n=name))
+                    log.info("LV {n} created successfully...".format(n=name))
                     # There must be schroot configs for each uploadable distribution (does not work with aliases).
                     open(os.path.join(self.builder.get_path(), "schroot.conf"), 'w').write("""
 [{n}]
@@ -134,7 +137,7 @@ lvm-snapshot-options=--size 4G
 personality={p}
 """.format(n=name, d=device, f=self.CHROOT_FS, p=self.get_personality()))
                 except:
-                    mini_buildd.log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
+                    log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
                     try:
                         mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                         mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
@@ -145,5 +148,5 @@ personality={p}
     def purge(self):
         # @todo
         for dist in self.builder.dists.all():
-            mini_buildd.log.error("@todo NOT IMPL PURGE")
+            log.error("@todo NOT IMPL PURGE")
         #self._backend.purge()

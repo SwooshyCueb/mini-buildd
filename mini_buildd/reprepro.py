@@ -4,8 +4,11 @@ Run reprepro commands.
 """
 
 import os
+import logging
 
 import mini_buildd
+
+log = logging.getLogger(__name__)
 
 class Reprepro():
     def __init__(self, repository):
@@ -31,7 +34,7 @@ gnupghome {h}
 
         mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' clearvanished".format(d=path))
         mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path))
-        mini_buildd.log.info("Prepared reprepro config: {d}".format(d=path))
+        log.info("Prepared reprepro config: {d}".format(d=path))
 
     def processincoming(self, cf=""):
         return mini_buildd.misc.run_cmd(self._cmd + "processincoming INCOMING \"{cf}\"".format(cf=os.path.basename(cf)))

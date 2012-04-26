@@ -10,9 +10,13 @@ import django.db
 import django.conf
 import django.core.exceptions
 import django.contrib
+import logging
 
 import mini_buildd
 import mini_buildd.schroot
+
+log = logging.getLogger(__name__)
+
 
 class Mirror(django.db.models.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
@@ -42,7 +46,7 @@ class Source(django.db.models.Model):
         apt_lines = []
         for m in self.mirrors.all():
             apt_lines.append(kind + ' ' if kind else '' + m.url + ' ' + self.codename + ' ' + components)
-        mini_buildd.log.debug(str(apt_lines))
+        log.debug(str(apt_lines))
         return apt_lines
 
     def get_apt_pin(self):
@@ -153,7 +157,7 @@ Expire-Date: 0""")
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
-        mini_buildd.log.debug("Initializing repository '{id}'".format(id=self.id))
+        log.debug("Initializing repository '{id}'".format(id=self.id))
 
         self.gnupg = GnuPGInterface.GnuPG()
         self.gnupg.options.meta_interactive = 0
@@ -249,15 +253,15 @@ ButAutomaticUpgrades: {bau}
             result = proc.handles['stdout'].read()
             proc.wait()
         except:
-            mini_buildd.log.warn("No GNUPG pub key found.")
+            log.warn("No GNUPG pub key found.")
             result = ""
         return result
 
     def prepareGnuPG(self):
         if self.getGpgPubKey():
-            mini_buildd.log.info("GPG public key found, skipping key generation...")
+            log.info("GPG public key found, skipping key generation...")
         else:
-            mini_buildd.log.info("Generating new Gnu PG key in '{h}'.".format(h=self.get_path()))
+            log.info("Generating new Gnu PG key in '{h}'.".format(h=self.get_path()))
             proc = self.gnupg.run(["--gen-key"],
                                   create_fhs=['stdin', 'stdout', 'stderr'])
 
@@ -266,19 +270,19 @@ Name-Real: mini-buildd-{id} on {h}
 Name-Email: mini-buildd-{id}@{h}
 '''.format(tpl=self.gnupg_template, id=self.id, h=self.host))
 
-            mini_buildd.log.debug("Generating gnupg key...")
+            log.debug("Generating gnupg key...")
             proc.handles['stdin'].close()
             report = proc.handles['stderr'].read()
             proc.handles['stderr'].close()
             try:
                 proc.wait()
             except:
-                mini_buildd.log.error(report)
+                log.error(report)
                 raise
 
     def prepare(self):
         path = self.get_path()
-        mini_buildd.log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
+        log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         mini_buildd.misc.mkdirs(path)
         self.prepareGnuPG()
@@ -349,7 +353,7 @@ class Builder(django.db.models.Model):
         return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "builders", self.arch.arch)
 
     def prepare(self):
-        mini_buildd.log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))
+        log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))
         s = mini_buildd.schroot.Schroot(self)
         s.prepare()
 
@@ -368,7 +372,7 @@ def create_default(mirror):
     codename = mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip()
     arch = mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip()
 
-    mini_buildd.log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
+    log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
 
     m=Mirror(url=mirror)
     m.save()

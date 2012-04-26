@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import tempfile
-import loggers
+import logging
 
 import django.core.management
 import django.http
 
 import mini_buildd
 
-log = loggers.getLogger(__name__)
+log = logging.getLogger(__name__)
 
 def graph_models(request):
     with tempfile.NamedTemporaryFile(suffix=".png") as img:

@@ -72,7 +72,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         logging.raiseExceptions = 0
 
         for h in string.split(self._args.loggers + (",console" if self._args.foreground else ""), ","):
-            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("mini-buildd(%(name)s): %(levelname)-8s: %(message)s [%(module)s:%(lineno)d]"))
+            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"))
             log.addHandler(self._LOG_HANDLERS[h])
 
         # Finally, set log level

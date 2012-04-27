@@ -36,6 +36,9 @@ class Main():
                                help="Lower log level. Give twice for max logs.")
         group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
                                help="Tighten log level. Give twice for min logs.")
+        group_log.add_argument("-d", "--debug", action='store_true', default=False,
+                               help="Enable 'debug mode'. This will set logging vebosity to max, and also \
+tries to put external code into 'debug' mode as far as supported. Never use this for production.")
         group_log.add_argument("-l", "--loggers", action='store', default="syslog",
                                help="Comma-separated list of loggers (syslog, console, file) to use.")
 
@@ -73,14 +76,14 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             log.addHandler(self._LOG_HANDLERS[h])
 
         # Finally, set log level
-        loglevel=logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
+        loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
         log.setLevel(loglevel)
 
     def __init__(self):
         self._args = self.parse_args()
         self.configure_log()
 
-        self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=True)
+        self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=self._args.debug)
         self._iQueue = Queue.Queue()
         from mini_buildd.models import Repository
         self._iWatchers = []

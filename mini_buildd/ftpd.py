@@ -9,6 +9,10 @@ import mini_buildd
 
 log = logging.getLogger(__name__)
 
+# pyftpdlib log callbacks: http://code.google.com/p/pyftpdlib/wiki/Tutorial#2.1_-_Logging
+pyftpdlib.ftpserver.log      = lambda msg: log.info(msg)
+pyftpdlib.ftpserver.logline  = lambda msg: log.debug(msg)
+pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 class FtpHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, file):

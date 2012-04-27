@@ -40,7 +40,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             USE_L10N = True,
             SECRET_KEY = ")-%wqspscru#-9rl6u0sbbd*yn@$=ic^)-9c$+@@w898co2!7^",
             ROOT_URLCONF = 'mini_buildd.root_urls',
-            LOGGING_CONFIG = None,
             INSTALLED_APPS = (
                 'django.contrib.auth',
                 'django.contrib.contenttypes',

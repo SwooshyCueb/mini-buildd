@@ -4,7 +4,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
-class WebServerBase(object):
+class HttpDBase(object):
     def __init__(self, bind, wsgi_app):
         self._bind = bind.split(":")
         self._host = self._bind[0]
@@ -18,9 +18,9 @@ class WebServerBase(object):
 
 # CherryPy WSGI Web Server
 import cherrypy.wsgiserver
-class CherryPyWebServer(WebServerBase):
+class CherryPyHttpD(HttpDBase):
     def __init__(self, bind, wsgi_app):
-        super(CherryPyWebServer, self).__init__(bind, wsgi_app)
+        super(CherryPyHttpD, self).__init__(bind, wsgi_app)
         self._httpd = cherrypy.wsgiserver.CherryPyWSGIServer((self._host, self._port), self._wsgi_app)
 
     def _run(self):
@@ -29,9 +29,9 @@ class CherryPyWebServer(WebServerBase):
 
 # Standard Library Reference WSGI Web Server
 import wsgiref.simple_server
-class WsgiRefWebServer(WebServerBase):
+class WsgiRefHttpD(HttpDBase):
     def __init__(self, bind, wsgi_app):
-        super(WsgiRefWebServer, self).__init__(bind, wsgi_app)
+        super(WsgiRefHttpD, self).__init__(bind, wsgi_app)
         self._httpd = wsgiref.simple_server.make_server(self._host, self._port, self._wsgi_app)
 
     def _run(self):
@@ -40,15 +40,15 @@ class WsgiRefWebServer(WebServerBase):
 
 # Django development Web Server
 import django.core.management
-class DjangoWebServer(WebServerBase):
+class DjangoHttpD(HttpDBase):
     def __init__(self, bind, wsgi_app):
-        super(DjangoWebServer, self).__init__(bind, wsgi_app)
+        super(DjangoHttpD, self).__init__(bind, wsgi_app)
 
     def _run(self):
         django.core.management.call_command('runserver', self._host + ":" + str(self._port))
 
 
 # Set web server to be used
-WebServer = CherryPyWebServer
-#WebServer = WsgiRefWebServer
-#WebServer = DjangoWebServer
+HttpD = CherryPyHttpD
+#HttpD = WsgiRefHttpD
+#HttpD = DjangoHttpD

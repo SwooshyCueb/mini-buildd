@@ -76,7 +76,6 @@ class Schroot():
         path = builder.get_path()
         mini_buildd.misc.mkdirs(path)
         self.builder = builder
-        print "P=" + self.get_personality()
         if builder.schroot_mode == "lvm_loop":
             self._backend = LVMLoop(path, builder.arch, 100);
 

@@ -1,5 +1,6 @@
 # coding: utf-8
 import os
+import stat
 import re
 import logging
 
@@ -16,6 +17,7 @@ pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 class FtpHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, file):
+        os.chmod(file, stat.S_IRUSR | stat.S_IRGRP )
         if self._mini_buildd_cfregex.match(file):
             log.info("Queuing incoming changes file: %s" % file);
             self._mini_buildd_queue.put(file)

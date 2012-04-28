@@ -10,6 +10,17 @@ import mini_buildd
 
 log = logging.getLogger(__name__)
 
+class BindArgs(object):
+    """ Convenience class to parse bind string "hostname:port" """
+    def __init__(self, bind):
+        try:
+            self.string = bind
+            self.tuple = (bind.split(":")[0], int(bind.split(":")[1]))
+            self.host = self.tuple[0]
+            self.port = self.tuple[1]
+        except:
+            raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
+
 def codename2Version(codename):
     known = {
         'woody'  : "30",

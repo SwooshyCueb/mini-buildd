@@ -27,9 +27,7 @@ class FtpHandler(pyftpdlib.ftpserver.FTPHandler):
 
 class FtpD(pyftpdlib.ftpserver.FTPServer):
     def __init__(self, bind, path, queue):
-        self._bind = bind.split(":")
-        self._host = self._bind[0]
-        self._port = int(self._bind[1])
+        self._bind = mini_buildd.misc.BindArgs(bind)
 
         mini_buildd.misc.mkdirs(path)
 
@@ -40,8 +38,7 @@ class FtpD(pyftpdlib.ftpserver.FTPServer):
         self._handler._mini_buildd_queue = queue
         self._handler._mini_buildd_cfregex = re.compile("^.*\.changes$")
 
-        self._server = pyftpdlib.ftpserver.FTPServer((self._host, self._port), self._handler)
+        self._server = pyftpdlib.ftpserver.FTPServer(self._bind.tuple, self._handler)
 
     def run(self):
-        log.info("Starting Ftp Server on '{h}:{p}'.".format(t=self.__class__.__name__, h=self._host, p=self._port))
         self._server.serve_forever()

@@ -28,7 +28,7 @@ class Main():
                             help="Don't daemonize, log to console.")
         parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
                             help="Web Server IP/Hostname and port to bind to.")
-        parser.add_argument("-F", "--ftpd-bind", action='store', default="0.0.0.0:8067",
+        parser.add_argument("-F", "--ftpd-bind", action='store', default="0.0.0.0:8068",
                             help="FTP Server IP/Hostname and port to bind to.")
 
         group_log = parser.add_argument_group("Logging")
@@ -92,7 +92,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=self._args.home + '/rep/incoming')
         self._installer = mini_buildd.Installer(queue=self._iQueue)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, path=os.path.join(self._args.home, "incoming"), queue=self._iQueue)
+        self._ftpd = mini_buildd.IncomingFtpD(bind=self._args.ftpd_bind, path=os.path.join(self._args.home, "incoming"), queue=self._iQueue)
         self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
         self._run = True
 

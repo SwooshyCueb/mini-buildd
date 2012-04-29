@@ -84,16 +84,15 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self.configure_log()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=self._args.debug)
-        self._iQueue = Queue.Queue()
-        from mini_buildd.models import Repository
-        self._iWatchers = []
-        for r in Repository.objects.all():
-            self._iWatchers.append(mini_buildd.IWatcher(queue=self._iQueue, repository=r))
 
-        #self._iWatcher  = mini_buildd.IWatcher (queue=self._iQueue, idir=self._args.home + '/rep/incoming')
-        self._installer = mini_buildd.Installer(queue=self._iQueue)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, home=self._args.home, incoming="incoming", repositories="repositories", queue=self._iQueue)
+        # Queue of all incoming *.changes files
+        self._incoming_queue = Queue.Queue(maxsize=0)
+
         self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
+        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, home=self._args.home,
+                                      incoming="incoming", repositories="repositories",
+                                      queue=self._incoming_queue)
+        self._dispatcher = mini_buildd.Dispatcher(queue=self._incoming_queue)
         self._run = True
 
     def prepare(self):
@@ -106,11 +105,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
     def shutdown(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)
         self._run = False
-
-    def start_thread(self, obj):
-        thread = threading.Thread(target=obj.run)
-        thread.setDaemon(True)
-        thread.start()
 
     def run(self):
         # Extra options that exit without running Main() daemon
@@ -130,12 +124,9 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             # Prepare home
             self.prepare()
 
-            # Start watcher and installer
-            for w in self._iWatchers:
-                self.start_thread(w)
-            self.start_thread(self._installer)
-            self.start_thread(self._ftpd)
-            self.start_thread(self._httpd)
+            mini_buildd.misc.start_thread(self._httpd)
+            mini_buildd.misc.start_thread(self._ftpd)
+            mini_buildd.misc.start_thread(self._dispatcher)
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)

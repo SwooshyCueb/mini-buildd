@@ -3,6 +3,7 @@ import sys
 import os
 import errno
 import subprocess
+import threading
 import tempfile
 import logging
 
@@ -20,6 +21,11 @@ class BindArgs(object):
             self.port = self.tuple[1]
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
+
+def start_thread(obj):
+    thread = threading.Thread(target=obj.run)
+    thread.setDaemon(True)
+    thread.start()
 
 def codename2Version(codename):
     known = {

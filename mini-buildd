@@ -85,13 +85,14 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir, debug=self._args.debug)
 
-        # Queue of all incoming *.changes files
+        # Queue of all incoming files
         self._incoming_queue = Queue.Queue(maxsize=0)
+        self._incoming_queue_regex = "^(.*\.changes|.*\.buildrequest|.*\.buildresult)$"
 
         self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
         self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, home=self._args.home,
                                       incoming="incoming", repositories="repositories",
-                                      queue=self._incoming_queue)
+                                      queue=self._incoming_queue, queue_regex=self._incoming_queue_regex)
         self._dispatcher = mini_buildd.Dispatcher(spool_dir=os.path.join(self._args.home, "spool"), queue=self._incoming_queue)
         self._run = True
 

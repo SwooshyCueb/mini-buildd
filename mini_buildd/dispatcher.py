@@ -12,21 +12,30 @@ import mini_buildd
 log = logging.getLogger(__name__)
 
 class Changes(debian.deb822.Changes):
-    def __init__(self, file_path):
+    def __init__(self, file_path, spool_dir):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
+
         if os.path.exists(file_path):
             super(Changes, self).__init__(file(file_path))
+            self._spool_dir = os.path.join(spool_dir, self["Distribution"], "{p}_{v}".format(p=self["Source"], v=self["Version"]))
         else:
             super(Changes, self).__init__([])
+            self._spool_dir = None
 
     def save(self):
         log.info("Save {f}".format(f=self._file_path))
         self.dump(fd=open(self._file_path, "w+"))
 
+
 class Buildrequest(Changes):
-    def __init__(self, file_path):
-        super(Buildrequest, self).__init__(file_path)
+    def __init__(self, file_path, spool_dir):
+        super(Buildrequest, self).__init__(file_path, spool_dir)
+
+        # Create spool directory; this may already exist
+        if self._spool_dir:
+            mini_buildd.misc.mkdirs(self._spool_dir)
+
         self._tar_path = file_path.rpartition("_")[0]
 
     def upload(self, host="localhost", port=8067):
@@ -42,17 +51,21 @@ class Buildrequest(Changes):
         except:
             ftp.storbinary("STOR {f}".format(f=os.path.basename(self._tar_path)), open(self._tar_path))
 
+    def unpack(self):
+        path = os.path.join(self._spool_dir, self["Architecture"])
+        tar = tarfile.open(self._tar_path, "r")
+        tar.extractall(path=path)
+        tar.close()
+        return path
 
 class SourceChanges(Changes):
     def __init__(self, file_path, spool_dir):
-        super(SourceChanges, self).__init__(file_path)
+        super(SourceChanges, self).__init__(file_path, spool_dir)
+        self._base_spool_dir = spool_dir
 
-        self._spool_dir = os.path.join(spool_dir, self._file_name)
-        log.info("Source changes spool in '{d}'...". format(d=self._spool_dir))
-
+        # Create spool directory; this must not yet exist for a SourceChanges file.
         os.makedirs(self._spool_dir)
 
-        # Build tar file
         self._tar_path = os.path.join(self._spool_dir, self._file_name) + ".tar"
         tar = tarfile.open(self._tar_path, "w")
         try:
@@ -84,9 +97,11 @@ class SourceChanges(Changes):
         br_list = []
         for a in self.get_repository().archs.all():
             brf = "{b}_{a}.buildrequest".format(b=self._tar_path, a=a.arch)
-            br = Buildrequest(brf)
+            br = Buildrequest(brf, self._base_spool_dir)
             # @todo Add all build information from repository
-            br["X-Mini-Buildd-Test"] = "test"
+            for v in ["Distribution", "Source", "Version"]:
+                br[v] = self[v]
+            br["Architecture"] = a.arch
             br.save()
             br_list.append(br)
 
@@ -99,8 +114,9 @@ class Build():
         self._spool_dir = spool_dir
 
     def run(self):
-        br = Buildrequest(self._f)
-        log.info("STUB: Building {f}".format(f=self._f))
+        br = Buildrequest(self._f, self._spool_dir)
+        path = br.unpack()
+        log.info("STUB: Building: {p}".format(p=path))
 
 
 class Builder():

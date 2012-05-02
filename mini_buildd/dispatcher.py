@@ -12,53 +12,54 @@ import mini_buildd
 log = logging.getLogger(__name__)
 
 class Changes(debian.deb822.Changes):
-    def __init__(self, file_name):
-        self._file_name = file_name
-        if os.path.exists(file_name):
-            super(Changes, self).__init__(file(file_name))
+    def __init__(self, file_path):
+        self._file_path = file_path
+        self._file_name = os.path.basename(file_path)
+        if os.path.exists(file_path):
+            super(Changes, self).__init__(file(file_path))
         else:
             super(Changes, self).__init__([])
 
     def save(self):
-        log.info("Save {f}".format(f=self._file_name))
-        self.dump(fd=open(self._file_name, "w+"))
+        log.info("Save {f}".format(f=self._file_path))
+        self.dump(fd=open(self._file_path, "w+"))
 
 class Buildrequest(Changes):
-    def __init__(self, file_name, tar_name):
-        super(Buildrequest, self).__init__(file_name)
-        self._tar_name = tar_name
+    def __init__(self, file_path):
+        super(Buildrequest, self).__init__(file_path)
+        self._tar_path = file_path.rpartition("_")[0]
 
     def upload(self, host="localhost", port=8067):
         ftp = ftplib.FTP()
         ftp.connect(host, port)
         ftp.login()
         ftp.cwd("/incoming")
-        ftp.storbinary("STOR {f}".format(f=os.path.basename(self._file_name)), open(self._file_name))
+        ftp.storbinary("STOR {f}".format(f=self._file_name), open(self._file_path))
 
         try:
-            ftp.size(os.path.basename(self._tar_name))
-            log.info("Already uploaded to this host: '{f}'...". format(f=self._tar_name))
+            ftp.size(os.path.basename(self._tar_path))
+            log.info("Already uploaded to this host: '{f}'...". format(f=self._tar_path))
         except:
-            ftp.storbinary("STOR {f}".format(f=os.path.basename(self._tar_name)), open(self._tar_name))
+            ftp.storbinary("STOR {f}".format(f=os.path.basename(self._tar_path)), open(self._tar_path))
 
 
 class SourceChanges(Changes):
-    def __init__(self, file_name, spool_dir):
-        super(SourceChanges, self).__init__(file_name)
+    def __init__(self, file_path, spool_dir):
+        super(SourceChanges, self).__init__(file_path)
 
-        self._spool_dir = os.path.join(spool_dir, os.path.basename(self._file_name))
+        self._spool_dir = os.path.join(spool_dir, self._file_name)
         log.info("Source changes spool in '{d}'...". format(d=self._spool_dir))
 
         os.makedirs(self._spool_dir)
 
         # Build tar file
-        self._tar_file = os.path.join(self._spool_dir, os.path.basename(self._file_name)) + ".tar"
-        tar = tarfile.open(self._tar_file, "w")
+        self._tar_path = os.path.join(self._spool_dir, self._file_name) + ".tar"
+        tar = tarfile.open(self._tar_path, "w")
         try:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
-            tar_add(self._file_name)
+            tar_add(self._file_path)
             for f in self.get_files():
-                tar_add(os.path.join(os.path.dirname(self._file_name), f["name"]))
+                tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
         finally:
             tar.close()
 
@@ -82,8 +83,8 @@ class SourceChanges(Changes):
         # Build buildrequest files for all archs
         br_list = []
         for a in self.get_repository().archs.all():
-            brf = "{b}_{a}.buildrequest".format(b=self._tar_file, a=a.arch)
-            br = Buildrequest(brf, self._tar_file)
+            brf = "{b}_{a}.buildrequest".format(b=self._tar_path, a=a.arch)
+            br = Buildrequest(brf)
             # @todo Add all build information from repository
             br["X-Mini-Buildd-Test"] = "test"
             br.save()
@@ -93,21 +94,24 @@ class SourceChanges(Changes):
 
 
 class Build():
-    def __init__(self, f):
+    def __init__(self, spool_dir, f):
         self._f = f
+        self._spool_dir = spool_dir
 
     def run(self):
+        br = Buildrequest(self._f)
         log.info("STUB: Building {f}".format(f=self._f))
 
 
 class Builder():
-    def __init__(self, queue):
+    def __init__(self, spool_dir, queue):
         self._queue = queue
+        self._spool_dir = spool_dir
 
     def run(self):
         while True:
             f = self._queue.get()
-            mini_buildd.misc.start_thread(Build(f))
+            mini_buildd.misc.start_thread(Build(self._spool_dir, f))
             self._queue.task_done()
 
 
@@ -118,21 +122,22 @@ class Dispatcher():
 
         # Queue of all local builds
         self._build_queue = Queue.Queue(maxsize=0)
-        self._builder = Builder(self._build_queue)
+        self._builder = Builder(self._spool_dir, self._build_queue)
 
     def run(self):
         mini_buildd.misc.start_thread(self._builder)
         while True:
             f = self._incoming_queue.get()
-            if os.path.splitext(f)[1] == ".changes":
+            ext = os.path.splitext(f)[1]
+            if ext == ".changes":
                 # User upload
                 c = SourceChanges(f, self._spool_dir)
                 for br in c.gen_build_requests():
                     br.upload()
 
-            elif os.path.splitext(f)[1] == ".buildrequest":
+            elif ext == ".buildrequest":
                 self._build_queue.put(f)
-            elif os.path.splitext(f)[1] == ".buildresult":
+            elif ext == ".buildresult":
                 log.info("STUB: build result: '{f}'...".format(f=f))
             else:
                 raise Exception("Internal error: Wrong incoming file {f}".format(f=f))

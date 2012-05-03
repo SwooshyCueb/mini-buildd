@@ -20,10 +20,36 @@ mbdBasedist2Version()
 	echo -n "${version}"
 }
 
+mbdPrevStable()
+{
+	case $1 in
+		sarge)
+			printf "woody"
+			;;
+		etch)
+			printf "sarge"
+			;;
+		lenny)
+			printf "etch"
+			;;
+		squeeze)
+			printf "lenny"
+			;;
+		wheezy)
+			printf "squeeze"
+			;;
+		SID)
+			printf "wheezy"
+			;;
+		*)
+			printf ""
+	esac
+}
+
 read -e -i "$(hostname)" -p "mini-buildd reposiory id? " id
 read -e -i "$(lsb_release --short --codename)" -p "upload to base distribution? " dist
 read -e -i "experimental" -p "upload to experimental or unstable? " dest
-read -e -i "squeeze-${id}-${dest}" -p "auto backports for? " backports
+read -e -i "$(mbdPrevStable ${dist})-${id}-${dest}" -p "auto backports for? " backports
 
 version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
 if [ "${dest}" = "experimental" ]; then
@@ -49,4 +75,4 @@ done
 
 printf "Uploads: %s\n" "$(find . -name "*.changes")"
 dput -u "mini-buildd-${id}" *.changes
-rm -v *.changes
+rm -v -i *.changes *.dsc *.diff *.tar.gz

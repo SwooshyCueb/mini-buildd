@@ -21,7 +21,7 @@ mbdBasedist2Version()
 }
 
 read -e -i "$(hostname)" -p "mini-buildd reposiory id? " id
-read -e -i "sid" -p "upload to base distribution? " dist
+read -e -i "$(lsb_release --short --codename)" -p "upload to base distribution? " dist
 read -e -i "experimental" -p "upload to experimental or unstable? " dest
 read -e -i "squeeze-${id}-${dest}" -p "auto backports for? " backports
 

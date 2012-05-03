@@ -4,7 +4,7 @@
 [ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian/debian"
 
 # Test home is in '..' to avoid problems with large files in the Debian Source Tree
-MBD_HOME="$(readlink -f $(dirname "${0}"))/../mini-buildd-devel-home"
+MBD_HOME="/tmp/mini-buildd-devel"
 MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --debug"
 
 _head()

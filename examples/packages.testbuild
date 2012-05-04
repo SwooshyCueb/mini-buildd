@@ -58,21 +58,29 @@ else
 	version+="1"
 fi
 
+PKG_DIR="$(dirname $(readlink -f ${0}))/packages/"
 PACKAGES="${*}"
-[ -n "${PACKAGES}" ] || PACKAGES=$(find . -maxdepth 1 -mindepth 1 -type d)
+[ -n "${PACKAGES}" ] || PACKAGES=$(ls "${PKG_DIR}/")
 
 printf "Acting on: %s\n" "${PACKAGES}"
 
+builddir="$(mktemp -d)"
+cd "${builddir}"
+
 for P in ${PACKAGES}; do
 	(
+		cp -a "${PKG_DIR}/${P}" "${P}"
 		cd "${P}"
 		autoreconf --force --install
-		debchange --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test release for mbd"
+		debchange --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
 		[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
 		dpkg-buildpackage -us -uc -S
 	)
 done
 
-printf "Uploads: %s\n" "$(find . -name "*.changes")"
 dput -u "mini-buildd-${id}" *.changes
-rm -v -i *.changes *.dsc *.diff *.tar.gz
+
+read -e -i"y" -p "Purge build dir '${builddir}'? " purge
+if [ "${purge}" = "y" ]; then
+	rm -rf "${builddir}"
+fi

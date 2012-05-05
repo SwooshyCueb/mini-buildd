@@ -78,9 +78,10 @@ for P in ${PACKAGES}; do
 	)
 done
 
-dput -u "mini-buildd-${id}" *.changes
+action=u
 
-read -e -i"y" -p "Purge build dir '${builddir}'? " purge
-if [ "${purge}" = "y" ]; then
-	rm -rf "${builddir}"
-fi
+while [ "${action}" != "q" ]; do
+	dput -u -f "mini-buildd-${id}" *.changes || true
+	read -e -i"r" -p "(q)uit and purge build dir '${builddir}', or (r)e-upload? " action
+done
+rm -rfv "${builddir}"

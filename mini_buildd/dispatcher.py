@@ -4,6 +4,7 @@ import Queue
 import logging
 import tarfile
 import ftplib
+import re
 
 import debian.deb822
 
@@ -18,7 +19,7 @@ class Changes(debian.deb822.Changes):
 
         if os.path.exists(file_path):
             super(Changes, self).__init__(file(file_path))
-            self._spool_dir = os.path.join(spool_dir, self["Distribution"], "{p}_{v}".format(p=self["Source"], v=self["Version"]))
+            self._spool_dir = os.path.join(spool_dir, self["Distribution"], self["Source"], self["Version"])
         else:
             super(Changes, self).__init__([])
             self._spool_dir = None
@@ -95,13 +96,16 @@ class SourceChanges(Changes):
     def gen_build_requests(self):
         # Build buildrequest files for all archs
         br_list = []
-        for a in self.get_repository().archs.all():
+        r = self.get_repository()
+        for a in r.archs.all():
             brf = "{b}_{a}.buildrequest".format(b=self._tar_path, a=a.arch)
             br = Buildrequest(brf, self._base_spool_dir)
             # @todo Add all build information from repository
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
+            br["Base-Distribution"] = br["Distribution"].split("-")[0]
             br["Architecture"] = a.arch
+            br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
             br.save()
             br_list.append(br)
 
@@ -110,13 +114,79 @@ class SourceChanges(Changes):
 
 class Build():
     def __init__(self, spool_dir, f):
-        self._f = f
-        self._spool_dir = spool_dir
+        self._br = Buildrequest(f, spool_dir)
+
+    def get_status_from_buildlog(self, fn):
+        regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
+        values = {}
+        with open(fn) as f:
+            for l in f:
+                if regex.match(l):
+                    log.info("Build log line detected as build status: {l}".format(l=l.strip()))
+                    s = l.split(":")
+                    values[s[0]] = s[1].strip()
+        return values
 
     def run(self):
-        br = Buildrequest(self._f, self._spool_dir)
-        path = br.unpack()
-        log.info("STUB: Building: {p}".format(p=path))
+        # @todo Caveat: Create sbuild's internal key if needed. This should go somewhere else.
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            mini_buildd.misc.run_cmd("sbuild-update --keygen")
+
+        path = self._br.unpack()
+        log.info("Building in {p}".format(p=path))
+
+        chroot = "mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"])
+        dsc = os.path.join(path, "{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
+        lf = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
+
+        # @todo
+        #if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}"
+
+        # Run sbuild. Notes:
+        # * DEB_BUILD_OPTIONS are configured per build host.
+        # Generate .sbuildrc for this run (not all is configurable via switches).
+        open(os.path.join(path, ".sbuildrc"), 'w').write("""
+# Mode "user": Use retval to check if build was successful.
+$sbuild_mode = 'user';
+# We always want to update the cache as we generate sources.list on thy fly.
+$apt_update = 1;
+# APT-Policy to "1", so we can satisfy dependencies via all sources we added.
+$apt_policy = 1;
+# Allow unauthenticated apt toggle; see ~/.mini-buildd/README how to set up keys for extra sources.
+$apt_allow_unauthenticated = {apt_allow_unauthenticated};
+
+# Add path for ccache
+$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
+
+# Builder identity
+$pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
+
+# @todo Build environment
+##$build_environment = {{ 'CCACHE_DIR' => '$HOME/.ccache' }};
+
+# don't remove this, Perl needs it:
+1;
+""".format(apt_allow_unauthenticated=self._br["Apt-Allow-Unauthenticated"]))
+
+        try:
+            mini_buildd.misc.run_cmd("""
+cd {path} && \
+export HOME='{path}' && \
+sbuild --verbose --dist='{d}' --arch='{a}' --chroot='{c}' \
+--log-external-command-output --log-external-command-error \
+--run-lintian --lintian-opts='--suppress-tags=bad-distribution-in-changes-file -i' \
+--nolog \
+'{dsc}' >{lf} 2>&1
+""".format(path=path, d=self._br["Distribution"], a=self._br["Architecture"], c=chroot, dsc=dsc, lf=lf))
+            log.info("Built successful for arch={a}".format(a=self._br["Architecture"]))
+        except:
+            # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
+            #if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
+            #retval=0
+            #echo "I: No packages to build for arch=${MBD_TMP_ARCH}."
+            #else
+            log.error("FTBFS for arch={a}".format(a=self._br["Architecture"]))
+        self.get_status_from_buildlog(lf)
 
 
 class Builder():

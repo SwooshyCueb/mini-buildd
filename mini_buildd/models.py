@@ -152,6 +152,14 @@ Subkey-Length: 1024
 Expire-Date: 0""")
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
+
+    LINTIAN_MODES = (('disabled',        "Don't run lintian"),
+                     ('never-fail',      "Run lintian and show results."),
+                     ('fail-on-error',   "Run lintian and fail on errors."),
+                     ('fail-on-warning', "Run lintian and ail on warnings."))
+    lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
+    lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
+
     mail = django.db.models.EmailField(blank=True)
     extdocurl = django.db.models.URLField(blank=True)
 

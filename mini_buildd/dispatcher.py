@@ -5,6 +5,7 @@ import logging
 import tarfile
 import ftplib
 import re
+import subprocess
 
 import debian.deb822
 
@@ -168,25 +169,29 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 1;
 """.format(apt_allow_unauthenticated=self._br["Apt-Allow-Unauthenticated"]))
 
-        try:
-            mini_buildd.misc.run_cmd("""
-cd {path} && \
-export HOME='{path}' && \
-sbuild --verbose --dist='{d}' --arch='{a}' --chroot='{c}' \
---log-external-command-output --log-external-command-error \
---run-lintian --lintian-opts='--suppress-tags=bad-distribution-in-changes-file -i' \
---nolog \
-'{dsc}' >{lf} 2>&1
-""".format(path=path, d=self._br["Distribution"], a=self._br["Architecture"], c=chroot, dsc=dsc, lf=lf))
-            log.info("Built successful for arch={a}".format(a=self._br["Architecture"]))
-        except:
-            # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
-            #if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
-            #retval=0
-            #echo "I: No packages to build for arch=${MBD_TMP_ARCH}."
-            #else
-            log.error("FTBFS for arch={a}".format(a=self._br["Architecture"]))
+        env = os.environ
+        env["HOME"] = path
+
+        retval = subprocess.call(["sbuild", "--verbose",
+                                  "--dist={0}".format(self._br["Distribution"]),
+                                  "--arch={0}".format(self._br["Architecture"]),
+                                  "--chroot={0}".format(chroot),
+                                  "--log-external-command-output", "--log-external-command-error",
+                                  "--run-lintian", "--lintian-opts='--suppress-tags=bad-distribution-in-changes-file -i'",
+                                  "--nolog", dsc],
+                                 cwd=path, env=env,
+                                 stdout=open(lf, "w"), stderr=subprocess.STDOUT)
+
         self.get_status_from_buildlog(lf)
+
+        log.info("Built finished for arch={a}".format(a=self._br["Architecture"]))
+
+        # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
+        # if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
+        # retval=0
+        # echo "I: No packages to build for arch=${MBD_TMP_ARCH}."
+        # else
+        # log.error("FTBFS for arch={a}".format(a=self._br["Architecture"]))
 
 
 class Builder():

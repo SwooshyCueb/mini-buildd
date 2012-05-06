@@ -107,6 +107,10 @@ class SourceChanges(Changes):
             br["Base-Distribution"] = br["Distribution"].split("-")[0]
             br["Architecture"] = a.arch
             br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
+            if r.lintian_mode != "disabled":
+                # Generate lintian options
+                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[r.lintian_mode] + " " + r.lintian_extra_options
+
             br.save()
             br_list.append(br)
 

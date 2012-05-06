@@ -140,10 +140,6 @@ class Build():
         path = self._br.unpack()
         log.info("Building in {p}".format(p=path))
 
-        chroot = "mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"])
-        dsc = os.path.join(path, "{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
-        lf = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
-
         # @todo
         #if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}"
 
@@ -176,19 +172,29 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         env = os.environ
         env["HOME"] = path
 
-        retval = subprocess.call(["sbuild", "--verbose",
-                                  "--dist={0}".format(self._br["Distribution"]),
-                                  "--arch={0}".format(self._br["Architecture"]),
-                                  "--chroot={0}".format(chroot),
-                                  "--log-external-command-output", "--log-external-command-error",
-                                  "--run-lintian", "--lintian-opts='--suppress-tags=bad-distribution-in-changes-file -i'",
-                                  "--nolog", dsc],
-                                 cwd=path, env=env,
-                                 stdout=open(lf, "w"), stderr=subprocess.STDOUT)
+        sbuild_cmd = ["sbuild",
+                      "--dist={0}".format(self._br["Distribution"]),
+                      "--arch={0}".format(self._br["Architecture"]),
+                      "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"]),
+                      "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
-        self.get_status_from_buildlog(lf)
+        # @ todo lintian opt-in, repository options
+        if "Run-Lintian" in self._br:
+            sbuild_cmd.append("--run-lintian")
+            sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
+            sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Run-Lintian"]))
 
-        log.info("Built finished for arch={a}".format(a=self._br["Architecture"]))
+        sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
+
+        buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
+        with open(buildlog, "w") as l:
+            retval = subprocess.call(sbuild_cmd,
+                                     cwd=path, env=env,
+                                     stdout=l, stderr=subprocess.STDOUT)
+
+        self.get_status_from_buildlog(buildlog)
+
+        log.info("Built finished with retval={r}".format(r=retval))
 
         # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
         # if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then

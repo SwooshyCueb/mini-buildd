@@ -20,15 +20,24 @@ class Changes(debian.deb822.Changes):
 
         if os.path.exists(file_path):
             super(Changes, self).__init__(file(file_path))
-            self._spool_dir = os.path.join(spool_dir, self["Distribution"], self["Source"], self["Version"])
+            self._spool_dir = os.path.join(spool_dir, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
         else:
             super(Changes, self).__init__([])
             self._spool_dir = None
 
-    def save(self):
-        log.info("Save {f}".format(f=self._file_path))
-        self.dump(fd=open(self._file_path, "w+"))
+    def save(self, file_path=None):
+        file_path = self._file_path if file_path == None else file_path
 
+        log.info("Save {f}".format(f=file_path))
+        self.dump(fd=open(file_path, "w+"))
+        self._file_path = file_path
+        self._file_name = os.path.basename(file_path)
+
+    def get_file_name(self, new_ext=None):
+        if new_ext == None:
+            return self._file_name
+        else:
+            return os.path.splitext(self._file_name)[0] + new_ext
 
 class Buildrequest(Changes):
     def __init__(self, file_path, spool_dir):
@@ -54,19 +63,18 @@ class Buildrequest(Changes):
             ftp.storbinary("STOR {f}".format(f=os.path.basename(self._tar_path)), open(self._tar_path))
 
     def unpack(self):
-        path = os.path.join(self._spool_dir, self["Architecture"])
         tar = tarfile.open(self._tar_path, "r")
-        tar.extractall(path=path)
+        tar.extractall(path=self._spool_dir)
         tar.close()
-        return path
+        return self._spool_dir
 
 class SourceChanges(Changes):
     def __init__(self, file_path, spool_dir):
         super(SourceChanges, self).__init__(file_path, spool_dir)
         self._base_spool_dir = spool_dir
 
-        # Create spool directory; this must not yet exist for a SourceChanges file.
-        os.makedirs(self._spool_dir)
+        # @todo: If uploaded input, check it does not exist yet
+        mini_buildd.misc.mkdirs(self._spool_dir)
 
         self._tar_path = os.path.join(self._spool_dir, self._file_name) + ".tar"
         tar = tarfile.open(self._tar_path, "w")
@@ -120,25 +128,25 @@ class SourceChanges(Changes):
 class Build():
     def __init__(self, spool_dir, f):
         self._br = Buildrequest(f, spool_dir)
+        self._spool_dir = spool_dir
 
-    def get_status_from_buildlog(self, fn):
+    def results_from_buildlog(self, fn):
         regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
-        values = {}
         with open(fn) as f:
             for l in f:
                 if regex.match(l):
-                    log.info("Build log line detected as build status: {l}".format(l=l.strip()))
+                    log.debug("Build log line detected as build status: {l}".format(l=l.strip()))
                     s = l.split(":")
-                    values[s[0]] = s[1].strip()
-        return values
+                    self._br["Buildresult-Sbuild-" + s[0]] = s[1].strip()
 
     def run(self):
         # @todo Caveat: Create sbuild's internal key if needed. This should go somewhere else.
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             mini_buildd.misc.run_cmd("sbuild-update --keygen")
 
+        pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
+
         path = self._br.unpack()
-        log.info("Building in {p}".format(p=path))
 
         # @todo
         #if DEB_BUILD_OPTIONS="${mbdParseArch_debopts}"
@@ -190,14 +198,29 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
 
         buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
+        log.info("{p}: Starting sbuild".format(p=pkg_info))
+        log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
                                      cwd=path, env=env,
                                      stdout=l, stderr=subprocess.STDOUT)
 
-        self.get_status_from_buildlog(buildlog)
+        # Add build results to build request object
+        self._br["Buildresult-Retval"] = retval
+        self.results_from_buildlog(buildlog)
 
-        log.info("Built finished with retval={r}".format(r=retval))
+        log.info("{p}: Sbuild finished: Retval={r}, Status={s}".format(p=pkg_info, r=retval, s=self._br["Buildresult-Sbuild-Status"]))
+
+        build_changes = SourceChanges(os.path.join(
+                path,
+                "{s}_{v}_{a}.changes".
+                format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])),
+                                      self._spool_dir)
+
+        self._br.save(os.path.join(
+                path,
+                "{s}_{v}_{a}.changes.tar_{a}.buildresult".
+                format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
 
         # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
         # if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
@@ -226,7 +249,7 @@ class Dispatcher():
 
         # Queue of all local builds
         self._build_queue = Queue.Queue(maxsize=0)
-        self._builder = Builder(self._spool_dir, self._build_queue)
+        self._builder = Builder(os.path.join(self._spool_dir, "builders"), self._build_queue)
 
     def run(self):
         mini_buildd.misc.start_thread(self._builder)
@@ -235,7 +258,7 @@ class Dispatcher():
             ext = os.path.splitext(f)[1]
             if ext == ".changes":
                 # User upload
-                c = SourceChanges(f, self._spool_dir)
+                c = SourceChanges(f, os.path.join(self._spool_dir, "repositories"))
                 for br in c.gen_build_requests():
                     br.upload()
 

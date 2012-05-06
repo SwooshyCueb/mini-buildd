@@ -184,6 +184,9 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Run-Lintian"]))
 
+        if mini_buildd.globals.DEBUG:
+            sbuild_cmd.append("--debug")
+
         sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
 
         buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))

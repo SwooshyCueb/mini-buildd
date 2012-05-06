@@ -11,7 +11,7 @@ import mini_buildd
 log = logging.getLogger(__name__)
 
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
-    def __init__(self, home, instdir, debug=False):
+    def __init__(self, home, instdir):
         log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
         self._instdir = instdir
@@ -22,8 +22,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             MINI_BUILDD_HOME=home,
 
             # Django settings
-            DEBUG = debug,
-            TEMPLATE_DEBUG = debug,
+            DEBUG = mini_buildd.globals.DEBUG,
+            TEMPLATE_DEBUG = mini_buildd.globals.DEBUG,
 
             # @todo: ? Seems this is needed for admin/doc.
             SITE_ID = 1,

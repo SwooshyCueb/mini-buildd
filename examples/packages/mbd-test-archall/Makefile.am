@@ -1,0 +1,7 @@
+AUTOMAKE_OPTIONS = 1.10
+ACLOCAL_AMFLAGS =
+
+SUBDIRS = src
+
+docdir = $(datadir)/doc/$(PACKAGE)
+doc_DATA = README NEWS AUTHORS ChangeLog COPYING

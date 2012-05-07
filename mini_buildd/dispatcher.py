@@ -211,23 +211,17 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         log.info("{p}: Sbuild finished: Retval={r}, Status={s}".format(p=pkg_info, r=retval, s=self._br["Buildresult-Sbuild-Status"]))
 
-        build_changes = SourceChanges(os.path.join(
-                path,
-                "{s}_{v}_{a}.changes".
-                format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])),
-                                      self._spool_dir)
+        if self._br["Buildresult-Sbuild-Status"] != "skipped":
+            build_changes = SourceChanges(os.path.join(
+                    path,
+                    "{s}_{v}_{a}.changes".
+                    format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])),
+                                          self._spool_dir)
 
         self._br.save(os.path.join(
                 path,
                 "{s}_{v}_{a}.changes.tar_{a}.buildresult".
                 format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
-
-        # @todo: If this package has no packages to be built for this arch, this is ok, and we get:
-        # if grep -i "${MBD_TMP_ARCH}.*not in arch list.*skipping" ${lf}; then
-        # retval=0
-        # echo "I: No packages to build for arch=${MBD_TMP_ARCH}."
-        # else
-        # log.error("FTBFS for arch={a}".format(a=self._br["Architecture"]))
 
 
 class Builder():

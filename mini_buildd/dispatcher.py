@@ -114,7 +114,7 @@ class SourceChanges(Changes):
                 br[v] = self[v]
             br["Base-Distribution"] = br["Distribution"].split("-")[0]
             br["Architecture"] = a.arch
-            br["Build-Dep-Resolver"] = "apt"
+            br["Build-Dep-Resolver"] = r.build_dep_resolver
             br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
             if r.lintian_mode != "disabled":
                 # Generate lintian options

@@ -114,6 +114,8 @@ class SourceChanges(Changes):
                 br[v] = self[v]
             br["Base-Distribution"] = br["Distribution"].split("-")[0]
             br["Architecture"] = a.arch
+            if a == r.arch_all:
+                br["Arch-All"] = "Yes"
             br["Build-Dep-Resolver"] = r.build_dep_resolver
             br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
             if r.lintian_mode != "disabled":
@@ -189,6 +191,9 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                       "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"]),
                       "--build-dep-resolver={r}".format(r=self._br["Build-Dep-Resolver"]),
                       "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
+
+        if "Arch-All" in self._br:
+            sbuild_cmd.append("--arch-all")
 
         # @ todo lintian opt-in, repository options
         if "Run-Lintian" in self._br:

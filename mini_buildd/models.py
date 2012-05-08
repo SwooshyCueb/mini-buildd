@@ -143,6 +143,7 @@ class Repository(django.db.models.Model):
     layout = django.db.models.ForeignKey(Layout)
     dists = django.db.models.ManyToManyField(Distribution)
     archs = django.db.models.ManyToManyField(Architecture)
+    arch_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
     gnupg_template = django.db.models.TextField(default="""
 Key-Type: DSA
@@ -404,7 +405,7 @@ def create_default(mirror):
     l=create_default_layout()
     l.save()
 
-    r=Repository(layout=l)
+    r=Repository(layout=l, arch_all=a)
     r.save()
     r.archs.add(a)
     r.dists.add(d)

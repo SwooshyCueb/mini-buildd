@@ -114,6 +114,7 @@ class SourceChanges(Changes):
                 br[v] = self[v]
             br["Base-Distribution"] = br["Distribution"].split("-")[0]
             br["Architecture"] = a.arch
+            br["Build-Dep-Resolver"] = "apt"
             br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
             if r.lintian_mode != "disabled":
                 # Generate lintian options
@@ -155,23 +156,25 @@ class Build():
         # * DEB_BUILD_OPTIONS are configured per build host.
         # Generate .sbuildrc for this run (not all is configurable via switches).
         open(os.path.join(path, ".sbuildrc"), 'w').write("""
-# Mode "user": Use retval to check if build was successful.
+# Set "user" mode explicitely (already default).  Means the
+# retval tells us if the sbuild run was ok. We also dont have to
+# configure "mailto".
 $sbuild_mode = 'user';
-# We always want to update the cache as we generate sources.list on thy fly.
+
+# @todo sources.list generation.
+# We always want to update the cache as we generate sources.list on the fly.
 $apt_update = 1;
-# APT-Policy to "1", so we can satisfy dependencies via all sources we added.
-$apt_policy = 1;
-# Allow unauthenticated apt toggle; see ~/.mini-buildd/README how to set up keys for extra sources.
+
+# Allow unauthenticated apt toggle
 $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
-# Add path for ccache
-$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
+# @todo: proper ccache support (was: Add path for ccache)
+#$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
+##$build_environment = {{ 'CCACHE_DIR' => '$HOME/.ccache' }};
 
+# @todo gpg setup
 # Builder identity
 $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
-
-# @todo Build environment
-##$build_environment = {{ 'CCACHE_DIR' => '$HOME/.ccache' }};
 
 # don't remove this, Perl needs it:
 1;
@@ -184,6 +187,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                       "--dist={0}".format(self._br["Distribution"]),
                       "--arch={0}".format(self._br["Architecture"]),
                       "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"]),
+                      "--build-dep-resolver={r}".format(r=self._br["Build-Dep-Resolver"]),
                       "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
         # @ todo lintian opt-in, repository options

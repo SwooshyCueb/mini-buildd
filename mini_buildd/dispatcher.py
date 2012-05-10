@@ -220,15 +220,15 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         log.info("{p}: Sbuild finished: Retval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Buildresult-Sbuild-Status"]))
         res["Files"] = []
-        if res["Buildresult-Sbuild-Status"] != "skipped":
-            build_changes = Changes(os.path.join(
-                    path,
-                    "{s}_{v}_{a}.changes".
-                    format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"])))
+        res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": os.path.basename(buildlog)})
+        build_changes_file = os.path.join(path,
+                                          "{s}_{v}_{a}.changes".
+                                          format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"]))
+        if os.path.exists(build_changes_file):
+            build_changes = Changes(build_changes_file)
             build_changes.tar(tar_path=res._file_path + ".tar")
             res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": res._file_name + ".tar"})
 
-        res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": os.path.basename(buildlog)})
 
         res.save()
         res.upload()

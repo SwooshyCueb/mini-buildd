@@ -94,7 +94,8 @@ class Changes(debian.deb822.Changes):
         br_list = []
         r = self.get_repository()
         for a in r.archs.all():
-            br = Changes(os.path.join(base_dir, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
+            path = os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], a.arch)
+            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 

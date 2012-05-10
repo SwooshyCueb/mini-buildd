@@ -12,7 +12,13 @@ _head()
 	printf "\n=> ${*}\n"
 }
 
-mbd_reset()
+mbd_clear()
+{
+	_head "Cleaning incoming && sppol in ${MBD_HOME}"
+	rm -rf ${MBD_HOME}/spool/* ${MBD_HOME}/incoming/*
+}
+
+mbd_purge()
 {
 	_head "Purging ${MBD_HOME}"
 	[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
@@ -30,7 +36,10 @@ mbd_default()
 	${MBD_CMD} --create-default-config="${MIRROR}"
 }
 
-trap "printf '\nUsage: ${0} [reset|default]\n' >&2" ERR
+for c in $(compgen -A function | grep '^mbd_'); do
+	ACTIONS+="${c:4}|"
+done
+trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 
 # Be sure to generate mini_buildd/__version__.py
 python ./setup.py >/dev/null 2>&1 || true

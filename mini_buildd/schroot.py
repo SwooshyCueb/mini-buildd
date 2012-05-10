@@ -17,6 +17,8 @@ def rfile(path):
         return f.read()
 
 class LVMLoop():
+    """ This class provides some interesting LVM-(loop-)device stuff. """
+
     def __init__(self, path, arch, size):
         self._vgname = "mini-buildd-loop-{a}".format(a=arch)
         self._backing_file = os.path.join(path, "lvm.image")
@@ -70,6 +72,13 @@ class LVMLoop():
 
 
 class Schroot():
+    """
+    This class provides some schroot features.
+
+    .. note::
+       It makes use of :class:`LVMLoop`.
+    """
+
     def __init__(self, builder):
         self.CHROOT_FS="ext2"
 
@@ -82,9 +91,11 @@ class Schroot():
     def get_personality(self):
         """
         On 64bit hosts, 32bit schroots must be configured
-        with a 'linux32' personality to work.
-        @todo This may be needed for other 32-bit archs, too?
-        @todo We currently assume we build under linux only.
+        with a *linux32* personality to work.
+
+        .. todo::
+           - This may be needed for other 32-bit archs, too?
+           - We currently assume we build under linux only.
         """
         personalities = { 'i386': 'linux32' }
         try:

@@ -11,6 +11,10 @@ import mini_buildd
 log = logging.getLogger(__name__)
 
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
+    """
+    This class represents mini-buildd's web application.
+    """
+
     def __init__(self, home, instdir):
         log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
@@ -52,6 +56,13 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self.syncdb()
 
     def set_admin_password(self, password):
+        """
+        This method sets the password for the administrator.
+
+        :param password: The password to use.
+        :type password: string
+        """
+
         import django.contrib.auth.models
         try:
             user = django.contrib.auth.models.User.objects.get(username='admin')

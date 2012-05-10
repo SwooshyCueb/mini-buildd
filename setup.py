@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import distutils.core
 import debian.changelog
+from setuptools import setup
 
 # This is a Debian native package, the version is in
 # debian/changelog and nowhere else. We automagically get the

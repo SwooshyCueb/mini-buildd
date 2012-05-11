@@ -79,13 +79,15 @@ class Changes(debian.deb822.Changes):
             except:
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
-    def tar(self, tar_path):
+    def tar(self, tar_path, add_files=[]):
         tar = tarfile.open(tar_path, "w")
         try:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
             tar_add(self._file_path)
             for f in self.get_files():
                 tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
+            for f in add_files:
+                tar_add(f)
         finally:
             tar.close()
 

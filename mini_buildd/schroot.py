@@ -6,6 +6,7 @@ Manage schroots for mini-buildd.
 import os
 import glob
 import tempfile
+import getpass
 import logging
 
 import mini_buildd
@@ -127,8 +128,21 @@ class Schroot():
                     mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=self._backend.get_vgname()))
                     mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
                     mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
-                    mini_buildd.misc.run_cmd("sudo debootstrap --variant=buildd --arch {a} --include=apt '{d}' '{m}' '{M}'".\
+                    # @todo include=sudo is only workaround for sbuild Bug #608840
+                    # @todo include=apt WTF?
+                    mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
                                                  format(a=self.builder.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
+
+                    # @todo Still sudoers workaround
+                    with tempfile.NamedTemporaryFile() as ts:
+                        ts.write("""
+{u}	ALL=(ALL) ALL
+{u}	ALL=NOPASSWD: ALL
+""".format(u=getpass.getuser()))
+                        ts.flush()
+                        mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=mount_point))
+                    # @todo End sudoers workaround
+
                     mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                     log.info("LV {n} created successfully...".format(n=name))
                     # There must be schroot configs for each uploadable distribution (does not work with aliases).

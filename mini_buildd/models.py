@@ -132,6 +132,14 @@ class Distribution(django.db.models.Model):
     # @todo: how to limit to source.kind?
     extra_sources = django.db.models.ManyToManyField(PrioritisedSource, blank=True, null=True)
 
+    def get_apt_sources_list(self):
+        apt_lines = []
+        apt_lines.append(self.base_source.get_apt_lines(kind="deb"))
+        for s in self.extra_sources.all():
+            apt_lines.append(s.get_apt_line(kind="deb"))
+        log.debug(str(apt_lines))
+        return apt_lines
+
     def __unicode__(self):
         # @todo: somehow indicate extra sources to visible name
         return self.base_source.origin + ": " + self.base_source.codename
@@ -220,6 +228,18 @@ Expire-Date: 0""")
     def get_apt_line(self, dist, suite):
         return "http://{h}:8066/mini_buildd/public_html/rep/{id}/ {dist} {components}".format(
             h=self.host, id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
+
+    def get_apt_sources_list(self, codename):
+        for d in self.dists.all():
+            if d.base_source.codename == codename:
+                apt_lines = d.get_apt_sources_list()
+                res=""
+                for l in apt_lines:
+                    res += str(l) + "\n"
+                return res
+
+    def get_apt_preferences(self):
+        return "# @todo STUB"
 
     def get_sources(self, dist, suite):
         result = ""

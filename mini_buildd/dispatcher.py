@@ -101,12 +101,18 @@ class Changes(debian.deb822.Changes):
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 
+            codename = br["Distribution"].split("-")[0]
+
+            # Generate sources.list to be used
+            open(os.path.join(path, "apt_sources.list"), 'w').write(r.get_apt_sources_list(codename=codename))
+            open(os.path.join(path, "apt_preferences"), 'w').write(r.get_apt_preferences())
+
             # Generate tar from original changes
-            self.tar(tar_path=br._file_path + ".tar")
+            self.tar(tar_path=br._file_path + ".tar", add_files=[os.path.join(path, "apt_sources.list"), os.path.join(path, "apt_preferences")])
             # [ "md5sum", "size", "section", "priority", "name" ]
             br["Files"] = [{"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildrequest", "priority": "FIXME", "name": br._file_name + ".tar"}]
 
-            br["Buildrequest-Base-Distribution"] = br["Distribution"].split("-")[0]
+            br["Buildrequest-Base-Distribution"] = codename
             br["Buildrequest-Architecture"] = a.arch
             if a == r.arch_all:
                 br["Buildrequest-Arch-All"] = "Yes"

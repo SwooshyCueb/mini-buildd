@@ -323,7 +323,7 @@ Name-Email: mini-buildd-{id}@{h}
         mini_buildd.misc.mkdirs(os.path.join(path, "log"))
         mini_buildd.misc.mkdirs(os.path.join(path, "apt-secure.d"))
         open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
-        mini_buildd.misc.mkdirs(os.path.join(path, "debsconf-preseed.d"))
+        mini_buildd.misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
         self._reprepro = mini_buildd.Reprepro(self)

@@ -1,0 +1,5 @@
+mbd-test-ftbfs (0.1.0) UNRELEASED; urgency=low
+
+  * Test package for mini-buildd.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 06 Jul 2011 18:14:03 +0200

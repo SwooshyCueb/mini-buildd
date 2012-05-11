@@ -27,7 +27,7 @@ mbd_purge()
 
 mbd_default()
 {
-	mbd_reset
+	mbd_purge
 
 	_head "Creating superuser admin/admin..."
 	${MBD_CMD} --set-admin-password="admin"

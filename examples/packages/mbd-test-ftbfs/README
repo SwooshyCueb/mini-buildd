@@ -1,0 +1,4 @@
+mbd-test-ftbfs
+=============
+Example autotools project, ui-auto enabled. Also used in
+ui-auto's testsuite.

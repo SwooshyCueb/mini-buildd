@@ -270,7 +270,9 @@ class Dispatcher():
             if c.is_buildrequest():
                 self._build_queue.put(c)
             elif c.is_buildresult():
-                log.info("STUB: build result: '{f}'...".format(f=c._file_name))
+                r = c.get_repository()
+                c.untar(path=r.get_incoming_path())
+                r._reprepro.processincoming()
             else:
                 # User upload
                 for br in c.gen_buildrequests(os.path.join(self._spool_dir, "repositories")):

@@ -157,13 +157,13 @@ def exportConf(f=os.getenv('HOME') + "/.mini-buildd.conf.export"):
         f.write('mbd_deb_build_options_{a}="parallel={v}"\n'.format(a=b.arch.arch, v=b.parallel))
 
     for d in models.Distribution.objects.all():
-        f.write('mbd_src_{d}_base_any="{v}"\n'.format(d=d.base_source.codename, v=d.base_source.get_apt_lines(kind="")[0]))
+        f.write('mbd_src_{d}_base_any="{v}"\n'.format(d=d.base_source.codename, v=d.base_source.get_apt_line()[4:]))
         for a in models.Architecture.objects.all():
             f.write('mbd_src_{d}_base_{a}=""\n'.format(d=d.base_source.codename, a=a.arch))
 
         v = []
         for e in d.extra_sources.all():
-            v += [e.source.get_apt_lines(kind='')[0] + ";release o=" + e.source.origin + ";" + str(e.prio)]
+            v += [e.source.get_apt_line()[4:] + ";release o=" + e.source.origin + ";" + str(e.prio)]
         f.write('mbd_src_{d}_extra_any="{v}"\n'.format(d=d.base_source.codename, v=",".join(v)))
         for a in models.Architecture.objects.all():
             f.write('mbd_src_{d}_extra_{a}=""\n'.format(d=d.base_source.codename, a=a.arch))

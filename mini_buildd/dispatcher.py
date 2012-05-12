@@ -166,9 +166,9 @@ class Build():
 # configure "mailto".
 $sbuild_mode = 'user';
 
-# @todo sources.list generation.
-# We always want to update the cache as we generate sources.list on the fly.
-$apt_update = 1;
+# We update sources.list on the fly via chroot-setup commands;
+# this update occurs before, so we dont need it.
+$apt_update = 0;
 
 # Allow unauthenticated apt toggle
 $apt_allow_unauthenticated = {apt_allow_unauthenticated};
@@ -188,10 +188,14 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         env = os.environ
         env["HOME"] = path
 
+        ".. todo:: chroot-setup-command: uses sudo workaround (schroot bug)."
         sbuild_cmd = ["sbuild",
                       "--dist={0}".format(self._br["Distribution"]),
                       "--arch={0}".format(self._br["Buildrequest-Architecture"]),
                       "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Buildrequest-Base-Distribution"], a=self._br["Buildrequest-Architecture"]),
+                      "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=path),
+                      "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=path),
+                      "--chroot-setup-command=sudo apt-get update",
                       "--build-dep-resolver={r}".format(r=self._br["Buildrequest-Build-Dep-Resolver"]),
                       "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
 

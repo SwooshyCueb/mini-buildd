@@ -81,6 +81,11 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def __init__(self):
         self._args = self.parse_args()
+
+        # Set global variables that really make no sense to
+        # propagate through
+        mini_buildd.globals.DEBUG = self._args.debug
+
         self.configure_log()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
@@ -94,10 +99,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                                       incoming="incoming", repositories="repositories",
                                       queue=self._incoming_queue, queue_regex=self._incoming_queue_regex)
         self._dispatcher = mini_buildd.Dispatcher(spool_dir=os.path.join(self._args.home, "spool"), queue=self._incoming_queue)
-
-        # Set global variables that really make no sense to
-        # propagate through
-        mini_buildd.globals.DEBUG = self._args.debug
 
         self._run = True
 

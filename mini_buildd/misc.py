@@ -53,7 +53,7 @@ def mkdirs(path):
         if e.errno != errno.EEXIST:
             raise
         else:
-            log.info("Directory already exists, ignoring; {d}".format(d=path))
+            log.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 def run_cmd(cmd):
     # Run command, keep output
@@ -62,7 +62,7 @@ def run_cmd(cmd):
     retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
 
     # Log command output
-    l = log.info if (retval == 0) else log.error
+    l = log.debug if (retval == 0) else log.error
     output.seek(0)
     for line in output:
         l("Command output: %s" % line.replace("\n", ""))

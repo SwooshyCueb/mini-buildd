@@ -104,7 +104,7 @@ class Changes(debian.deb822.Changes):
             codename = br["Distribution"].split("-")[0]
 
             # Generate sources.list to be used
-            open(os.path.join(path, "apt_sources.list"), 'w').write(r.get_apt_sources_list(codename=codename))
+            open(os.path.join(path, "apt_sources.list"), 'w').write(r.get_apt_sources_list(self["Distribution"]))
             open(os.path.join(path, "apt_preferences"), 'w').write(r.get_apt_preferences())
 
             # Generate tar from original changes

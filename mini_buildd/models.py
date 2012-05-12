@@ -42,12 +42,14 @@ class Source(django.db.models.Model):
         unique_together = ('origin', 'codename')
         ordering = ['origin', 'codename']
 
-    def get_apt_lines(self, kind="deb", components="main contrib non-free"):
-        apt_lines = []
+    def get_mirror(self):
+        ".. todo:: Returning first mirror only. Should return preferred/working one from mirror list."
         for m in self.mirrors.all():
-            apt_lines.append(kind + ' ' if kind else '' + m.url + ' ' + self.codename + ' ' + components)
-        log.debug(str(apt_lines))
-        return apt_lines
+            return m
+
+    def get_apt_line(self, components="main contrib non-free"):
+        m = self.get_mirror()
+        return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)
 
     def get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
@@ -133,12 +135,12 @@ class Distribution(django.db.models.Model):
     extra_sources = django.db.models.ManyToManyField(PrioritisedSource, blank=True, null=True)
 
     def get_apt_sources_list(self):
-        apt_lines = []
-        apt_lines.append(self.base_source.get_apt_lines(kind="deb"))
-        for s in self.extra_sources.all():
-            apt_lines.append(s.get_apt_line(kind="deb"))
-        log.debug(str(apt_lines))
-        return apt_lines
+        res = "# Base: {p}\n".format(p=self.base_source.get_apt_pin())
+        res += self.base_source.get_apt_line() + "\n\n"
+        for e in self.extra_sources.all():
+            res += "# Extra: {p}\n".format(p=e.source.get_apt_pin())
+            res += e.source.get_apt_line() + "\n"
+        return res
 
     def __unicode__(self):
         # @todo: somehow indicate extra sources to visible name
@@ -226,20 +228,32 @@ Expire-Date: 0""")
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
     def get_apt_line(self, dist, suite):
-        return "http://{h}:8066/mini_buildd/public_html/rep/{id}/ {dist} {components}".format(
+        return "deb ftp://{h}:8067/repositories/{id}/ {dist} {components}".format(
             h=self.host, id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
-    def get_apt_sources_list(self, codename):
+    def get_apt_sources_list(self, dist):
+        dist_split = dist.split("-")
+        base = dist_split[0]
+        id = dist_split[1]
+        suite = dist_split[2]
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+
         for d in self.dists.all():
-            if d.base_source.codename == codename:
-                apt_lines = d.get_apt_sources_list()
-                res=""
-                for l in apt_lines:
-                    res += str(l) + "\n"
-                return res
+            if d.base_source.codename == base:
+                res = d.get_apt_sources_list()
+                res += "\n"
+                for s in self.layout.suites.all():
+                    if s.name == suite:
+                        ".. todo:: decide what other mini-buildd suites are to be included automatically"
+                        res += "# Mini-Buildd: {d}\n".format(d=dist)
+                        res += self.get_apt_line(d, s)
+                        return res
+
+        raise Exception("Could not produce sources.list")
 
     def get_apt_preferences(self):
-        return "# @todo STUB"
+        ".. todo:: STUB"
+        return ""
 
     def get_sources(self, dist, suite):
         result = ""

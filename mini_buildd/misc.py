@@ -22,6 +22,9 @@ class BindArgs(object):
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
 
+def nop(*a,**k):
+    pass
+
 def start_thread(obj):
     thread = threading.Thread(target=obj.run)
     thread.setDaemon(True)

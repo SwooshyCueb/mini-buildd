@@ -20,22 +20,15 @@ class Changes(debian.deb822.Changes):
     def __init__(self, file_path):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
-        self._tar_path = file_path.rpartition("_")[0]
         super(Changes, self).__init__(file(file_path) if os.path.exists(file_path) else [])
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
-
 
     def is_buildrequest(self):
         return self.BUILDREQUEST_RE.match(self._file_name)
 
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
-
-    def get_type(self):
-        print self._file_name.rsplit("_")
-        print self._file_name.rpartition("_")
-        return os.path.splitext(self._file_name)[1]
 
     def get_repository(self):
         from mini_buildd.models import Repository

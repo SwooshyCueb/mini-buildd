@@ -5,7 +5,7 @@
 
 # Test home is in '..' to avoid problems with large files in the Debian Source Tree
 MBD_HOME="/tmp/mini-buildd-devel"
-MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --debug"
+MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose"
 
 _head()
 {
@@ -44,7 +44,10 @@ trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 # Be sure to generate mini_buildd/__version__.py
 python ./setup.py >/dev/null 2>&1 || true
 
-[ -z "${1}" ] || mbd_${1}
+if [ -n "${1}" ]; then
+	mbd_${1}
+	shift
+fi
 
-_head "Running: ${MBD_CMD}"
-${MBD_CMD}
+_head "Running: ${MBD_CMD} ${@}"
+${MBD_CMD} ${@}

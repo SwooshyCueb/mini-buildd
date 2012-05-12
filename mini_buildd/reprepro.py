@@ -36,5 +36,5 @@ gnupghome {h}
         mini_buildd.misc.run_cmd("reprepro --verbose --basedir='{d}' export".format(d=path))
         log.info("Prepared reprepro config: {d}".format(d=path))
 
-    def processincoming(self, cf=""):
-        return mini_buildd.misc.run_cmd(self._cmd + "processincoming INCOMING \"{cf}\"".format(cf=os.path.basename(cf)))
+    def processincoming(self):
+        return mini_buildd.misc.run_cmd(self._cmd + "processincoming INCOMING")

@@ -84,6 +84,13 @@ class Changes(debian.deb822.Changes):
         finally:
             tar.close()
 
+    def untar(self, path):
+        tar = tarfile.open(self._file_path + ".tar", "r")
+        try:
+            tar.extractall(path=path)
+        finally:
+            tar.close()
+
     def gen_buildrequests(self, base_dir):
         # Build buildrequest files for all archs
         br_list = []
@@ -143,12 +150,7 @@ class Build():
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"])
 
         path = self._br.get_spool_dir(self._spool_dir)
-
-        tar = tarfile.open(self._br._file_path + ".tar", "r")
-        try:
-            tar.extractall(path=path)
-        finally:
-            tar.close()
+        self._br.untar(path=path)
 
         # @todo DEB_BUILD_OPTIONS
 

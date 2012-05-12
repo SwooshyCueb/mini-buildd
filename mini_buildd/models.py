@@ -199,6 +199,8 @@ Expire-Date: 0""")
                             d=d.base_source.codename,
                             s=s.name))
 
+        self._reprepro = mini_buildd.Reprepro(self)
+
     def __unicode__(self):
         return self.id
 
@@ -339,8 +341,6 @@ Name-Email: mini-buildd-{id}@{h}
         open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
         mini_buildd.misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
-
-        self._reprepro = mini_buildd.Reprepro(self)
 
         # @todo This 08x README; please fix.
         open(os.path.join(path, "README"), 'w').write("""

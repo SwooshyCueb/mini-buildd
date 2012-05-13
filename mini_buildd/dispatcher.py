@@ -196,6 +196,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         if "Buildrequest-Arch-All" in self._br:
             sbuild_cmd.append("--arch-all")
+            sbuild_cmd.append("--source")
 
         # @ todo lintian opt-in, repository options
         if "Run-Lintian" in self._br:

@@ -14,8 +14,8 @@ _head()
 
 mbd_clear()
 {
-	_head "Cleaning incoming && sppol in ${MBD_HOME}"
-	rm -rf ${MBD_HOME}/spool/* ${MBD_HOME}/incoming/*
+	_head "Cleaning incoming, spool and repository in ${MBD_HOME}"
+	rm -rf ${MBD_HOME}/spool/* ${MBD_HOME}/incoming/* ${MBD_HOME}/repositories/*
 }
 
 mbd_purge()

@@ -16,7 +16,8 @@ class BindArgs(object):
     def __init__(self, bind):
         try:
             self.string = bind
-            self.tuple = (bind.split(":")[0], int(bind.split(":")[1]))
+            triple = bind.rpartition(":")
+            self.tuple = (triple[0], int(triple[2]))
             self.host = self.tuple[0]
             self.port = self.tuple[1]
         except:

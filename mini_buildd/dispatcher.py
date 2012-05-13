@@ -238,7 +238,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             build_changes.tar(tar_path=res._file_path + ".tar")
             res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": res._file_name + ".tar"})
 
-
         res.save()
         res.upload()
 
@@ -268,14 +267,16 @@ class Dispatcher():
         mini_buildd.misc.start_thread(self._builder)
         while True:
             c = Changes(self._incoming_queue.get())
+            r = c.get_repository()
             if c.is_buildrequest():
+                log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
                 self._build_queue.put(c)
             elif c.is_buildresult():
-                r = c.get_repository()
+                log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
                 c.untar(path=r.get_incoming_path())
                 r._reprepro.processincoming()
             else:
-                # User upload
+                log.info("{p}: Got user upload for {r}".format(p=c.get_pkg_id(), r=r.id))
                 for br in c.gen_buildrequests(os.path.join(self._spool_dir, "repositories")):
                     br.upload()
 

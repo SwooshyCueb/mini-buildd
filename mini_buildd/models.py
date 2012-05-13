@@ -381,6 +381,8 @@ needs (like pre-seeding debconf variables).
    Used by: mbd-update-bld.
 """.format(date=datetime.datetime.now()))
 
+        # Reprepro config
+        self._reprepro.prepare()
 
 class Builder(django.db.models.Model):
     arch = django.db.models.ForeignKey(Architecture, primary_key=True)

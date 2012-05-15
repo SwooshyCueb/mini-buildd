@@ -59,19 +59,15 @@ class Changes(debian.deb822.Changes):
         self._file_name = os.path.basename(file_path)
 
     def upload(self, host="localhost", port=8067):
+        log.info("FTP: Uploading changes: '{f}' to '{h}'...". format(f=self._file_name, h=host))
         ftp = ftplib.FTP()
         ftp.connect(host, port)
         ftp.login()
         ftp.cwd("/incoming")
         for fd in self.get_files() + [ {"name": self._file_name} ]:
             f = fd["name"]
-            log.debug("FTP-Upload: '{f}'". format(f=f))
-            try:
-                ftp.list()
-                ftp.size(f)
-                log.warn("Already uploaded to this host: '{f}'...". format(f=f))
-            except:
-                ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
+            log.debug("FTP: Uploading file: '{f}'". format(f=f))
+            ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
     def tar(self, tar_path, add_files=[]):
         with contextlib.closing(tarfile.open(tar_path, "w")) as tar:

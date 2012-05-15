@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 # Change env MIRROR for the default config before calling this
-[ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian/debian"
+[ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian"
 
 # Test home is in '..' to avoid problems with large files in the Debian Source Tree
 MBD_HOME="/tmp/mini-buildd-devel"

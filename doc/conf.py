@@ -50,7 +50,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'mini-buildd'
-copyright = u'2012, Stephano Vandamme'
+copyright = u'2012, Mini-buildd Maintainers'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -188,7 +188,7 @@ htmlhelp_basename = 'mini-buildddoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'mini-buildd.tex', u'mini-buildd Documentation',
-   u'Stephano Vandamme', 'manual'),
+   u'Mini-buildd Maintainers', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

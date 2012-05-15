@@ -20,22 +20,15 @@ class Changes(debian.deb822.Changes):
     def __init__(self, file_path):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
-        self._tar_path = file_path.rpartition("_")[0]
         super(Changes, self).__init__(file(file_path) if os.path.exists(file_path) else [])
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
-
 
     def is_buildrequest(self):
         return self.BUILDREQUEST_RE.match(self._file_name)
 
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
-
-    def get_type(self):
-        print self._file_name.rsplit("_")
-        print self._file_name.rpartition("_")
-        return os.path.splitext(self._file_name)[1]
 
     def get_repository(self):
         from mini_buildd.models import Repository
@@ -79,13 +72,22 @@ class Changes(debian.deb822.Changes):
             except:
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
-    def tar(self, tar_path):
+    def tar(self, tar_path, add_files=[]):
         tar = tarfile.open(tar_path, "w")
         try:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
             tar_add(self._file_path)
             for f in self.get_files():
                 tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
+            for f in add_files:
+                tar_add(f)
+        finally:
+            tar.close()
+
+    def untar(self, path):
+        tar = tarfile.open(self._file_path + ".tar", "r")
+        try:
+            tar.extractall(path=path)
         finally:
             tar.close()
 
@@ -99,12 +101,18 @@ class Changes(debian.deb822.Changes):
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 
+            codename = br["Distribution"].split("-")[0]
+
+            # Generate sources.list to be used
+            open(os.path.join(path, "apt_sources.list"), 'w').write(r.get_apt_sources_list(self["Distribution"]))
+            open(os.path.join(path, "apt_preferences"), 'w').write(r.get_apt_preferences())
+
             # Generate tar from original changes
-            self.tar(tar_path=br._file_path + ".tar")
+            self.tar(tar_path=br._file_path + ".tar", add_files=[os.path.join(path, "apt_sources.list"), os.path.join(path, "apt_preferences")])
             # [ "md5sum", "size", "section", "priority", "name" ]
             br["Files"] = [{"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildrequest", "priority": "FIXME", "name": br._file_name + ".tar"}]
 
-            br["Buildrequest-Base-Distribution"] = br["Distribution"].split("-")[0]
+            br["Buildrequest-Base-Distribution"] = codename
             br["Buildrequest-Architecture"] = a.arch
             if a == r.arch_all:
                 br["Buildrequest-Arch-All"] = "Yes"
@@ -142,12 +150,7 @@ class Build():
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"])
 
         path = self._br.get_spool_dir(self._spool_dir)
-
-        tar = tarfile.open(self._br._file_path + ".tar", "r")
-        try:
-            tar.extractall(path=path)
-        finally:
-            tar.close()
+        self._br.untar(path=path)
 
         # @todo DEB_BUILD_OPTIONS
 
@@ -158,9 +161,9 @@ class Build():
 # configure "mailto".
 $sbuild_mode = 'user';
 
-# @todo sources.list generation.
-# We always want to update the cache as we generate sources.list on the fly.
-$apt_update = 1;
+# We update sources.list on the fly via chroot-setup commands;
+# this update occurs before, so we dont need it.
+$apt_update = 0;
 
 # Allow unauthenticated apt toggle
 $apt_allow_unauthenticated = {apt_allow_unauthenticated};
@@ -180,15 +183,20 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         env = os.environ
         env["HOME"] = path
 
+        ".. todo:: chroot-setup-command: uses sudo workaround (schroot bug)."
         sbuild_cmd = ["sbuild",
                       "--dist={0}".format(self._br["Distribution"]),
                       "--arch={0}".format(self._br["Buildrequest-Architecture"]),
                       "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Buildrequest-Base-Distribution"], a=self._br["Buildrequest-Architecture"]),
+                      "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=path),
+                      "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=path),
+                      "--chroot-setup-command=sudo apt-get update",
                       "--build-dep-resolver={r}".format(r=self._br["Buildrequest-Build-Dep-Resolver"]),
                       "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
         if "Buildrequest-Arch-All" in self._br:
             sbuild_cmd.append("--arch-all")
+            sbuild_cmd.append("--source")
 
         # @ todo lintian opt-in, repository options
         if "Run-Lintian" in self._br:
@@ -230,7 +238,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             build_changes.tar(tar_path=res._file_path + ".tar")
             res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": res._file_name + ".tar"})
 
-
         res.save()
         res.upload()
 
@@ -260,12 +267,16 @@ class Dispatcher():
         mini_buildd.misc.start_thread(self._builder)
         while True:
             c = Changes(self._incoming_queue.get())
+            r = c.get_repository()
             if c.is_buildrequest():
+                log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
                 self._build_queue.put(c)
             elif c.is_buildresult():
-                log.info("STUB: build result: '{f}'...".format(f=c._file_name))
+                log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
+                c.untar(path=r.get_incoming_path())
+                r._reprepro.processincoming()
             else:
-                # User upload
+                log.info("{p}: Got user upload for {r}".format(p=c.get_pkg_id(), r=r.id))
                 for br in c.gen_buildrequests(os.path.join(self._spool_dir, "repositories")):
                     br.upload()
 

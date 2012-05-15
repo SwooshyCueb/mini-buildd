@@ -10,11 +10,22 @@ import mini_buildd
 
 log = logging.getLogger(__name__)
 
-# Force pyftpdlib log callbacks to mini_buildd log.
-# See http://code.google.com/p/pyftpdlib/wiki/Tutorial#2.1_-_Logging
-pyftpdlib.ftpserver.log      = lambda msg: log.info(msg)
-pyftpdlib.ftpserver.logline  = lambda msg: log.debug(msg)
-pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
+def log_init():
+    """
+    Force pyftpdlib log callbacks to the mini_buildd log.
+
+    See http://code.google.com/p/pyftpdlib/wiki/Tutorial#2.1_-_Logging:
+     - log: messages intended for the end user.
+     - logline: Log commands and responses passing through the command channel.
+     - logerror: Log traceback outputs occurring in case of errors.
+
+     As pyftpd "logline" really spews lot of lines, this is only
+     enabled in debug mode.
+    """
+    pyftpdlib.ftpserver.log = lambda msg: log.debug(msg)
+    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if mini_buildd.globals.DEBUG else mini_buildd.misc.nop
+    pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
+
 
 class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, f):
@@ -30,6 +41,7 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
 
 class FtpD(pyftpdlib.ftpserver.FTPServer):
     def __init__(self, bind, home, incoming, repositories, queue, queue_regex):
+        log_init()
         self._bind = mini_buildd.misc.BindArgs(bind)
 
         # @todo Arguably not the right place to create these dirs
@@ -49,4 +61,5 @@ class FtpD(pyftpdlib.ftpserver.FTPServer):
         pyftpdlib.ftpserver.FTPServer.__init__(self, self._bind.tuple, handler)
 
     def run(self):
+        log.info("Starting ftpd on '{b}'.".format(b=self._bind.string))
         self.serve_forever()

@@ -41,7 +41,7 @@ class Changes(debian.deb822.Changes):
         return r
 
     def get_spool_dir(self, base_dir):
-        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], self["Buildrequest-Architecture"])
+        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -112,15 +112,15 @@ class Changes(debian.deb822.Changes):
             # [ "md5sum", "size", "section", "priority", "name" ]
             br["Files"] = [{"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildrequest", "priority": "FIXME", "name": br._file_name + ".tar"}]
 
-            br["Buildrequest-Base-Distribution"] = codename
-            br["Buildrequest-Architecture"] = a.arch
+            br["Base-Distribution"] = codename
+            br["Architecture"] = a.arch
             if a == r.arch_all:
-                br["Buildrequest-Arch-All"] = "Yes"
-            br["Buildrequest-Build-Dep-Resolver"] = r.build_dep_resolver
-            br["Buildrequest-Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
+                br["Arch-All"] = "Yes"
+            br["Build-Dep-Resolver"] = r.build_dep_resolver
+            br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
             if r.lintian_mode != "disabled":
                 # Generate lintian options
-                br["Buildrequest-Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[r.lintian_mode] + " " + r.lintian_extra_options
+                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[r.lintian_mode] + " " + r.lintian_extra_options
 
             br.save()
             br_list.append(br)
@@ -140,14 +140,14 @@ class Build():
                 if regex.match(l):
                     log.debug("Build log line detected as build status: {l}".format(l=l.strip()))
                     s = l.split(":")
-                    changes["Buildresult-Sbuild-" + s[0]] = s[1].strip()
+                    changes["Sbuild-" + s[0]] = s[1].strip()
 
     def run(self):
         # @todo Caveat: Create sbuild's internal key if needed. This should go somewhere else.
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             mini_buildd.misc.run_cmd("sbuild-update --keygen")
 
-        pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"])
+        pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
         path = self._br.get_spool_dir(self._spool_dir)
         self._br.untar(path=path)
@@ -178,7 +178,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
 # don't remove this, Perl needs it:
 1;
-""".format(apt_allow_unauthenticated=self._br["Buildrequest-Apt-Allow-Unauthenticated"]))
+""".format(apt_allow_unauthenticated=self._br["Apt-Allow-Unauthenticated"]))
 
         env = os.environ
         env["HOME"] = path
@@ -186,15 +186,15 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         ".. todo:: chroot-setup-command: uses sudo workaround (schroot bug)."
         sbuild_cmd = ["sbuild",
                       "--dist={0}".format(self._br["Distribution"]),
-                      "--arch={0}".format(self._br["Buildrequest-Architecture"]),
-                      "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Buildrequest-Base-Distribution"], a=self._br["Buildrequest-Architecture"]),
+                      "--arch={0}".format(self._br["Architecture"]),
+                      "--chroot=mini-buildd-{d}-{a}".format(d=self._br["Base-Distribution"], a=self._br["Architecture"]),
                       "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=path),
                       "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=path),
                       "--chroot-setup-command=sudo apt-get update",
-                      "--build-dep-resolver={r}".format(r=self._br["Buildrequest-Build-Dep-Resolver"]),
+                      "--build-dep-resolver={r}".format(r=self._br["Build-Dep-Resolver"]),
                       "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
-        if "Buildrequest-Arch-All" in self._br:
+        if "Arch-All" in self._br:
             sbuild_cmd.append("--arch-all")
             sbuild_cmd.append("--source")
 
@@ -202,14 +202,14 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         if "Run-Lintian" in self._br:
             sbuild_cmd.append("--run-lintian")
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
-            sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Buildrequest-Run-Lintian"]))
+            sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Run-Lintian"]))
 
         if mini_buildd.globals.DEBUG:
             sbuild_cmd.append("--verbose")
 
         sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
 
-        buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"]))
+        buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
         log.info("{p}: Starting sbuild".format(p=pkg_info))
         log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
         with open(buildlog, "w") as l:
@@ -219,20 +219,20 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         res = Changes(os.path.join(path,
                                    "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                   format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"])))
+                                   format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
         for v in ["Distribution", "Source", "Version"]:
             res[v] = self._br[v]
 
         # Add build results to build request object
-        res["Buildresult-Retval"] = retval
+        res["Sbuildretval"] = retval
         self.results_from_buildlog(buildlog, res)
 
-        log.info("{p}: Sbuild finished: Retval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Buildresult-Sbuild-Status"]))
+        log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Sbuild-Status"]))
         res["Files"] = []
         res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": os.path.basename(buildlog)})
         build_changes_file = os.path.join(path,
                                           "{s}_{v}_{a}.changes".
-                                          format(s=self._br["Source"], v=self._br["Version"], a=self._br["Buildrequest-Architecture"]))
+                                          format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
         if os.path.exists(build_changes_file):
             build_changes = Changes(build_changes_file)
             build_changes.tar(tar_path=res._file_path + ".tar")

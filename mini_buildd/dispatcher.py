@@ -6,6 +6,7 @@ import tarfile
 import ftplib
 import re
 import subprocess
+import contextlib
 
 import debian.deb822
 
@@ -73,23 +74,21 @@ class Changes(debian.deb822.Changes):
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
     def tar(self, tar_path, add_files=[]):
-        tar = tarfile.open(tar_path, "w")
-        try:
+        with contextlib.closing(tarfile.open(tar_path, "w")) as tar:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
             tar_add(self._file_path)
             for f in self.get_files():
                 tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
             for f in add_files:
                 tar_add(f)
-        finally:
-            tar.close()
 
     def untar(self, path):
-        tar = tarfile.open(self._file_path + ".tar", "r")
-        try:
-            tar.extractall(path=path)
-        finally:
-            tar.close()
+        tar_file = self._file_path + ".tar"
+        if os.path.exists(tar_file):
+            with contextlib.closing(tarfile.open(tar_file, "r")) as tar:
+                tar.extractall(path=path)
+        else:
+            log.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def gen_buildrequests(self, base_dir):
         # Build buildrequest files for all archs

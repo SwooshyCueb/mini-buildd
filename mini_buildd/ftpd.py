@@ -40,19 +40,15 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
 
 
 class FtpD(pyftpdlib.ftpserver.FTPServer):
-    def __init__(self, bind, home, incoming, repositories, queue, queue_regex):
+    def __init__(self, bind, queue, queue_regex):
         log_init()
         self._bind = mini_buildd.misc.BindArgs(bind)
 
-        # @todo Arguably not the right place to create these dirs
-        mini_buildd.misc.mkdirs(os.path.join(home, incoming))
-        mini_buildd.misc.mkdirs(os.path.join(home, repositories))
-
         handler = FtpDHandler
         handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
-        handler.authorizer.add_anonymous(homedir=home, perm='')
-        handler.authorizer.override_perm(username="anonymous", directory=os.path.join(home, incoming), perm='elrw')
-        handler.authorizer.override_perm(username="anonymous", directory=os.path.join(home, repositories), perm='elr', recursive=True)
+        handler.authorizer.add_anonymous(homedir=mini_buildd.globals.HOME_DIR, perm='')
+        handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.globals.INCOMING_DIR, perm='elrw')
+        handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.globals.REPOSITORIES_DIR, perm='elr', recursive=True)
 
         handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
         handler._mini_buildd_queue = queue

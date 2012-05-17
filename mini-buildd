@@ -112,9 +112,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._incoming_queue_regex = "^.*\.changes$"
 
         self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, home=self._args.home,
-                                      incoming="incoming", repositories="repositories",
-                                      queue=self._incoming_queue, queue_regex=self._incoming_queue_regex)
+        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue, queue_regex=self._incoming_queue_regex)
         self._dispatcher = mini_buildd.Dispatcher(spool_dir=os.path.join(self._args.home, "spool"), queue=self._incoming_queue)
 
         self._run = True

@@ -61,24 +61,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         return parser.parse_args()
 
-    def configure_log(self):
-        # Add predefinded handlers: console, syslog, file
-        self._LOG_HANDLERS = {}
-        self._LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
-        self._LOG_HANDLERS["console"] = logging.StreamHandler()
-        self._LOG_HANDLERS["file"] = logging.FileHandler(self._args.home + "/.mini-buildd.log")
-
-        # Global: Don't propagate exceptions that happen while logging
-        logging.raiseExceptions = 0
-
-        for h in string.split(self._args.loggers + (",console" if self._args.foreground else ""), ","):
-            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"))
-            log.addHandler(self._LOG_HANDLERS[h])
-
-        # Finally, set log level
-        loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
-        log.setLevel(loglevel)
-
     def setup_globals(self):
         # Set global variables that really make no sense to
         # propagate through
@@ -99,11 +81,28 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
 
+    def setup_logging(self):
+        # Add predefinded handlers: console, syslog, file
+        self._LOG_HANDLERS = {}
+        self._LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+        self._LOG_HANDLERS["console"] = logging.StreamHandler()
+        self._LOG_HANDLERS["file"] = logging.FileHandler(self._args.home + "/.mini-buildd.log")
+
+        # Global: Don't propagate exceptions that happen while logging
+        logging.raiseExceptions = 0
+
+        for h in string.split(self._args.loggers + (",console" if self._args.foreground else ""), ","):
+            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"))
+            log.addHandler(self._LOG_HANDLERS[h])
+
+        # Finally, set log level
+        loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
+        log.setLevel(loglevel)
 
     def __init__(self):
         self._args = self.parse_args()
-        self.configure_log()
         self.setup_globals()
+        self.setup_logging()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
 

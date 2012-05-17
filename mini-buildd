@@ -79,14 +79,31 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
         log.setLevel(loglevel)
 
-    def __init__(self):
-        self._args = self.parse_args()
-
+    def setup_globals(self):
         # Set global variables that really make no sense to
         # propagate through
         mini_buildd.globals.DEBUG = self._args.debug
 
+        mini_buildd.globals.HOME_DIR = self._args.home
+
+        mini_buildd.globals.INCOMING_DIR = os.path.join(self._args.home, "incoming")
+        mini_buildd.globals.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
+
+        vardir = os.path.join(self._args.home, "var")
+        mini_buildd.globals.SPOOL_DIR    = os.path.join(vardir, "spool")
+        mini_buildd.globals.BUILDS_DIR   = os.path.join(vardir, "builds")
+        mini_buildd.globals.LOGS_DIR     = os.path.join(vardir, "logs")
+        mini_buildd.globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
+
+        # @todo Arguably not the right place to create these dirs
+        mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
+
+
+    def __init__(self):
+        self._args = self.parse_args()
         self.configure_log()
+        self.setup_globals()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
 

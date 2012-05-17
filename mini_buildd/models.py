@@ -385,7 +385,7 @@ needs (like pre-seeding debconf variables).
         # Reprepro config
         self._reprepro.prepare()
 
-class Builder(django.db.models.Model):
+class Chroot(django.db.models.Model):
     arch = django.db.models.ForeignKey(Architecture, primary_key=True)
     dists = django.db.models.ManyToManyField(Distribution)
 
@@ -409,7 +409,7 @@ class Builder(django.db.models.Model):
         s.prepare()
 
     def __unicode__(self):
-        return "Builder for " + self.arch.arch
+        return "Chroot for " + self.arch.arch
 
 
 class Remote(django.db.models.Model):
@@ -448,6 +448,6 @@ def create_default(mirror):
     r.dists.add(d)
     r.save()
 
-    b=Builder(arch=a)
+    b=Chroot(arch=a)
     b.dists.add(d)
     b.save()

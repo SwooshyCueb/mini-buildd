@@ -28,19 +28,21 @@ def log_init():
 
 
 class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
+    _CHANGES_RE = re.compile("^.*\.changes$")
+
     def on_file_received(self, f):
         # Make any incoming file read-only as soon as it arrives; avoids multiple user uploads of the same file
         os.chmod(f, stat.S_IRUSR | stat.S_IRGRP)
 
-        if self._mini_buildd_queue_regex.match(f):
-            log.info("Queuing incoming file: {f}".format(f=f))
+        if self._CHANGES_RE.match(f):
+            log.info("Incoming changes file: {f}".format(f=f))
             self._mini_buildd_queue.put(f)
         else:
-            log.debug("Non-queue-able incoming file: {f}".format(f=f))
+            log.debug("Ignoring incoming file: {f}".format(f=f))
 
 
 class FtpD(pyftpdlib.ftpserver.FTPServer):
-    def __init__(self, bind, queue, queue_regex):
+    def __init__(self, bind, queue):
         log_init()
         self._bind = mini_buildd.misc.BindArgs(bind)
 
@@ -53,7 +55,6 @@ class FtpD(pyftpdlib.ftpserver.FTPServer):
 
         handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
         handler._mini_buildd_queue = queue
-        handler._mini_buildd_queue_regex = re.compile(queue_regex)
 
         pyftpdlib.ftpserver.FTPServer.__init__(self, self._bind.tuple, handler)
 

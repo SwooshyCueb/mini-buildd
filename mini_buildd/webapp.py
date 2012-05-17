@@ -23,6 +23,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         django.conf.settings.configure(
             # Settings that need to be known to model code go here
             # with prefix 'MINI_BUILDD_'
+            # @todo not used any more, maybe obsolete
             MINI_BUILDD_HOME=home,
 
             # Django settings

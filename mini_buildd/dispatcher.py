@@ -86,12 +86,12 @@ class Changes(debian.deb822.Changes):
         else:
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
-    def gen_buildrequests(self, base_dir):
+    def gen_buildrequests(self):
         # Build buildrequest files for all archs
         br_list = []
         r = self.get_repository()
         for a in r.archs.all():
-            path = os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], a.arch)
+            path = os.path.join(mini_buildd.globals.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
@@ -124,9 +124,8 @@ class Changes(debian.deb822.Changes):
 
 
 class Build():
-    def __init__(self, spool_dir, br):
+    def __init__(self, br):
         self._br = br
-        self._spool_dir = spool_dir
 
     def results_from_buildlog(self, fn, changes):
         regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
@@ -144,7 +143,7 @@ class Build():
 
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
-        path = self._br.get_spool_dir(self._spool_dir)
+        path = self._br.get_spool_dir(mini_buildd.globals.BUILDS_DIR)
         self._br.untar(path=path)
 
         # @todo DEB_BUILD_OPTIONS
@@ -238,25 +237,23 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
 
 class Builder():
-    def __init__(self, spool_dir, queue):
+    def __init__(self, queue):
         self._queue = queue
-        self._spool_dir = spool_dir
 
     def run(self):
         while True:
             f = self._queue.get()
-            mini_buildd.misc.start_thread(Build(self._spool_dir, f))
+            mini_buildd.misc.start_thread(Build(f))
             self._queue.task_done()
 
 
 class Dispatcher():
-    def __init__(self, spool_dir, queue):
+    def __init__(self, queue):
         self._incoming_queue = queue
-        self._spool_dir = spool_dir
 
         # Queue of all local builds
         self._build_queue = Queue.Queue(maxsize=0)
-        self._builder = Builder(os.path.join(self._spool_dir, "builders"), self._build_queue)
+        self._builder = Builder(self._build_queue)
 
     def run(self):
         mini_buildd.misc.start_thread(self._builder)
@@ -272,7 +269,7 @@ class Dispatcher():
                 r._reprepro.processincoming()
             else:
                 log.info("{p}: Got user upload for {r}".format(p=c.get_pkg_id(), r=r.id))
-                for br in c.gen_buildrequests(os.path.join(self._spool_dir, "repositories")):
+                for br in c.gen_buildrequests():
                     br.upload()
 
             self._incoming_queue.task_done()

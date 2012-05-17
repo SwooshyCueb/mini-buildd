@@ -205,7 +205,7 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "repositories", self.id)
+        return os.path.join(mini_buildd.globals.REPOSITORIES_DIR, self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
@@ -230,8 +230,9 @@ Expire-Date: 0""")
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
     def get_apt_line(self, dist, suite):
-        return "deb ftp://{h}:8067/repositories/{id}/ {dist} {components}".format(
-            h=self.host, id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
+        return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
+            h=self.host, r=os.path.basename(mini_buildd.globals.REPOSITORIES_DIR),
+            id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
     def get_apt_sources_list(self, dist):
         dist_split = dist.split("-")
@@ -400,7 +401,7 @@ class Builder(django.db.models.Model):
                                    help_text="Degree of parallelism per build.")
 
     def get_path(self):
-        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "builders", self.arch.arch)
+        return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.arch.arch)
 
     def prepare(self):
         log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))

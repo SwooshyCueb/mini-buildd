@@ -14,5 +14,6 @@ django.contrib.admin.site.register(mini_buildd.models.Distribution)
 django.contrib.admin.site.register(mini_buildd.models.Repository)
 
 django.contrib.admin.site.register(mini_buildd.models.Chroot)
+django.contrib.admin.site.register(mini_buildd.models.Builder)
 
 django.contrib.admin.site.register(mini_buildd.models.Remote)

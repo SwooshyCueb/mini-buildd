@@ -77,9 +77,12 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         mini_buildd.globals.LOGS_DIR     = os.path.join(vardir, "logs")
         mini_buildd.globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
 
+        self.LOG_FILE = os.path.join(mini_buildd.globals.LOGS_DIR, "daemon.log")
+
         # @todo Arguably not the right place to create these dirs
         mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.globals.LOGS_DIR)
 
     def setup_logging(self):
         loggers = string.split(self._args.loggers, ",")
@@ -89,7 +92,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         log_format="%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
 
         if "file" in loggers:
-            h  = logging.FileHandler(self._args.home + "/.mini-buildd.log")
+            h  = logging.FileHandler(self.LOG_FILE)
             h.setFormatter(logging.Formatter("%(asctime)s " + log_format))
             log.addHandler(h)
 

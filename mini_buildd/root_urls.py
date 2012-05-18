@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""
+.. todo:: Django workarounds
+   - Workaround for static admin data on Debian wheezy, django 1.3
+   - Workaround for static admin data on Debian squeeze, django 1.2
+"""
+
 import django.conf.urls.defaults
 import django.views.generic.simple
 import django.contrib
@@ -15,8 +21,7 @@ urlpatterns = django.conf.urls.defaults.patterns(
     # admin
     django.conf.urls.defaults.url(r"^admin/doc/", django.conf.urls.defaults.include('django.contrib.admindocs.urls')),
     django.conf.urls.defaults.url(r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
-    # @todo: Workaround for  static admin data on Debian wheezy, django 1.3
+    # WORKAROUNDS: wheezy, squeeze (see todos above)
     (r"^static/admin/(?P<path>.*)$", 'django.views.static.serve', {'document_root': "/usr/share/pyshared/django/contrib/admin/media/"}),
-    # @todo: Workaround for  static admin data on Debian squeeze, django 1.2
     (r"^media/(?P<path>.*)$", 'django.views.static.serve', {'document_root': "/usr/share/pyshared/django/contrib/admin/media/"})
     )

@@ -5,6 +5,7 @@ import errno
 import subprocess
 import threading
 import tempfile
+import hashlib
 import logging
 
 import mini_buildd
@@ -30,6 +31,16 @@ def start_thread(obj):
     thread = threading.Thread(target=obj.run)
     thread.setDaemon(True)
     thread.start()
+
+def md5_of_file(fn):
+    md5 = hashlib.md5()
+    with open(fn) as f:
+        while True:
+            data = f.read(128)
+            if not data:
+                break
+            md5.update(data)
+    return md5.hexdigest()
 
 def codename2Version(codename):
     known = {

@@ -20,11 +20,11 @@ Manual
 The manual is yet to be written.
 
 
-RoadMap
-=======
+RoadMap to 1.0
+==============
 
 High-level roadmap to mini-buildd 1.0. Should be manually
-updated with (at least) every (experimental) Debian release.
+updated with (at least) every uploaded Debian revision.
 
 ====== ============================================================== ================= ======================================================================
 Status Desc                                                           Effort Estimation Comments
@@ -43,6 +43,18 @@ Status Desc                                                           Effort Est
 0%     Integrate and test new infrastructure                          6/10/15           Integrate features, bug fixing and fine tuning.
 ====== ============================================================== ================= ======================================================================
 
+
+Known Bugs/TODOS
+================
+
+ - GnuPG setup: One Master key with subkeys for all repos
+ - APT secure: Pub-key per Mirror/Source.
+ - chroot: Proper backend support
+ - refactor:
+
+   - dispatcher => changes
+   - schroot -> chroot
+   - model methods
 
 In-code TODOS
 =============

@@ -69,7 +69,7 @@ class LVMLoop():
             mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
             mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
         except:
-            log.warn("[@todo: better log:] Some purging steps may have failed")
+            log.warn("LVM {n}: Some purging steps may have failed".format(n=self._vgname))
 
 
 class Schroot():
@@ -94,7 +94,8 @@ class Schroot():
         On 64bit hosts, 32bit schroots must be configured
         with a *linux32* personality to work.
 
-        .. todo::
+        .. todo:: Chroot personalities
+
            - This may be needed for other 32-bit archs, too?
            - We currently assume we build under linux only.
         """
@@ -105,6 +106,13 @@ class Schroot():
             return "linux"
 
     def prepare(self):
+        """
+        .. todo:: Chroot prepare
+
+           - mbdAptEnv ??
+           - include=sudo is only workaround for sbuild Bug #608840
+           - debootstrap include=apt WTF?
+        """
         self._backend.prepare()
 
         dist = self.chroot.dist
@@ -121,20 +129,17 @@ class Schroot():
             mirror=dist.base_source.mirrors.all()[0]
             log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
 
-            # @todo aptenv ??
-            # mbdAptEnv
-
             mount_point = tempfile.mkdtemp()
             try:
                 mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=self._backend.get_vgname()))
                 mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
                 mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
-                # @todo include=sudo is only workaround for sbuild Bug #608840
-                # @todo include=apt WTF?
-                mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
-                                                 format(a=self.chroot.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
 
-                # @todo Still sudoers workaround
+                # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
+                mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
+                                             format(a=self.chroot.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
+
+                # STILL SUDOERS WORKAROUND (remove all when fixed)
                 with tempfile.NamedTemporaryFile() as ts:
                     ts.write("""
 {u}	ALL=(ALL) ALL
@@ -142,7 +147,7 @@ class Schroot():
 """.format(u=getpass.getuser()))
                     ts.flush()
                     mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=mount_point))
-                # @todo End sudoers workaround
+                # END SUDOERS WORKAROUND
 
                 mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                 log.info("LV {n} created successfully...".format(n=name))
@@ -171,6 +176,6 @@ personality={p}
                 raise
 
     def purge(self):
-        # @todo
-        log.error("@todo NOT IMPL PURGE")
+        ".. todo:: chroot purge not implemented"
+        log.error("NOT IMPL PURGE")
         #self._backend.purge()

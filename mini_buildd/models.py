@@ -129,9 +129,14 @@ def create_default_layout():
     return l
 
 class Distribution(django.db.models.Model):
-    # @todo: limit to distribution?  limit_choices_to={'codename': 'sid'})
+    """
+    .. todo:: Distribution Model
+
+       - limit to distribution?  limit_choices_to={'codename': 'sid'})
+       - how to limit to source.kind?
+    """
     base_source = django.db.models.ForeignKey(Source, primary_key=True)
-    # @todo: how to limit to source.kind?
+
     extra_sources = django.db.models.ManyToManyField(PrioritisedSource, blank=True, null=True)
 
     def get_apt_sources_list(self):
@@ -143,7 +148,7 @@ class Distribution(django.db.models.Model):
         return res
 
     def __unicode__(self):
-        # @todo: somehow indicate extra sources to visible name
+        ".. todo:: somehow indicate extra sources to visible name"
         return self.base_source.origin + ": " + self.base_source.codename
 
 class Repository(django.db.models.Model):
@@ -180,6 +185,7 @@ Expire-Date: 0""")
     extdocurl = django.db.models.URLField(blank=True)
 
     def __init__(self, *args, **kwargs):
+        ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
 
@@ -187,7 +193,6 @@ Expire-Date: 0""")
         self.gnupg.options.meta_interactive = 0
         self.gnupg.options.homedir = os.path.join(self.get_path(), ".gnupg")
 
-        # @todo: to be replaced in template; Only as long as we dont know better
         self.pgp_key_ascii = self.getGpgPubKey()
 
         self.uploadable_dists = []
@@ -235,6 +240,7 @@ Expire-Date: 0""")
             id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
     def get_apt_sources_list(self, dist):
+        ".. todo:: decide what other mini-buildd suites are to be included automatically"
         dist_split = dist.split("-")
         base = dist_split[0]
         id = dist_split[1]
@@ -247,7 +253,6 @@ Expire-Date: 0""")
                 res += "\n"
                 for s in self.layout.suites.all():
                     if s.name == suite:
-                        ".. todo:: decide what other mini-buildd suites are to be included automatically"
                         res += "# Mini-Buildd: {d}\n".format(d=dist)
                         res += self.get_apt_line(d, s)
                         return res
@@ -332,6 +337,8 @@ Name-Email: mini-buildd-{id}@{h}
                 raise
 
     def prepare(self):
+        ".. todo:: README from 08x; please fix/update."
+
         path = self.get_path()
         log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
@@ -343,7 +350,6 @@ Name-Email: mini-buildd-{id}@{h}
         mini_buildd.misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
-        # @todo This 08x README; please fix.
         open(os.path.join(path, "README"), 'w').write("""
 Automatically produced by mini-buildd on {date}.
 Manual changes to this file are NOT preserved.

@@ -50,6 +50,15 @@ class Changes(debian.deb822.Changes):
     def get_files(self):
         return self["Files"] if "Files" in self else []
 
+    def add_file(self, fn):
+        if not "Files" in self:
+            self["Files"] = []
+        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(fn),
+                              "size": os.path.getsize(fn),
+                              "section": "mini-buildd",
+                              "priority": "extra",
+                              "name": os.path.basename(fn)})
+
     def save(self, file_path=None):
         file_path = self._file_path if file_path == None else file_path
 
@@ -104,8 +113,7 @@ class Changes(debian.deb822.Changes):
 
             # Generate tar from original changes
             self.tar(tar_path=br._file_path + ".tar", add_files=[os.path.join(path, "apt_sources.list"), os.path.join(path, "apt_preferences")])
-            # [ "md5sum", "size", "section", "priority", "name" ]
-            br["Files"] = [{"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildrequest", "priority": "FIXME", "name": br._file_name + ".tar"}]
+            br.add_file(br._file_path + ".tar")
 
             br["Base-Distribution"] = codename
             br["Architecture"] = a.arch
@@ -220,15 +228,14 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         self.results_from_buildlog(buildlog, res)
 
         log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Sbuild-Status"]))
-        res["Files"] = []
-        res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": os.path.basename(buildlog)})
+        res.add_file(buildlog)
         build_changes_file = os.path.join(path,
                                           "{s}_{v}_{a}.changes".
                                           format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
         if os.path.exists(build_changes_file):
             build_changes = Changes(build_changes_file)
             build_changes.tar(tar_path=res._file_path + ".tar")
-            res["Files"].append({"md5sum": "FIXME", "size": "FIXME", "section": "mini-buildd-buildresult", "priority": "FIXME", "name": res._file_name + ".tar"})
+            res.add_file(res._file_path + ".tar")
 
         res.save()
         res.upload()

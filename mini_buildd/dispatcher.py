@@ -253,15 +253,11 @@ class Builder():
 
 
 class Dispatcher():
-    def __init__(self, queue):
-        self._incoming_queue = queue
-
-        # Queue of all local builds
-        self._build_queue = Queue.Queue(maxsize=0)
-        self._builder = Builder(self._build_queue)
+    def __init__(self, incoming_queue, build_queue):
+        self._incoming_queue = incoming_queue
+        self._build_queue = build_queue
 
     def run(self):
-        mini_buildd.misc.start_thread(self._builder)
         while True:
             c = Changes(self._incoming_queue.get())
             r = c.get_repository()

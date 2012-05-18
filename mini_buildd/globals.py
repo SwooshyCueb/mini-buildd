@@ -10,3 +10,5 @@ SPOOL_DIR = None
 BUILDS_DIR = None
 LOGS_DIR = None
 CHROOTS_DIR = None
+
+MANUAL_DIR = None

@@ -137,10 +137,6 @@ class Build():
                     changes["Sbuild-" + s[0]] = s[1].strip()
 
     def run(self):
-        # @todo Caveat: Create sbuild's internal key if needed. This should go somewhere else.
-        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
-            mini_buildd.misc.run_cmd("sbuild-update --keygen")
-
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
         path = self._br.get_spool_dir(mini_buildd.globals.BUILDS_DIR)

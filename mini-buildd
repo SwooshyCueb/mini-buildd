@@ -79,7 +79,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         self.LOG_FILE = os.path.join(mini_buildd.globals.LOGS_DIR, "daemon.log")
 
-        # @todo Arguably not the right place to create these dirs
+        # Create base directories
         mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.globals.LOGS_DIR)
@@ -113,10 +113,19 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
 
+    def setup_workarounds(self):
+        """
+        Miscellaneous workarounds
+        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
+        """
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            mini_buildd.misc.run_cmd("sbuild-update --keygen")
+
     def __init__(self):
         self._args = self.parse_args()
         self.setup_globals()
         self.setup_logging()
+        self.setup_workarounds()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
 

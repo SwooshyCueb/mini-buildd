@@ -16,6 +16,20 @@ import mini_buildd
 
 log = logging.getLogger("mini_buildd")
 
+class SystemPrepare():
+    def run(self):
+        """
+        Miscellaneous system workarounds
+        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
+        """
+        log.info("Starting system preparations")
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            log.warn("System preparation: Generating sbuild keys")
+            mini_buildd.misc.run_cmd("sbuild-update --keygen")
+            log.info("System preparation: Sbuild keys generated")
+
+        log.info("System preparations successfully finished")
+
 class Main():
     def parse_args(self):
         parser = argparse.ArgumentParser(prog="mini-buildd",
@@ -119,19 +133,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
 
-    def setup_workarounds(self):
-        """
-        Miscellaneous workarounds
-        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
-        """
-        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
-            mini_buildd.misc.run_cmd("sbuild-update --keygen")
-
     def __init__(self):
         self._args = self.parse_args()
         self.setup_globals()
         self.setup_logging()
-        self.setup_workarounds()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
 
@@ -169,6 +174,9 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             # Daemonize if configured
             if not self._args.foreground:
                 daemon.DaemonContext().open()
+
+            # Prepare system (parallel, as this might involve generating security keys)
+            mini_buildd.misc.start_thread(SystemPrepare())
 
             # Prepare home
             self.prepare()

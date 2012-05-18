@@ -13,7 +13,8 @@ urlpatterns = patterns('',
                        (r"^$", django.views.generic.simple.redirect_to, {'url': "repositories/", 'permanent': False}),
                        (r"^repositories/$", 'django.views.generic.list_detail.object_list', info_dict),
                        (r"^repositories/(?P<object_id>.+)/$", 'django.views.generic.list_detail.object_detail', info_dict),
-                       (r"^graph_models/$", 'mini_buildd.views.graph_models')
+                       (r"^graph_models/$", 'mini_buildd.views.graph_models'),
+                       (r"^manual/(?P<path>.*)$", 'django.views.static.serve', {'document_root': mini_buildd.globals.MANUAL_DIR, 'show_indexes': True})
 
                        # @todo: django.views.static.serve should not be used for production
                        # Compat: Browse olde-style public_html/

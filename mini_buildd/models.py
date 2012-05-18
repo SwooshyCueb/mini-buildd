@@ -205,7 +205,7 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "repositories", self.id)
+        return os.path.join(mini_buildd.globals.REPOSITORIES_DIR, self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
@@ -230,8 +230,9 @@ Expire-Date: 0""")
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
     def get_apt_line(self, dist, suite):
-        return "deb ftp://{h}:8067/repositories/{id}/ {dist} {components}".format(
-            h=self.host, id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
+        return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
+            h=self.host, r=os.path.basename(mini_buildd.globals.REPOSITORIES_DIR),
+            id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
     def get_apt_sources_list(self, dist):
         dist_split = dist.split("-")
@@ -384,23 +385,17 @@ needs (like pre-seeding debconf variables).
         # Reprepro config
         self._reprepro.prepare()
 
-class Builder(django.db.models.Model):
-    arch = django.db.models.ForeignKey(Architecture, primary_key=True)
-    dists = django.db.models.ManyToManyField(Distribution)
+class Chroot(django.db.models.Model):
+    dist = django.db.models.ForeignKey(Distribution)
+    arch = django.db.models.ForeignKey(Architecture)
 
     SCHROOT_MODES = (
         ('lvm_loop', 'LVM via loop device'),
     )
     schroot_mode = django.db.models.CharField(max_length=20, choices=SCHROOT_MODES, default="lvm_loop")
 
-    max_parallel_builds = django.db.models.IntegerField(default=4,
-                                   help_text="Maximum number of parallel builds.")
-
-    sbuild_parallel = django.db.models.IntegerField(default=1,
-                                   help_text="Degree of parallelism per build.")
-
     def get_path(self):
-        return os.path.join(django.conf.settings.MINI_BUILDD_HOME, "builders", self.arch.arch)
+        return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.arch.arch)
 
     def prepare(self):
         log.debug("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))
@@ -408,14 +403,24 @@ class Builder(django.db.models.Model):
         s.prepare()
 
     def __unicode__(self):
-        return "Builder for " + self.arch.arch
+        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+
+class Builder(django.db.models.Model):
+    chroots = django.db.models.ManyToManyField(Chroot)
+
+    max_parallel_builds = django.db.models.IntegerField(default=4,
+                                   help_text="Maximum number of parallel builds.")
+
+    sbuild_parallel = django.db.models.IntegerField(default=1,
+                                   help_text="Degree of parallelism per build.")
 
 
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
 
     def __unicode__(self):
-        return "Remote: " + self.host
+        return "Remote: {h}".format(h=self.host)
 
 
 def create_default(mirror):
@@ -447,6 +452,10 @@ def create_default(mirror):
     r.dists.add(d)
     r.save()
 
-    b=Builder(arch=a)
-    b.dists.add(d)
+    c=Chroot(dist=d, arch=a)
+    c.save()
+
+    b=Builder()
+    b.save()
+    b.chroots.add(c)
     b.save()

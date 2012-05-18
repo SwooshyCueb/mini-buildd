@@ -39,8 +39,8 @@ class Main():
         group_log.add_argument("-d", "--debug", action='store_true', default=False,
                                help="Enable 'debug mode'. This will set logging vebosity to max, and also \
 tries to put external code into 'debug' mode as far as supported. Never use this for production.")
-        group_log.add_argument("-l", "--loggers", action='store', default="syslog",
-                               help="Comma-separated list of loggers (syslog, console, file) to use.")
+        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
+                               help="Comma-separated list of loggers (file,syslog,console) to use.")
 
         group_conf = parser.add_argument_group("Daemon configuration")
         group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
@@ -61,52 +61,94 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         return parser.parse_args()
 
-    def configure_log(self):
-        # Add predefinded handlers: console, syslog, file
-        self._LOG_HANDLERS = {}
-        self._LOG_HANDLERS["syslog"] = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
-        self._LOG_HANDLERS["console"] = logging.StreamHandler()
-        self._LOG_HANDLERS["file"] = logging.FileHandler(self._args.home + "/.mini-buildd.log")
+    def setup_globals(self):
+        # Set global variables that really make no sense to
+        # propagate through
+        mini_buildd.globals.DEBUG = self._args.debug
 
-        # Global: Don't propagate exceptions that happen while logging
-        logging.raiseExceptions = 0
+        mini_buildd.globals.HOME_DIR = self._args.home
 
-        for h in string.split(self._args.loggers + (",console" if self._args.foreground else ""), ","):
-            self._LOG_HANDLERS[h].setFormatter(logging.Formatter("%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"))
-            log.addHandler(self._LOG_HANDLERS[h])
+        mini_buildd.globals.INCOMING_DIR = os.path.join(self._args.home, "incoming")
+        mini_buildd.globals.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
+
+        vardir = os.path.join(self._args.home, "var")
+        mini_buildd.globals.SPOOL_DIR    = os.path.join(vardir, "spool")
+        mini_buildd.globals.BUILDS_DIR   = os.path.join(vardir, "builds")
+        mini_buildd.globals.LOGS_DIR     = os.path.join(vardir, "logs")
+        mini_buildd.globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
+
+        self.LOG_FILE = os.path.join(mini_buildd.globals.LOGS_DIR, "daemon.log")
+
+        if os.path.exists("./build/sphinx/html"):
+            # A bit clumsy, but should work: Seems to be a development run
+            mini_buildd.globals.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
+        else:
+            mini_buildd.globals.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
+
+        # Create base directories
+        mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.globals.LOGS_DIR)
+
+    def setup_logging(self):
+        loggers = string.split(self._args.loggers, ",")
+        if self._args.foreground:
+            loggers.append("console")
+
+        log_format="%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
+
+        if "file" in loggers:
+            h  = logging.FileHandler(self.LOG_FILE)
+            h.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(h)
+
+        if "syslog" in loggers:
+            h = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+            h.setFormatter(logging.Formatter(log_format))
+            log.addHandler(h)
+
+        if "console" in loggers:
+            h = logging.StreamHandler()
+            h.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(h)
 
         # Finally, set log level
         loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
         log.setLevel(loglevel)
 
+        # Global: Don't propagate exceptions that happen while logging
+        logging.raiseExceptions = 0
+
+    def setup_workarounds(self):
+        """
+        Miscellaneous workarounds
+        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
+        """
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            mini_buildd.misc.run_cmd("sbuild-update --keygen")
+
     def __init__(self):
         self._args = self.parse_args()
-
-        # Set global variables that really make no sense to
-        # propagate through
-        mini_buildd.globals.DEBUG = self._args.debug
-
-        self.configure_log()
+        self.setup_globals()
+        self.setup_logging()
+        self.setup_workarounds()
 
         self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
 
         # Queue of all incoming files
         self._incoming_queue = Queue.Queue(maxsize=0)
-        self._incoming_queue_regex = "^.*\.changes$"
 
         self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, home=self._args.home,
-                                      incoming="incoming", repositories="repositories",
-                                      queue=self._incoming_queue, queue_regex=self._incoming_queue_regex)
-        self._dispatcher = mini_buildd.Dispatcher(spool_dir=os.path.join(self._args.home, "spool"), queue=self._incoming_queue)
+        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
+        self._dispatcher = mini_buildd.Dispatcher(queue=self._incoming_queue)
 
         self._run = True
 
     def prepare(self):
-        from mini_buildd.models import Repository, Builder
+        from mini_buildd.models import Repository, Chroot
         for r in Repository.objects.all():
             r.prepare()
-        for b in Builder.objects.all():
+        for b in Chroot.objects.all():
             b.prepare()
 
     def shutdown(self, signum=-1, frame=-1):

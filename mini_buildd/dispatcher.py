@@ -32,13 +32,13 @@ class Changes(debian.deb822.Changes):
         return self.BUILDRESULT_RE.match(self._file_name)
 
     def get_repository(self):
+        ".. todo:: Check that base dist is really supported by this repo"
         from mini_buildd.models import Repository
         dist = self["Distribution"]
         r_id = dist.split("-")[1]
         log.debug(dist + "/" + r_id)
 
         r = Repository.objects.get(id=r_id)
-        # @todo Check that base dist is really supported by this repo
         return r
 
     def get_spool_dir(self, base_dir):
@@ -137,12 +137,18 @@ class Build():
                     changes["Sbuild-" + s[0]] = s[1].strip()
 
     def run(self):
+        """
+        .. todo:: Builder
+
+           - DEB_BUILD_OPTIONS
+           - [.sbuildrc] proper ccache support (was: Add path for ccache)
+           - [.sbuildrc] gpg setup
+           - chroot-setup-command: uses sudo workaround (schroot bug).
+        """
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
         path = self._br.get_spool_dir(mini_buildd.globals.BUILDS_DIR)
         self._br.untar(path=path)
-
-        # @todo DEB_BUILD_OPTIONS
 
         # Generate .sbuildrc for this run (not all is configurable via switches).
         open(os.path.join(path, ".sbuildrc"), 'w').write("""
@@ -158,11 +164,9 @@ $apt_update = 0;
 # Allow unauthenticated apt toggle
 $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
-# @todo: proper ccache support (was: Add path for ccache)
 #$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
 ##$build_environment = {{ 'CCACHE_DIR' => '$HOME/.ccache' }};
 
-# @todo gpg setup
 # Builder identity
 $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
@@ -173,7 +177,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         env = os.environ
         env["HOME"] = path
 
-        ".. todo:: chroot-setup-command: uses sudo workaround (schroot bug)."
         sbuild_cmd = ["sbuild",
                       "--dist={0}".format(self._br["Distribution"]),
                       "--arch={0}".format(self._br["Architecture"]),
@@ -188,7 +191,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--arch-all")
             sbuild_cmd.append("--source")
 
-        # @ todo lintian opt-in, repository options
         if "Run-Lintian" in self._br:
             sbuild_cmd.append("--run-lintian")
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")

@@ -13,6 +13,11 @@ log = logging.getLogger(__name__)
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
     This class represents mini-buildd's web application.
+
+    .. todo:: Django settings open questions
+
+       - SITE_ID: ??? Seems this is needed for admin/doc.
+       - SECRET_KEY: ??? wtf?
     """
 
     def __init__(self, home, instdir):
@@ -21,16 +26,9 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self._instdir = instdir
 
         django.conf.settings.configure(
-            # Settings that need to be known to model code go here
-            # with prefix 'MINI_BUILDD_'
-            # @todo not used any more, maybe obsolete
-            MINI_BUILDD_HOME=home,
-
-            # Django settings
             DEBUG = mini_buildd.globals.DEBUG,
             TEMPLATE_DEBUG = mini_buildd.globals.DEBUG,
 
-            # @todo: ? Seems this is needed for admin/doc.
             SITE_ID = 1,
 
             DATABASES =

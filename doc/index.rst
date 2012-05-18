@@ -20,6 +20,11 @@ Manual
 The manual is yet to be written.
 
 
+TODOS
+=====
+.. todolist::
+
+
 API Reference
 =============
 

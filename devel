@@ -41,8 +41,8 @@ for c in $(compgen -A function | grep '^mbd_'); do
 done
 trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 
-# Be sure to generate mini_buildd/__version__.py
-python ./setup.py >/dev/null 2>&1 || true
+# Be sure to generate mini_buildd/__version__.py and manual
+python ./setup.py build_sphinx >/dev/null 2>&1 || true
 
 if [ -n "${1}" ]; then
 	mbd_${1}

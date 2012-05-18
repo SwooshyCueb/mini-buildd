@@ -20,8 +20,33 @@ Manual
 The manual is yet to be written.
 
 
-TODOS
-=====
+RoadMap
+=======
+
+High-level roadmap to mini-buildd 1.0. Should be manually
+updated with (at least) every (experimental) Debian release.
+
+====== ============================================================== ================= ======================================================================
+Status Desc                                                           Effort Estimation Comments
+====== ============================================================== ================= ======================================================================
+100%   Dedicated python daemon mini-buildd                            2/3/5             This replaces mini-dinstall incoming daemon.
+80%    Use reprepro for repository management                         2/3/5             This replaces mini-dinstall repository management, and finally
+                                                                                        obsoletes mini-dinstall.
+80%    New default distribution scheme with (manual) staging via      1/2/3
+       reprepro.
+70%    Integrate web application into mini-buildd (config)            3/6/9             This introduces django and the django admin interface into
+                                                                                        mini-buildd. Initial replacement of current static html page.
+50%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
+                                                                                        eventually.
+30%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
+                                                                                        i.e., one can build packages.
+0%     Integrate and test new infrastructure                          6/10/15           Integrate features, bug fixing and fine tuning.
+====== ============================================================== ================= ======================================================================
+
+
+In-code TODOS
+=============
+
 .. todolist::
 
 

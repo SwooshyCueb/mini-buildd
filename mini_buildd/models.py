@@ -395,68 +395,12 @@ needs (like pre-seeding debconf variables).
         self._reprepro.prepare()
 
 
-class LVMLoop():
-    """ This class provides some interesting LVM-(loop-)device stuff. """
-
-    def __init__(self, path, arch, size):
-        self._vgname = "mini-buildd-loop-{a}".format(a=arch)
-        self._backing_file = os.path.join(path, "lvm.image")
-        self._size = 100
-        log.debug("LVMLoop on {b}, size {s} G".format(b=self._backing_file, s=size))
-
-    def get_vgname(self):
-        return self._vgname
-
-    def get_loop_device(self):
-        for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if os.path.realpath(open(f).read().strip()) == os.path.realpath(self._backing_file):
-                return "/dev/" + f.split("/")[3]
-
-    def get_lvm_device(self):
-        for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if open(f).read().strip() == self._backing_file:
-                return "/dev/" + f.split("/")[3]
-
-    def prepare(self):
-        # Check image file
-        if not os.path.exists(self._backing_file):
-            mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
-                    imgfile=self._backing_file, gigs=self._size))
-            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self._backing_file, s=self._size))
-
-        # Check loop dev
-        if self.get_loop_device() == None:
-            mini_buildd.misc.run_cmd("sudo losetup -v -f {img}".format(img=self._backing_file))
-            log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self._backing_file))
-
-        # Check lvm
-        try:
-            mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self._vgname))
-        except:
-            log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
-            mini_buildd.misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
-            mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self._vgname, dev=self.get_loop_device()))
-
-        log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self._backing_file, v=self._vgname))
-
-    def purge(self):
-        try:
-            mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=self._vgname))
-            mini_buildd.misc.run_cmd("sudo vgremove --force {v}".format(v=self._vgname))
-            mini_buildd.misc.run_cmd("sudo pvremove {v}".format(v=self._vgname))
-            mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
-            mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self._backing_file))
-        except:
-            log.warn("LVM {n}: Some purging steps may have failed".format(n=self._vgname))
-
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
 
-    SCHROOT_MODES = (
-        ('lvm_loop', 'LVM via loop device'),
-    )
-    schroot_mode = django.db.models.CharField(max_length=20, choices=SCHROOT_MODES, default="lvm_loop")
+    class Meta:
+        abstract = False
 
     def __init__(self, *args, **kwargs):
         super(Chroot, self).__init__(*args, **kwargs)
@@ -489,17 +433,17 @@ class Chroot(django.db.models.Model):
            - include=sudo is only workaround for sbuild Bug #608840
            - debootstrap include=apt WTF?
         """
-        log.info("Preparing '{m}' builder for '{a}'".format(m=self.schroot_mode, a=self.arch))
+        log.info("Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
         mini_buildd.misc.mkdirs(self.get_path())
-        if self.schroot_mode == "lvm_loop":
-            self._backend = LVMLoop(self.get_path(), self.arch, 100);
 
-        self._backend.prepare()
+        # TODO multi backends
+        backend = self.lvmloopchroot
+        backend.prepare()
 
         dist = self.dist
 
         name = "mini-buildd-{d}-{a}".format(d=dist.base_source.codename, a=self.arch.arch)
-        device = "/dev/{v}/{n}".format(v=self._backend.get_vgname(), n=name)
+        device = "/dev/{v}/{n}".format(v=backend.get_vgname(), n=name)
 
         try:
             mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name))
@@ -512,7 +456,7 @@ class Chroot(django.db.models.Model):
 
             mount_point = tempfile.mkdtemp()
             try:
-                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=self._backend.get_vgname()))
+                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=backend.get_vgname()))
                 mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
                 mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
 
@@ -559,10 +503,65 @@ personality={p}
     def purge(self):
         ".. todo:: chroot purge not implemented"
         log.error("NOT IMPL PURGE")
-        #self._backend.purge()
 
     def __unicode__(self):
         return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+class LVMLoopChroot(Chroot):
+    """ This class provides some interesting LVM-(loop-)device stuff. """
+
+    def __init__(self, *args, **kwargs):
+        super(LVMLoopChroot, self).__init__(*args, **kwargs)
+        self.CHROOT_FS="ext2"
+        self._size = 100
+
+    def get_vgname(self):
+        return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
+
+    def get_backing_file(self):
+        return os.path.join(self.get_path(), "lvmloop.image")
+
+    def get_loop_device(self):
+        for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
+            if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.get_backing_file()):
+                return "/dev/" + f.split("/")[3]
+
+    def get_lvm_device(self):
+        for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
+            if open(f).read().strip() == self.get_backing_file():
+                return "/dev/" + f.split("/")[3]
+
+    def prepare(self):
+        # Check image file
+        if not os.path.exists(self.get_backing_file()):
+            mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
+                    imgfile=self.get_backing_file(), gigs=self._size))
+            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self._size))
+
+        # Check loop dev
+        if self.get_loop_device() == None:
+            mini_buildd.misc.run_cmd("sudo losetup -v -f {img}".format(img=self.get_backing_file()))
+            log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self.get_backing_file()))
+
+        # Check lvm
+        try:
+            mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self.get_vgname()))
+        except:
+            log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
+            mini_buildd.misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
+            mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
+
+        log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
+
+    def purge(self):
+        try:
+            mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=self.get_vgname()))
+            mini_buildd.misc.run_cmd("sudo vgremove --force {v}".format(v=self.get_vgname()))
+            mini_buildd.misc.run_cmd("sudo pvremove {v}".format(v=self.get_vgname()))
+            mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
+            mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self.get_backing_file()))
+        except:
+            log.warn("LVM {n}: Some purging steps may have failed".format(n=self.get_vgname()))
 
 
 class Builder(django.db.models.Model):
@@ -611,7 +610,7 @@ def create_default(mirror):
     r.dists.add(d)
     r.save()
 
-    c=Chroot(dist=d, arch=a)
+    c=LVMLoopChroot(dist=d, arch=a)
     c.save()
 
     b=Builder()

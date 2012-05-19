@@ -138,16 +138,21 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self.setup_globals()
         self.setup_logging()
 
-        self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
+        from mini_buildd.webapp import WebApp
+        self._webapp = WebApp(self._args.home, instdir=self._args.instdir)
+        from mini_buildd.httpd import HttpD
+        from mini_buildd.ftpd import FtpD
+        from mini_buildd.builder import Builder
+        from mini_buildd.dispatcher import Dispatcher
 
         # Incoming and builder queue
         self._incoming_queue = Queue.Queue(maxsize=0)
         self._build_queue = Queue.Queue(maxsize=0)
 
-        self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
-        self._builder = mini_buildd.Builder(self._build_queue)
-        self._dispatcher = mini_buildd.Dispatcher(self._incoming_queue, self._build_queue)
+        self._httpd = HttpD(self._args.httpd_bind, self._webapp)
+        self._ftpd = FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
+        self._builder = Builder(self._build_queue)
+        self._dispatcher = Dispatcher(self._incoming_queue, self._build_queue)
 
         self._run = True
 

@@ -5,6 +5,7 @@ import subprocess
 import logging
 
 import mini_buildd
+import mini_buildd.changes
 
 log = logging.getLogger(__name__)
 
@@ -94,9 +95,9 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                      cwd=path, env=env,
                                      stdout=l, stderr=subprocess.STDOUT)
 
-        res = mini_buildd.Changes(os.path.join(path,
-                                               "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                               format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
+        res = mini_buildd.changes.Changes(os.path.join(path,
+                                                       "{s}_{v}_mini-buildd-buildresult_{a}.changes".
+                                                       format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
         for v in ["Distribution", "Source", "Version"]:
             res[v] = self._br[v]
 
@@ -110,7 +111,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                           "{s}_{v}_{a}.changes".
                                           format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
         if os.path.exists(build_changes_file):
-            build_changes = mini_buildd.Changes(build_changes_file)
+            build_changes = mini_buildd.changes.Changes(build_changes_file)
             build_changes.tar(tar_path=res._file_path + ".tar")
             res.add_file(res._file_path + ".tar")
 

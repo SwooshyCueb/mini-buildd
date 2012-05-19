@@ -4,6 +4,7 @@ import contextlib
 import logging
 
 import mini_buildd
+import mini_buildd.changes
 
 log = logging.getLogger(__name__)
 
@@ -14,7 +15,7 @@ class Dispatcher():
 
     def run(self):
         while True:
-            c = mini_buildd.Changes(self._incoming_queue.get())
+            c = mini_buildd.changes.Changes(self._incoming_queue.get())
             r = c.get_repository()
             if c.is_buildrequest():
                 log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))

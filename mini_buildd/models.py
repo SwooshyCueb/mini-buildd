@@ -17,6 +17,7 @@ import logging
 
 import mini_buildd
 import mini_buildd.schroot
+import mini_buildd.reprepro
 
 log = logging.getLogger(__name__)
 
@@ -207,7 +208,7 @@ Expire-Date: 0""")
                             d=d.base_source.codename,
                             s=s.name))
 
-        self._reprepro = mini_buildd.Reprepro(self)
+        self._reprepro = mini_buildd.reprepro.Reprepro(self)
 
     def __unicode__(self):
         return self.id

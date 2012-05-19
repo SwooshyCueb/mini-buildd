@@ -25,12 +25,17 @@ mbd_purge()
 	mkdir -v -p "${MBD_HOME}"
 }
 
-mbd_default()
+mbd_clean()
 {
 	mbd_purge
 
 	_head "Creating superuser admin/admin..."
 	${MBD_CMD} --set-admin-password="admin"
+}
+
+mbd_default()
+{
+	mbd_clean
 
 	_head "Creating default config..."
 	${MBD_CMD} --create-default-config="${MIRROR}"

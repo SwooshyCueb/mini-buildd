@@ -1,5 +1,6 @@
 # coding: utf-8
-import mini_buildd
+import mini_buildd.misc
+
 import logging
 
 log = logging.getLogger(__name__)

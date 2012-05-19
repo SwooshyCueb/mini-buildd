@@ -8,8 +8,6 @@ import tempfile
 import hashlib
 import logging
 
-import mini_buildd
-
 log = logging.getLogger(__name__)
 
 class BindArgs(object):

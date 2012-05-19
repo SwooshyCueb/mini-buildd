@@ -9,8 +9,6 @@ import django.conf.urls.defaults
 import django.views.generic.simple
 import django.contrib
 
-import mini_buildd
-
 django.contrib.admin.autodiscover()
 
 urlpatterns = django.conf.urls.defaults.patterns(

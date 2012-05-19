@@ -12,9 +12,6 @@ with open("./mini_buildd/__init__.py", "wb") as version_py:
     version_py.write("""\
 # -*- coding: utf-8 -*-
 __version__ = '{version}'
-
-import mini_buildd.misc
-import mini_buildd.globals
 """.format(version=__version__))
 print "I: Got version from changelog: {v}".format(v=__version__)
 

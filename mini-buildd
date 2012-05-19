@@ -12,7 +12,8 @@ import daemon
 import logging
 import logging.handlers
 
-import mini_buildd
+import mini_buildd.misc
+import mini_buildd.globals
 
 log = logging.getLogger("mini_buildd")
 

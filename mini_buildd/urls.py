@@ -3,6 +3,7 @@ from django.views.generic.simple import redirect_to
 import django.views.generic
 
 import mini_buildd.views
+import mini_buildd.globals
 
 from mini_buildd.models import Repository
 info_dict = {

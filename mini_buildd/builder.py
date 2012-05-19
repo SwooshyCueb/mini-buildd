@@ -4,8 +4,9 @@ import re
 import subprocess
 import logging
 
-import mini_buildd
 import mini_buildd.changes
+import mini_buildd.globals
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 

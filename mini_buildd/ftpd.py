@@ -6,7 +6,8 @@ import logging
 
 import pyftpdlib.ftpserver
 
-import mini_buildd
+import mini_buildd.globals
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 

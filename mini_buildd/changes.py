@@ -8,7 +8,8 @@ import contextlib
 
 import debian.deb822
 
-import mini_buildd
+import mini_buildd.globals
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 

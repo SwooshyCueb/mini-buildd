@@ -15,8 +15,8 @@ import django.core.exceptions
 import django.contrib
 import logging
 
-import mini_buildd
-import mini_buildd.schroot
+import mini_buildd.globals
+import mini_buildd.misc
 import mini_buildd.reprepro
 
 log = logging.getLogger(__name__)

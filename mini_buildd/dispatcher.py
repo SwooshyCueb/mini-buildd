@@ -3,7 +3,6 @@ import os
 import contextlib
 import logging
 
-import mini_buildd
 import mini_buildd.changes
 
 log = logging.getLogger(__name__)

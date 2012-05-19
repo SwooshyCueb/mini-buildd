@@ -4,8 +4,6 @@ import time
 import os
 import logging
 
-import mini_buildd
-
 log = logging.getLogger(__name__)
 
 def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):

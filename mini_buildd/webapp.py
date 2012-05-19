@@ -6,7 +6,7 @@ import django.core.handlers.wsgi
 import django.core.management
 import logging
 
-import mini_buildd
+import mini_buildd.globals
 
 log = logging.getLogger(__name__)
 

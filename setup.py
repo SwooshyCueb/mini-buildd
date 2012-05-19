@@ -8,8 +8,14 @@ from setuptools import setup
 # version from there, and update the mini_buildd package's
 # __version__.py
 __version__ = str(debian.changelog.Changelog(file=open("./debian/changelog", "rb")).version)
-with open("./mini_buildd/__version__.py", "wb") as version_py:
-    version_py.write("# -*- coding: utf-8 -*-\n__version__ = '{version}'".format(version=__version__))
+with open("./mini_buildd/__init__.py", "wb") as version_py:
+    version_py.write("""\
+# -*- coding: utf-8 -*-
+__version__ = '{version}'
+
+import mini_buildd.misc
+import mini_buildd.globals
+""".format(version=__version__))
 print "I: Got version from changelog: {v}".format(v=__version__)
 
 distutils.core.setup(

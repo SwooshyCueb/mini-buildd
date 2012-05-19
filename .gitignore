@@ -1,6 +1,6 @@
 # Python
 /build/
-/mini_buildd/__version__.py
+/mini_buildd/__init__.py
 *.pyc
 
 # Debian package

@@ -112,26 +112,6 @@ class Layout(django.db.models.Model):
     def __unicode__(self):
         return self.name
 
-def create_default_layout():
-    l=Layout(name="Default")
-    l.save()
-    e=Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
-    e.save()
-    l.suites.add(e)
-
-    u=Suite(name="unstable")
-    u.save()
-    l.suites.add(u)
-
-    t=Suite(name="testing", migrates_from=u)
-    t.save()
-    l.suites.add(t)
-
-    s=Suite(name="stable", migrates_from=t)
-    s.save()
-    l.suites.add(s)
-    return l
-
 class Distribution(django.db.models.Model):
     """
     .. todo:: Distribution Model
@@ -580,41 +560,3 @@ class Remote(django.db.models.Model):
 
     def __unicode__(self):
         return "Remote: {h}".format(h=self.host)
-
-
-def create_default(mirror):
-    codename = mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip()
-    arch = mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip()
-
-    log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
-
-    m=Mirror(url=mirror)
-    m.save()
-
-    s=Source(codename=codename)
-    s.save()
-    s.mirrors.add(m)
-    s.save()
-
-    d=Distribution(base_source=s)
-    d.save()
-
-    a=Architecture(arch=arch)
-    a.save()
-
-    l=create_default_layout()
-    l.save()
-
-    r=Repository(layout=l, arch_all=a)
-    r.save()
-    r.archs.add(a)
-    r.dists.add(d)
-    r.save()
-
-    c=LVMLoopChroot(dist=d, arch=a)
-    c.save()
-
-    b=Builder()
-    b.save()
-    b.chroots.add(c)
-    b.save()

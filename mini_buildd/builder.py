@@ -4,6 +4,8 @@ import re
 import subprocess
 import logging
 
+import django.db
+
 import mini_buildd.changes
 import mini_buildd.globals
 import mini_buildd.misc
@@ -119,9 +121,24 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         res.save()
         res.upload()
 
+from mini_buildd.models import Chroot
+class Builder(django.db.models.Model):
+    chroots = django.db.models.ManyToManyField(Chroot)
 
-class Builder():
+    max_parallel_builds = django.db.models.IntegerField(default=4,
+                                   help_text="Maximum number of parallel builds.")
+
+    sbuild_parallel = django.db.models.IntegerField(default=1,
+                                   help_text="Degree of parallelism per build.")
+
+    def __unicode__(self):
+        res = ""
+        for c in self.chroots.all():
+            res += c.__unicode__() + " "
+        return res
+
     def run(self, queue):
+        log.info("Starting builder: {id}".format(id=self.__unicode__()))
         while True:
             f = queue.get()
             mini_buildd.misc.start_thread(Build(f))

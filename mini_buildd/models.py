@@ -545,15 +545,9 @@ class LVMLoopChroot(Chroot):
             log.warn("LVM {n}: Some purging steps may have failed".format(n=self.get_vgname()))
 
 
-class Builder(django.db.models.Model):
-    chroots = django.db.models.ManyToManyField(Chroot)
-
-    max_parallel_builds = django.db.models.IntegerField(default=4,
-                                   help_text="Maximum number of parallel builds.")
-
-    sbuild_parallel = django.db.models.IntegerField(default=1,
-                                   help_text="Degree of parallelism per build.")
-
+import mini_buildd.builder
+class Builder(mini_buildd.builder.Builder):
+    pass
 
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(max_length=99, default=socket.getfqdn())

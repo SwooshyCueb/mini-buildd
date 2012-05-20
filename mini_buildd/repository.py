@@ -20,6 +20,9 @@ from mini_buildd.models import Distribution
 from mini_buildd.models import Architecture
 from mini_buildd.models import Layout
 class Repository(django.db.models.Model):
+    class Meta():
+        verbose_name_plural = "Repositories"
+
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
     host = django.db.models.CharField(max_length=100, default=socket.getfqdn())
 

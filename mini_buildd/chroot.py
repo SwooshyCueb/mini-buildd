@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import re
-import subprocess
 import glob
 import tempfile
 import getpass
@@ -9,7 +8,6 @@ import logging
 
 import django.db
 
-import mini_buildd.changes
 import mini_buildd.globals
 import mini_buildd.misc
 

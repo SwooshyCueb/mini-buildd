@@ -2,11 +2,7 @@
 import StringIO
 import os
 import re
-import subprocess
-import glob
-import tempfile
 import datetime
-import getpass
 import socket
 import logging
 
@@ -14,7 +10,6 @@ import GnuPGInterface
 
 import django.db
 
-import mini_buildd.changes
 import mini_buildd.globals
 import mini_buildd.misc
 import mini_buildd.reprepro

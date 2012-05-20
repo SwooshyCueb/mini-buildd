@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
 import socket
-import StringIO
 import os
-import datetime
-import glob
-import tempfile
-import getpass
+import logging
 
 import django.db
-import django.conf
-import django.core.exceptions
 import django.contrib
-import logging
 
 import mini_buildd.globals
 import mini_buildd.misc

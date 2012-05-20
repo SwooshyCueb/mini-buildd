@@ -25,8 +25,8 @@ class BindArgs(object):
 def nop(*args, **kwargs):
     pass
 
-def start_thread(obj):
-    thread = threading.Thread(target=obj.run)
+def start_thread(obj, *args, **kwargs):
+    thread = threading.Thread(target=obj.run, args=args, kwargs=kwargs)
     thread.setDaemon(True)
     thread.start()
 

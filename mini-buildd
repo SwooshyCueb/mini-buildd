@@ -152,8 +152,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         self._httpd = HttpD(self._args.httpd_bind, self._webapp)
         self._ftpd = FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
-        self._builder = Builder(self._build_queue)
-        self._dispatcher = Dispatcher(self._incoming_queue, self._build_queue)
+        self._builder = Builder()
+        self._dispatcher = Dispatcher()
 
         self._run = True
 
@@ -191,8 +191,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
             mini_buildd.misc.start_thread(self._httpd)
             mini_buildd.misc.start_thread(self._ftpd)
-            mini_buildd.misc.start_thread(self._builder)
-            mini_buildd.misc.start_thread(self._dispatcher)
+            mini_buildd.misc.start_thread(self._builder, self._build_queue)
+            mini_buildd.misc.start_thread(self._dispatcher, self._incoming_queue, self._build_queue)
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)

@@ -8,17 +8,13 @@ import mini_buildd.changes
 log = logging.getLogger(__name__)
 
 class Dispatcher():
-    def __init__(self, incoming_queue, build_queue):
-        self._incoming_queue = incoming_queue
-        self._build_queue = build_queue
-
-    def run(self):
+    def run(self, incoming_queue, build_queue):
         while True:
-            c = mini_buildd.changes.Changes(self._incoming_queue.get())
+            c = mini_buildd.changes.Changes(incoming_queue.get())
             r = c.get_repository()
             if c.is_buildrequest():
                 log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-                self._build_queue.put(c)
+                build_queue.put(c)
             elif c.is_buildresult():
                 log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
                 c.untar(path=r.get_incoming_path())
@@ -28,4 +24,4 @@ class Dispatcher():
                 for br in c.gen_buildrequests():
                     br.upload()
 
-            self._incoming_queue.task_done()
+            incoming_queue.task_done()

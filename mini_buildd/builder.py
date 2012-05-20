@@ -121,11 +121,8 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
 
 class Builder():
-    def __init__(self, queue):
-        self._queue = queue
-
-    def run(self):
+    def run(self, queue):
         while True:
-            f = self._queue.get()
+            f = queue.get()
             mini_buildd.misc.start_thread(Build(f))
-            self._queue.task_done()
+            queue.task_done()

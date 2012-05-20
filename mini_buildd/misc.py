@@ -22,7 +22,7 @@ class BindArgs(object):
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
 
-def nop(*a,**k):
+def nop(*args, **kwargs):
     pass
 
 def start_thread(obj):

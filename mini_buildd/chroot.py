@@ -20,6 +20,15 @@ class Chroot(django.db.models.Model):
     arch = django.db.models.ForeignKey(Architecture)
     filesystem = django.db.models.CharField(max_length=30, default="ext2")
 
+    def get_backend(self):
+        try:
+            return self.filechroot
+        except:
+            try:
+                return self.lvmloopchroot
+            except:
+                raise Exception("No chroot backend found")
+
     def get_path(self):
         return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
 
@@ -50,8 +59,7 @@ class Chroot(django.db.models.Model):
         log.info("Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
         mini_buildd.misc.mkdirs(self.get_path())
 
-        # TODO multi backends
-        backend = self.lvmloopchroot
+        backend = self.get_backend()
         backend.prepare()
 
         dist = self.dist
@@ -120,6 +128,17 @@ personality={p}
 
     def __unicode__(self):
         return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+
+class FileChroot(Chroot):
+    """ File chroot backend. """
+
+    def prepare(self):
+        pass
+
+    def purge(self):
+        pass
+
 
 class LVMLoopChroot(Chroot):
     """ This class provides some interesting LVM-(loop-)device stuff. """

@@ -134,6 +134,9 @@ import mini_buildd.chroot
 class Chroot(mini_buildd.chroot.Chroot):
     pass
 
+class FileChroot(mini_buildd.chroot.FileChroot):
+    pass
+
 class LVMLoopChroot(mini_buildd.chroot.LVMLoopChroot):
     pass
 

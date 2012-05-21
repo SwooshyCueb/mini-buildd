@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Stephan Sürken <absurd@debian.org>
 X-Python-Version: >=2.6
 Build-Depends: debhelper (>= 8.1.0~), man-db (>= 2.5.1), po-debconf,
-               python (>= 2.6.6-3~), python-debian (>= 0.1.18~)
+               python (>= 2.6.6-3~), python-debian (>= 0.1.18~), python-setuptools
 Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
@@ -18,7 +18,6 @@ Depends: ${misc:Depends}, python (>= 2.6), python-argparse, bash (>= 4), adduser
          python-cherrypy3, python-pyftpdlib,
          python-gnupginterface (>= 0.3.2-9~), python-debian (>= 0.1.18~),
          python-django (>= 1.2), python-django-extensions (>= 0.4),
-         python-setuptools,
          reprepro (>= 4.2), procps,
          adduser, debootstrap (>= 1.0.24~),
          lvm2, schroot (>= 1.4.22), sbuild (>= 0.62.4),

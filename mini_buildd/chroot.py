@@ -18,10 +18,7 @@ from mini_buildd.models import Architecture
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
-
-    def __init__(self, *args, **kwargs):
-        super(Chroot, self).__init__(*args, **kwargs)
-        self.CHROOT_FS="ext2"
+    filesystem = django.db.models.CharField(max_length=30, default="ext2")
 
     def get_path(self):
         return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
@@ -74,8 +71,8 @@ class Chroot(django.db.models.Model):
             mount_point = tempfile.mkdtemp()
             try:
                 mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=backend.get_vgname()))
-                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.CHROOT_FS, d=device))
-                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.CHROOT_FS, d=device, m=mount_point))
+                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
+                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
 
                 # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
                 mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
@@ -107,7 +104,7 @@ device={d}
 mount-options=-t {f} -o noatime,user_xattr
 lvm-snapshot-options=--size 4G
 personality={p}
-""".format(n=name, d=device, f=self.CHROOT_FS, p=self.get_personality()))
+""".format(n=name, d=device, f=self.filesystem, p=self.get_personality()))
             except:
                 log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
                 try:
@@ -129,7 +126,6 @@ class LVMLoopChroot(Chroot):
 
     def __init__(self, *args, **kwargs):
         super(LVMLoopChroot, self).__init__(*args, **kwargs)
-        self.CHROOT_FS="ext2"
         self._size = 100
 
     def get_vgname(self):

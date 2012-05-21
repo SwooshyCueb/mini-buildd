@@ -5,9 +5,8 @@ import errno
 import subprocess
 import threading
 import tempfile
+import hashlib
 import logging
-
-import mini_buildd
 
 log = logging.getLogger(__name__)
 
@@ -23,13 +22,23 @@ class BindArgs(object):
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
 
-def nop(*a,**k):
+def nop(*args, **kwargs):
     pass
 
-def start_thread(obj):
-    thread = threading.Thread(target=obj.run)
+def start_thread(obj, *args, **kwargs):
+    thread = threading.Thread(target=obj.run, args=args, kwargs=kwargs)
     thread.setDaemon(True)
     thread.start()
+
+def md5_of_file(fn):
+    md5 = hashlib.md5()
+    with open(fn) as f:
+        while True:
+            data = f.read(128)
+            if not data:
+                break
+            md5.update(data)
+    return md5.hexdigest()
 
 def codename2Version(codename):
     known = {

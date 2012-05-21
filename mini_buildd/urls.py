@@ -3,6 +3,7 @@ from django.views.generic.simple import redirect_to
 import django.views.generic
 
 import mini_buildd.views
+import mini_buildd.globals
 
 from mini_buildd.models import Repository
 info_dict = {
@@ -15,8 +16,4 @@ urlpatterns = patterns('',
                        (r"^repositories/(?P<object_id>.+)/$", 'django.views.generic.list_detail.object_detail', info_dict),
                        (r"^graph_models/$", 'mini_buildd.views.graph_models'),
                        (r"^manual/(?P<path>.*)$", 'django.views.static.serve', {'document_root': mini_buildd.globals.MANUAL_DIR, 'show_indexes': True})
-
-                       # @todo: django.views.static.serve should not be used for production
-                       # Compat: Browse olde-style public_html/
-                       #(r"^public_html/(?P<path>.*)$", 'django.views.static.serve', {'document_root': args.home + "/public_html/", 'show_indexes': True})
 )

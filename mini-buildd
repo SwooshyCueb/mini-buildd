@@ -12,9 +12,24 @@ import daemon
 import logging
 import logging.handlers
 
-import mini_buildd
+import mini_buildd.misc
+import mini_buildd.globals
 
 log = logging.getLogger("mini_buildd")
+
+class SystemPrepare():
+    def run(self):
+        """
+        Miscellaneous system workarounds
+        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
+        """
+        log.info("Starting system preparations")
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            log.warn("System preparation: Generating sbuild keys")
+            mini_buildd.misc.run_cmd("sbuild-update --keygen")
+            log.info("System preparation: Sbuild keys generated")
+
+        log.info("System preparations successfully finished")
 
 class Main():
     def parse_args(self):
@@ -119,28 +134,25 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
 
-    def setup_workarounds(self):
-        """
-        Miscellaneous workarounds
-        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
-        """
-        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
-            mini_buildd.misc.run_cmd("sbuild-update --keygen")
-
     def __init__(self):
         self._args = self.parse_args()
         self.setup_globals()
         self.setup_logging()
-        self.setup_workarounds()
 
-        self._webapp = mini_buildd.WebApp(self._args.home, instdir=self._args.instdir)
+        from mini_buildd.webapp import WebApp
+        self._webapp = WebApp(self._args.home, instdir=self._args.instdir)
+        from mini_buildd.httpd import HttpD
+        from mini_buildd.ftpd import FtpD
+        from mini_buildd.builder import Builder
+        from mini_buildd.dispatcher import Dispatcher
 
-        # Queue of all incoming files
+        # Incoming and builder queue
         self._incoming_queue = Queue.Queue(maxsize=0)
+        self._build_queue = Queue.Queue(maxsize=0)
 
-        self._httpd = mini_buildd.HttpD(self._args.httpd_bind, self._webapp)
-        self._ftpd = mini_buildd.FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
-        self._dispatcher = mini_buildd.Dispatcher(queue=self._incoming_queue)
+        self._httpd = HttpD(self._args.httpd_bind, self._webapp)
+        self._ftpd = FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue)
+        self._dispatcher = Dispatcher()
 
         self._run = True
 
@@ -170,12 +182,21 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             if not self._args.foreground:
                 daemon.DaemonContext().open()
 
+            # Prepare system (parallel, as this might involve generating security keys)
+            mini_buildd.misc.start_thread(SystemPrepare())
+
             # Prepare home
             self.prepare()
 
             mini_buildd.misc.start_thread(self._httpd)
             mini_buildd.misc.start_thread(self._ftpd)
-            mini_buildd.misc.start_thread(self._dispatcher)
+
+            # Start builders
+            from mini_buildd.models import Builder
+            for b in Builder.objects.all():
+                mini_buildd.misc.start_thread(b, self._build_queue)
+
+            mini_buildd.misc.start_thread(self._dispatcher, self._incoming_queue, self._build_queue)
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)

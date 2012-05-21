@@ -30,6 +30,9 @@ else
 	usermod --home="${MINI_BUILDD_HOME}" --move-home mini-buildd
 fi
 
+# Always (re-)add to group sbuild
+addgroup mini-buildd sbuild
+
 #
 # Handle password
 #

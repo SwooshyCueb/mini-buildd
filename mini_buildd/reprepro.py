@@ -6,7 +6,7 @@ Run reprepro commands.
 import os
 import logging
 
-import mini_buildd
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 

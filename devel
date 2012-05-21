@@ -5,7 +5,7 @@
 
 # Test home is in '..' to avoid problems with large files in the Debian Source Tree
 MBD_HOME="/tmp/mini-buildd-devel"
-MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose"
+MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose --debug"
 
 _head()
 {
@@ -15,22 +15,41 @@ _head()
 mbd_clear()
 {
 	_head "Cleaning incoming, spool and repository in ${MBD_HOME}"
-	rm -rf ${MBD_HOME}/spool/* ${MBD_HOME}/incoming/* ${MBD_HOME}/repositories/*
+	rm -rf ${MBD_HOME}/var/builds/* ${MBD_HOME}/var/logs/* ${MBD_HOME}/var/spool/* ${MBD_HOME}/incoming/* ${MBD_HOME}/repositories/*
 }
 
 mbd_purge()
 {
 	_head "Purging ${MBD_HOME}"
+
+	# Try hard to clean up any lvm loop leftovers
+	for n in $(schroot -l -a 2>/dev/null); do schroot -c ${n} -e || true; done
+	for lv in $(sudo lvdisplay | grep 'LV Name.*/dev/mini-buildd-loop-.\+/mini-buildd-.\+-.\+' | rev | cut -d' ' -f1 | rev); do
+		echo lv=${lv}
+		sudo lvremove --verbose --force "${lv}" || true
+	done
+	for vg in $(sudo vgdisplay | grep 'VG Name.*mini-buildd-loop-.\+-.\+$'| rev | cut -d' ' -f1 | rev); do
+		echo vg=${vg}
+		sudo vgremove --verbose --force ${vg} || true
+	done
+	sudo losetup --verbose --detach /dev/loop0 || true
+
+	# Purge and re-setup
 	[ ! -e "${MBD_HOME}" ] || rm -r "${MBD_HOME}"
 	mkdir -v -p "${MBD_HOME}"
 }
 
-mbd_default()
+mbd_clean()
 {
 	mbd_purge
 
 	_head "Creating superuser admin/admin..."
 	${MBD_CMD} --set-admin-password="admin"
+}
+
+mbd_default()
+{
+	mbd_clean
 
 	_head "Creating default config..."
 	${MBD_CMD} --create-default-config="${MIRROR}"

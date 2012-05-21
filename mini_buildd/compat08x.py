@@ -4,8 +4,6 @@ import time
 import os
 import logging
 
-import mini_buildd
-
 log = logging.getLogger(__name__)
 
 def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
@@ -118,52 +116,3 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
             r.archs.add(a)
         return r
     tryImport(Repository);
-
-
-
-def exportConf(f=os.getenv('HOME') + "/.mini-buildd.conf.export"):
-    """ """
-    from mini_buildd import models
-
-    log.info("Exporting 0.8.x config to: {f}".format(f=f))
-    f = open(f, 'w')
-
-    f.write("# Created by mini-buildd on {date}\n".format(date=time.strftime("%c")))
-    f.write("# coding: utf-8\n")
-    r = models.Repository.objects.all()[0]
-
-    f.write('mbd_id="{v}"\n'.format(v=r.id))
-    f.write('mbd_rephost="{v}"\n'.format(v=r.host))
-    f.write('mbd_httpport="{v}"\n'.format(v=80)) # @todo
-    f.write('mbd_sshport="{v}"\n'.format(v=22)) # @todo
-    f.write('mbd_mail="{v}"\n'.format(v=r.mail))
-    f.write('mbd_extdocurl="{v}"\n'.format(v=r.extdocurl))
-
-    dists = []
-    for d in models.Distribution.objects.all():
-        dists+=[d.base_source.codename]
-    f.write('mbd_dists="{v}"\n'.format(v=", ".join(dists)))
-
-    archs = []
-    for a in models.Architecture.objects.all():
-        archs+=[a.arch]
-    f.write('mbd_archs="{v}"\n'.format(v=", ".join(archs)))
-
-    f.write('mbd_apt_allow_unauthenticated="{v}"\n'.format(v="true" if r.apt_allow_unauthenticated else "false"))
-    f.write('mbd_apt_archall="{v}"\n'.format(v=models.Architecture.objects.all()[0].arch))
-
-    for b in models.Builder.objects.all():
-        f.write('mbd_bldhost_{a}="{v}"\n'.format(a=b.arch.arch, v=b.host))
-        f.write('mbd_deb_build_options_{a}="parallel={v}"\n'.format(a=b.arch.arch, v=b.parallel))
-
-    for d in models.Distribution.objects.all():
-        f.write('mbd_src_{d}_base_any="{v}"\n'.format(d=d.base_source.codename, v=d.base_source.get_apt_line()[4:]))
-        for a in models.Architecture.objects.all():
-            f.write('mbd_src_{d}_base_{a}=""\n'.format(d=d.base_source.codename, a=a.arch))
-
-        v = []
-        for e in d.extra_sources.all():
-            v += [e.source.get_apt_line()[4:] + ";release o=" + e.source.origin + ";" + str(e.prio)]
-        f.write('mbd_src_{d}_extra_any="{v}"\n'.format(d=d.base_source.codename, v=",".join(v)))
-        for a in models.Architecture.objects.all():
-            f.write('mbd_src_{d}_extra_{a}=""\n'.format(d=d.base_source.codename, a=a.arch))

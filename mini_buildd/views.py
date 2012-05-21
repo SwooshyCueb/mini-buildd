@@ -5,8 +5,6 @@ import logging
 import django.core.management
 import django.http
 
-import mini_buildd
-
 log = logging.getLogger(__name__)
 
 def graph_models(request):

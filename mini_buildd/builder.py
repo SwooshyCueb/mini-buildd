@@ -5,6 +5,7 @@ import subprocess
 import logging
 
 import django.db
+import django.core.exceptions
 
 import mini_buildd.changes
 import mini_buildd.globals
@@ -134,6 +135,11 @@ class Builder(django.db.models.Model):
         for c in Chroot.objects.all():
             res += c.__unicode__() + ", "
         return res
+
+    def clean(self):
+        super(Builder, self).clean()
+        if Builder.objects.count() > 0 and self.id != Builder.objects.get().id:
+            raise django.core.exceptions.ValidationError("You can only create one Builder instance!")
 
     def sbuild_workaround(self):
         "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."

@@ -10,6 +10,7 @@ import django.core.exceptions
 import mini_buildd.changes
 import mini_buildd.globals
 import mini_buildd.misc
+from mini_buildd.models import Chroot
 
 log = logging.getLogger(__name__)
 
@@ -122,13 +123,14 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         res.save()
         res.upload()
 
-from mini_buildd.models import Chroot
 class Builder(django.db.models.Model):
-    max_parallel_builds = django.db.models.IntegerField(default=4,
-                                   help_text="Maximum number of parallel builds.")
+    max_parallel_builds = django.db.models.IntegerField(
+        default=4,
+        help_text="Maximum number of parallel builds.")
 
-    sbuild_parallel = django.db.models.IntegerField(default=1,
-                                   help_text="Degree of parallelism per build.")
+    sbuild_parallel = django.db.models.IntegerField(
+        default=1,
+        help_text="Degree of parallelism per build.")
 
     def __unicode__(self):
         res = "Builder for: "
@@ -149,7 +151,8 @@ class Builder(django.db.models.Model):
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):
-        log.info("Starting builder: {id}".format(id=self.__unicode__()))
+        log.info("Starting {d}".format(d=self))
+
         self.sbuild_workaround()
 
         for c in Chroot.objects.all():

@@ -78,8 +78,10 @@ class Chroot(django.db.models.Model):
             mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
         # END SUDOERS WORKAROUND
 
-    def prepare_schroot_conf(self, backend_conf):
-        # There must be schroot configs for each uploadable distribution (does not work with aliases).
+    def prepare(self):
+        mini_buildd.misc.mkdirs(self.get_path())
+        self.get_backend().prepare()
+
         conf_file = os.path.join(self.get_path(), "schroot.conf")
         open(conf_file, 'w').write("""
 [{n}]
@@ -90,15 +92,13 @@ root-groups=sbuild
 root-users=mini-buildd
 source-root-users=mini-buildd
 personality={p}
+
+# Backend specific config
 {b}
-""".format(n=self.get_name(), p=self.get_personality(), b=backend_conf))
+""".format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
 
         schroot_conf_file = os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
         mini_buildd.misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
-
-    def prepare(self):
-        mini_buildd.misc.mkdirs(self.get_path())
-        self.get_backend().prepare()
 
     def purge(self):
         self.get_backend().purge()
@@ -113,6 +113,12 @@ class FileChroot(Chroot):
     def get_tar_file(self):
         return os.path.join(self.get_path(), "source.tar")
 
+    def get_schroot_conf(self):
+        return """\
+type=file
+file={t}
+""".format(t=self.get_tar_file())
+
     def prepare(self):
         # Check image file
         if not os.path.exists(self.get_tar_file()):
@@ -122,10 +128,6 @@ class FileChroot(Chroot):
 
             #with contextlib.closing(tarfile.open(self.get_tar_file(), "w")) as tar:
             #    tar.add(chroot_dir)
-            self.prepare_schroot_conf("""# Backend specific options
-type=file
-file={t}
-""".format(t=self.get_tar_file()))
 
     def purge(self):
         pass
@@ -151,6 +153,14 @@ class LVMLoopChroot(Chroot):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
             if open(f).read().strip() == self.get_backing_file():
                 return "/dev/" + f.split("/")[3]
+
+    def get_schroot_conf(self):
+        return """\
+type=lvm-snapshot
+device={d}
+mount-options=-t {f} -o noatime,user_xattr
+lvm-snapshot-options=--size 4G
+""".format(d=self.get_lvm_device(), f=self.filesystem)
 
     def prepare(self):
         # Check image file
@@ -191,12 +201,6 @@ class LVMLoopChroot(Chroot):
                 self.debootstrap(dir=mount_point)
                 mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                 log.info("LV {n} created successfully...".format(n=self.get_name()))
-                self.prepare_schroot_conf("""# Backend specific options
-type=lvm-snapshot
-device={d}
-mount-options=-t {f} -o noatime,user_xattr
-lvm-snapshot-options=--size 4G
-""".format(d=device, f=self.filesystem))
             except:
                 log.error("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
                 try:

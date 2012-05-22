@@ -3,8 +3,8 @@ import socket
 import os
 import logging
 
-import django.db
-import django.contrib
+import django.db.models
+import django.contrib.admin
 
 import mini_buildd.globals
 import mini_buildd.misc

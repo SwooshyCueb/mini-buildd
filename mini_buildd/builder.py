@@ -137,8 +137,16 @@ class Builder(django.db.models.Model):
             res += c.__unicode__() + " "
         return res
 
+    def sbuild_workaround(self):
+        "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            log.warn("One-time generation of sbuild keys (may take some time)...")
+            mini_buildd.misc.run_cmd("HOME=/tmp sbuild-update --keygen")
+            log.info("One-time generation of sbuild keys done")
+
     def run(self, queue):
         log.info("Starting builder: {id}".format(id=self.__unicode__()))
+        self.sbuild_workaround()
         while True:
             f = queue.get()
             mini_buildd.misc.start_thread(Build(f))

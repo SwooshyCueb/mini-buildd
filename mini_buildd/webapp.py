@@ -123,8 +123,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         r.dists.add(d)
         r.save()
 
-        from mini_buildd.models import LVMLoopChroot
-        c=LVMLoopChroot(dist=d, arch=a)
+        from mini_buildd.models import FileChroot
+        c=FileChroot(dist=d, arch=a)
         c.save()
 
         from mini_buildd.models import Builder

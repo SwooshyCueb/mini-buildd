@@ -4,6 +4,8 @@ import re
 import glob
 import tempfile
 import getpass
+import tarfile
+import contextlib
 import logging
 
 import django.db
@@ -81,8 +83,7 @@ class Chroot(django.db.models.Model):
         conf_file = os.path.join(self.get_path(), "schroot.conf")
         open(conf_file, 'w').write("""
 [{n}]
-type=lvm-snapshot
-description=Mini-Buildd {n} LVM snapshot chroot
+description=Mini-Buildd chroot {n}
 groups=sbuild
 users=mini-buildd
 root-groups=sbuild
@@ -96,6 +97,7 @@ personality={p}
         mini_buildd.misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
 
     def prepare(self):
+        mini_buildd.misc.mkdirs(self.get_path())
         self.get_backend().prepare()
 
     def purge(self):
@@ -108,8 +110,22 @@ personality={p}
 class FileChroot(Chroot):
     """ File chroot backend. """
 
+    def get_tar_file(self):
+        return os.path.join(self.get_path(), "source.tar")
+
     def prepare(self):
-        pass
+        # Check image file
+        if not os.path.exists(self.get_tar_file()):
+            chroot_dir = tempfile.mkdtemp()
+            self.debootstrap(dir=chroot_dir)
+            mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' .".format(f=self.get_tar_file(), d=chroot_dir))
+
+            #with contextlib.closing(tarfile.open(self.get_tar_file(), "w")) as tar:
+            #    tar.add(chroot_dir)
+            self.prepare_schroot_conf("""# Backend specific options
+type=file
+file={t}
+""".format(t=self.get_tar_file()))
 
     def purge(self):
         pass
@@ -137,9 +153,6 @@ class LVMLoopChroot(Chroot):
                 return "/dev/" + f.split("/")[3]
 
     def prepare(self):
-        log.info("LVM Loop chroot: Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
-        mini_buildd.misc.mkdirs(self.get_path())
-
         # Check image file
         if not os.path.exists(self.get_backing_file()):
             mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
@@ -179,6 +192,7 @@ class LVMLoopChroot(Chroot):
                 mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                 log.info("LV {n} created successfully...".format(n=self.get_name()))
                 self.prepare_schroot_conf("""# Backend specific options
+type=lvm-snapshot
 device={d}
 mount-options=-t {f} -o noatime,user_xattr
 lvm-snapshot-options=--size 4G

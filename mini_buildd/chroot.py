@@ -75,6 +75,25 @@ class Chroot(django.db.models.Model):
             mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
         # END SUDOERS WORKAROUND
 
+    def prepare_schroot_conf(self, backend_conf):
+        # There must be schroot configs for each uploadable distribution (does not work with aliases).
+        conf_file = os.path.join(self.get_path(), "schroot.conf")
+        open(conf_file, 'w').write("""
+[{n}]
+type=lvm-snapshot
+description=Mini-Buildd {n} LVM snapshot chroot
+groups=sbuild
+users=mini-buildd
+root-groups=sbuild
+root-users=mini-buildd
+source-root-users=mini-buildd
+personality={p}
+{b}
+""".format(n=self.get_name(), p=self.get_personality(), b=backend_conf))
+
+        schroot_conf_file = os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
+        mini_buildd.misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
+
     def prepare(self):
         self.get_backend().prepare()
 
@@ -160,28 +179,18 @@ class LVMLoopChroot(Chroot):
                 self.debootstrap(dir=mount_point)
                 mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                 log.info("LV {n} created successfully...".format(n=self.get_name()))
-                # There must be schroot configs for each uploadable distribution (does not work with aliases).
-                open(os.path.join(self.get_path(), "schroot.conf"), 'w').write("""
-[{n}]
-type=lvm-snapshot
-description=Mini-Buildd {n} LVM snapshot chroot
-groups=sbuild
-users=mini-buildd
-root-groups=sbuild
-root-users=mini-buildd
-source-root-users=mini-buildd
+                self.prepare_schroot_conf("""# Backend specific options
 device={d}
 mount-options=-t {f} -o noatime,user_xattr
 lvm-snapshot-options=--size 4G
-personality={p}
-""".format(n=self.get_name(), d=device, f=self.filesystem, p=self.get_personality()))
+""".format(d=device, f=self.filesystem))
             except:
-                log.info("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
+                log.error("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
                 try:
                     mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                     mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
                 except:
-                    pass
+                    log.error("LV {n} rewinding FAILED.".format(n=self.get_name()))
                 raise
 
     def purge(self):

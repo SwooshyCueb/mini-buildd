@@ -110,8 +110,23 @@ personality={p}
 class FileChroot(Chroot):
     """ File chroot backend. """
 
+    TAR_SUFFIX = (('tar',     "Tar only, don't pack"),
+                  ('tar.gz',  "Tar and gzip"),
+                  ('tar.bz2', "Tar and bzip2"),
+                  ('tar.xz',  "Tar and xz"))
+    tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
+
     def get_tar_file(self):
-        return os.path.join(self.get_path(), "source.tar")
+        return os.path.join(self.get_path(), "source." + self.tar_suffix)
+
+    def get_tar_compression_opt(self):
+        if self.tar_suffix == "tar.gz":
+            return "--gzip"
+        if self.tar_suffix == "tar.bz2":
+            return "--bzip2"
+        if self.tar_suffix == "tar.xz":
+            return "--xz"
+        return ""
 
     def get_schroot_conf(self):
         return """\
@@ -120,14 +135,11 @@ file={t}
 """.format(t=self.get_tar_file())
 
     def prepare(self):
-        # Check image file
         if not os.path.exists(self.get_tar_file()):
             chroot_dir = tempfile.mkdtemp()
             self.debootstrap(dir=chroot_dir)
-            mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' .".format(f=self.get_tar_file(), d=chroot_dir))
-
-            #with contextlib.closing(tarfile.open(self.get_tar_file(), "w")) as tar:
-            #    tar.add(chroot_dir)
+            mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
+                                     .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
 
     def purge(self):
         pass

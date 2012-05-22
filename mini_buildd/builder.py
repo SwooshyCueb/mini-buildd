@@ -123,8 +123,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
 from mini_buildd.models import Chroot
 class Builder(django.db.models.Model):
-    chroots = django.db.models.ManyToManyField(Chroot)
-
     max_parallel_builds = django.db.models.IntegerField(default=4,
                                    help_text="Maximum number of parallel builds.")
 
@@ -132,9 +130,9 @@ class Builder(django.db.models.Model):
                                    help_text="Degree of parallelism per build.")
 
     def __unicode__(self):
-        res = ""
-        for c in self.chroots.all():
-            res += c.__unicode__() + " "
+        res = "Builder for: "
+        for c in Chroot.objects.all():
+            res += c.__unicode__() + ", "
         return res
 
     def sbuild_workaround(self):

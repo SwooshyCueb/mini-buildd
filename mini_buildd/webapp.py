@@ -130,8 +130,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         from mini_buildd.models import Builder
         b=Builder()
         b.save()
-        b.chroots.add(c)
-        b.save()
 
     def syncdb(self):
         log.info("Syncing database...")

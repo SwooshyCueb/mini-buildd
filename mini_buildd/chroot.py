@@ -44,6 +44,11 @@ class Chroot(django.db.models.Model):
     def get_name(self):
         return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
 
+    def get_tmp_dir(self):
+        d = os.path.join(self.get_path(), "tmp")
+        mini_buildd.misc.mkdirs(d)
+        return d
+
     def get_personality(self):
         """
         On 64bit hosts, 32bit schroots must be configured
@@ -137,13 +142,15 @@ file={t}
 
     def prepare(self):
         if not os.path.exists(self.get_tar_file()):
-            chroot_dir = tempfile.mkdtemp()
+            chroot_dir = self.get_tmp_dir()
             self.debootstrap(dir=chroot_dir)
             mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
                                      .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
+            mini_buildd.misc.run_cmd("sudo rm -rf '{d}'".format(d=chroot_dir))
 
     def purge(self):
-        pass
+        ".. todo:: STUB"
+        log.error("{i}: STUB only".format(i=self))
 
 
 class LVMLoopChroot(Chroot):
@@ -206,7 +213,7 @@ lvm-snapshot-options=--size 4G
         except:
             log.info("Setting up LV {c}...".format(c=self.get_name()))
 
-            mount_point = tempfile.mkdtemp()
+            mount_point = self.get_tmp_dir()
             try:
                 mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
                 mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))

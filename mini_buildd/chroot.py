@@ -24,8 +24,6 @@ class Chroot(django.db.models.Model):
     PERSONALITIES = { 'i386': 'linux32' }
 
     def get_backend(self):
-        print str(self.backend)
-        print str(self)
         try:
             return self.filechroot
         except:
@@ -119,10 +117,8 @@ class FileChroot(Chroot):
 
 class LVMLoopChroot(Chroot):
     """ This class provides some interesting LVM-(loop-)device stuff. """
-
-    def __init__(self, *args, **kwargs):
-        super(LVMLoopChroot, self).__init__(*args, **kwargs)
-        self._size = 100
+    loop_size = django.db.models.IntegerField(default=100,
+                                              help_text="Loop device file size in GB.")
 
     def get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
@@ -147,8 +143,8 @@ class LVMLoopChroot(Chroot):
         # Check image file
         if not os.path.exists(self.get_backing_file()):
             mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
-                    imgfile=self.get_backing_file(), gigs=self._size))
-            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self._size))
+                    imgfile=self.get_backing_file(), gigs=self.loop_size))
+            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self.loop_size))
 
         # Check loop dev
         if self.get_loop_device() == None:

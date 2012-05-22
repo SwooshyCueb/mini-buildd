@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 
 from mini_buildd.models import Distribution
 from mini_buildd.models import Architecture
+
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
@@ -32,6 +33,9 @@ class Chroot(django.db.models.Model):
     def get_path(self):
         return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
 
+    def get_name(self):
+        return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
+
     def get_personality(self):
         """
         On 64bit hosts, 32bit schroots must be configured
@@ -48,83 +52,34 @@ class Chroot(django.db.models.Model):
         except:
             return "linux"
 
-    def prepare(self):
+    def debootstrap(self, dir):
         """
-        .. todo:: Chroot prepare
+        .. todo:: debootstrap
 
            - mbdAptEnv ??
            - include=sudo is only workaround for sbuild Bug #608840
            - debootstrap include=apt WTF?
         """
-        log.info("Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
-        mini_buildd.misc.mkdirs(self.get_path())
 
-        backend = self.get_backend()
-        backend.prepare()
+        # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
+        mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
+                                     format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
 
-        dist = self.dist
-
-        name = "mini-buildd-{d}-{a}".format(d=dist.base_source.codename, a=self.arch.arch)
-        device = "/dev/{v}/{n}".format(v=backend.get_vgname(), n=name)
-
-        try:
-            mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name))
-            log.info("LV {c} exists, leaving alone".format(c=name))
-        except:
-            log.info("Setting up LV {c}...".format(c=name))
-
-            mirror=dist.base_source.mirrors.all()[0]
-            log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
-
-            mount_point = tempfile.mkdtemp()
-            try:
-                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=backend.get_vgname()))
-                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
-                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
-
-                # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-                mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
-                                             format(a=self.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
-
-                # STILL SUDOERS WORKAROUND (remove all when fixed)
-                with tempfile.NamedTemporaryFile() as ts:
-                    ts.write("""
-{u}	ALL=(ALL) ALL
-{u}	ALL=NOPASSWD: ALL
+        # STILL SUDOERS WORKAROUND (remove all when fixed)
+        with tempfile.NamedTemporaryFile() as ts:
+            ts.write("""
+{u} ALL=(ALL) ALL
+{u} ALL=NOPASSWD: ALL
 """.format(u=getpass.getuser()))
-                    ts.flush()
-                    mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=mount_point))
-                # END SUDOERS WORKAROUND
+            ts.flush()
+            mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
+        # END SUDOERS WORKAROUND
 
-                mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                log.info("LV {n} created successfully...".format(n=name))
-                # There must be schroot configs for each uploadable distribution (does not work with aliases).
-                open(os.path.join(self.get_path(), "schroot.conf"), 'w').write("""
-[{n}]
-type=lvm-snapshot
-description=Mini-Buildd {n} LVM snapshot chroot
-groups=sbuild
-users=mini-buildd
-root-groups=sbuild
-root-users=mini-buildd
-source-root-users=mini-buildd
-device={d}
-mount-options=-t {f} -o noatime,user_xattr
-lvm-snapshot-options=--size 4G
-personality={p}
-""".format(n=name, d=device, f=self.filesystem, p=self.get_personality()))
-            except:
-                log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
-                try:
-                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
-                except:
-                    pass
-                raise
+    def prepare(self):
+        self.get_backend().prepare()
 
     def purge(self):
-        ".. todo:: chroot purge not implemented"
-        log.error("NOT IMPL PURGE")
+        self.get_backend().purge()
 
     def __unicode__(self):
         return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
@@ -164,6 +119,9 @@ class LVMLoopChroot(Chroot):
                 return "/dev/" + f.split("/")[3]
 
     def prepare(self):
+        log.info("LVM Loop chroot: Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
+        mini_buildd.misc.mkdirs(self.get_path())
+
         # Check image file
         if not os.path.exists(self.get_backing_file()):
             mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
@@ -184,6 +142,47 @@ class LVMLoopChroot(Chroot):
             mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
 
         log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
+
+        device = "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
+
+        try:
+            mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
+            log.info("LV {c} exists, leaving alone".format(c=self.get_name()))
+        except:
+            log.info("Setting up LV {c}...".format(c=self.get_name()))
+
+            mount_point = tempfile.mkdtemp()
+            try:
+                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
+                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
+                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
+
+                self.debootstrap(dir=mount_point)
+                mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                log.info("LV {n} created successfully...".format(n=self.get_name()))
+                # There must be schroot configs for each uploadable distribution (does not work with aliases).
+                open(os.path.join(self.get_path(), "schroot.conf"), 'w').write("""
+[{n}]
+type=lvm-snapshot
+description=Mini-Buildd {n} LVM snapshot chroot
+groups=sbuild
+users=mini-buildd
+root-groups=sbuild
+root-users=mini-buildd
+source-root-users=mini-buildd
+device={d}
+mount-options=-t {f} -o noatime,user_xattr
+lvm-snapshot-options=--size 4G
+personality={p}
+""".format(n=self.get_name(), d=device, f=self.filesystem, p=self.get_personality()))
+            except:
+                log.info("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
+                try:
+                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                except:
+                    pass
+                raise
 
     def purge(self):
         try:

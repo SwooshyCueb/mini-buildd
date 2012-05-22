@@ -63,8 +63,8 @@ class Chroot(django.db.models.Model):
         """
 
         # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-        mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
-                                     format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
+        mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".
+                                 format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
 
         # STILL SUDOERS WORKAROUND (remove all when fixed)
         with tempfile.NamedTemporaryFile() as ts:

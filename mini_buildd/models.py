@@ -144,6 +144,10 @@ import mini_buildd.builder
 class Builder(mini_buildd.builder.Builder):
     pass
 
+import mini_buildd.dispatcher
+class Dispatcher(mini_buildd.dispatcher.Dispatcher):
+    pass
+
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
 

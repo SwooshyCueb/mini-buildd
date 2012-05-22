@@ -4,11 +4,34 @@ import contextlib
 import logging
 
 import mini_buildd.changes
+import django.db
+import django.core.exceptions
+from mini_buildd.models import Repository
 
 log = logging.getLogger(__name__)
 
-class Dispatcher():
+class Dispatcher(django.db.models.Model):
+    max_parallel_packages = django.db.models.IntegerField(
+        default=10,
+        help_text="Maximum number of parallel packages to process.")
+
+    def __unicode__(self):
+        res = "Dispatcher for: "
+        for c in Repository.objects.all():
+            res += c.__unicode__() + ", "
+        return res
+
+    def clean(self):
+        super(Dispatcher, self).clean()
+        if Dispatcher.objects.count() > 0 and self.id != Dispatcher.objects.get().id:
+            raise django.core.exceptions.ValidationError("You can only create one Dispatcher instance!")
+
     def run(self, incoming_queue, build_queue):
+        log.info("Starting {d}".format(d=self))
+
+        for r in Repository.objects.all():
+            r.prepare()
+
         while True:
             c = mini_buildd.changes.Changes(incoming_queue.get())
             r = c.get_repository()

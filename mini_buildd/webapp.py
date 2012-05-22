@@ -131,6 +131,10 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         b=Builder()
         b.save()
 
+        from mini_buildd.models import Dispatcher
+        d=Dispatcher()
+        d.save()
+
     def syncdb(self):
         log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)

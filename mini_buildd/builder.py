@@ -147,6 +147,10 @@ class Builder(django.db.models.Model):
     def run(self, queue):
         log.info("Starting builder: {id}".format(id=self.__unicode__()))
         self.sbuild_workaround()
+
+        for c in Chroot.objects.all():
+            c.prepare()
+
         while True:
             f = queue.get()
             mini_buildd.misc.start_thread(Build(f))

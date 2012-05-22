@@ -143,11 +143,9 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._run = True
 
     def prepare(self):
-        from mini_buildd.models import Repository, Chroot
+        from mini_buildd.models import Repository
         for r in Repository.objects.all():
             r.prepare()
-        for b in Chroot.objects.all():
-            b.prepare()
 
     def shutdown(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)

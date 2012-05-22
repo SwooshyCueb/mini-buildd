@@ -21,7 +21,6 @@ from mini_buildd.models import Architecture
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
-    filesystem = django.db.models.CharField(max_length=30, default="ext2")
 
     PERSONALITIES = { 'i386': 'linux32' }
 
@@ -147,6 +146,7 @@ file={t}
 
 class LVMLoopChroot(Chroot):
     """ This class provides some interesting LVM-(loop-)device stuff. """
+    filesystem = django.db.models.CharField(max_length=10, default="ext2")
     loop_size = django.db.models.IntegerField(default=100,
                                               help_text="Loop device file size in GB.")
 

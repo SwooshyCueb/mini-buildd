@@ -12,15 +12,20 @@ import django.db
 
 import mini_buildd.globals
 import mini_buildd.misc
-
-log = logging.getLogger(__name__)
-
 from mini_buildd.models import Distribution
 from mini_buildd.models import Architecture
+
+log = logging.getLogger(__name__)
 
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
+
+    def __unicode__(self):
+        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+    class Meta:
+        unique_together = ("dist", "arch")
 
     PERSONALITIES = { 'i386': 'linux32' }
 
@@ -101,9 +106,6 @@ personality={p}
 
     def purge(self):
         self.get_backend().purge()
-
-    def __unicode__(self):
-        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
 
 
 class FileChroot(Chroot):

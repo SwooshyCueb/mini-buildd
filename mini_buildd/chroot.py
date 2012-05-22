@@ -21,7 +21,11 @@ class Chroot(django.db.models.Model):
     arch = django.db.models.ForeignKey(Architecture)
     filesystem = django.db.models.CharField(max_length=30, default="ext2")
 
+    PERSONALITIES = { 'i386': 'linux32' }
+
     def get_backend(self):
+        print str(self.backend)
+        print str(self)
         try:
             return self.filechroot
         except:
@@ -46,9 +50,8 @@ class Chroot(django.db.models.Model):
            - This may be needed for other 32-bit archs, too?
            - We currently assume we build under linux only.
         """
-        personalities = { 'i386': 'linux32' }
         try:
-            return personalities[self.arch.arch]
+            return self.PERSONALITIES[self.arch.arch]
         except:
             return "linux"
 

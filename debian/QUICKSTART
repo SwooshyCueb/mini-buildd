@@ -1,0 +1,17 @@
+Developer Quickstart
+====================
+
+Initial configuration:
+
+  1. Add yourself to ~mini-buildd/.ssh/authorized_keys on the repo host.
+  2. Configure ~/.dput.cf on your local dev host. Get the config snippet from mini-buildd's home: http://your.repo.host/~mini-buildd/.
+
+Debian packages:
+
+  1. Create a DSP (Debian Source Package)
+      * Use '-S': mini-buildd will reject any direct binary uploads.
+      * Don't forget '-sa' on initial uploads.
+      * Make sure your versioning follows mini-buildd's suite, see mini-buildd's home.
+  2. Upload via dput.
+      * '/var/log/user.log' on rep/bld hosts might be useful for the impatient.
+  3. Check build results on the configured mail address.

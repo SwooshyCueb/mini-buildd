@@ -66,9 +66,9 @@ API Reference
 =============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 3
 
-   mini_buildd
+   modules
 
 
 Indices and tables

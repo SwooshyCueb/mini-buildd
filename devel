@@ -61,7 +61,7 @@ done
 trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 
 # Be sure to generate mini_buildd/__version__.py and manual
-python ./setup.py build_sphinx >/dev/null 2>&1 || true
+python ./setup.py build_sphinx --source-dir=build/sphinx >/dev/null 2>&1 || true
 
 if [ -n "${1}" ]; then
 	mbd_${1}

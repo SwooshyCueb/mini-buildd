@@ -60,7 +60,13 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                               help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 
-        return parser.parse_args()
+        p=parser.parse_args()
+
+        # Arguments that imply foreground mode
+        if p.set_admin_password or p.create_default_config or p.loaddata or p.dumpdata:
+            p.foreground = True
+
+        return p
 
     def setup_globals(self):
         # Set global variables that really make no sense to
@@ -122,6 +128,11 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def __init__(self):
         self._args = self.parse_args()
+
+        # Daemonize early
+        if not self._args.foreground:
+            daemon.DaemonContext().open()
+
         self.setup_globals()
         self.setup_logging()
 
@@ -157,10 +168,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             self._webapp.dumpdata(a=self._args.dumpdata)
         else:
-            # Daemonize if configured
-            if not self._args.foreground:
-                daemon.DaemonContext().open()
-
             mini_buildd.misc.start_thread(self._httpd)
             mini_buildd.misc.start_thread(self._ftpd)
 

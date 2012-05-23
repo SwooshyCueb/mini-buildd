@@ -4,6 +4,7 @@
 *.pyc
 
 # Debian package
+/mini_buildd.egg-info/
 /debian/mini-buildd/*
 /debian/mini-buildd.*.debhelper
 /debian/mini-buildd.debhelper.log

@@ -1,0 +1,3 @@
+# TODO FIXME: We currently allow anything. Only needed commands should be allowed finally.
+mini-buildd ALL=(ALL) ALL
+mini-buildd ALL=NOPASSWD: ALL

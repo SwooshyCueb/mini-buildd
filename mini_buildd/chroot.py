@@ -3,7 +3,7 @@ import os
 import re
 import glob
 import tempfile
-import getpass
+import pwd
 import tarfile
 import contextlib
 import logging
@@ -82,7 +82,7 @@ class Chroot(django.db.models.Model):
             ts.write("""
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
-""".format(u=getpass.getuser()))
+""".format(u=pwd.getpwuid(os.getuid())[0]))
             ts.flush()
             mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
         # END SUDOERS WORKAROUND

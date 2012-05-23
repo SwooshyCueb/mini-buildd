@@ -25,11 +25,6 @@ os.environ["DJANGO_SETTINGS_MODULE"]="doc.django_settings"
 # sphinx-build terminates with following message: "error: no such option: -b"
 from mini_buildd import __version__
 
-# We need the following lines until Debian Squeeze provides us with sphinx >= 1.1.
-from doc import apidoc
-apidoc_arguments = ['apidoc.py', '-f', '-o', '.', '../']
-apidoc.main(apidoc_arguments)
-
 # -- General configuration -----------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

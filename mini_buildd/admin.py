@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import django.contrib
+import django.contrib.admin
 import mini_buildd.models
 
 django.contrib.admin.site.register(mini_buildd.models.Mirror, mini_buildd.models.Mirror.Admin)
@@ -13,7 +13,9 @@ django.contrib.admin.site.register(mini_buildd.models.Layout)
 django.contrib.admin.site.register(mini_buildd.models.Distribution)
 django.contrib.admin.site.register(mini_buildd.models.Repository)
 
+django.contrib.admin.site.register(mini_buildd.models.FileChroot)
 django.contrib.admin.site.register(mini_buildd.models.LVMLoopChroot)
-django.contrib.admin.site.register(mini_buildd.models.Builder)
 
+django.contrib.admin.site.register(mini_buildd.models.Builder)
+django.contrib.admin.site.register(mini_buildd.models.Dispatcher)
 django.contrib.admin.site.register(mini_buildd.models.Remote)

@@ -17,20 +17,6 @@ import mini_buildd.globals
 
 log = logging.getLogger("mini_buildd")
 
-class SystemPrepare():
-    def run(self):
-        """
-        Miscellaneous system workarounds
-        - Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself).
-        """
-        log.info("Starting system preparations")
-        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
-            log.warn("System preparation: Generating sbuild keys")
-            mini_buildd.misc.run_cmd("sbuild-update --keygen")
-            log.info("System preparation: Sbuild keys generated")
-
-        log.info("System preparations successfully finished")
-
 class Main():
     def parse_args(self):
         parser = argparse.ArgumentParser(prog="mini-buildd",
@@ -156,13 +142,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         self._run = True
 
-    def prepare(self):
-        from mini_buildd.models import Repository, Chroot
-        for r in Repository.objects.all():
-            r.prepare()
-        for b in Chroot.objects.all():
-            b.prepare()
-
     def shutdown(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)
         self._run = False
@@ -182,12 +161,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             if not self._args.foreground:
                 daemon.DaemonContext().open()
 
-            # Prepare system (parallel, as this might involve generating security keys)
-            mini_buildd.misc.start_thread(SystemPrepare())
-
-            # Prepare home
-            self.prepare()
-
             mini_buildd.misc.start_thread(self._httpd)
             mini_buildd.misc.start_thread(self._ftpd)
 
@@ -196,7 +169,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             for b in Builder.objects.all():
                 mini_buildd.misc.start_thread(b, self._build_queue)
 
-            mini_buildd.misc.start_thread(self._dispatcher, self._incoming_queue, self._build_queue)
+            # Start dispatchers
+            from mini_buildd.models import Dispatcher
+            for d in Dispatcher.objects.all():
+                mini_buildd.misc.start_thread(d, self._incoming_queue, self._build_queue)
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)

@@ -5,10 +5,12 @@ import subprocess
 import logging
 
 import django.db
+import django.core.exceptions
 
 import mini_buildd.changes
 import mini_buildd.globals
 import mini_buildd.misc
+from mini_buildd.models import Chroot
 
 log = logging.getLogger(__name__)
 
@@ -121,24 +123,41 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         res.save()
         res.upload()
 
-from mini_buildd.models import Chroot
 class Builder(django.db.models.Model):
-    chroots = django.db.models.ManyToManyField(Chroot)
+    max_parallel_builds = django.db.models.IntegerField(
+        default=4,
+        help_text="Maximum number of parallel builds.")
 
-    max_parallel_builds = django.db.models.IntegerField(default=4,
-                                   help_text="Maximum number of parallel builds.")
-
-    sbuild_parallel = django.db.models.IntegerField(default=1,
-                                   help_text="Degree of parallelism per build.")
+    sbuild_parallel = django.db.models.IntegerField(
+        default=1,
+        help_text="Degree of parallelism per build.")
 
     def __unicode__(self):
-        res = ""
-        for c in self.chroots.all():
-            res += c.__unicode__() + " "
+        res = "Builder for: "
+        for c in Chroot.objects.all():
+            res += c.__unicode__() + ", "
         return res
 
+    def clean(self):
+        super(Builder, self).clean()
+        if Builder.objects.count() > 0 and self.id != Builder.objects.get().id:
+            raise django.core.exceptions.ValidationError("You can only create one Builder instance!")
+
+    def sbuild_workaround(self):
+        "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
+        if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            log.warn("One-time generation of sbuild keys (may take some time)...")
+            mini_buildd.misc.run_cmd("HOME=/tmp sbuild-update --keygen")
+            log.info("One-time generation of sbuild keys done")
+
     def run(self, queue):
-        log.info("Starting builder: {id}".format(id=self.__unicode__()))
+        log.info("Starting {d}".format(d=self))
+
+        self.sbuild_workaround()
+
+        for c in Chroot.objects.all():
+            c.prepare()
+
         while True:
             f = queue.get()
             mini_buildd.misc.start_thread(Build(f))

@@ -3,8 +3,8 @@ import socket
 import os
 import logging
 
-import django.db
-import django.contrib
+import django.db.models
+import django.contrib.admin
 
 import mini_buildd.globals
 import mini_buildd.misc
@@ -134,11 +134,18 @@ import mini_buildd.chroot
 class Chroot(mini_buildd.chroot.Chroot):
     pass
 
+class FileChroot(mini_buildd.chroot.FileChroot):
+    pass
+
 class LVMLoopChroot(mini_buildd.chroot.LVMLoopChroot):
     pass
 
 import mini_buildd.builder
 class Builder(mini_buildd.builder.Builder):
+    pass
+
+import mini_buildd.dispatcher
+class Dispatcher(mini_buildd.dispatcher.Dispatcher):
     pass
 
 class Remote(django.db.models.Model):

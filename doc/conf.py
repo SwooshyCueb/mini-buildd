@@ -18,6 +18,9 @@ import sys, os
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 sys.path.insert(0, os.path.abspath('..'))
 
+# Dummy; needed so django does not freak out on doc building
+os.environ["DJANGO_SETTINGS_MODULE"]="doc.django_settings"
+
 # do not import mini-buildd's version before path insertion -- otherwise
 # sphinx-build terminates with following message: "error: no such option: -b"
 from mini_buildd import __version__

@@ -123,15 +123,17 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         r.dists.add(d)
         r.save()
 
-        from mini_buildd.models import LVMLoopChroot
-        c=LVMLoopChroot(dist=d, arch=a)
+        from mini_buildd.models import FileChroot
+        c=FileChroot(dist=d, arch=a)
         c.save()
 
         from mini_buildd.models import Builder
         b=Builder()
         b.save()
-        b.chroots.add(c)
-        b.save()
+
+        from mini_buildd.models import Dispatcher
+        d=Dispatcher()
+        d.save()
 
     def syncdb(self):
         log.info("Syncing database...")

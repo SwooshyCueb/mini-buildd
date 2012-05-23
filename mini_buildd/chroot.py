@@ -4,24 +4,50 @@ import re
 import glob
 import tempfile
 import getpass
+import tarfile
+import contextlib
 import logging
 
 import django.db
 
 import mini_buildd.globals
 import mini_buildd.misc
+from mini_buildd.models import Distribution
+from mini_buildd.models import Architecture
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import Distribution
-from mini_buildd.models import Architecture
 class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
-    filesystem = django.db.models.CharField(max_length=30, default="ext2")
+
+    def __unicode__(self):
+        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+    class Meta:
+        unique_together = ("dist", "arch")
+
+    PERSONALITIES = { 'i386': 'linux32' }
+
+    def get_backend(self):
+        try:
+            return self.filechroot
+        except:
+            try:
+                return self.lvmloopchroot
+            except:
+                raise Exception("No chroot backend found")
 
     def get_path(self):
         return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
+
+    def get_name(self):
+        return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
+
+    def get_tmp_dir(self):
+        d = os.path.join(self.get_path(), "tmp")
+        mini_buildd.misc.mkdirs(d)
+        return d
 
     def get_personality(self):
         """
@@ -33,100 +59,105 @@ class Chroot(django.db.models.Model):
            - This may be needed for other 32-bit archs, too?
            - We currently assume we build under linux only.
         """
-        personalities = { 'i386': 'linux32' }
         try:
-            return personalities[self.arch.arch]
+            return self.PERSONALITIES[self.arch.arch]
         except:
             return "linux"
 
-    def prepare(self):
+    def debootstrap(self, dir):
         """
-        .. todo:: Chroot prepare
+        .. todo:: debootstrap
 
            - mbdAptEnv ??
            - include=sudo is only workaround for sbuild Bug #608840
            - debootstrap include=apt WTF?
         """
-        log.info("Preparing '{d}' builder for '{a}'".format(d=self.dist.base_source.codename, a=self.arch))
-        mini_buildd.misc.mkdirs(self.get_path())
 
-        # TODO multi backends
-        backend = self.lvmloopchroot
-        backend.prepare()
+        # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
+        mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".
+                                 format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
 
-        dist = self.dist
-
-        name = "mini-buildd-{d}-{a}".format(d=dist.base_source.codename, a=self.arch.arch)
-        device = "/dev/{v}/{n}".format(v=backend.get_vgname(), n=name)
-
-        try:
-            mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=name))
-            log.info("LV {c} exists, leaving alone".format(c=name))
-        except:
-            log.info("Setting up LV {c}...".format(c=name))
-
-            mirror=dist.base_source.mirrors.all()[0]
-            log.info("Found mirror for {n}: {M} ".format(n=name, M=mirror))
-
-            mount_point = tempfile.mkdtemp()
-            try:
-                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=name, v=backend.get_vgname()))
-                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
-                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
-
-                # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-                mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".\
-                                             format(a=self.arch.arch, d=dist.base_source.codename, m=mount_point, M=mirror))
-
-                # STILL SUDOERS WORKAROUND (remove all when fixed)
-                with tempfile.NamedTemporaryFile() as ts:
-                    ts.write("""
-{u}	ALL=(ALL) ALL
-{u}	ALL=NOPASSWD: ALL
+        # STILL SUDOERS WORKAROUND (remove all when fixed)
+        with tempfile.NamedTemporaryFile() as ts:
+            ts.write("""
+{u} ALL=(ALL) ALL
+{u} ALL=NOPASSWD: ALL
 """.format(u=getpass.getuser()))
-                    ts.flush()
-                    mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=mount_point))
-                # END SUDOERS WORKAROUND
+            ts.flush()
+            mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
+        # END SUDOERS WORKAROUND
 
-                mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                log.info("LV {n} created successfully...".format(n=name))
-                # There must be schroot configs for each uploadable distribution (does not work with aliases).
-                open(os.path.join(self.get_path(), "schroot.conf"), 'w').write("""
+    def prepare(self):
+        mini_buildd.misc.mkdirs(self.get_path())
+        self.get_backend().prepare()
+
+        conf_file = os.path.join(self.get_path(), "schroot.conf")
+        open(conf_file, 'w').write("""
 [{n}]
-type=lvm-snapshot
-description=Mini-Buildd {n} LVM snapshot chroot
+description=Mini-Buildd chroot {n}
 groups=sbuild
 users=mini-buildd
 root-groups=sbuild
 root-users=mini-buildd
 source-root-users=mini-buildd
-device={d}
-mount-options=-t {f} -o noatime,user_xattr
-lvm-snapshot-options=--size 4G
 personality={p}
-""".format(n=name, d=device, f=self.filesystem, p=self.get_personality()))
-            except:
-                log.info("LV {n} creation FAILED. Rewinding...".format(n=name))
-                try:
-                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
-                except:
-                    pass
-                raise
+
+# Backend specific config
+{b}
+""".format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
+
+        schroot_conf_file = os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
+        mini_buildd.misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
 
     def purge(self):
-        ".. todo:: chroot purge not implemented"
-        log.error("NOT IMPL PURGE")
+        self.get_backend().purge()
 
-    def __unicode__(self):
-        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+
+class FileChroot(Chroot):
+    """ File chroot backend. """
+
+    TAR_SUFFIX = (('tar',     "Tar only, don't pack"),
+                  ('tar.gz',  "Tar and gzip"),
+                  ('tar.bz2', "Tar and bzip2"),
+                  ('tar.xz',  "Tar and xz"))
+    tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
+
+    def get_tar_file(self):
+        return os.path.join(self.get_path(), "source." + self.tar_suffix)
+
+    def get_tar_compression_opt(self):
+        if self.tar_suffix == "tar.gz":
+            return "--gzip"
+        if self.tar_suffix == "tar.bz2":
+            return "--bzip2"
+        if self.tar_suffix == "tar.xz":
+            return "--xz"
+        return ""
+
+    def get_schroot_conf(self):
+        return """\
+type=file
+file={t}
+""".format(t=self.get_tar_file())
+
+    def prepare(self):
+        if not os.path.exists(self.get_tar_file()):
+            chroot_dir = self.get_tmp_dir()
+            self.debootstrap(dir=chroot_dir)
+            mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
+                                     .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
+            mini_buildd.misc.run_cmd("sudo rm -rf '{d}'".format(d=chroot_dir))
+
+    def purge(self):
+        ".. todo:: STUB"
+        log.error("{i}: STUB only".format(i=self))
+
 
 class LVMLoopChroot(Chroot):
     """ This class provides some interesting LVM-(loop-)device stuff. """
-
-    def __init__(self, *args, **kwargs):
-        super(LVMLoopChroot, self).__init__(*args, **kwargs)
-        self._size = 100
+    filesystem = django.db.models.CharField(max_length=10, default="ext2")
+    loop_size = django.db.models.IntegerField(default=100,
+                                              help_text="Loop device file size in GB.")
 
     def get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
@@ -144,12 +175,20 @@ class LVMLoopChroot(Chroot):
             if open(f).read().strip() == self.get_backing_file():
                 return "/dev/" + f.split("/")[3]
 
+    def get_schroot_conf(self):
+        return """\
+type=lvm-snapshot
+device={d}
+mount-options=-t {f} -o noatime,user_xattr
+lvm-snapshot-options=--size 4G
+""".format(d=self.get_lvm_device(), f=self.filesystem)
+
     def prepare(self):
         # Check image file
         if not os.path.exists(self.get_backing_file()):
             mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
-                    imgfile=self.get_backing_file(), gigs=self._size))
-            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self._size))
+                    imgfile=self.get_backing_file(), gigs=self.loop_size))
+            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self.loop_size))
 
         # Check loop dev
         if self.get_loop_device() == None:
@@ -165,6 +204,32 @@ class LVMLoopChroot(Chroot):
             mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
 
         log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
+
+        device = "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
+
+        try:
+            mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
+            log.info("LV {c} exists, leaving alone".format(c=self.get_name()))
+        except:
+            log.info("Setting up LV {c}...".format(c=self.get_name()))
+
+            mount_point = self.get_tmp_dir()
+            try:
+                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
+                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
+                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
+
+                self.debootstrap(dir=mount_point)
+                mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                log.info("LV {n} created successfully...".format(n=self.get_name()))
+            except:
+                log.error("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
+                try:
+                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                except:
+                    log.error("LV {n} rewinding FAILED.".format(n=self.get_name()))
+                raise
 
     def purge(self):
         try:

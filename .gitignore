@@ -10,6 +10,3 @@
 /debian/mini-buildd.debhelper.log
 /debian/mini-buildd.substvars
 /debian/files
-
-# Cruft from test uploads
-/examples/packages/builddir/

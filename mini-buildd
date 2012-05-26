@@ -17,6 +17,7 @@ from mini_buildd import misc
 from mini_buildd import globals
 
 log = logging.getLogger("mini_buildd")
+log.addHandler(logging.StreamHandler())
 
 class Main():
     def parse_args(self):
@@ -104,6 +105,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             loggers.append("console")
 
         log_format="%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
+
+        # Clear all loggers now; this will remove the
+        # preliminary console logger
+        log.handlers = []
 
         if "file" in loggers:
             h  = logging.FileHandler(self.LOG_FILE)

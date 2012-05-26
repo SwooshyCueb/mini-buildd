@@ -12,8 +12,9 @@ import daemon
 import logging
 import logging.handlers
 
-import mini_buildd.misc
-import mini_buildd.globals
+from mini_buildd import __version__
+from mini_buildd import misc
+from mini_buildd import globals
 
 log = logging.getLogger("mini_buildd")
 
@@ -23,7 +24,7 @@ class Main():
                                          description="mini build daemon.",
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
+        parser.add_argument('--version', action='version', version=__version__)
 
         parser.add_argument("-f", "--foreground", action='store_true',
                             help="Don't daemonize, log to console.")
@@ -71,31 +72,31 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
     def setup_globals(self):
         # Set global variables that really make no sense to
         # propagate through
-        mini_buildd.globals.DEBUG = self._args.debug
+        globals.DEBUG = self._args.debug
 
-        mini_buildd.globals.HOME_DIR = self._args.home
+        globals.HOME_DIR = self._args.home
 
-        mini_buildd.globals.INCOMING_DIR = os.path.join(self._args.home, "incoming")
-        mini_buildd.globals.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
+        globals.INCOMING_DIR = os.path.join(self._args.home, "incoming")
+        globals.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
 
         vardir = os.path.join(self._args.home, "var")
-        mini_buildd.globals.SPOOL_DIR    = os.path.join(vardir, "spool")
-        mini_buildd.globals.BUILDS_DIR   = os.path.join(vardir, "builds")
-        mini_buildd.globals.LOGS_DIR     = os.path.join(vardir, "logs")
-        mini_buildd.globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
+        globals.SPOOL_DIR    = os.path.join(vardir, "spool")
+        globals.BUILDS_DIR   = os.path.join(vardir, "builds")
+        globals.LOGS_DIR     = os.path.join(vardir, "logs")
+        globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
 
-        self.LOG_FILE = os.path.join(mini_buildd.globals.LOGS_DIR, "daemon.log")
+        self.LOG_FILE = os.path.join(globals.LOGS_DIR, "daemon.log")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
-            mini_buildd.globals.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
+            globals.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
         else:
-            mini_buildd.globals.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
+            globals.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
 
         # Create base directories
-        mini_buildd.misc.mkdirs(mini_buildd.globals.INCOMING_DIR)
-        mini_buildd.misc.mkdirs(mini_buildd.globals.REPOSITORIES_DIR)
-        mini_buildd.misc.mkdirs(mini_buildd.globals.LOGS_DIR)
+        misc.mkdirs(globals.INCOMING_DIR)
+        misc.mkdirs(globals.REPOSITORIES_DIR)
+        misc.mkdirs(globals.LOGS_DIR)
 
     def setup_logging(self):
         loggers = string.split(self._args.loggers, ",")
@@ -168,18 +169,18 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             self._webapp.dumpdata(a=self._args.dumpdata)
         else:
-            mini_buildd.misc.start_thread(self._httpd)
-            mini_buildd.misc.start_thread(self._ftpd)
+            misc.start_thread(self._httpd)
+            misc.start_thread(self._ftpd)
 
             # Start builders
             from mini_buildd.models import Builder
             for b in Builder.objects.all():
-                mini_buildd.misc.start_thread(b, self._build_queue)
+                misc.start_thread(b, self._build_queue)
 
             # Start dispatchers
             from mini_buildd.models import Dispatcher
             for d in Dispatcher.objects.all():
-                mini_buildd.misc.start_thread(d, self._incoming_queue, self._build_queue)
+                misc.start_thread(d, self._incoming_queue, self._build_queue)
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)

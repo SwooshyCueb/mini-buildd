@@ -80,17 +80,6 @@ def run_cmd(cmd):
     if retval != 0:
         raise Exception("Command '{c}' failed with retval {r}".format(c=cmd, r=retval))
 
-def get_cmd_stdout(cmd):
-    output = tempfile.TemporaryFile()
-    log.info("Running system command: '%s'" % cmd)
-    retval = subprocess.call([cmd], shell=True, stdout=output, stderr=subprocess.STDOUT)
-    if retval == 0:
-        output.seek(0)
-        return output.read()
-    else:
-        log.error("Command failed: %s" % cmd)
-        return ""
-
 def call(args, root=False, value_on_error=None, log_output=True):
     if root:
         args = ["sudo"] + args

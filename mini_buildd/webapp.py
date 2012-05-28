@@ -74,8 +74,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     def create_default_config(self, mirror):
         from mini_buildd import models
-        codename = misc.get_cmd_stdout("lsb_release --short --codename").strip()
-        arch = misc.get_cmd_stdout("dpkg --print-architecture").strip()
+        codename = misc.call(["lsb_release", "--short", "--codename"], value_on_error="sid").strip()
+        arch = misc.call(["dpkg", "--print-architecture"], value_on_error="i386").strip()
 
         log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
         m=models.Mirror(url=mirror)

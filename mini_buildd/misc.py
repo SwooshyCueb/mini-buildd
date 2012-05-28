@@ -90,3 +90,61 @@ def get_cmd_stdout(cmd):
     else:
         log.error("Command failed: %s" % cmd)
         return ""
+
+def call(args, root=False, value_on_error=None, log_output=True):
+    if root:
+        args = ["sudo"] + args
+
+    stdout = tempfile.TemporaryFile()
+    stderr = tempfile.TemporaryFile()
+
+    log.info("Calling: {a}".format(a=args))
+    try:
+        try:
+            subprocess.check_call(args, stdout=stdout, stderr=stderr)
+        finally:
+            stdout.seek(0)
+            _stdout = stdout.read()
+            stderr.seek(0)
+            _stderr = stderr.read()
+    except:
+        if log_output:
+            if _stdout:
+                log.warn("Call failed [o]: {e}".format(e=_stdout))
+            if _stderr:
+                log.error("Call failed [e]: {e}".format(e=_stderr))
+        if value_on_error != None:
+            return value_on_error
+        else:
+            raise
+    return _stdout
+
+def call_sequence(calls, root=False, value_on_error=None, log_output=True):
+    i = 0
+    try:
+        for l in calls:
+            call(l[0], root=root, value_on_error=value_on_error, log_output=log_output)
+            i = i+1
+    except:
+        log.error("Sequence failed at: {i}".format(i=i))
+        while i > -1:
+            call(calls[i][1], root=root, value_on_error="", log_output=log_output)
+            i = i-1
+        raise
+
+if __name__ == "__main__":
+    h = logging.StreamHandler()
+    h.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
+    log.addHandler(h)
+    log.setLevel(logging.DEBUG)
+
+    print call(["id", "-u", "-n"])
+    #print call(["id", "-syntax-error"], value_on_error="Kapott")
+    print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)
+
+    call_sequence([
+            (["echo", "cmd0"],    ["echo", "Rollback: cmd0"]),
+            (["echo", "cmd1"],    ["echo", "Rollback: cmd1"]),
+            (["echo", "cmd2"],    ["echo", "Rollback: cmd2"]),
+            (["false"],           ["echo", "Rollback: cmd3"]),
+            ], root=True, log_output=False)

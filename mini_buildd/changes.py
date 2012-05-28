@@ -8,8 +8,7 @@ import contextlib
 
 import debian.deb822
 
-import mini_buildd.globals
-import mini_buildd.misc
+from mini_buildd import globals, misc
 
 log = logging.getLogger(__name__)
 
@@ -22,7 +21,7 @@ class Changes(debian.deb822.Changes):
         self._file_name = os.path.basename(file_path)
         super(Changes, self).__init__(file(file_path) if os.path.exists(file_path) else [])
         # Be sure base dir is always available
-        mini_buildd.misc.mkdirs(os.path.dirname(file_path))
+        misc.mkdirs(os.path.dirname(file_path))
 
     def is_buildrequest(self):
         return self.BUILDREQUEST_RE.match(self._file_name)
@@ -32,7 +31,7 @@ class Changes(debian.deb822.Changes):
 
     def get_repository(self):
         ".. todo:: Check that base dist is really supported by this repo"
-        from mini_buildd.models import Repository
+        from models import Repository
         dist = self["Distribution"]
         r_id = dist.split("-")[1]
         log.debug(dist + "/" + r_id)
@@ -52,7 +51,7 @@ class Changes(debian.deb822.Changes):
     def add_file(self, fn):
         if not "Files" in self:
             self["Files"] = []
-        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(fn),
+        self["Files"].append({"md5sum": misc.md5_of_file(fn),
                               "size": os.path.getsize(fn),
                               "section": "mini-buildd",
                               "priority": "extra",
@@ -99,7 +98,7 @@ class Changes(debian.deb822.Changes):
         br_list = []
         r = self.get_repository()
         for a in r.archs.all():
-            path = os.path.join(mini_buildd.globals.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
+            path = os.path.join(globals.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]

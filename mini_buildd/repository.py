@@ -10,9 +10,7 @@ import GnuPGInterface
 
 import django.db
 
-import mini_buildd.globals
-import mini_buildd.misc
-import mini_buildd.reprepro
+from mini_buildd import globals, misc, reprepro
 
 log = logging.getLogger(__name__)
 
@@ -75,13 +73,13 @@ Expire-Date: 0""")
                             d=d.base_source.codename,
                             s=s.name))
 
-        self._reprepro = mini_buildd.reprepro.Reprepro(self)
+        self._reprepro = reprepro.Reprepro(self)
 
     def __unicode__(self):
         return self.id
 
     def get_path(self):
-        return os.path.join(mini_buildd.globals.REPOSITORIES_DIR, self.id)
+        return os.path.join(globals.REPOSITORIES_DIR, self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
@@ -107,7 +105,7 @@ Expire-Date: 0""")
 
     def get_apt_line(self, dist, suite):
         return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
-            h=self.host, r=os.path.basename(mini_buildd.globals.REPOSITORIES_DIR),
+            h=self.host, r=os.path.basename(globals.REPOSITORIES_DIR),
             id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
     def get_apt_sources_list(self, dist):
@@ -142,7 +140,7 @@ Expire-Date: 0""")
         return result
 
     def get_mandatory_version(self, dist, suite):
-        return suite.mandatory_version.format(rid=self.id, nbv=mini_buildd.misc.codename2Version(dist.base_source.codename))
+        return suite.mandatory_version.format(rid=self.id, nbv=misc.codename2Version(dist.base_source.codename))
 
     def repreproConfig(self):
         result = StringIO.StringIO()
@@ -213,13 +211,13 @@ Name-Email: mini-buildd-{id}@{h}
         path = self.get_path()
         log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
-        mini_buildd.misc.mkdirs(path)
+        misc.mkdirs(path)
         self.prepareGnuPG()
-        mini_buildd.misc.mkdirs(os.path.join(path, "log"))
-        mini_buildd.misc.mkdirs(os.path.join(path, "apt-secure.d"))
+        misc.mkdirs(os.path.join(path, "log"))
+        misc.mkdirs(os.path.join(path, "apt-secure.d"))
         open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
-        mini_buildd.misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
-        mini_buildd.misc.mkdirs(os.path.join(path, "chroots-update.d"))
+        misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
+        misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
         open(os.path.join(path, "README"), 'w').write("""
 Automatically produced by mini-buildd on {date}.

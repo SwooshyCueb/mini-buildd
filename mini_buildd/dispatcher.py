@@ -3,9 +3,11 @@ import os
 import contextlib
 import logging
 
-import mini_buildd.changes
 import django.db
 import django.core.exceptions
+
+from mini_buildd import changes
+
 from mini_buildd.models import Repository
 
 log = logging.getLogger(__name__)
@@ -33,7 +35,7 @@ class Dispatcher(django.db.models.Model):
             r.prepare()
 
         while True:
-            c = mini_buildd.changes.Changes(incoming_queue.get())
+            c = changes.Changes(incoming_queue.get())
             r = c.get_repository()
             if c.is_buildrequest():
                 log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))

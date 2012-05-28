@@ -10,15 +10,14 @@ import subprocess
 import logging
 import signal
 
-import mini_buildd.globals
-import mini_buildd.misc
+from mini_buildd import globals, misc
 
 log = logging.getLogger(__name__)
 
 class GnuPG():
     def __init__(self, template):
         self.gpg_cmd = ["gpg",
-                        "--homedir={h}".format(h=os.path.join(mini_buildd.globals.HOME_DIR, ".gnupg")),
+                        "--homedir={h}".format(h=os.path.join(globals.HOME_DIR, ".gnupg")),
                         "--batch"]
         self.template = template
 
@@ -63,7 +62,7 @@ if __name__ == "__main__":
     print __name__
     log.addHandler(logging.StreamHandler())
 
-    mini_buildd.globals.HOME_DIR = "/tmp/gnupgtest"
+    globals.HOME_DIR = "/tmp/gnupgtest"
     gnupg = GnuPG("""\
 Key-Type: DSA
 Key-Length: 1024

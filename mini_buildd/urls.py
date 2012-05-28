@@ -1,19 +1,19 @@
 from django.conf.urls.defaults import *
 from django.views.generic.simple import redirect_to
+import django.views.static
 import django.views.generic
+import django.views.generic.list_detail
 
-import mini_buildd.views
-import mini_buildd.globals
+from mini_buildd import globals, views, models
 
-from mini_buildd.models import Repository
 info_dict = {
-    'queryset': Repository.objects.all(),
+    'queryset': models.Repository.objects.all(),
 }
 
 urlpatterns = patterns('',
                        (r"^$", django.views.generic.simple.redirect_to, {'url': "repositories/", 'permanent': False}),
-                       (r"^repositories/$", 'django.views.generic.list_detail.object_list', info_dict),
-                       (r"^repositories/(?P<object_id>.+)/$", 'django.views.generic.list_detail.object_detail', info_dict),
-                       (r"^graph_models/$", 'mini_buildd.views.graph_models'),
-                       (r"^manual/(?P<path>.*)$", 'django.views.static.serve', {'document_root': mini_buildd.globals.MANUAL_DIR, 'show_indexes': True})
+                       (r"^repositories/$", django.views.generic.list_detail.object_list, info_dict),
+                       (r"^repositories/(?P<object_id>.+)/$", django.views.generic.list_detail.object_detail, info_dict),
+                       (r"^graph_models/$", views.graph_models),
+                       (r"^manual/(?P<path>.*)$", django.views.static.serve, {'document_root': globals.MANUAL_DIR, 'show_indexes': True})
 )

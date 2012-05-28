@@ -1,13 +1,13 @@
 # coding: utf-8
-import mini_buildd.misc
-
 import logging
+
+from mini_buildd import misc
 
 log = logging.getLogger(__name__)
 
 class HttpDBase(object):
     def __init__(self, bind, wsgi_app):
-        self._bind = mini_buildd.misc.BindArgs(bind)
+        self._bind = misc.BindArgs(bind)
         self._wsgi_app = wsgi_app
 
     def run(self):

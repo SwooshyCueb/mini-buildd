@@ -6,7 +6,7 @@ import django.core.handlers.wsgi
 import django.core.management
 import logging
 
-import mini_buildd.globals
+from mini_buildd import globals, misc, compat08x
 
 log = logging.getLogger(__name__)
 
@@ -26,8 +26,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self._instdir = instdir
 
         django.conf.settings.configure(
-            DEBUG = mini_buildd.globals.DEBUG,
-            TEMPLATE_DEBUG = mini_buildd.globals.DEBUG,
+            DEBUG = globals.DEBUG,
+            TEMPLATE_DEBUG = globals.DEBUG,
 
             SITE_ID = 1,
 
@@ -73,66 +73,57 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
     def create_default_config(self, mirror):
-        codename = mini_buildd.misc.get_cmd_stdout("lsb_release --short --codename").strip()
-        arch = mini_buildd.misc.get_cmd_stdout("dpkg --print-architecture").strip()
+        from mini_buildd import models
+        codename = misc.get_cmd_stdout("lsb_release --short --codename").strip()
+        arch = misc.get_cmd_stdout("dpkg --print-architecture").strip()
 
         log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
-        from mini_buildd.models import Mirror
-        m=Mirror(url=mirror)
+        m=models.Mirror(url=mirror)
         m.save()
 
-        from mini_buildd.models import Source
-        s=Source(codename=codename)
+        s=models.Source(codename=codename)
         s.save()
         s.mirrors.add(m)
         s.save()
 
-        from mini_buildd.models import Distribution
-        d=Distribution(base_source=s)
+        d=models.Distribution(base_source=s)
         d.save()
 
-        from mini_buildd.models import Architecture
-        a=Architecture(arch=arch)
+        a=models.Architecture(arch=arch)
         a.save()
 
-        from mini_buildd.models import Layout
-        from mini_buildd.models import Suite
-        l=Layout(name="Default")
+        l=models.Layout(name="Default")
         l.save()
-        e=Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
+        e=models.Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
         e.save()
         l.suites.add(e)
 
-        u=Suite(name="unstable")
+        u=models.Suite(name="unstable")
         u.save()
         l.suites.add(u)
 
-        t=Suite(name="testing", migrates_from=u)
+        t=models.Suite(name="testing", migrates_from=u)
         t.save()
         l.suites.add(t)
 
-        s=Suite(name="stable", migrates_from=t)
+        s=models.Suite(name="stable", migrates_from=t)
         s.save()
         l.suites.add(s)
         l.save()
 
-        from mini_buildd.models import Repository
-        r=Repository(layout=l, arch_all=a)
+        r=models.Repository(layout=l, arch_all=a)
         r.save()
         r.archs.add(a)
         r.dists.add(d)
         r.save()
 
-        from mini_buildd.models import FileChroot
-        c=FileChroot(dist=d, arch=a)
+        c=models.FileChroot(dist=d, arch=a)
         c.save()
 
-        from mini_buildd.models import Builder
-        b=Builder()
+        b=models.Builder()
         b.save()
 
-        from mini_buildd.models import Dispatcher
-        d=Dispatcher()
+        d=models.Dispatcher()
         d.save()
 
     def syncdb(self):
@@ -142,7 +133,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":
             log.info("Try loading ad 08x.conf: {f}".format(f=f))
-            mini_buildd.compat08x.importConf(f)
+            compat08x.importConf(f)
         else:
             prefix = "" if f[0] == "/" else self._instdir + "/mini_buildd/fixtures/"
             django.core.management.call_command('loaddata', prefix  + f)
@@ -150,6 +141,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def dumpdata(self, a):
         log.info("Dumping data for: {a}".format(a=a))
         if a == "08x":
-            mini_buildd.compat08x.exportConf("/dev/stdout")
+            compat08x.exportConf("/dev/stdout")
         else:
             django.core.management.call_command('dumpdata', a, indent=2, format='json')

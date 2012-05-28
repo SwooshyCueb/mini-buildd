@@ -4,20 +4,16 @@ import re
 import glob
 import tempfile
 import pwd
-import tarfile
-import contextlib
 import logging
 
 import django.db
 
-import mini_buildd.globals
-import mini_buildd.misc
-from mini_buildd.models import Distribution
-from mini_buildd.models import Architecture
+from mini_buildd import globals, misc
 
 log = logging.getLogger(__name__)
 
 class Chroot(django.db.models.Model):
+    from mini_buildd.models import Distribution, Architecture
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
 
@@ -39,14 +35,14 @@ class Chroot(django.db.models.Model):
                 raise Exception("No chroot backend found")
 
     def get_path(self):
-        return os.path.join(mini_buildd.globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
+        return os.path.join(globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
 
     def get_name(self):
         return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
 
     def get_tmp_dir(self):
         d = os.path.join(self.get_path(), "tmp")
-        mini_buildd.misc.mkdirs(d)
+        misc.mkdirs(d)
         return d
 
     def get_personality(self):
@@ -74,7 +70,7 @@ class Chroot(django.db.models.Model):
         """
 
         # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-        mini_buildd.misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".
+        misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".
                                  format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
 
         # STILL SUDOERS WORKAROUND (remove all when fixed)
@@ -84,11 +80,11 @@ class Chroot(django.db.models.Model):
 {u} ALL=NOPASSWD: ALL
 """.format(u=pwd.getpwuid(os.getuid())[0]))
             ts.flush()
-            mini_buildd.misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
+            misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
         # END SUDOERS WORKAROUND
 
     def prepare(self):
-        mini_buildd.misc.mkdirs(self.get_path())
+        misc.mkdirs(self.get_path())
         self.get_backend().prepare()
 
         conf_file = os.path.join(self.get_path(), "schroot.conf")
@@ -107,7 +103,7 @@ personality={p}
 """.format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
 
         schroot_conf_file = os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
-        mini_buildd.misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
+        misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
 
     def purge(self):
         self.get_backend().purge()
@@ -144,9 +140,9 @@ file={t}
         if not os.path.exists(self.get_tar_file()):
             chroot_dir = self.get_tmp_dir()
             self.debootstrap(dir=chroot_dir)
-            mini_buildd.misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
-                                     .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
-            mini_buildd.misc.run_cmd("sudo rm -rf '{d}'".format(d=chroot_dir))
+            misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
+                         .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
+            misc.run_cmd("sudo rm -rf '{d}'".format(d=chroot_dir))
 
     def purge(self):
         ".. todo:: STUB"
@@ -186,57 +182,57 @@ lvm-snapshot-options=--size 4G
     def prepare(self):
         # Check image file
         if not os.path.exists(self.get_backing_file()):
-            mini_buildd.misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
+            misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
                     imgfile=self.get_backing_file(), gigs=self.loop_size))
             log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self.loop_size))
 
         # Check loop dev
         if self.get_loop_device() == None:
-            mini_buildd.misc.run_cmd("sudo losetup -v -f {img}".format(img=self.get_backing_file()))
+            misc.run_cmd("sudo losetup -v -f {img}".format(img=self.get_backing_file()))
             log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self.get_backing_file()))
 
         # Check lvm
         try:
-            mini_buildd.misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self.get_vgname()))
+            misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self.get_vgname()))
         except:
             log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
-            mini_buildd.misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
-            mini_buildd.misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
+            misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
+            misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
 
         log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
 
         device = "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
 
         try:
-            mini_buildd.misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
+            misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
             log.info("LV {c} exists, leaving alone".format(c=self.get_name()))
         except:
             log.info("Setting up LV {c}...".format(c=self.get_name()))
 
             mount_point = self.get_tmp_dir()
             try:
-                mini_buildd.misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
-                mini_buildd.misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
-                mini_buildd.misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
+                misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
+                misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
+                misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
 
                 self.debootstrap(dir=mount_point)
-                mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
                 log.info("LV {n} created successfully...".format(n=self.get_name()))
             except:
                 log.error("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
                 try:
-                    mini_buildd.misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    mini_buildd.misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
+                    misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
+                    misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
                 except:
                     log.error("LV {n} rewinding FAILED.".format(n=self.get_name()))
                 raise
 
     def purge(self):
         try:
-            mini_buildd.misc.run_cmd("sudo lvremove --force {v}".format(v=self.get_vgname()))
-            mini_buildd.misc.run_cmd("sudo vgremove --force {v}".format(v=self.get_vgname()))
-            mini_buildd.misc.run_cmd("sudo pvremove {v}".format(v=self.get_vgname()))
-            mini_buildd.misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
-            mini_buildd.misc.run_cmd("rm -f -v '{f}'".format(f=self.get_backing_file()))
+            misc.run_cmd("sudo lvremove --force {v}".format(v=self.get_vgname()))
+            misc.run_cmd("sudo vgremove --force {v}".format(v=self.get_vgname()))
+            misc.run_cmd("sudo pvremove {v}".format(v=self.get_vgname()))
+            misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
+            misc.run_cmd("rm -f -v '{f}'".format(f=self.get_backing_file()))
         except:
             log.warn("LVM {n}: Some purging steps may have failed".format(n=self.get_vgname()))

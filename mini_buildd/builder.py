@@ -7,9 +7,8 @@ import logging
 import django.db
 import django.core.exceptions
 
-import mini_buildd.changes
-import mini_buildd.globals
-import mini_buildd.misc
+from mini_buildd import globals, changes, misc
+
 from mini_buildd.models import Chroot
 
 log = logging.getLogger(__name__)
@@ -38,7 +37,7 @@ class Build():
         """
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
-        path = self._br.get_spool_dir(mini_buildd.globals.BUILDS_DIR)
+        path = self._br.get_spool_dir(globals.BUILDS_DIR)
         self._br.untar(path=path)
 
         # Generate .sbuildrc for this run (not all is configurable via switches).
@@ -87,7 +86,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Run-Lintian"]))
 
-        if mini_buildd.globals.DEBUG:
+        if globals.DEBUG:
             sbuild_cmd.append("--verbose")
 
         sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))
@@ -100,7 +99,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                      cwd=path, env=env,
                                      stdout=l, stderr=subprocess.STDOUT)
 
-        res = mini_buildd.changes.Changes(os.path.join(path,
+        res = changes.Changes(os.path.join(path,
                                                        "{s}_{v}_mini-buildd-buildresult_{a}.changes".
                                                        format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
         for v in ["Distribution", "Source", "Version"]:
@@ -116,7 +115,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                           "{s}_{v}_{a}.changes".
                                           format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"]))
         if os.path.exists(build_changes_file):
-            build_changes = mini_buildd.changes.Changes(build_changes_file)
+            build_changes = changes.Changes(build_changes_file)
             build_changes.tar(tar_path=res._file_path + ".tar")
             res.add_file(res._file_path + ".tar")
 
@@ -147,7 +146,7 @@ class Builder(django.db.models.Model):
         "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             log.warn("One-time generation of sbuild keys (may take some time)...")
-            mini_buildd.misc.run_cmd("HOME=/tmp sbuild-update --keygen")
+            misc.run_cmd("HOME=/tmp sbuild-update --keygen")
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):
@@ -160,5 +159,5 @@ class Builder(django.db.models.Model):
 
         while True:
             f = queue.get()
-            mini_buildd.misc.start_thread(Build(f))
+            misc.start_thread(Build(f))
             queue.task_done()

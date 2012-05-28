@@ -6,11 +6,9 @@ import logging
 import django.db.models
 import django.contrib.admin
 
-import mini_buildd.globals
-import mini_buildd.misc
+from mini_buildd import globals, misc
 
 log = logging.getLogger(__name__)
-
 
 class Mirror(django.db.models.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
@@ -126,26 +124,26 @@ class Distribution(django.db.models.Model):
         return self.base_source.origin + ": " + self.base_source.codename
 
 
-import mini_buildd.repository
-class Repository(mini_buildd.repository.Repository):
+from mini_buildd import repository
+class Repository(repository.Repository):
     pass
 
-import mini_buildd.chroot
-class Chroot(mini_buildd.chroot.Chroot):
+from mini_buildd import chroot
+class Chroot(chroot.Chroot):
     pass
 
-class FileChroot(mini_buildd.chroot.FileChroot):
+class FileChroot(chroot.FileChroot):
     pass
 
-class LVMLoopChroot(mini_buildd.chroot.LVMLoopChroot):
+class LVMLoopChroot(chroot.LVMLoopChroot):
     pass
 
-import mini_buildd.builder
-class Builder(mini_buildd.builder.Builder):
+from mini_buildd import builder
+class Builder(builder.Builder):
     pass
 
-import mini_buildd.dispatcher
-class Dispatcher(mini_buildd.dispatcher.Dispatcher):
+from mini_buildd import dispatcher
+class Dispatcher(dispatcher.Dispatcher):
     pass
 
 class Remote(django.db.models.Model):

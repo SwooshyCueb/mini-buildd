@@ -178,9 +178,7 @@ class LVMLoopChroot(Chroot):
                 return "/dev/" + f.split("/")[3]
 
     def get_lvm_device(self):
-        for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if open(f).read().strip() == self.get_backing_file():
-                return "/dev/" + f.split("/")[3]
+        return "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
 
     def get_schroot_conf(self):
         return """\

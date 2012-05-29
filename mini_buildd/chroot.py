@@ -125,14 +125,14 @@ class FileChroot(Chroot):
     def get_tar_file(self):
         return os.path.join(self.get_path(), "source." + self.tar_suffix)
 
-    def get_tar_compression_opt(self):
+    def get_tar_compression_opts(self):
         if self.tar_suffix == "tar.gz":
-            return "--gzip"
+            return ["--gzip"]
         if self.tar_suffix == "tar.bz2":
-            return "--bzip2"
+            return ["--bzip2"]
         if self.tar_suffix == "tar.xz":
-            return "--xz"
-        return ""
+            return ["--xz"]
+        return []
 
     def get_schroot_conf(self):
         return """\
@@ -144,9 +144,14 @@ file={t}
         if not os.path.exists(self.get_tar_file()):
             chroot_dir = self.get_tmp_dir()
             self.debootstrap(dir=chroot_dir)
-            misc.run_cmd("sudo tar --create --directory='{d}' --file='{f}' {c} ."
-                         .format(f=self.get_tar_file(), d=chroot_dir, c=self.get_tar_compression_opt()))
-            misc.run_cmd("sudo rm -rf '{d}'".format(d=chroot_dir))
+            misc.call(["tar",
+                       "--create",
+                       "--directory={d}".format(d=chroot_dir),
+                       "--file={f}".format(f=self.get_tar_file()) ] +
+                      self.get_tar_compression_opts() +
+                      ["."],
+                      run_as_root=True)
+            misc.call(["rm", "-r", "-f", chroot_dir], run_as_root=True)
 
     def purge(self):
         ".. todo:: STUB"

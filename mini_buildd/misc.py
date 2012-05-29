@@ -96,6 +96,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             _stdout = stdout.read()
             stderr.seek(0)
             _stderr = stderr.read()
+            log.info("Call finished: {a}".format(a=args))
     except:
         if log_output:
             if _stdout:

@@ -70,8 +70,12 @@ class Chroot(django.db.models.Model):
         """
 
         # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-        misc.run_cmd("sudo debootstrap --variant='buildd' --arch='{a}' --include='apt,sudo' '{d}' '{m}' '{M}'".
-                                 format(a=self.arch.arch, d=self.dist.base_source.codename, m=dir, M=self.dist.base_source.get_mirror()))
+        misc.call(["debootstrap",
+                   "--variant=buildd",
+                   "--arch={a}".format(a=self.arch.arch),
+                   "--include=apt,sudo",
+                   self.dist.base_source.codename, dir, self.dist.base_source.get_mirror().url],
+                  run_as_root=True)
 
         # STILL SUDOERS WORKAROUND (remove all when fixed)
         with tempfile.NamedTemporaryFile() as ts:
@@ -80,7 +84,7 @@ class Chroot(django.db.models.Model):
 {u} ALL=NOPASSWD: ALL
 """.format(u=pwd.getpwuid(os.getuid())[0]))
             ts.flush()
-            misc.run_cmd("sudo cp '{ts}' '{m}/etc/sudoers'".format(ts=ts.name, m=dir))
+            misc.call(["cp", ts.name, "{m}/etc/sudoers".format(m=dir)], run_as_root=True)
         # END SUDOERS WORKAROUND
 
     def prepare(self):

@@ -96,17 +96,18 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             _stdout = stdout.read()
             stderr.seek(0)
             _stderr = stderr.read()
-            log.info("Call finished: {a}".format(a=args))
+            if log_output:
+                if _stdout:
+                    log.info("Call stdout: {e}".format(e=_stdout))
+                if _stderr:
+                    log.info("Call stderr: {e}".format(e=_stderr))
     except:
-        if log_output:
-            if _stdout:
-                log.warn("Call failed [o]: {e}".format(e=_stdout))
-            if _stderr:
-                log.error("Call failed [e]: {e}".format(e=_stderr))
+        log.error("Call failed: {a}".format(a=args))
         if value_on_error != None:
             return value_on_error
         else:
             raise
+    log.info("Call successful: {a}".format(a=args))
     return _stdout
 
 def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, **kwargs):

@@ -35,7 +35,7 @@ mbd_purge()
 	sudo losetup --verbose --detach /dev/loop0 || true
 
 	# Purge and re-setup
-	[ ! -e "${MBD_HOME}" ] || rm -rf "${MBD_HOME}"
+	[ ! -e "${MBD_HOME}" ] || rm --recursive --force --one-file-system "${MBD_HOME}"
 	mkdir -v -p "${MBD_HOME}"
 }
 

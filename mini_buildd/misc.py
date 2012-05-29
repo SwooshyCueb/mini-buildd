@@ -80,8 +80,8 @@ def run_cmd(cmd):
     if retval != 0:
         raise Exception("Command '{c}' failed with retval {r}".format(c=cmd, r=retval))
 
-def call(args, root=False, value_on_error=None, log_output=True):
-    if root:
+def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
+    if run_as_root:
         args = ["sudo"] + args
 
     stdout = tempfile.TemporaryFile()
@@ -90,7 +90,7 @@ def call(args, root=False, value_on_error=None, log_output=True):
     log.info("Calling: {a}".format(a=args))
     try:
         try:
-            subprocess.check_call(args, stdout=stdout, stderr=stderr)
+            subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
         finally:
             stdout.seek(0)
             _stdout = stdout.read()
@@ -108,16 +108,16 @@ def call(args, root=False, value_on_error=None, log_output=True):
             raise
     return _stdout
 
-def call_sequence(calls, root=False, value_on_error=None, log_output=True):
+def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
     i = 0
     try:
         for l in calls:
-            call(l[0], root=root, value_on_error=value_on_error, log_output=log_output)
+            call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
             i = i+1
     except:
         log.error("Sequence failed at: {i}".format(i=i))
         while i > -1:
-            call(calls[i][1], root=root, value_on_error="", log_output=log_output)
+            call(calls[i][1], run_as_root=run_as_root, value_on_error="", log_output=log_output, **kwargs)
             i = i-1
         raise
 
@@ -131,9 +131,13 @@ if __name__ == "__main__":
     #print call(["id", "-syntax-error"], value_on_error="Kapott")
     print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)
 
+    env = os.environ
+    env["DUBIDUUH"] = "schlingel"
+    print call(["env"], env=env)
+
     call_sequence([
             (["echo", "cmd0"],    ["echo", "Rollback: cmd0"]),
             (["echo", "cmd1"],    ["echo", "Rollback: cmd1"]),
             (["echo", "cmd2"],    ["echo", "Rollback: cmd2"]),
             (["false"],           ["echo", "Rollback: cmd3"]),
-            ], root=True, log_output=False)
+            ], run_as_root=True, log_output=False)

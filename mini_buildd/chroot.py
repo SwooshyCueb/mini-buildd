@@ -163,6 +163,8 @@ class LVMLoopChroot(Chroot):
     filesystem = django.db.models.CharField(max_length=10, default="ext2")
     loop_size = django.db.models.IntegerField(default=100,
                                               help_text="Loop device file size in GB.")
+    snapshot_size = django.db.models.IntegerField(default=4,
+                                                  help_text="Snapshot device file size in GB.")
 
     def get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
@@ -185,8 +187,8 @@ class LVMLoopChroot(Chroot):
 type=lvm-snapshot
 device={d}
 mount-options=-t {f} -o noatime,user_xattr
-lvm-snapshot-options=--size 4G
-""".format(d=self.get_lvm_device(), f=self.filesystem)
+lvm-snapshot-options=--size {s}G
+""".format(d=self.get_lvm_device(), f=self.filesystem, s=self.snapshot_size)
 
     def prepare(self):
         # Check image file

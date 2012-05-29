@@ -146,7 +146,9 @@ class Builder(django.db.models.Model):
         "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             log.warn("One-time generation of sbuild keys (may take some time)...")
-            misc.run_cmd("HOME=/tmp sbuild-update --keygen")
+            env = os.environ
+            env["HOME"]="/tmp"
+            misc.call(["sbuild-update", "--keygen"], env=env)
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):

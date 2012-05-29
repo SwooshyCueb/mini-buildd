@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 class Reprepro():
     def __init__(self, repository):
         self.repository = repository
-        self._cmd = "reprepro --verbose --basedir='{b}' ".format(b=self.repository.get_path())
+        self._cmd = ["reprepro",  "--verbose", "--basedir={b}".format(b=self.repository.get_path())]
 
     def prepare(self):
         misc.mkdirs(os.path.join(self.repository.get_path(), "conf"))
@@ -31,9 +31,9 @@ gnupghome {h}
 """.format(h=os.path.join(self.repository.get_path(), ".gnupg")))
 
         # Update all indices (or create on initial install) via reprepro
-        misc.run_cmd(self._cmd + "clearvanished")
-        misc.run_cmd(self._cmd + "export")
+        misc.call(self._cmd + ["clearvanished"])
+        misc.call(self._cmd + ["export"])
         log.info("Prepared reprepro config: {d}".format(d=self.repository.get_path()))
 
     def processincoming(self):
-        return misc.run_cmd(self._cmd + "processincoming INCOMING")
+        return misc.call(self._cmd + ["processincoming", "INCOMING"])

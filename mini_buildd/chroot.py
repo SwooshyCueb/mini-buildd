@@ -210,31 +210,22 @@ lvm-snapshot-options=--size {s}G
 
         log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
 
-        device = "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
-
         try:
             misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
             log.info("LV {c} exists, leaving alone".format(c=self.get_name()))
         except:
-            log.info("Setting up LV {c}...".format(c=self.get_name()))
-
             mount_point = self.get_tmp_dir()
-            try:
-                misc.run_cmd("sudo lvcreate -L 4G -n '{n}' '{v}'".format(n=self.get_name(), v=self.get_vgname()))
-                misc.run_cmd("sudo mkfs.{f} '{d}'".format(f=self.filesystem, d=device))
-                misc.run_cmd("sudo mount -v -t{f} '{d}' '{m}'".format(f=self.filesystem, d=device, m=mount_point))
-
-                self.debootstrap(dir=mount_point)
-                misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                log.info("LV {n} created successfully...".format(n=self.get_name()))
-            except:
-                log.error("LV {n} creation FAILED. Rewinding...".format(n=self.get_name()))
-                try:
-                    misc.run_cmd("sudo umount -v '{m}'".format(m=mount_point))
-                    misc.run_cmd("sudo lvremove --force '{d}'".format(d=device))
-                except:
-                    log.error("LV {n} rewinding FAILED.".format(n=self.get_name()))
-                raise
+            create_and_mount = [
+                (["lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.get_name()), self.get_vgname()],
+                 ["lvremove", "--force", self.get_lvm_device()]),
+                (["mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
+                 ["echo", "No rollback for mkfs"]),
+                (["mount", "-v", "-t{f}".format(f=self.filesystem), self.get_lvm_device(), mount_point],
+                 ["umount", "-v", mount_point])
+                ]
+            misc.call_sequence(create_and_mount, run_as_root=True)
+            self.debootstrap(dir=mount_point)
+            misc.call(["umount", "-v", mount_point], run_as_root=True)
 
     def purge(self):
         try:

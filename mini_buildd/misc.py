@@ -109,24 +109,29 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
     stdout.seek(0)
     return stdout.read()
 
-def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
-    i = 0
-    try:
-        for l in calls:
-            if l[0]:
-                call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
-            else:
-                log.debug("Skipping empty call sequent {i}".format(i=i))
-            i += 1
-    except:
-        log.error("Sequence failed at: {i}".format(i=i))
-        while i > -1:
+def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, rollback_only=False, **kwargs):
+    def rollback(pos):
+        for i in range(pos, -1, -1):
             if calls[i][1]:
                 call(calls[i][1], run_as_root=run_as_root, value_on_error="", log_output=log_output, **kwargs)
             else:
                 log.debug("Skipping empty rollback call sequent {i}".format(i=i))
-            i -= 1
-        raise
+
+    if rollback_only:
+        rollback(len(calls)-1)
+    else:
+        i = 0
+        try:
+            for l in calls:
+                if l[0]:
+                    call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
+                else:
+                    log.debug("Skipping empty call sequent {i}".format(i=i))
+                i += 1
+        except:
+            log.error("Sequence failed at: {i} (rolling back)".format(i=i))
+            rollback(i)
+            raise
 
 if __name__ == "__main__":
     h = logging.StreamHandler()
@@ -141,6 +146,13 @@ if __name__ == "__main__":
     env = os.environ
     env["DUBIDUUH"] = "schlingel"
     print call(["env"], env=env)
+
+    call_sequence([
+            (["echo", "cmd0"],    ["echo", "Rollback only: cmd0"]),
+            (["echo", "cmd1"],    ["echo", "Rollback only: cmd1"]),
+            (["echo", "cmd2"],    ["echo", "Rollback only: cmd2"]),
+            (["false"],           ["echo", "Rollback only: cmd3"]),
+            ], rollback_only=True, log_output=False)
 
     call_sequence([
             (["echo", "cmd0"],    ["echo", "Rollback: cmd0"]),

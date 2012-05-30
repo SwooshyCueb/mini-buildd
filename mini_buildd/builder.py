@@ -147,12 +147,14 @@ class Builder(django.db.models.Model):
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):
-        log.info("Starting {d}".format(d=self))
+        log.info("Preparing {d}".format(d=self))
 
         self.sbuild_workaround()
 
         for c in Chroot.objects.all():
             c.prepare()
+
+        log.info("Starting {d}".format(d=self))
 
         while True:
             f = queue.get()

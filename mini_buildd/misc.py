@@ -113,13 +113,19 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
     i = 0
     try:
         for l in calls:
-            call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
-            i = i+1
+            if l[0]:
+                call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
+            else:
+                log.debug("Skipping empty call sequent {i}".format(i=i))
+            i += 1
     except:
         log.error("Sequence failed at: {i}".format(i=i))
         while i > -1:
-            call(calls[i][1], run_as_root=run_as_root, value_on_error="", log_output=log_output, **kwargs)
-            i = i-1
+            if calls[i][1]:
+                call(calls[i][1], run_as_root=run_as_root, value_on_error="", log_output=log_output, **kwargs)
+            else:
+                log.debug("Skipping empty rollback call sequent {i}".format(i=i))
+            i -= 1
         raise
 
 if __name__ == "__main__":

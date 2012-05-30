@@ -13,6 +13,8 @@ from mini_buildd import globals, misc
 log = logging.getLogger(__name__)
 
 class Chroot(django.db.models.Model):
+    PERSONALITIES = { 'i386': 'linux32' }
+
     from mini_buildd.models import Distribution, Architecture
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
@@ -22,8 +24,6 @@ class Chroot(django.db.models.Model):
 
     class Meta:
         unique_together = ("dist", "arch")
-
-    PERSONALITIES = { 'i386': 'linux32' }
 
     def get_backend(self):
         try:
@@ -45,6 +45,15 @@ class Chroot(django.db.models.Model):
         misc.mkdirs(d)
         return d
 
+    def get_schroot_conf_file(self):
+        return os.path.join(self.get_path(), "schroot.conf")
+
+    def get_system_schroot_conf_file(self):
+        return os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
+
+    def get_sudoers_workaround_file(self):
+        return os.path.join(self.get_path(), "sudoers_workaround")
+
     def get_personality(self):
         """
         On 64bit hosts, 32bit schroots must be configured
@@ -60,39 +69,38 @@ class Chroot(django.db.models.Model):
         except:
             return "linux"
 
-    def debootstrap(self, dir):
+    def is_prepared(self):
+        return os.path.exists(self.get_system_schroot_conf_file())
+
+    def prepare(self):
         """
         .. todo:: debootstrap
 
-           - mbdAptEnv ??
-           - include=sudo is only workaround for sbuild Bug #608840
-           - debootstrap include=apt WTF?
+          - mbdAptEnv ??
+          - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
+            - '--include=sudo' and all handling of 'sudoers_workaround_file'
+          - debootstrap include=apt WTF?
         """
+        sequence = self.get_backend().get_pre_sequence() + [
+            (["debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.arch), "--include=apt,sudo",
+              self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
+             []),
+            (["cp", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
+             [])] + self.get_backend().get_post_sequence() + [
+            (["cp",  self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
+             ["rm", "--verbose", self.get_system_schroot_conf_file()])]
 
-        # START SUDOERS WORKAROUND (remove --include=sudo when fixed)
-        misc.call(["debootstrap",
-                   "--variant=buildd",
-                   "--arch={a}".format(a=self.arch.arch),
-                   "--include=apt,sudo",
-                   self.dist.base_source.codename, dir, self.dist.base_source.get_mirror().url],
-                  run_as_root=True)
+        if self.is_prepared():
+            log.info("Already prepared: {c}".format(c=self))
+        else:
+            misc.mkdirs(self.get_path())
 
-        # STILL SUDOERS WORKAROUND (remove all when fixed)
-        with tempfile.NamedTemporaryFile() as ts:
-            ts.write("""
+            open(self.get_sudoers_workaround_file(), 'w').write("""
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
 """.format(u=pwd.getpwuid(os.getuid())[0]))
-            ts.flush()
-            misc.call(["cp", ts.name, "{m}/etc/sudoers".format(m=dir)], run_as_root=True)
-        # END SUDOERS WORKAROUND
 
-    def prepare(self):
-        misc.mkdirs(self.get_path())
-        self.get_backend().prepare()
-
-        conf_file = os.path.join(self.get_path(), "schroot.conf")
-        open(conf_file, 'w').write("""
+            open(self.get_schroot_conf_file(), 'w').write("""
 [{n}]
 description=Mini-Buildd chroot {n}
 groups=sbuild
@@ -106,12 +114,7 @@ personality={p}
 {b}
 """.format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
 
-        schroot_conf_file = os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
-        misc.run_cmd("sudo cp '{s}' '{d}'".format(s=conf_file, d=schroot_conf_file))
-
-    def purge(self):
-        self.get_backend().purge()
-
+            misc.call_sequence(sequence, run_as_root=True)
 
 class FileChroot(Chroot):
     """ File chroot backend. """
@@ -140,22 +143,20 @@ type=file
 file={t}
 """.format(t=self.get_tar_file())
 
-    def prepare(self):
-        if not os.path.exists(self.get_tar_file()):
-            chroot_dir = self.get_tmp_dir()
-            self.debootstrap(dir=chroot_dir)
-            misc.call(["tar",
-                       "--create",
-                       "--directory={d}".format(d=chroot_dir),
-                       "--file={f}".format(f=self.get_tar_file()) ] +
-                      self.get_tar_compression_opts() +
-                      ["."],
-                      run_as_root=True)
-            misc.call(["rm", "-r", "-f", chroot_dir], run_as_root=True)
+    def get_pre_sequence(self):
+        return []
 
-    def purge(self):
-        ".. todo:: STUB"
-        log.error("{i}: STUB only".format(i=self))
+    def get_post_sequence(self):
+        return [
+            (["tar",
+              "--create",
+              "--directory={d}".format(d=self.get_tmp_dir()),
+              "--file={f}".format(f=self.get_tar_file()) ] +
+             self.get_tar_compression_opts() +
+             ["."],
+             []),
+            (["rm", "-r", "-f", self.get_tmp_dir()],
+             [])]
 
 
 class LVMLoopChroot(Chroot):

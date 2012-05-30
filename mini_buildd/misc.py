@@ -40,6 +40,12 @@ def md5_of_file(fn):
             md5.update(data)
     return md5.hexdigest()
 
+def taint_env(taint):
+    env = os.environ.copy()
+    for e in taint:
+        env[e] = taint[e]
+    return env
+
 def codename2Version(codename):
     known = {
         'woody'  : "30",
@@ -143,9 +149,8 @@ if __name__ == "__main__":
     #print call(["id", "-syntax-error"], value_on_error="Kapott")
     print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)
 
-    env = os.environ
-    env["DUBIDUUH"] = "schlingel"
-    print call(["env"], env=env)
+    print call(["env"], env=taint_env({"Kuh": "Sack"}))
+    print call(["env"])
 
     call_sequence([
             (["echo", "cmd0"],    ["echo", "Rollback only: cmd0"]),

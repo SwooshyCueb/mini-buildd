@@ -64,9 +64,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 1;
 """.format(apt_allow_unauthenticated=self._br["Apt-Allow-Unauthenticated"]))
 
-        env = os.environ
-        env["HOME"] = path
-
         sbuild_cmd = ["sbuild",
                       "--dist={0}".format(self._br["Distribution"]),
                       "--arch={0}".format(self._br["Architecture"]),
@@ -96,7 +93,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
-                                     cwd=path, env=env,
+                                     cwd=path, env=misc.taint_env({"HOME": path}),
                                      stdout=l, stderr=subprocess.STDOUT)
 
         res = changes.Changes(os.path.join(path,
@@ -146,9 +143,7 @@ class Builder(django.db.models.Model):
         "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             log.warn("One-time generation of sbuild keys (may take some time)...")
-            env = os.environ
-            env["HOME"]="/tmp"
-            misc.call(["sbuild-update", "--keygen"], env=env)
+            misc.call(["sbuild-update", "--keygen"], env=misc.taint_env({"HOME": "/tmp"}))
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):

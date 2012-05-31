@@ -125,12 +125,14 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             rollback(i)
             raise
 
-if __name__ == "__main__":
+def setup_test_logging():
     h = logging.StreamHandler()
     h.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
     log.addHandler(h)
     log.setLevel(logging.DEBUG)
 
+if __name__ == "__main__":
+    setup_test_logging()
     print call(["id", "-u", "-n"])
     #print call(["id", "-syntax-error"], value_on_error="Kapott")
     print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)

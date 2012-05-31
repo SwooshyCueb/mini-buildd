@@ -12,9 +12,7 @@ import daemon
 import logging
 import logging.handlers
 
-from mini_buildd import __version__
-from mini_buildd import misc
-from mini_buildd import globals
+from mini_buildd import __version__, misc, globals
 
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())

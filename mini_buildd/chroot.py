@@ -74,9 +74,11 @@ class Chroot(django.db.models.Model):
         return self.get_backend().get_pre_sequence() + [
             (["debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.arch), "--include=apt,sudo",
               self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
-             []),
+             ["umount", "-v", self.get_tmp_dir() + "/proc", self.get_tmp_dir() + "/sys"]),
+
             (["cp", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
              [])] + self.get_backend().get_post_sequence() + [
+
             (["cp",  self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
              ["rm", "--verbose", self.get_system_schroot_conf_file()])]
 
@@ -121,6 +123,7 @@ personality={p}
     def purge(self):
         misc.call_sequence(self.get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.get_path())
+
 
 class FileChroot(Chroot):
     """ File chroot backend. """
@@ -183,6 +186,8 @@ class LVMLoopChroot(Chroot):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
             if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.get_backing_file()):
                 return "/dev/" + f.split("/")[3]
+        log.debug("No existing loop device for {b}, searching for free device".format(b=self.get_backing_file()))
+        return misc.call(["losetup", "--find"], run_as_root=True).rstrip()
 
     def get_lvm_device(self):
         return "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
@@ -195,51 +200,34 @@ mount-options=-t {f} -o noatime,user_xattr
 lvm-snapshot-options=--size {s}G
 """.format(d=self.get_lvm_device(), f=self.filesystem, s=self.snapshot_size)
 
-    def prepare(self):
-        # Check image file
-        if not os.path.exists(self.get_backing_file()):
-            misc.run_cmd("dd if=/dev/zero of='{imgfile}' bs='{gigs}M' seek=1024 count=0".format(\
-                    imgfile=self.get_backing_file(), gigs=self.loop_size))
-            log.debug("LVMLoop: Image file created: '{b}' size {s}G".format(b=self.get_backing_file(), s=self.loop_size))
+    def get_pre_sequence(self):
+        # todo get_loop_device() must not be dynamic
+        loop_device = self.get_loop_device()
+        log.debug("Acting on loop device: {d}".format(d=loop_device))
+        return [
+            (["dd",
+              "if=/dev/zero", "of={imgfile}".format(imgfile=self.get_backing_file()),
+              "bs={gigs}M".format(gigs=self.loop_size),
+              "seek=1024", "count=0"],
+             ["rm", "-f", "-v", self.get_backing_file()]),
 
-        # Check loop dev
-        if self.get_loop_device() == None:
-            misc.run_cmd("sudo losetup -v -f {img}".format(img=self.get_backing_file()))
-            log.debug("LVMLoop {d}@{b}: Loop device attached".format(d=self.get_loop_device(), b=self.get_backing_file()))
+            (["losetup", "-v", "-f", self.get_backing_file()],
+             ["losetup", "-d", loop_device]),
 
-        # Check lvm
-        try:
-            misc.run_cmd("sudo vgchange --available y {vgname}".format(vgname=self.get_vgname()))
-        except:
-            log.debug("LVMLoop {d}@{b}: Creating new LVM '{v}'".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
-            misc.run_cmd("sudo pvcreate -v '{dev}'".format(dev=self.get_loop_device()))
-            misc.run_cmd("sudo vgcreate -v '{vgname}' '{dev}'".format(vgname=self.get_vgname(), dev=self.get_loop_device()))
+            (["pvcreate", "-v", loop_device],
+             ["pvremove", "-v", loop_device]),
 
-        log.info("LVMLoop prepared: {d}@{b} on {v}".format(d=self.get_loop_device(), b=self.get_backing_file(), v=self.get_vgname()))
+            (["vgcreate", "-v", self.get_vgname(), loop_device],
+             ["vgremove", "-v", "--force", self.get_vgname()]),
 
-        try:
-            misc.run_cmd("sudo lvdisplay | grep -q '{c}'".format(c=self.get_name()))
-            log.info("LV {c} exists, leaving alone".format(c=self.get_name()))
-        except:
-            mount_point = self.get_tmp_dir()
-            create_and_mount = [
-                (["lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.get_name()), self.get_vgname()],
-                 ["lvremove", "--force", self.get_lvm_device()]),
-                (["mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
-                 ["echo", "No rollback for mkfs"]),
-                (["mount", "-v", "-t{f}".format(f=self.filesystem), self.get_lvm_device(), mount_point],
-                 ["umount", "-v", mount_point])
-                ]
-            misc.call_sequence(create_and_mount, run_as_root=True)
-            self.debootstrap(dir=mount_point)
-            misc.call(["umount", "-v", mount_point], run_as_root=True)
+            (["lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.get_name()), self.get_vgname()],
+             ["lvremove", "-v", "--force", self.get_lvm_device()]),
 
-    def purge(self):
-        try:
-            misc.run_cmd("sudo lvremove --force {v}".format(v=self.get_vgname()))
-            misc.run_cmd("sudo vgremove --force {v}".format(v=self.get_vgname()))
-            misc.run_cmd("sudo pvremove {v}".format(v=self.get_vgname()))
-            misc.run_cmd("sudo losetup -d {d}".format(d=self.get_lvm_device()))
-            misc.run_cmd("rm -f -v '{f}'".format(f=self.get_backing_file()))
-        except:
-            log.warn("LVM {n}: Some purging steps may have failed".format(n=self.get_vgname()))
+            (["mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
+             []),
+
+            (["mount", "-v", "-t{f}".format(f=self.filesystem), self.get_lvm_device(), self.get_tmp_dir()],
+             ["umount", "-v", self.get_tmp_dir()])]
+
+    def get_post_sequence(self):
+        return [(["umount", "-v", self.get_tmp_dir()], [])]

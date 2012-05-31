@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
+import shutil
 import re
 import glob
 import tempfile
@@ -69,6 +70,16 @@ class Chroot(django.db.models.Model):
         except:
             return "linux"
 
+    def get_sequence(self):
+        return self.get_backend().get_pre_sequence() + [
+            (["debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.arch), "--include=apt,sudo",
+              self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
+             []),
+            (["cp", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
+             [])] + self.get_backend().get_post_sequence() + [
+            (["cp",  self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
+             ["rm", "--verbose", self.get_system_schroot_conf_file()])]
+
     def is_prepared(self):
         return os.path.exists(self.get_system_schroot_conf_file())
 
@@ -81,15 +92,6 @@ class Chroot(django.db.models.Model):
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
           - debootstrap include=apt WTF?
         """
-        sequence = self.get_backend().get_pre_sequence() + [
-            (["debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.arch), "--include=apt,sudo",
-              self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
-             []),
-            (["cp", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
-             [])] + self.get_backend().get_post_sequence() + [
-            (["cp",  self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
-             ["rm", "--verbose", self.get_system_schroot_conf_file()])]
-
         if self.is_prepared():
             log.info("Already prepared: {c}".format(c=self))
         else:
@@ -114,7 +116,11 @@ personality={p}
 {b}
 """.format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
 
-            misc.call_sequence(sequence, run_as_root=True)
+            misc.call_sequence(self.get_sequence(), run_as_root=True)
+
+    def purge(self):
+        misc.call_sequence(self.get_sequence(), rollback_only=True, run_as_root=True)
+        shutil.rmtree(self.get_path())
 
 class FileChroot(Chroot):
     """ File chroot backend. """

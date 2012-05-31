@@ -175,15 +175,17 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             misc.start_thread(self._httpd)
             misc.start_thread(self._ftpd)
 
+            join_threads = []
+
             # Start builders
             from mini_buildd.models import Builder
             for b in Builder.objects.all():
-                misc.start_thread(b, self._build_queue)
+                join_threads.append(misc.start_thread(b, self._build_queue))
 
             # Start dispatchers
             from mini_buildd.models import Dispatcher
             for d in Dispatcher.objects.all():
-                misc.start_thread(d, self._incoming_queue, self._build_queue)
+                join_threads.append(misc.start_thread(d, self._incoming_queue, self._build_queue))
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)
@@ -192,7 +194,14 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             while self._run:
                 signal.pause()
 
-            log.info("Shutting down (%s active threads)" % threading.activeCount())
+            log.info("Signaling shutdown to dispatcher and builder...")
+            self._incoming_queue.put("SHUTDOWN")
+            self._build_queue.put("SHUTDOWN")
+
+            for t in join_threads:
+                log.info("Waiting for {i}".format(i=t))
+                t.join()
+
             log.info("Shutdown complete. Bye...")
 
 # Main processing; the only benefit of the master try/catch is

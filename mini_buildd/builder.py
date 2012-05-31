@@ -156,7 +156,18 @@ class Builder(django.db.models.Model):
 
         log.info("Starting {d}".format(d=self))
 
+        join_threads = []
+
         while True:
-            f = queue.get()
-            misc.start_thread(Build(f))
+            event = queue.get()
+            if event == "SHUTDOWN":
+                break
+            c = changes.Changes(event)
+            join_threads.append(misc.start_thread(Build(c)))
             queue.task_done()
+
+        for t in join_threads:
+            log.info("Waiting for {i}".format(i=t))
+            t.join()
+
+        log.info("Stopped {d}".format(d=self))

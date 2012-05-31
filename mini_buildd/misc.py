@@ -29,6 +29,7 @@ def start_thread(obj, *args, **kwargs):
     thread = threading.Thread(target=obj.run, args=args, kwargs=kwargs)
     thread.setDaemon(True)
     thread.start()
+    return thread
 
 def md5_of_file(fn):
     md5 = hashlib.md5()

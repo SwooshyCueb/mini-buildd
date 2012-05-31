@@ -29,17 +29,23 @@ class Dispatcher(django.db.models.Model):
             raise django.core.exceptions.ValidationError("You can only create one Dispatcher instance!")
 
     def run(self, incoming_queue, build_queue):
-        log.info("Starting {d}".format(d=self))
+        log.info("Preparing {d}".format(d=self))
 
         for r in Repository.objects.all():
             r.prepare()
 
+        log.info("Starting {d}".format(d=self))
+
         while True:
-            c = changes.Changes(incoming_queue.get())
+            event = incoming_queue.get()
+            if event == "SHUTDOWN":
+                break
+
+            c = changes.Changes(event)
             r = c.get_repository()
             if c.is_buildrequest():
                 log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-                build_queue.put(c)
+                build_queue.put(event)
             elif c.is_buildresult():
                 log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
                 c.untar(path=r.get_incoming_path())
@@ -50,3 +56,5 @@ class Dispatcher(django.db.models.Model):
                     br.upload()
 
             incoming_queue.task_done()
+
+        log.info("Stopped {d}".format(d=self))

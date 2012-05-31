@@ -118,7 +118,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         r.save()
 
         DefaultChrootClass = models.FileChroot
-        #DefaultChrootClass = models.LVMLoopChroot
+        #DefaultChrootClass = models.LoopLVMChroot
         c=DefaultChrootClass(dist=d, arch=a)
         c.save()
 

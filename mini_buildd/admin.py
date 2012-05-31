@@ -14,7 +14,8 @@ django.contrib.admin.site.register(models.Distribution)
 django.contrib.admin.site.register(models.Repository)
 
 django.contrib.admin.site.register(models.FileChroot)
-django.contrib.admin.site.register(models.LVMLoopChroot)
+django.contrib.admin.site.register(models.LVMChroot)
+django.contrib.admin.site.register(models.LoopLVMChroot)
 
 django.contrib.admin.site.register(models.Builder)
 django.contrib.admin.site.register(models.Dispatcher)

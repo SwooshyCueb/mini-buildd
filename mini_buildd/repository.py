@@ -6,11 +6,9 @@ import datetime
 import socket
 import logging
 
-import GnuPGInterface
-
 import django.db
 
-from mini_buildd import globals, misc, reprepro
+from mini_buildd import globals, misc, gnupg, reprepro
 
 log = logging.getLogger(__name__)
 
@@ -32,8 +30,6 @@ class Repository(django.db.models.Model):
     gnupg_template = django.db.models.TextField(default="""
 Key-Type: DSA
 Key-Length: 1024
-Subkey-Type: ELG-E
-Subkey-Length: 1024
 Expire-Date: 0""")
 
     RESOLVERS = (('apt',       "apt resolver"),
@@ -58,11 +54,7 @@ Expire-Date: 0""")
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
 
-        self.gnupg = GnuPGInterface.GnuPG()
-        self.gnupg.options.meta_interactive = 0
-        self.gnupg.options.homedir = os.path.join(self.get_path(), ".gnupg")
-
-        self.pgp_key_ascii = self.getGpgPubKey()
+        self.gnupg = gnupg.GnuPG(self.gnupg_template)
 
         self.uploadable_dists = []
         for d in self.dists.all():
@@ -167,44 +159,6 @@ ButAutomaticUpgrades: {bau}
 
         return result.getvalue()
 
-    def getGpgPubKey(self):
-        result = ""
-        try:
-            # Always update the ascii armored public key
-            proc = self.gnupg.run(["--armor", "--export=mini-buildd-{id}@{h}".format(id=self.id, h=self.host)],
-                                  create_fhs=['stdin', 'stdout', 'stderr'])
-            report = proc.handles['stderr'].read()
-            proc.handles['stderr'].close()
-            result = proc.handles['stdout'].read()
-            proc.wait()
-        except:
-            log.warn("No GNUPG pub key found.")
-            result = ""
-        return result
-
-    def prepareGnuPG(self):
-        if self.getGpgPubKey():
-            log.info("GPG public key found, skipping key generation...")
-        else:
-            log.info("Generating new Gnu PG key in '{h}'.".format(h=self.get_path()))
-            proc = self.gnupg.run(["--gen-key"],
-                                  create_fhs=['stdin', 'stdout', 'stderr'])
-
-            proc.handles['stdin'].write('''{tpl}
-Name-Real: mini-buildd-{id} on {h}
-Name-Email: mini-buildd-{id}@{h}
-'''.format(tpl=self.gnupg_template, id=self.id, h=self.host))
-
-            log.debug("Generating gnupg key...")
-            proc.handles['stdin'].close()
-            report = proc.handles['stderr'].read()
-            proc.handles['stderr'].close()
-            try:
-                proc.wait()
-            except:
-                log.error(report)
-                raise
-
     def prepare(self):
         ".. todo:: README from 08x; please fix/update."
 
@@ -212,10 +166,10 @@ Name-Email: mini-buildd-{id}@{h}
         log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         misc.mkdirs(path)
-        self.prepareGnuPG()
+        self.gnupg.prepare()
         misc.mkdirs(os.path.join(path, "log"))
         misc.mkdirs(os.path.join(path, "apt-secure.d"))
-        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.getGpgPubKey())
+        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.gnupg.get_pub_key())
         misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         misc.mkdirs(os.path.join(path, "chroots-update.d"))
 

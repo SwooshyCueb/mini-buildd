@@ -6,7 +6,7 @@ Run reprepro commands.
 import os
 import logging
 
-from mini_buildd import misc
+from mini_buildd import misc, globals
 
 log = logging.getLogger(__name__)
 
@@ -28,7 +28,7 @@ Allow: {allow}
 
         open(os.path.join(self.repository.get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
-""".format(h=os.path.join(self.repository.get_path(), ".gnupg")))
+""".format(h=os.path.join(globals.HOME_DIR, ".gnupg")))
 
         # Update all indices (or create on initial install) via reprepro
         misc.call(self._cmd + ["clearvanished"])

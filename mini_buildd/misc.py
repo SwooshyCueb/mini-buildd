@@ -102,10 +102,10 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             if log_output:
                 stdout.seek(0)
                 for line in stdout:
-                    log.info("Call stdout: {l}".format(l=line.rstrip('\n')))
+                    log.debug("Call stdout: {l}".format(l=line.rstrip('\n')))
                 stderr.seek(0)
                 for line in stderr:
-                    log.info("Call stderr: {l}".format(l=line.rstrip('\n')))
+                    log.error("Call stderr: {l}".format(l=line.rstrip('\n')))
     except:
         log.error("Call failed: {a}".format(a=args))
         if value_on_error != None:

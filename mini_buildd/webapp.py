@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
+import os, logging
 
-import django.conf
-import django.core.handlers.wsgi
-import django.core.management
-import logging
+import django.conf, django.core.handlers.wsgi, django.core.management
 
 from mini_buildd import globals, misc, compat08x
 

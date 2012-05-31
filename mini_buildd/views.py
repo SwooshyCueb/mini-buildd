@@ -1,9 +1,7 @@
 # -*- coding: utf-8 -*-
-import tempfile
-import logging
+import tempfile, logging
 
-import django.core.management
-import django.http
+import django.core.management, django.http
 
 log = logging.getLogger(__name__)
 

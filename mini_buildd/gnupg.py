@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import tempfile
-import socket
-import logging
+import os, tempfile, socket, logging
 
 from mini_buildd import globals, misc
 

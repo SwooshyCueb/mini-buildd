@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
-import imp
-import time
-import os
-import logging
+import imp, time, os, logging
 
 log = logging.getLogger(__name__)
 

@@ -1,8 +1,5 @@
 # coding: utf-8
-import os
-import stat
-import re
-import logging
+import os, stat, re, logging
 
 import pyftpdlib.ftpserver
 

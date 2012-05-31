@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import socket
-import os
-import logging
+import socket, os, logging
 
-import django.db.models
-import django.contrib.admin
+import django.db.models, django.contrib.admin
 
 from mini_buildd import globals, misc
 

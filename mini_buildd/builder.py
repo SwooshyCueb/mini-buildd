@@ -1,11 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
-import re
-import subprocess
-import logging
+import os, re, subprocess, logging
 
-import django.db
-import django.core.exceptions
+import django.db, django.core.exceptions
 
 from mini_buildd import globals, changes, misc
 
@@ -167,8 +163,8 @@ class Builder(django.db.models.Model):
             log.debug("Waiting for {i}".format(i=t))
             t.join()
 
-        log.info("{d}: Purging chroots...".format(d=self))
-        for c in Chroot.objects.all():
-            c.purge()
+        #log.info("{d}: Purging chroots...".format(d=self))
+        #for c in Chroot.objects.all():
+        #    c.purge()
 
         log.info("{d}: Done.".format(d=self))

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import django.contrib.admin
+
 from mini_buildd import models
 
 django.contrib.admin.site.register(models.Mirror, models.Mirror.Admin)

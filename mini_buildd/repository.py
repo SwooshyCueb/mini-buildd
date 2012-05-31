@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-import StringIO
-import os
-import re
-import datetime
-import socket
-import logging
+import StringIO, os, re, datetime, socket, logging
 
 import django.db
 

@@ -1,10 +1,7 @@
 # -*- coding: utf-8 -*-
-import os
-import contextlib
-import logging
+import os, contextlib, logging
 
-import django.db
-import django.core.exceptions
+import django.db, django.core.exceptions
 
 from mini_buildd import changes
 

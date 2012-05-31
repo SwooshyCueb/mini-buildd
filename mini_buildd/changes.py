@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import logging
-import tarfile
-import ftplib
-import re
-import contextlib
+import os, logging, tarfile, ftplib, re, contextlib
 
 import debian.deb822
 

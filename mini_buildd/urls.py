@@ -1,8 +1,7 @@
 from django.conf.urls.defaults import *
-from django.views.generic.simple import redirect_to
-import django.views.static
-import django.views.generic
-import django.views.generic.list_detail
+#from django.views.generic.simple import redirect_to
+
+import django.views.static, django.views.generic, django.views.generic.list_detail
 
 from mini_buildd import globals, views, models
 

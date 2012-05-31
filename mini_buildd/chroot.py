@@ -1,11 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
-import shutil
-import re
-import glob
-import tempfile
-import pwd
-import logging
+import os, shutil, re, glob, tempfile, pwd, logging
 
 import django.db
 

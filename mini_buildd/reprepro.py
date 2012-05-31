@@ -3,8 +3,7 @@
 Run reprepro commands.
 """
 
-import os
-import logging
+import os, logging
 
 from mini_buildd import misc, globals
 

@@ -5,9 +5,7 @@
    - Workaround for static admin data on Debian squeeze, django 1.2
 """
 
-import django.conf.urls.defaults
-import django.views.generic.simple
-import django.contrib
+import django.conf.urls.defaults, django.views.generic.simple, django.contrib
 
 django.contrib.admin.autodiscover()
 

@@ -79,10 +79,10 @@ class Chroot(django.db.models.Model):
               self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
              ["/bin/umount", "-v", self.get_tmp_dir() + "/proc", self.get_tmp_dir() + "/sys"]),
 
-            (["/bin/cp", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
+            (["/bin/cp", "--verbose", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
              [])] + self.get_backend().get_post_sequence() + [
 
-            (["/bin/cp",  self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
+            (["/bin/cp", "--verbose", self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
              ["/bin/rm", "--verbose", self.get_system_schroot_conf_file()])]
 
     def is_prepared(self):
@@ -167,7 +167,7 @@ file={t}
              self.get_tar_compression_opts() +
              ["."],
              []),
-            (["/bin/rm", "-r", "-f", self.get_tmp_dir()],
+            (["/bin/rm", "--recursive", "--one-file-system", "--force", self.get_tmp_dir()],
              [])]
 
 
@@ -199,9 +199,9 @@ lvm-snapshot-options=--size {s}G
     def get_pre_sequence(self):
         return [
             (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.get_name()), self.get_vgname()],
-             ["/sbin/lvremove", "-v", "--force", self.get_lvm_device()]),
+             ["/sbin/lvremove", "--verbose", "--force", self.get_lvm_device()]),
 
-            (["mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
+            (["/sbin/mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
              []),
 
             (["/bin/mount", "-v", "-t{f}".format(f=self.filesystem), self.get_lvm_device(), self.get_tmp_dir()],
@@ -238,13 +238,13 @@ class LoopLVMChroot(LVMChroot):
               "if=/dev/zero", "of={imgfile}".format(imgfile=self.get_backing_file()),
               "bs={gigs}M".format(gigs=self.loop_size),
               "seek=1024", "count=0"],
-             ["/bin/rm", "-f", "-v", self.get_backing_file()]),
+             ["/bin/rm", "--verbose", self.get_backing_file()]),
 
-            (["/sbin/losetup", "-v", "-f", self.get_backing_file()],
-             ["/sbin/losetup", "-d", loop_device]),
+            (["/sbin/losetup", "--verbose", loop_device, self.get_backing_file()],
+             ["/sbin/losetup", "--verbose", "--detach", loop_device]),
 
-            (["/sbin/pvcreate", "-v", loop_device],
-             ["/sbin/pvremove", "-v", loop_device]),
+            (["/sbin/pvcreate", "--verbose", loop_device],
+             ["/sbin/pvremove", "--verbose", loop_device]),
 
-            (["/sbin/vgcreate", "-v", self.get_vgname(), loop_device],
-             ["/sbin/vgremove", "-v", "--force", self.get_vgname()])] + super(LoopLVMChroot, self).get_pre_sequence()
+            (["/sbin/vgcreate", "--verbose", self.get_vgname(), loop_device],
+             ["/sbin/vgremove", "--verbose", "--force", self.get_vgname()])] + super(LoopLVMChroot, self).get_pre_sequence()

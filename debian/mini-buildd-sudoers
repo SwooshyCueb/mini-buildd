@@ -1,3 +1,5 @@
-# TODO FIXME: We currently allow anything. Only needed commands should be allowed finally.
-mini-buildd ALL=(ALL) ALL
-mini-buildd ALL=NOPASSWD: ALL
+mini-buildd ALL=NOPASSWD:\
+            /usr/sbin/debootstrap,\
+            /bin/mount,/bin/umount,/bin/cp,/bin/rm,\
+            /sbin/losetup,/bin/dd,\
+            /sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove

@@ -147,17 +147,13 @@ class Builder(django.db.models.Model):
             log.info("One-time generation of sbuild keys done")
 
     def run(self, queue):
-        log.info("Preparing {d}".format(d=self))
-
+        log.info("{d}: Preparing chroots...".format(d=self))
         self.sbuild_workaround()
-
         for c in Chroot.objects.all():
             c.prepare()
 
-        log.info("Starting {d}".format(d=self))
-
+        log.info("{d}: Running...".format(d=self))
         join_threads = []
-
         while True:
             event = queue.get()
             if event == "SHUTDOWN":
@@ -166,8 +162,13 @@ class Builder(django.db.models.Model):
             join_threads.append(misc.start_thread(Build(c)))
             queue.task_done()
 
+        log.info("{d}: Shutting down...".format(d=self))
         for t in join_threads:
-            log.info("Waiting for {i}".format(i=t))
+            log.debug("Waiting for {i}".format(i=t))
             t.join()
 
-        log.info("Stopped {d}".format(d=self))
+        log.info("{d}: Purging chroots...".format(d=self))
+        for c in Chroot.objects.all():
+            c.purge()
+
+        log.info("{d}: Done.".format(d=self))

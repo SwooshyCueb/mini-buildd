@@ -30,6 +30,7 @@ _Description: Administrator's password:
 
 Template: mini-buildd/options
 Type: string
+Default: --verbose
 _Description: Extra options:
  You may add any mini-buildd command line option here (see
  'mini-buildd --help').

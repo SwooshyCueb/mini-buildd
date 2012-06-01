@@ -1,7 +1,16 @@
 #!/bin/bash -e
 
-# Change env MIRROR for the default config before calling this
-[ -n "${MIRROR}" ] || MIRROR="http://localhost/~mirror/debian"
+# Use first found mirror from sources as default
+_read_mirror()
+{
+	for s in /etc/apt/sources.list $(ls /etc/apt/sources.list.d/*.list 2>/dev/null | sort); do
+		[ -z "${MIRROR}" ] || break
+		MIRROR=$(grep -1 "^deb " "${s}" 2>/dev/null |head -n1 | cut -d" " -f2)
+	done
+	read -p "Mirror: " -e -i "${MIRROR}" MIRROR
+}
+
+_read_mirror
 
 # Test home is in '..' to avoid problems with large files in the Debian Source Tree
 MBD_HOME="/tmp/mini-buildd-devel"

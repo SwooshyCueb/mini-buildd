@@ -51,4 +51,4 @@ distutils.core.setup(
     author_email = "absurd@debian.org",
     scripts = ["mini-buildd"],
     packages = ["mini_buildd"],
-    package_data = {"mini_buildd": ["templates/mini_buildd/*.html", "fixtures/*.json"]})
+    package_data = {"mini_buildd": ["templates/mini_buildd/*.html", "templatetags/*.py", "fixtures/*.json"]})

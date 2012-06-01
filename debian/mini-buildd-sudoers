@@ -1,5 +1,5 @@
 mini-buildd ALL=NOPASSWD:\
-            /usr/sbin/debootstrap,\
+            /usr/sbin/debootstrap,/bin/tar,\
             /sbin/mkfs.*,/bin/mount,/bin/umount,/bin/cp,/bin/rm,\
             /sbin/losetup,/bin/dd,\
             /sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove

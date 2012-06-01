@@ -154,7 +154,7 @@ file={t}
 
     def get_post_sequence(self):
         return [
-            (["tar",
+            (["/bin/tar",
               "--create",
               "--directory={d}".format(d=self.get_tmp_dir()),
               "--file={f}".format(f=self.get_tar_file()) ] +

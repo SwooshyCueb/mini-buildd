@@ -38,7 +38,7 @@ mbd_purge()
 	sudo rm -v -f /etc/schroot/chroot.d/mini-buildd-*.conf
 
 	# Purge and re-setup
-	[ ! -e "${MBD_HOME}" ] || rm --recursive --force --one-file-system "${MBD_HOME}"
+	[ ! -e "${MBD_HOME}" ] || sudo rm --recursive --force --one-file-system "${MBD_HOME}"
 	mkdir -v -p "${MBD_HOME}"
 }
 

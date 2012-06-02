@@ -58,7 +58,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         return p
 
-    def setup_globals(self):
+    def _setup_globals(self):
         # Set global variables that really make no sense to
         # propagate through
         globals.DEBUG = self._args.debug
@@ -87,7 +87,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         misc.mkdirs(globals.REPOSITORIES_DIR)
         misc.mkdirs(globals.LOGS_DIR)
 
-    def setup_logging(self):
+    def _setup_logging(self):
         #loggers = string.split(self._args.loggers, ",")
         loggers = self._args.loggers.split(",")
         if self._args.foreground:
@@ -123,15 +123,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def __init__(self):
         self._args = self.parse_args()
-
-        # Daemonize early
-        if not self._args.foreground:
-            daemon.DaemonContext().open()
-
-        self.setup_globals()
-        self.setup_logging()
-
-        self._run = True
+        self._setup_globals()
+        self._setup_logging()
 
     def shutdown(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)
@@ -141,7 +134,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         from mini_buildd import webapp
         webapp = webapp.WebApp(self._args.home, instdir=self._args.instdir)
 
-        # Extra options that exit without running Main() daemon
+        # Extra options that exit without running as daemon
         if self._args.set_admin_password:
             webapp.set_admin_password(password=self._args.set_admin_password)
         elif self._args.create_default_config:
@@ -151,6 +144,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
+            # Daemon run
+            if not self._args.foreground:
+                daemon.DaemonContext().open()
+
             # Incoming and builder queue
             incoming_queue = Queue.Queue(maxsize=0)
             build_queue = Queue.Queue(maxsize=0)
@@ -169,9 +166,9 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                 join_threads.append(misc.start_thread(b, build_queue))
 
             # Shutdown on SIGTERM or SIGINT
+            self._run = True
             signal.signal(signal.SIGTERM, self.shutdown)
             signal.signal(signal.SIGINT, self.shutdown)
-
             while self._run:
                 signal.pause()
 

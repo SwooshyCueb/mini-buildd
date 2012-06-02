@@ -93,8 +93,8 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                      stdout=l, stderr=subprocess.STDOUT)
 
         res = changes.Changes(os.path.join(path,
-                                                       "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                                       format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
+                                           "{s}_{v}_mini-buildd-buildresult_{a}.changes".
+                                           format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])))
         for v in ["Distribution", "Source", "Version"]:
             res[v] = self._br[v]
 

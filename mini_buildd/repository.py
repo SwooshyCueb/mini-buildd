@@ -3,7 +3,7 @@ import StringIO, os, re, datetime, socket, logging
 
 import django.db
 
-from mini_buildd import globals, misc, gnupg, reprepro
+from mini_buildd import setup, misc, gnupg, reprepro
 
 log = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ Expire-Date: 0""")
         return self.id
 
     def get_path(self):
-        return os.path.join(globals.REPOSITORIES_DIR, self.id)
+        return os.path.join(setup.REPOSITORIES_DIR, self.id)
 
     def get_incoming_path(self):
         return os.path.join(self.get_path(), "incoming")
@@ -92,7 +92,7 @@ Expire-Date: 0""")
 
     def get_apt_line(self, dist, suite):
         return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
-            h=self.host, r=os.path.basename(globals.REPOSITORIES_DIR),
+            h=self.host, r=os.path.basename(setup.REPOSITORIES_DIR),
             id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
 
     def get_apt_sources_list(self, dist):

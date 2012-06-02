@@ -3,7 +3,7 @@ import os, shutil, re, glob, tempfile, pwd, logging
 
 import django.db
 
-from mini_buildd import globals, misc
+from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +33,7 @@ class Chroot(django.db.models.Model):
                     raise Exception("No chroot backend found")
 
     def get_path(self):
-        return os.path.join(globals.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
+        return os.path.join(setup.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
 
     def get_name(self):
         return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)

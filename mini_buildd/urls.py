@@ -3,7 +3,7 @@ from django.conf.urls.defaults import *
 
 import django.views.static, django.views.generic, django.views.generic.list_detail
 
-from mini_buildd import globals, views, models
+from mini_buildd import setup, views, models
 
 info_dict = {
     'queryset': models.Repository.objects.all(),
@@ -14,5 +14,5 @@ urlpatterns = patterns('',
                        (r"^repositories/$", django.views.generic.list_detail.object_list, info_dict),
                        (r"^repositories/(?P<object_id>.+)/$", django.views.generic.list_detail.object_detail, info_dict),
                        (r"^graph_models/$", views.graph_models),
-                       (r"^manual/(?P<path>.*)$", django.views.static.serve, {'document_root': globals.MANUAL_DIR, 'show_indexes': True})
+                       (r"^manual/(?P<path>.*)$", django.views.static.serve, {'document_root': setup.MANUAL_DIR, 'show_indexes': True})
 )

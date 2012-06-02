@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import os, tempfile, socket, logging
 
-from mini_buildd import globals, misc
+from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
 class GnuPG():
     def __init__(self, template):
         self.gpg_cmd = ["gpg",
-                        "--homedir={h}".format(h=os.path.join(globals.HOME_DIR, ".gnupg")),
+                        "--homedir={h}".format(h=os.path.join(setup.HOME_DIR, ".gnupg")),
                         "--batch"]
         self.template = tempfile.TemporaryFile()
         self.template.write("""\
@@ -31,8 +31,8 @@ Name-Email: mini-buildd@{h}
 if __name__ == "__main__":
     #misc.setup_test_logging()
 
-    globals.HOME_DIR = "/tmp/gnupgtest"
-    misc.mkdirs(globals.HOME_DIR)
+    setup.HOME_DIR = "/tmp/gnupgtest"
+    misc.mkdirs(setup.HOME_DIR)
     gnupg = GnuPG("""\
 Key-Type: DSA
 Key-Length: 1024

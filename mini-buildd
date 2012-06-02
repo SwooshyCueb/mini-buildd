@@ -2,7 +2,7 @@
 
 import threading, Queue, signal, os, argparse, sys, daemon, logging, logging.handlers
 
-from mini_buildd import __version__, misc, globals
+from mini_buildd import __version__, misc, setup
 
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
@@ -58,34 +58,34 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         return p
 
-    def _setup_globals(self):
+    def _setup(self):
         # Set global variables that really make no sense to
         # propagate through
-        globals.DEBUG = self._args.debug
+        setup.DEBUG = self._args.debug
 
-        globals.HOME_DIR = self._args.home
+        setup.HOME_DIR = self._args.home
 
-        globals.INCOMING_DIR = os.path.join(self._args.home, "incoming")
-        globals.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
+        setup.INCOMING_DIR = os.path.join(self._args.home, "incoming")
+        setup.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
 
         vardir = os.path.join(self._args.home, "var")
-        globals.SPOOL_DIR    = os.path.join(vardir, "spool")
-        globals.BUILDS_DIR   = os.path.join(vardir, "builds")
-        globals.LOGS_DIR     = os.path.join(vardir, "logs")
-        globals.CHROOTS_DIR  = os.path.join(vardir, "chroots")
+        setup.SPOOL_DIR    = os.path.join(vardir, "spool")
+        setup.BUILDS_DIR   = os.path.join(vardir, "builds")
+        setup.LOGS_DIR     = os.path.join(vardir, "logs")
+        setup.CHROOTS_DIR  = os.path.join(vardir, "chroots")
 
-        self.LOG_FILE = os.path.join(globals.LOGS_DIR, "daemon.log")
+        self.LOG_FILE = os.path.join(setup.LOGS_DIR, "daemon.log")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
-            globals.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
+            setup.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
         else:
-            globals.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
+            setup.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
 
         # Create base directories
-        misc.mkdirs(globals.INCOMING_DIR)
-        misc.mkdirs(globals.REPOSITORIES_DIR)
-        misc.mkdirs(globals.LOGS_DIR)
+        misc.mkdirs(setup.INCOMING_DIR)
+        misc.mkdirs(setup.REPOSITORIES_DIR)
+        misc.mkdirs(setup.LOGS_DIR)
 
     def _setup_logging(self):
         #loggers = string.split(self._args.loggers, ",")
@@ -123,7 +123,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def __init__(self):
         self._args = self.parse_args()
-        self._setup_globals()
+        self._setup()
         self._setup_logging()
 
     def shutdown(self, signum=-1, frame=-1):

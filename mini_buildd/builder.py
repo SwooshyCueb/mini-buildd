@@ -3,7 +3,7 @@ import os, re, subprocess, logging
 
 import django.db, django.core.exceptions
 
-from mini_buildd import globals, changes, misc
+from mini_buildd import setup, changes, misc
 
 from mini_buildd.models import Chroot
 
@@ -33,7 +33,7 @@ class Build():
         """
         pkg_info = "{s}-{v}:{a}".format(s=self._br["Source"], v=self._br["Version"], a=self._br["Architecture"])
 
-        path = self._br.get_spool_dir(globals.BUILDS_DIR)
+        path = self._br.get_spool_dir(setup.BUILDS_DIR)
         self._br.untar(path=path)
 
         # Generate .sbuildrc for this run (not all is configurable via switches).
@@ -79,7 +79,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._br["Run-Lintian"]))
 
-        if globals.DEBUG:
+        if setup.DEBUG:
             sbuild_cmd.append("--verbose")
 
         sbuild_cmd.append("{s}_{v}.dsc".format(s=self._br["Source"], v=self._br["Version"]))

@@ -3,7 +3,7 @@ import os, logging
 
 import django.conf, django.core.handlers.wsgi, django.core.management
 
-from mini_buildd import globals, misc, compat08x
+from mini_buildd import setup, misc, compat08x
 
 log = logging.getLogger(__name__)
 
@@ -29,8 +29,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self._instdir = instdir
 
         django.conf.settings.configure(
-            DEBUG = globals.DEBUG,
-            TEMPLATE_DEBUG = globals.DEBUG,
+            DEBUG = setup.DEBUG,
+            TEMPLATE_DEBUG = setup.DEBUG,
 
             SITE_ID = 1,
 

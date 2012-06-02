@@ -3,8 +3,6 @@ import socket, os, logging
 
 import django.db.models, django.contrib.admin
 
-from mini_buildd import globals, misc
-
 log = logging.getLogger(__name__)
 
 class Mirror(django.db.models.Model):

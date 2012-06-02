@@ -3,7 +3,7 @@ import os, logging, tarfile, ftplib, re, contextlib
 
 import debian.deb822
 
-from mini_buildd import globals, misc
+from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
@@ -93,7 +93,7 @@ class Changes(debian.deb822.Changes):
         br_list = []
         r = self.get_repository()
         for a in r.archs.all():
-            path = os.path.join(globals.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
+            path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]

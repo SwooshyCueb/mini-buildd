@@ -3,7 +3,7 @@ import os, stat, re, logging
 
 import pyftpdlib.ftpserver
 
-from mini_buildd import __version__, globals, misc
+from mini_buildd import __version__, setup, misc
 
 log = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ def log_init():
      enabled in debug mode.
     """
     pyftpdlib.ftpserver.log = lambda msg: log.debug(msg)
-    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if globals.DEBUG else misc.nop
+    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if setup.DEBUG else misc.nop
     pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 
@@ -45,10 +45,10 @@ class FtpD(pyftpdlib.ftpserver.FTPServer):
 
         handler = FtpDHandler
         handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
-        handler.authorizer.add_anonymous(homedir=globals.HOME_DIR, perm='')
-        handler.authorizer.override_perm(username="anonymous", directory=globals.INCOMING_DIR, perm='elrw')
-        handler.authorizer.override_perm(username="anonymous", directory=globals.REPOSITORIES_DIR, perm='elr', recursive=True)
-        handler.authorizer.override_perm(username="anonymous", directory=globals.LOGS_DIR, perm='elr', recursive=True)
+        handler.authorizer.add_anonymous(homedir=setup.HOME_DIR, perm='')
+        handler.authorizer.override_perm(username="anonymous", directory=setup.INCOMING_DIR, perm='elrw')
+        handler.authorizer.override_perm(username="anonymous", directory=setup.REPOSITORIES_DIR, perm='elr', recursive=True)
+        handler.authorizer.override_perm(username="anonymous", directory=setup.LOGS_DIR, perm='elr', recursive=True)
 
         handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=__version__, V=pyftpdlib.ftpserver.__ver__)
         handler._mini_buildd_queue = queue

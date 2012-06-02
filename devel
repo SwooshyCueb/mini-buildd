@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+MBD_HOME=~mini-buildd
+
 # Use first found mirror from sources as default
 _read_mirror()
 {
@@ -10,61 +12,37 @@ _read_mirror()
 	read -p "Mirror: " -e -i "${MIRROR}" MIRROR
 }
 
-_read_mirror
-
-# Test home is in '..' to avoid problems with large files in the Debian Source Tree
-MBD_HOME="/tmp/mini-buildd-devel"
-MBD_CMD="./mini-buildd --home="${MBD_HOME}" --instdir="$(pwd)" --foreground --verbose --verbose --debug"
-
 _head()
 {
 	printf "\n=> ${*}\n"
 }
 
-mbd_clear()
-{
-	_head "Cleaning incoming, spool and repository in ${MBD_HOME}"
-	rm -rf ${MBD_HOME}/var/builds/* ${MBD_HOME}/var/logs/* ${MBD_HOME}/var/spool/* ${MBD_HOME}/incoming/* ${MBD_HOME}/repositories/*
-}
 
 mbd_purge()
 {
 	_head "Purging ${MBD_HOME}"
-
-	# Try hard to clean up any lvm loop leftovers
-	for n in $(schroot -l -a 2>/dev/null); do schroot -c ${n} -e || true; done
-	for lv in $(sudo lvdisplay | grep 'LV Name.*/dev/mini-buildd-loop-.\+/mini-buildd-.\+-.\+' | rev | cut -d' ' -f1 | rev); do
-		echo lv=${lv}
-		sudo lvremove --verbose --force "${lv}" || true
-	done
-	for vg in $(sudo vgdisplay | grep 'VG Name.*mini-buildd-loop-.\+-.\+$'| rev | cut -d' ' -f1 | rev); do
-		echo vg=${vg}
-		sudo vgremove --verbose --force ${vg} || true
-	done
-	sudo losetup --verbose --detach /dev/loop0 || true
-
-	# Remove any in-system mini-buildd schroot.confs
-	sudo rm -v -f /etc/schroot/chroot.d/mini-buildd-*.conf
-
-	# Purge and re-setup
-	[ ! -e "${MBD_HOME}" ] || sudo rm --recursive --force --one-file-system "${MBD_HOME}"
-	mkdir -v -p "${MBD_HOME}"
+	sudo dpkg --purge mini-buildd
 }
 
-mbd_clean()
+mbd_build_install()
+{
+	_head "Building && installing snapshot..."
+	git dch --snapshot --auto
+	git-buildpackage --git-ignore-new -us -uc
+	cat <<EOF | sudo debconf-set-selections -
+mini-buildd mini-buildd/admin_password password admin
+EOF
+	sudo debi
+}
+
+mbd_build_install_default()
 {
 	mbd_purge
-
-	_head "Creating superuser admin/admin..."
-	${MBD_CMD} --set-admin-password="admin"
-}
-
-mbd_default()
-{
-	mbd_clean
+	mbd_build_install
 
 	_head "Creating default config..."
-	${MBD_CMD} --create-default-config="${MIRROR}"
+	_read_mirror
+	sudo su - mini-buildd -c "mini-buildd --foreground --verbose --verbose --debug --create-default-config=${MIRROR}"
 }
 
 for c in $(compgen -A function | grep '^mbd_'); do
@@ -72,13 +50,7 @@ for c in $(compgen -A function | grep '^mbd_'); do
 done
 trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 
-# Be sure to generate mini_buildd/__version__.py and manual
-python ./setup.py build_sphinx --source-dir=build/sphinx >/dev/null 2>&1 || true
-
 if [ -n "${1}" ]; then
 	mbd_${1}
 	shift
 fi
-
-_head "Running: ${MBD_CMD} ${@}"
-${MBD_CMD} ${@}

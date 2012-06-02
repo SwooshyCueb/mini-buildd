@@ -131,13 +131,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self.setup_globals()
         self.setup_logging()
 
-        from mini_buildd import webapp
-        self._webapp = webapp.WebApp(self._args.home, instdir=self._args.instdir)
-
-        # Incoming and builder queue
-        self._incoming_queue = Queue.Queue(maxsize=0)
-        self._build_queue = Queue.Queue(maxsize=0)
-
         self._run = True
 
     def shutdown(self, signum=-1, frame=-1):
@@ -145,31 +138,35 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._run = False
 
     def run(self):
+        from mini_buildd import webapp
+        webapp = webapp.WebApp(self._args.home, instdir=self._args.instdir)
+
         # Extra options that exit without running Main() daemon
         if self._args.set_admin_password:
-            self._webapp.set_admin_password(password=self._args.set_admin_password)
+            webapp.set_admin_password(password=self._args.set_admin_password)
         elif self._args.create_default_config:
-            self._webapp.create_default_config(mirror=self._args.create_default_config)
+            webapp.create_default_config(mirror=self._args.create_default_config)
         elif self._args.loaddata:
-            self._webapp.loaddata(f=self._args.loaddata)
+            webapp.loaddata(f=self._args.loaddata)
         elif self._args.dumpdata:
-            self._webapp.dumpdata(a=self._args.dumpdata)
+            webapp.dumpdata(a=self._args.dumpdata)
         else:
+            # Incoming and builder queue
+            incoming_queue = Queue.Queue(maxsize=0)
+            build_queue = Queue.Queue(maxsize=0)
+
+            # Start httpd and ftpd
             from mini_buildd import httpd, ftpd
-            misc.start_thread(httpd.HttpD(self._args.httpd_bind, self._webapp))
-            misc.start_thread(ftpd.FtpD(bind=self._args.ftpd_bind, queue=self._incoming_queue))
+            misc.start_thread(httpd.HttpD(self._args.httpd_bind, webapp))
+            misc.start_thread(ftpd.FtpD(bind=self._args.ftpd_bind, queue=incoming_queue))
 
+            # Start builder and dispatcher threads
             join_threads = []
-
-            # Start builders
-            from mini_buildd.models import Builder
-            for b in Builder.objects.all():
-                join_threads.append(misc.start_thread(b, self._build_queue))
-
-            # Start dispatchers
-            from mini_buildd.models import Dispatcher
+            from mini_buildd.models import Dispatcher, Builder
             for d in Dispatcher.objects.all():
-                join_threads.append(misc.start_thread(d, self._incoming_queue, self._build_queue))
+                join_threads.append(misc.start_thread(d, incoming_queue, build_queue))
+            for b in Builder.objects.all():
+                join_threads.append(misc.start_thread(b, build_queue))
 
             # Shutdown on SIGTERM or SIGINT
             signal.signal(signal.SIGTERM, self.shutdown)
@@ -179,8 +176,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                 signal.pause()
 
             log.info("Signaling shutdown to dispatcher and builder...")
-            self._incoming_queue.put("SHUTDOWN")
-            self._build_queue.put("SHUTDOWN")
+            incoming_queue.put("SHUTDOWN")
+            build_queue.put("SHUTDOWN")
 
             for t in join_threads:
                 log.info("Waiting for {i}".format(i=t))

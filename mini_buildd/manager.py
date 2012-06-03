@@ -9,21 +9,21 @@ from mini_buildd.models import Repository
 
 log = logging.getLogger(__name__)
 
-class Dispatcher(django.db.models.Model):
+class Manager(django.db.models.Model):
     max_parallel_packages = django.db.models.IntegerField(
         default=10,
         help_text="Maximum number of parallel packages to process.")
 
     def __unicode__(self):
-        res = "Dispatcher for: "
+        res = "Manager for: "
         for c in Repository.objects.all():
             res += c.__unicode__() + ", "
         return res
 
     def clean(self):
-        super(Dispatcher, self).clean()
-        if Dispatcher.objects.count() > 0 and self.id != Dispatcher.objects.get().id:
-            raise django.core.exceptions.ValidationError("You can only create one Dispatcher instance!")
+        super(Manager, self).clean()
+        if Manager.objects.count() > 0 and self.id != Manager.objects.get().id:
+            raise django.core.exceptions.ValidationError("You can only create one Manager instance!")
 
     def run(self, incoming_queue, build_queue):
         log.info("Preparing {d}".format(d=self))

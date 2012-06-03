@@ -140,8 +140,8 @@ from mini_buildd import builder
 class Builder(builder.Builder):
     pass
 
-from mini_buildd import dispatcher
-class Dispatcher(dispatcher.Dispatcher):
+from mini_buildd import manager
+class Manager(manager.Manager):
     pass
 
 class Remote(django.db.models.Model):

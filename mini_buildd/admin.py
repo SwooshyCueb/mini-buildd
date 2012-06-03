@@ -19,5 +19,5 @@ django.contrib.admin.site.register(models.LVMChroot)
 django.contrib.admin.site.register(models.LoopLVMChroot)
 
 django.contrib.admin.site.register(models.Builder)
-django.contrib.admin.site.register(models.Dispatcher)
+django.contrib.admin.site.register(models.Manager)
 django.contrib.admin.site.register(models.Remote)

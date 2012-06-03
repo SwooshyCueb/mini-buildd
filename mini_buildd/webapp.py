@@ -131,7 +131,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         b=models.Builder()
         b.save()
 
-        d=models.Dispatcher()
+        d=models.Manager()
         d.save()
 
     def syncdb(self):

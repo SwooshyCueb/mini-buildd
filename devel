@@ -47,6 +47,18 @@ mbd_build_install_default()
 	_head "Creating default config..."
 	_read_mirror
 	sudo su - mini-buildd -c "mini-buildd --foreground --verbose --verbose --debug --create-default-config=${MIRROR}"
+
+	# @todo: Workaround as long as mini-buildd does not detect the changed config (or code is moved to webapp).
+	sudo /etc/init.d/mini-buildd restart
+}
+
+mbd_testall()
+{
+	mbd_build_install_default
+	(
+		cd ./examples
+		./packages.testbuild
+	)
 }
 
 for c in $(compgen -A function | grep '^mbd_'); do

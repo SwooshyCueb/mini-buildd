@@ -22,6 +22,9 @@ mbd_purge()
 {
 	_head "Purging ${MBD_HOME}"
 	sudo dpkg --purge mini-buildd
+
+	# @todo: Workaround only as long as mini-buildd doesn't yet do it
+	sudo rm -v -f /etc/schroot/chroot.d/mini-buildd-*
 }
 
 mbd_build_install()

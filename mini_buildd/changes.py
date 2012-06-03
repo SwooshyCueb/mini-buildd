@@ -52,13 +52,9 @@ class Changes(debian.deb822.Changes):
                               "priority": "extra",
                               "name": os.path.basename(fn)})
 
-    def save(self, file_path=None):
-        file_path = self._file_path if file_path == None else file_path
-
-        log.info("Save {f}".format(f=file_path))
-        self.dump(fd=open(file_path, "w+"))
-        self._file_path = file_path
-        self._file_name = os.path.basename(file_path)
+    def save(self):
+        log.info("Saving changes: {f}".format(f=self._file_path))
+        self.dump(fd=open(self._file_path, "w+"))
 
     def upload(self, host="localhost", port=8067):
         log.info("FTP: Uploading changes: '{f}' to '{h}'...". format(f=self._file_name, h=host))

@@ -1,2 +1,7 @@
-# Set this to any extra options to run the daemon (see 'mini-buildd --help')
-MINI_BUILDD_OPTIONS=""
+# mini-buildd default file
+
+# All values are handled by debconf, so reconfiguring the
+# package is recommended (you will also see more
+# explanations). Manual edits are fine, too, though.
+
+#MINI_BUILDD_OPTIONS="--verbose"

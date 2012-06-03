@@ -32,8 +32,9 @@ mbd_build_install()
 	_head "Building && installing snapshot..."
 	git dch --snapshot --auto
 	git-buildpackage --git-ignore-new -us -uc
-	cat <<EOF | sudo debconf-set-selections -
+	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
+mini-buildd mini-buildd/options string --verbose --verbose --debug
 EOF
 	sudo debi
 }

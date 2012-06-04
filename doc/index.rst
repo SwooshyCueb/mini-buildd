@@ -45,7 +45,7 @@ Status Desc                                                           Effort Est
 ====== ============================================================== ================= ======================================================================
 
 
-Buildd engine known missing features
+Key known missing features
 ====================================
 
  - [REGR] Support repo keys && loop through to builders.
@@ -57,6 +57,7 @@ Buildd engine known missing features
  - [REGR] Auto backports.
  - [FEAT] Auto-generated keyring packages.
  - [REFE] Chroot maintentance (apt-update, fs checks)
+ - [DEB ] 0.8.x upgradability (not migration)
 
 
 In-code TODOS

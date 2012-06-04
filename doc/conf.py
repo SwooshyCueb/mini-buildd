@@ -19,7 +19,9 @@ import sys, os
 sys.path.insert(0, os.path.abspath('..'))
 
 # Dummy; needed so django does not freak out on doc building
+import django.core.management
 os.environ["DJANGO_SETTINGS_MODULE"]="doc.django_settings"
+django.core.management.call_command('graph_models', 'mini_buildd', outputfile="_static/mini_buildd_models.png")
 
 # do not import mini-buildd's version before path insertion -- otherwise
 # sphinx-build terminates with following message: "error: no such option: -b"

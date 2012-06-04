@@ -65,6 +65,11 @@ In-code TODOS
 API Reference
 =============
 
+.. figure::  _static/mini_buildd_models.png
+   :align:   center
+
+   mini_buildd application model overview.
+
 .. toctree::
    :maxdepth: 3
 

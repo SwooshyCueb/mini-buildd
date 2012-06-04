@@ -5,11 +5,5 @@ import django.core.management, django.http
 
 log = logging.getLogger(__name__)
 
-def graph_models(request):
-    try:
-        with tempfile.NamedTemporaryFile(suffix=".png") as img:
-            log.info("Generating graphical model view using tmpfile=" + img.name)
-            django.core.management.call_command('graph_models', 'mini_buildd', outputfile=img.name)
-            return django.http.HttpResponse(img.read(), mimetype="image/png")
-    except:
-        return django.http.HttpResponse("Can't produce graphic (python-pygraphviz not installed?)", mimetype="text/plain")
+def example_view(request):
+    return django.http.HttpResponse("example view function", mimetype="text/plain")

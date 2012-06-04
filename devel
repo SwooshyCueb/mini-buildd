@@ -39,17 +39,21 @@ EOF
 	sudo debi
 }
 
+mbd_default()
+{
+	_head "Creating default config..."
+	_read_mirror
+	sudo su - mini-buildd -c "mini-buildd --foreground --verbose --verbose --debug --create-default-config=${MIRROR}"
+	# @todo: Workaround as long as mini-buildd does not detect the changed config (or code is moved to webapp).
+	sudo /etc/init.d/mini-buildd restart
+}
+
 mbd_build_install_default()
 {
 	mbd_purge
 	mbd_build_install
 
-	_head "Creating default config..."
-	_read_mirror
-	sudo su - mini-buildd -c "mini-buildd --foreground --verbose --verbose --debug --create-default-config=${MIRROR}"
-
-	# @todo: Workaround as long as mini-buildd does not detect the changed config (or code is moved to webapp).
-	sudo /etc/init.d/mini-buildd restart
+	mbd_default
 }
 
 mbd_testall()

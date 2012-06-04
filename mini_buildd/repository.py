@@ -50,6 +50,10 @@ Expire-Date: 0""")
         log.debug("Initializing repository '{id}'".format(id=self.id))
 
         self.gnupg = gnupg.GnuPG(self.gnupg_template)
+        try:
+            self.gnupg_pub_key = self.gnupg.get_pub_key()
+        except:
+            self.gnupg_pub_key = "none generated yet"
 
         self.uploadable_dists = []
         for d in self.dists.all():

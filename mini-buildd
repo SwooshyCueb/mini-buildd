@@ -122,6 +122,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         logging.raiseExceptions = 0
 
     def __init__(self):
+        ".. todo:: BUG: Daemonize/umask. check for example ~/var/builds"
         self._args = self.parse_args()
         # Daemonize early
         if not self._args.foreground:

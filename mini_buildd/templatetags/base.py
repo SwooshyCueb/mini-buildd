@@ -1,6 +1,6 @@
 from django import template
 
-import  mini_buildd
+import mini_buildd
 
 register = template.Library()
 

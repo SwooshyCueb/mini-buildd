@@ -99,7 +99,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             res[v] = self._br[v]
 
         # Add build results to build request object
-        res["Sbuildretval"] = retval
+        res["Sbuildretval"] = str(retval)
         self.results_from_buildlog(buildlog, res)
 
         log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Sbuild-Status"]))

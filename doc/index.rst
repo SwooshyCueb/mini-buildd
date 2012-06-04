@@ -36,25 +36,28 @@ Status Desc                                                           Effort Est
        reprepro.
 70%    Integrate web application into mini-buildd (config)            3/6/9             This introduces django and the django admin interface into
                                                                                         mini-buildd. Initial replacement of current static html page.
-50%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
+70%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
                                                                                         eventually.
-30%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
+50%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
                                                                                         i.e., one can build packages.
-0%     Integrate and test new infrastructure                          6/10/15           Integrate features, bug fixing and fine tuning.
+20%    Django (non-config) web app                                    3/4/7             Minimalistic. Show mini-buildd's status plus package migration.
+10%    Integrate and test new infrastructure                          6/9/14            Integrate features, bug fixing and fine tuning.
 ====== ============================================================== ================= ======================================================================
 
 
-Known Bugs/TODOS
-================
+Buildd engine known missing features
+====================================
 
- - GnuPG setup: One Master key with subkeys for all repos
- - APT secure: Pub-key per Mirror/Source.
- - chroot: Proper backend support
- - refactor:
+ - [REGR] Support repo keys && loop through to builders.
+ - [REGR] Support preseed && loop through to builders.
+ - [FEAT] Complete auth via gnupg.
+ - [FEAT] Remotes support.
+ - [REGR] Notification support.
+ - [REGR] 0.8.x pre-build qa-checks.
+ - [REGR] Auto backports.
+ - [FEAT] Auto-generated keyring packages.
+ - [REFE] Chroot maintentance (apt-update, fs checks)
 
-   - dispatcher => changes
-   - schroot -> chroot
-   - model methods
 
 In-code TODOS
 =============

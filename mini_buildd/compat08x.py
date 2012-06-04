@@ -82,16 +82,16 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                         tryImport(Source)
 
                         if (t == "extra"):
-                            # "PrioritisedSource"
-                            def PrioritisedSource():
-                                ps = models.PrioritisedSource(source=models.Source.objects.get(codename=codename, origin=origin), prio=prio)
+                            # "PrioSource"
+                            def PrioSource():
+                                ps = models.PrioSource(source=models.Source.objects.get(codename=codename, origin=origin), prio=prio)
                                 ps.save()
                                 # Add it to dist
                                 dist = models.Distribution.objects.get(base_source=models.Source.objects.get(codename=d, origin="Debian"))
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
-                            tryImport(PrioritisedSource)
+                            tryImport(PrioSource)
 
                         if (t == "base"):
                             # "Distribution"

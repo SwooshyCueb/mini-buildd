@@ -5,7 +5,7 @@ from mini_buildd import models
 
 django.contrib.admin.site.register(models.Mirror, models.Mirror.Admin)
 django.contrib.admin.site.register(models.Source, models.Source.Admin)
-django.contrib.admin.site.register(models.PrioritisedSource)
+django.contrib.admin.site.register(models.PrioSource)
 
 django.contrib.admin.site.register(models.Architecture)
 

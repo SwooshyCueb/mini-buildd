@@ -48,7 +48,7 @@ class Source(django.db.models.Model):
         search_fields = ['origin', 'codename']
 
 
-class PrioritisedSource(django.db.models.Model):
+class PrioSource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
     prio = django.db.models.IntegerField(default=1,
                                help_text="A apt pin priority value (see 'man apt_preferences')."
@@ -104,7 +104,7 @@ class Distribution(django.db.models.Model):
     """
     base_source = django.db.models.ForeignKey(Source, primary_key=True)
 
-    extra_sources = django.db.models.ManyToManyField(PrioritisedSource, blank=True, null=True)
+    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True, null=True)
 
     def get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.get_apt_pin())

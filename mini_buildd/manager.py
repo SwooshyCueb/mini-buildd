@@ -3,7 +3,7 @@ import os, contextlib, logging
 
 import django.db, django.core.exceptions
 
-from mini_buildd import changes
+from mini_buildd import changes, gnupg
 
 from mini_buildd.models import Repository
 
@@ -13,6 +13,16 @@ class Manager(django.db.models.Model):
     max_parallel_packages = django.db.models.IntegerField(
         default=10,
         help_text="Maximum number of parallel packages to process.")
+
+    gnupg_template = django.db.models.TextField(default="""
+Key-Type: DSA
+Key-Length: 1024
+Expire-Date: 0""")
+
+    def __init__(self, *args, **kwargs):
+        ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
+        super(Manager, self).__init__(*args, **kwargs)
+        self.gnupg = gnupg.GnuPG(self.gnupg_template)
 
     def __unicode__(self):
         res = "Manager for: "
@@ -25,14 +35,16 @@ class Manager(django.db.models.Model):
         if Manager.objects.count() > 0 and self.id != Manager.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Manager instance!")
 
-    def run(self, incoming_queue, build_queue):
-        log.info("Preparing {d}".format(d=self))
-
+    def prepare(self):
+        self.gnupg.prepare()
         for r in Repository.objects.all():
             r.prepare()
 
-        log.info("Starting {d}".format(d=self))
+    def run(self, incoming_queue, build_queue):
+        log.info("Preparing {d}".format(d=self))
+        self.prepare()
 
+        log.info("Starting {d}".format(d=self))
         while True:
             event = incoming_queue.get()
             if event == "SHUTDOWN":

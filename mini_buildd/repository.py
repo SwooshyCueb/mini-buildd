@@ -3,7 +3,7 @@ import StringIO, os, re, datetime, socket, logging
 
 import django.db
 
-from mini_buildd import setup, misc, gnupg, reprepro
+from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
@@ -21,11 +21,6 @@ class Repository(django.db.models.Model):
     dists = django.db.models.ManyToManyField(Distribution)
     archs = django.db.models.ManyToManyField(Architecture)
     arch_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
-
-    gnupg_template = django.db.models.TextField(default="""
-Key-Type: DSA
-Key-Length: 1024
-Expire-Date: 0""")
 
     RESOLVERS = (('apt',       "apt resolver"),
                  ('aptitude',  "aptitude resolver"),
@@ -45,15 +40,8 @@ Expire-Date: 0""")
     extdocurl = django.db.models.URLField(blank=True)
 
     def __init__(self, *args, **kwargs):
-        ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
-
-        self.gnupg = gnupg.GnuPG(self.gnupg_template)
-        try:
-            self.gnupg_pub_key = self.gnupg.get_pub_key()
-        except:
-            self.gnupg_pub_key = "none generated yet"
 
         self.uploadable_dists = []
         for d in self.dists.all():
@@ -165,10 +153,9 @@ ButAutomaticUpgrades: {bau}
         log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         misc.mkdirs(path)
-        self.gnupg.prepare()
         misc.mkdirs(os.path.join(path, "log"))
         misc.mkdirs(os.path.join(path, "apt-secure.d"))
-        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write(self.gnupg.get_pub_key())
+        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write("OBSOLETE")
         misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         misc.mkdirs(os.path.join(path, "chroots-update.d"))
 

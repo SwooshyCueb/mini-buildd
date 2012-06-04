@@ -11,8 +11,8 @@ info_dict = {
 
 urlpatterns = patterns('',
                        (r"^$", django.views.generic.simple.redirect_to, {'url': "repositories/", 'permanent': False}),
+                       (r"^get_archive_key/$", views.get_archive_key),
                        (r"^repositories/$", django.views.generic.list_detail.object_list, info_dict),
                        (r"^repositories/(?P<object_id>.+)/$", django.views.generic.list_detail.object_detail, info_dict),
-                       (r"^example_view/$", views.example_view),
                        (r"^manual/(?P<path>.*)$", django.views.static.serve, {'document_root': setup.MANUAL_DIR, 'show_indexes': True})
 )

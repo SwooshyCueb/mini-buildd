@@ -7,7 +7,7 @@ _read_mirror()
 {
 	for s in /etc/apt/sources.list $(ls /etc/apt/sources.list.d/*.list 2>/dev/null | sort); do
 		[ -z "${MIRROR}" ] || break
-		MIRROR=$(grep -1 "^deb " "${s}" 2>/dev/null |head -n1 | cut -d" " -f2)
+		MIRROR=$(grep "^deb " "${s}" 2>/dev/null | head -n1 | cut -d" " -f2)
 	done
 	read -p "Mirror: " -e -i "${MIRROR}" MIRROR
 }

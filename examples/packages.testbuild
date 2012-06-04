@@ -38,7 +38,7 @@ mbdPrevStable()
 		wheezy)
 			printf "squeeze"
 			;;
-		SID)
+		sid)
 			printf "wheezy"
 			;;
 		*)

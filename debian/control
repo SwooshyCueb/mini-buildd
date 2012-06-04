@@ -22,7 +22,7 @@ Depends: ${misc:Depends}, python (>= 2.6), python-argparse, bash (>= 4), adduser
          reprepro (>= 4.2), procps,
          adduser, debootstrap (>= 1.0.24~),
          lvm2, schroot (>= 1.4.22), sbuild (>= 0.62.4),
-         dput, dpkg-dev, fakeroot, debhelper, cdbs, devscripts (>= 2.10.15)
+         dput, dpkg-dev, fakeroot, debhelper, cdbs, lintian, devscripts (>= 2.10.15)
 Recommends: dwww, python-pygraphviz, apache2-mpm-worker | httpd
 Description: Minimal Debian build daemon
  Mini-buildd is an easy-to-configure Debian autobuilder and

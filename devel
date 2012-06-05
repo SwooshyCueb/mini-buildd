@@ -48,11 +48,15 @@ mbd_default()
 	sudo /etc/init.d/mini-buildd restart
 }
 
-mbd_build_install_default()
+mbd_build_install_clean()
 {
 	mbd_purge
 	mbd_build_install
+}
 
+mbd_build_install_default()
+{
+	mbd_build_install_clean
 	mbd_default
 }
 

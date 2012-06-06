@@ -89,14 +89,11 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         s=models.Source(codename=codename)
         s.save()
-        s.mirrors.add(m)
-        s.save()
+        s.mbd_scan(None)
+        a, created = models.Architecture.objects.get_or_create(name=arch)
 
         d=models.Distribution(base_source=s)
         d.save()
-
-        a=models.Architecture(arch=arch)
-        a.save()
 
         l=models.Layout(name="Default")
         l.save()

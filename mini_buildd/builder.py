@@ -135,7 +135,7 @@ class Builder(django.db.models.Model):
         if Builder.objects.count() > 0 and self.id != Builder.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Builder instance!")
 
-    def sbuild_workaround(self):
+    def mbd_sbuild_workaround(self):
         "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
         if not os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
             log.warn("One-time generation of sbuild keys (may take some time)...")
@@ -144,7 +144,7 @@ class Builder(django.db.models.Model):
 
     def run(self, queue):
         log.info("{d}: Preparing chroots...".format(d=self))
-        self.sbuild_workaround()
+        self.mbd_sbuild_workaround()
         for c in Chroot.objects.all():
             c.prepare()
 

@@ -9,12 +9,12 @@ log = logging.getLogger(__name__)
 
 def chroot_prepare(modeladmin, request, queryset):
     for c in queryset:
-        c.prepare(request)
+        c.mbd_prepare(request)
 chroot_prepare.short_description = "Prepare selected sources"
 
 def chroot_purge(modeladmin, request, queryset):
     for c in queryset:
-        c.purge(request)
+        c.mbd_purge(request)
 chroot_purge.short_description = "Purge selected sources"
 
 class Chroot(django.db.models.Model):
@@ -28,9 +28,9 @@ class Chroot(django.db.models.Model):
         actions = [chroot_prepare, chroot_purge]
 
     def __unicode__(self):
-        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.is_prepared() else "please prepare")
+        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.mbd_is_prepared() else "please prepare")
 
-    def get_backend(self):
+    def mbd_get_backend(self):
         try:
             return self.filechroot
         except:
@@ -42,27 +42,27 @@ class Chroot(django.db.models.Model):
                 except:
                     raise Exception("No chroot backend found")
 
-    def get_path(self):
+    def mbd_get_path(self):
         return os.path.join(setup.CHROOTS_DIR, self.dist.base_source.codename, self.arch.name)
 
-    def get_name(self):
+    def mbd_get_name(self):
         return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
 
-    def get_tmp_dir(self):
-        d = os.path.join(self.get_path(), "tmp")
+    def mbd_get_tmp_dir(self):
+        d = os.path.join(self.mbd_get_path(), "tmp")
         misc.mkdirs(d)
         return d
 
-    def get_schroot_conf_file(self):
-        return os.path.join(self.get_path(), "schroot.conf")
+    def mbd_get_schroot_conf_file(self):
+        return os.path.join(self.mbd_get_path(), "schroot.conf")
 
-    def get_system_schroot_conf_file(self):
-        return os.path.join("/etc/schroot/chroot.d", self.get_name() + ".conf")
+    def mbd_get_system_schroot_conf_file(self):
+        return os.path.join("/etc/schroot/chroot.d", self.mbd_get_name() + ".conf")
 
-    def get_sudoers_workaround_file(self):
-        return os.path.join(self.get_path(), "sudoers_workaround")
+    def mbd_get_sudoers_workaround_file(self):
+        return os.path.join(self.mbd_get_path(), "sudoers_workaround")
 
-    def get_personality(self):
+    def mbd_get_personality(self):
         """
         On 64bit hosts, 32bit schroots must be configured
         with a *linux32* personality to work.
@@ -77,22 +77,22 @@ class Chroot(django.db.models.Model):
         except:
             return "linux"
 
-    def get_sequence(self):
-        return self.get_backend().get_pre_sequence() + [
+    def mbd_get_sequence(self):
+        return self.mbd_get_backend().mbd_get_pre_sequence() + [
             (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.name), "--include=apt,sudo",
-              self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
-             ["/bin/umount", "-v", self.get_tmp_dir() + "/proc", self.get_tmp_dir() + "/sys"]),
+              self.dist.base_source.codename, self.mbd_get_tmp_dir(), self.dist.base_source.mbd_get_mirror().url],
+             ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
 
-            (["/bin/cp", "--verbose", self.get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.get_tmp_dir())],
-             [])] + self.get_backend().get_post_sequence() + [
+            (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],
+             [])] + self.mbd_get_backend().mbd_get_post_sequence() + [
 
-            (["/bin/cp", "--verbose", self.get_schroot_conf_file(), self.get_system_schroot_conf_file()],
-             ["/bin/rm", "--verbose", self.get_system_schroot_conf_file()])]
+            (["/bin/cp", "--verbose", self.mbd_get_schroot_conf_file(), self.mbd_get_system_schroot_conf_file()],
+             ["/bin/rm", "--verbose", self.mbd_get_system_schroot_conf_file()])]
 
-    def is_prepared(self):
-        return os.path.exists(self.get_system_schroot_conf_file())
+    def mbd_is_prepared(self):
+        return os.path.exists(self.mbd_get_system_schroot_conf_file())
 
-    def prepare(self, request):
+    def mbd_prepare(self, request):
         """
         .. todo:: debootstrap
 
@@ -102,18 +102,18 @@ class Chroot(django.db.models.Model):
           - debootstrap include=apt WTF?
         """
         from mini_buildd.models import msg_info
-        if self.is_prepared():
+        if self.mbd_is_prepared():
             msg_info(request, "Already prepared: {c}".format(c=self))
         else:
             msg_info(request, "Preparing {c}: This may take a while...".format(c=self))
-            misc.mkdirs(self.get_path())
+            misc.mkdirs(self.mbd_get_path())
 
-            open(self.get_sudoers_workaround_file(), 'w').write("""
+            open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
 """.format(u=pwd.getpwuid(os.getuid())[0]))
 
-            open(self.get_schroot_conf_file(), 'w').write("""
+            open(self.mbd_get_schroot_conf_file(), 'w').write("""
 [{n}]
 description=Mini-Buildd chroot {n}
 groups=sbuild
@@ -125,14 +125,14 @@ personality={p}
 
 # Backend specific config
 {b}
-""".format(n=self.get_name(), p=self.get_personality(), b=self.get_backend().get_schroot_conf()))
+""".format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
-            misc.call_sequence(self.get_sequence(), run_as_root=True)
+            misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
 
-    def purge(self, request):
+    def mbd_purge(self, request):
         from mini_buildd.models import msg_info
-        misc.call_sequence(self.get_sequence(), rollback_only=True, run_as_root=True)
-        shutil.rmtree(self.get_path())
+        misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
+        shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Removed from system: {c}".format(c=self))
 
 django.contrib.admin.site.register(Chroot, Chroot.Admin)
@@ -147,10 +147,10 @@ class FileChroot(Chroot):
                   ('tar.xz',  "Tar and xz"))
     tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
 
-    def get_tar_file(self):
-        return os.path.join(self.get_path(), "source." + self.tar_suffix)
+    def mbd_get_tar_file(self):
+        return os.path.join(self.mbd_get_path(), "source." + self.tar_suffix)
 
-    def get_tar_compression_opts(self):
+    def mbd_get_tar_compression_opts(self):
         if self.tar_suffix == "tar.gz":
             return ["--gzip"]
         if self.tar_suffix == "tar.bz2":
@@ -159,25 +159,25 @@ class FileChroot(Chroot):
             return ["--xz"]
         return []
 
-    def get_schroot_conf(self):
+    def mbd_get_schroot_conf(self):
         return """\
 type=file
 file={t}
-""".format(t=self.get_tar_file())
+""".format(t=self.mbd_get_tar_file())
 
-    def get_pre_sequence(self):
+    def mbd_get_pre_sequence(self):
         return []
 
-    def get_post_sequence(self):
+    def mbd_get_post_sequence(self):
         return [
             (["/bin/tar",
               "--create",
-              "--directory={d}".format(d=self.get_tmp_dir()),
-              "--file={f}".format(f=self.get_tar_file()) ] +
-             self.get_tar_compression_opts() +
+              "--directory={d}".format(d=self.mbd_get_tmp_dir()),
+              "--file={f}".format(f=self.mbd_get_tar_file()) ] +
+             self.mbd_get_tar_compression_opts() +
              ["."],
              []),
-            (["/bin/rm", "--recursive", "--one-file-system", "--force", self.get_tmp_dir()],
+            (["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()],
              [])]
 
 django.contrib.admin.site.register(FileChroot)
@@ -191,36 +191,36 @@ class LVMChroot(Chroot):
     snapshot_size = django.db.models.IntegerField(default=4,
                                                   help_text="Snapshot device file size in GB.")
 
-    def get_vgname(self):
+    def mbd_get_vgname(self):
         try:
-            return self.looplvmchroot.get_vgname()
+            return self.looplvmchroot.mbd_get_vgname()
         except:
             return self.vgname
 
-    def get_lvm_device(self):
-        return "/dev/{v}/{n}".format(v=self.get_vgname(), n=self.get_name())
+    def mbd_get_lvm_device(self):
+        return "/dev/{v}/{n}".format(v=self.mbd_get_vgname(), n=self.mbd_get_name())
 
-    def get_schroot_conf(self):
+    def mbd_get_schroot_conf(self):
         return """\
 type=lvm-snapshot
 device={d}
 mount-options=-t {f} -o noatime,user_xattr
 lvm-snapshot-options=--size {s}G
-""".format(d=self.get_lvm_device(), f=self.filesystem, s=self.snapshot_size)
+""".format(d=self.mbd_get_lvm_device(), f=self.filesystem, s=self.snapshot_size)
 
-    def get_pre_sequence(self):
+    def mbd_get_pre_sequence(self):
         return [
-            (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.get_name()), self.get_vgname()],
-             ["/sbin/lvremove", "--verbose", "--force", self.get_lvm_device()]),
+            (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.mbd_get_name()), self.mbd_get_vgname()],
+             ["/sbin/lvremove", "--verbose", "--force", self.mbd_get_lvm_device()]),
 
-            (["/sbin/mkfs.{f}".format(f=self.filesystem), self.get_lvm_device()],
+            (["/sbin/mkfs.{f}".format(f=self.filesystem), self.mbd_get_lvm_device()],
              []),
 
-            (["/bin/mount", "-v", "-t{f}".format(f=self.filesystem), self.get_lvm_device(), self.get_tmp_dir()],
-             ["/bin/umount", "-v", self.get_tmp_dir()])]
+            (["/bin/mount", "-v", "-t{f}".format(f=self.filesystem), self.mbd_get_lvm_device(), self.mbd_get_tmp_dir()],
+             ["/bin/umount", "-v", self.mbd_get_tmp_dir()])]
 
-    def get_post_sequence(self):
-        return [(["/bin/umount", "-v", self.get_tmp_dir()], [])]
+    def mbd_get_post_sequence(self):
+        return [(["/bin/umount", "-v", self.mbd_get_tmp_dir()], [])]
 
 django.contrib.admin.site.register(LVMChroot)
 
@@ -230,37 +230,37 @@ class LoopLVMChroot(LVMChroot):
     loop_size = django.db.models.IntegerField(default=100,
                                               help_text="Loop device file size in GB.")
 
-    def get_vgname(self):
+    def mbd_get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
 
-    def get_backing_file(self):
-        return os.path.join(self.get_path(), "lvmloop.image")
+    def mbd_get_backing_file(self):
+        return os.path.join(self.mbd_get_path(), "lvmloop.image")
 
-    def get_loop_device(self):
+    def mbd_get_loop_device(self):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.get_backing_file()):
+            if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.mbd_get_backing_file()):
                 return "/dev/" + f.split("/")[3]
-        log.debug("No existing loop device for {b}, searching for free device".format(b=self.get_backing_file()))
+        log.debug("No existing loop device for {b}, searching for free device".format(b=self.mbd_get_backing_file()))
         return misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()
 
-    def get_pre_sequence(self):
+    def mbd_get_pre_sequence(self):
         # todo get_loop_device() must not be dynamic
-        loop_device = self.get_loop_device()
+        loop_device = self.mbd_get_loop_device()
         log.debug("Acting on loop device: {d}".format(d=loop_device))
         return [
             (["/bin/dd",
-              "if=/dev/zero", "of={imgfile}".format(imgfile=self.get_backing_file()),
+              "if=/dev/zero", "of={imgfile}".format(imgfile=self.mbd_get_backing_file()),
               "bs={gigs}M".format(gigs=self.loop_size),
               "seek=1024", "count=0"],
-             ["/bin/rm", "--verbose", self.get_backing_file()]),
+             ["/bin/rm", "--verbose", self.mbd_get_backing_file()]),
 
-            (["/sbin/losetup", "--verbose", loop_device, self.get_backing_file()],
+            (["/sbin/losetup", "--verbose", loop_device, self.mbd_get_backing_file()],
              ["/sbin/losetup", "--verbose", "--detach", loop_device]),
 
             (["/sbin/pvcreate", "--verbose", loop_device],
              ["/sbin/pvremove", "--verbose", loop_device]),
 
-            (["/sbin/vgcreate", "--verbose", self.get_vgname(), loop_device],
-             ["/sbin/vgremove", "--verbose", "--force", self.get_vgname()])] + super(LoopLVMChroot, self).get_pre_sequence()
+            (["/sbin/vgcreate", "--verbose", self.mbd_get_vgname(), loop_device],
+             ["/sbin/vgremove", "--verbose", "--force", self.mbd_get_vgname()])] + super(LoopLVMChroot, self).mbd_get_pre_sequence()
 
 django.contrib.admin.site.register(LoopLVMChroot)

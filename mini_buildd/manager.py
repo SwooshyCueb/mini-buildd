@@ -35,14 +35,14 @@ Expire-Date: 0""")
         if Manager.objects.count() > 0 and self.id != Manager.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Manager instance!")
 
-    def prepare(self):
+    def mbd_prepare(self):
         self.gnupg.prepare()
         for r in Repository.objects.all():
-            r.prepare()
+            r.mbd_prepare()
 
     def run(self, incoming_queue, build_queue):
         log.info("Preparing {d}".format(d=self))
-        self.prepare()
+        self.mbd_prepare()
 
         log.info("Starting {d}".format(d=self))
         while True:
@@ -57,7 +57,7 @@ Expire-Date: 0""")
                 build_queue.put(event)
             elif c.is_buildresult():
                 log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
-                c.untar(path=r.get_incoming_path())
+                c.untar(path=r.mbd_get_incoming_path())
                 r._reprepro.processincoming()
             else:
                 log.info("{p}: Got user upload for {r}".format(p=c.get_pkg_id(), r=r.id))

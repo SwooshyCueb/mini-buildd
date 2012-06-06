@@ -89,23 +89,23 @@ class Changes(debian.deb822.Changes):
         br_list = []
         r = self.get_repository()
         for a in r.archs.all():
-            path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.arch)
-            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.arch)))
+            path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
+            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 
             codename = br["Distribution"].split("-")[0]
 
             # Generate sources.list to be used
-            open(os.path.join(path, "apt_sources.list"), 'w').write(r.get_apt_sources_list(self["Distribution"]))
-            open(os.path.join(path, "apt_preferences"), 'w').write(r.get_apt_preferences())
+            open(os.path.join(path, "apt_sources.list"), 'w').write(r.mbd_get_apt_sources_list(self["Distribution"]))
+            open(os.path.join(path, "apt_preferences"), 'w').write(r.mbd_get_apt_preferences())
 
             # Generate tar from original changes
             self.tar(tar_path=br._file_path + ".tar", add_files=[os.path.join(path, "apt_sources.list"), os.path.join(path, "apt_preferences")])
             br.add_file(br._file_path + ".tar")
 
             br["Base-Distribution"] = codename
-            br["Architecture"] = a.arch
+            br["Architecture"] = a.name
             if a == r.arch_all:
                 br["Arch-All"] = "Yes"
             br["Build-Dep-Resolver"] = r.build_dep_resolver

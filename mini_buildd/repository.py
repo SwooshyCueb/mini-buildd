@@ -43,11 +43,11 @@ class Repository(django.db.models.Model):
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
 
-        self.uploadable_dists = []
+        self.mbd_uploadable_dists = []
         for d in self.dists.all():
             for s in self.layout.suites.all():
                 if s.migrates_from == None:
-                    self.uploadable_dists.append("{d}-{id}-{s}".format(
+                    self.mbd_uploadable_dists.append("{d}-{id}-{s}".format(
                             id=self.id,
                             d=d.base_source.codename,
                             s=s.name))
@@ -57,37 +57,36 @@ class Repository(django.db.models.Model):
     def __unicode__(self):
         return self.id
 
-    def get_path(self):
+    def mbd_get_path(self):
         return os.path.join(setup.REPOSITORIES_DIR, self.id)
 
-    def get_incoming_path(self):
-        return os.path.join(self.get_path(), "incoming")
+    def mbd_get_incoming_path(self):
+        return os.path.join(self.mbd_get_path(), "incoming")
 
-
-    def get_dist(self, dist, suite):
+    def mbd_get_dist(self, dist, suite):
         return dist.base_source.codename + "-" + self.id + "-" + suite.name
 
-    def get_origin(self):
+    def mbd_get_origin(self):
         return "mini-buildd" + self.id
 
-    def get_components(self):
+    def mbd_get_components(self):
         return "main contrib non-free"
 
-    def get_archs(self):
+    def mbd_get_archs(self):
         archs = []
         for a in self.archs.all():
             archs.append(a.name)
         return archs
 
-    def get_desc(self, dist, suite):
+    def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
-    def get_apt_line(self, dist, suite):
+    def mbd_get_apt_line(self, dist, suite):
         return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
             h=self.host, r=os.path.basename(setup.REPOSITORIES_DIR),
-            id=self.id, dist=self.get_dist(dist, suite), components=self.get_components())
+            id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
-    def get_apt_sources_list(self, dist):
+    def mbd_get_apt_sources_list(self, dist):
         ".. todo:: decide what other mini-buildd suites are to be included automatically"
         dist_split = dist.split("-")
         base = dist_split[0]
@@ -97,31 +96,31 @@ class Repository(django.db.models.Model):
 
         for d in self.dists.all():
             if d.base_source.codename == base:
-                res = d.get_apt_sources_list()
+                res = d.mbd_get_apt_sources_list()
                 res += "\n"
                 for s in self.layout.suites.all():
                     if s.name == suite:
                         res += "# Mini-Buildd: {d}\n".format(d=dist)
-                        res += self.get_apt_line(d, s)
+                        res += self.mbd_get_apt_line(d, s)
                         return res
 
         raise Exception("Could not produce sources.list")
 
-    def get_apt_preferences(self):
+    def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
         return ""
 
-    def get_sources(self, dist, suite):
+    def mbd_get_sources(self, dist, suite):
         result = ""
         result += "Base: " + str(dist.base_source) + "\n"
         for e in dist.extra_sources.all():
             result += "Extra: " + str(e) + "\n"
         return result
 
-    def get_mandatory_version(self, dist, suite):
+    def mbd_get_mandatory_version(self, dist, suite):
         return suite.mandatory_version.format(rid=self.id, nbv=misc.codename2Version(dist.base_source.codename))
 
-    def repreproConfig(self):
+    def mbd_reprepro_config(self):
         result = StringIO.StringIO()
         for d in self.dists.all():
             for s in self.layout.suites.all():
@@ -136,20 +135,20 @@ Description: {desc}
 SignWith: default
 NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
-""".format(dist=self.get_dist(d, s),
-           origin=self.get_origin(),
-           components=self.get_components(),
-           archs=" ".join(self.get_archs()),
-           desc=self.get_desc(d, s),
+""".format(dist=self.mbd_get_dist(d, s),
+           origin=self.mbd_get_origin(),
+           components=self.mbd_get_components(),
+           archs=" ".join(self.mbd_get_archs()),
+           desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))
 
         return result.getvalue()
 
-    def prepare(self):
+    def mbd_prepare(self):
         ".. todo:: README from 08x; please fix/update."
 
-        path = self.get_path()
+        path = self.mbd_get_path()
         log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         misc.mkdirs(path)

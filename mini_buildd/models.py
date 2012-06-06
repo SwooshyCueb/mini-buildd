@@ -99,16 +99,16 @@ class Source(django.db.models.Model):
             except:
                 log.info("Mirror {m} not for {s}".format(m=m, s=self))
 
-    def get_mirror(self):
+    def mbd_get_mirror(self):
         ".. todo:: Returning first mirror only. Should return preferred one from mirror list."
         for m in self.mirrors.all():
             return m
 
-    def get_apt_line(self, components="main contrib non-free"):
-        m = self.get_mirror()
+    def mbd_get_apt_line(self, components="main contrib non-free"):
+        m = self.mbd_get_mirror()
         return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)
 
-    def get_apt_pin(self):
+    def mbd_get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
 
 django.contrib.admin.site.register(Source, Source.Admin)
@@ -171,17 +171,18 @@ class Distribution(django.db.models.Model):
 
     extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True, null=True)
 
-    def get_apt_sources_list(self):
-        res = "# Base: {p}\n".format(p=self.base_source.get_apt_pin())
-        res += self.base_source.get_apt_line() + "\n\n"
-        for e in self.extra_sources.all():
-            res += "# Extra: {p}\n".format(p=e.source.get_apt_pin())
-            res += e.source.get_apt_line() + "\n"
-        return res
-
     def __unicode__(self):
         ".. todo:: somehow indicate extra sources to visible name"
         return self.base_source.origin + ": " + self.base_source.codename
+
+    def mbd_get_apt_sources_list(self):
+        res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
+        res += self.base_source.mbd_get_apt_line() + "\n\n"
+        for e in self.extra_sources.all():
+            res += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
+            res += e.source.mbd_get_apt_line() + "\n"
+        return res
+
 
 django.contrib.admin.site.register(Distribution)
 

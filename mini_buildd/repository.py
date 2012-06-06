@@ -38,6 +38,19 @@ class Repository(django.db.models.Model):
     mail = django.db.models.EmailField(blank=True)
     extdocurl = django.db.models.URLField(blank=True)
 
+    class Admin(django.contrib.admin.ModelAdmin):
+        fieldsets = (
+            ("Basics", {
+                    "fields": ("id", "host", "layout", "dists", "archs")
+                    }),
+            ("Build options", {
+                    "fields": ("arch_all", "build_dep_resolver", "lintian_mode", "lintian_extra_options")
+                    }),
+            ("Extra", {
+                    "classes": ("collapse",),
+                    "fields": ("mail", "extdocurl")
+                    }),)
+
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
@@ -198,4 +211,4 @@ needs (like pre-seeding debconf variables).
         # Reprepro config
         self._reprepro.prepare()
 
-django.contrib.admin.site.register(Repository)
+django.contrib.admin.site.register(Repository, Repository.Admin)

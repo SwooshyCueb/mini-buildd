@@ -76,7 +76,7 @@ class Repository(django.db.models.Model):
     def get_archs(self):
         archs = []
         for a in self.archs.all():
-            archs.append(a.arch)
+            archs.append(a.name)
         return archs
 
     def get_desc(self, dist, suite):

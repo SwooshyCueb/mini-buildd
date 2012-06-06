@@ -1,11 +1,21 @@
 # -*- coding: utf-8 -*-
 import os, shutil, re, glob, tempfile, pwd, logging
 
-import django.db
+import django.db.models, django.contrib.admin, django.contrib.messages
 
 from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
+
+def chroot_prepare(modeladmin, request, queryset):
+    for c in queryset:
+        c.prepare(request)
+chroot_prepare.short_description = "Prepare selected sources"
+
+def chroot_purge(modeladmin, request, queryset):
+    for c in queryset:
+        c.purge(request)
+chroot_purge.short_description = "Purge selected sources"
 
 class Chroot(django.db.models.Model):
     PERSONALITIES = { 'i386': 'linux32' }
@@ -14,11 +24,11 @@ class Chroot(django.db.models.Model):
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
 
-    def __unicode__(self):
-        return "Chroot: {c}:{a}".format(c=self.dist.base_source.codename, a=self.arch.arch)
+    class Admin(django.contrib.admin.ModelAdmin):
+        actions = [chroot_prepare, chroot_purge]
 
-    class Meta:
-        unique_together = ("dist", "arch")
+    def __unicode__(self):
+        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.is_prepared() else "please prepare")
 
     def get_backend(self):
         try:
@@ -33,10 +43,10 @@ class Chroot(django.db.models.Model):
                     raise Exception("No chroot backend found")
 
     def get_path(self):
-        return os.path.join(setup.CHROOTS_DIR, self.dist.base_source.codename, self.arch.arch)
+        return os.path.join(setup.CHROOTS_DIR, self.dist.base_source.codename, self.arch.name)
 
     def get_name(self):
-        return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
+        return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
 
     def get_tmp_dir(self):
         d = os.path.join(self.get_path(), "tmp")
@@ -63,13 +73,13 @@ class Chroot(django.db.models.Model):
            - We currently assume we build under linux only.
         """
         try:
-            return self.PERSONALITIES[self.arch.arch]
+            return self.PERSONALITIES[self.arch.name]
         except:
             return "linux"
 
     def get_sequence(self):
         return self.get_backend().get_pre_sequence() + [
-            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.arch), "--include=apt,sudo",
+            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.name), "--include=apt,sudo",
               self.dist.base_source.codename, self.get_tmp_dir(), self.dist.base_source.get_mirror().url],
              ["/bin/umount", "-v", self.get_tmp_dir() + "/proc", self.get_tmp_dir() + "/sys"]),
 
@@ -82,7 +92,7 @@ class Chroot(django.db.models.Model):
     def is_prepared(self):
         return os.path.exists(self.get_system_schroot_conf_file())
 
-    def prepare(self):
+    def prepare(self, request):
         """
         .. todo:: debootstrap
 
@@ -91,9 +101,11 @@ class Chroot(django.db.models.Model):
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
           - debootstrap include=apt WTF?
         """
+        from mini_buildd.models import msg_info
         if self.is_prepared():
-            log.info("Already prepared: {c}".format(c=self))
+            msg_info(request, "Already prepared: {c}".format(c=self))
         else:
+            msg_info(request, "Preparing {c}: This may take a while...".format(c=self))
             misc.mkdirs(self.get_path())
 
             open(self.get_sudoers_workaround_file(), 'w').write("""
@@ -117,9 +129,12 @@ personality={p}
 
             misc.call_sequence(self.get_sequence(), run_as_root=True)
 
-    def purge(self):
+    def purge(self, request):
+        from mini_buildd.models import msg_info
         misc.call_sequence(self.get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.get_path())
+        msg_info(request, "Removed from system: {c}".format(c=self))
+
 
 
 class FileChroot(Chroot):
@@ -211,7 +226,7 @@ class LoopLVMChroot(LVMChroot):
                                               help_text="Loop device file size in GB.")
 
     def get_vgname(self):
-        return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.arch)
+        return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
 
     def get_backing_file(self):
         return os.path.join(self.get_path(), "lvmloop.image")

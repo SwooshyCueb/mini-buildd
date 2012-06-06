@@ -11,6 +11,16 @@ def msg_info(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
     log.info(msg)
 
+def action_activate(modeladmin, request, queryset):
+    for s in queryset:
+        s.mbd_activate(request)
+action_activate.short_description = "Activate selected objects"
+
+def action_deactivate(modeladmin, request, queryset):
+    for s in queryset:
+        s.mbd_deactivate(request)
+action_deactivate.short_description = "Deactivate selected objects"
+
 
 class Mirror(django.db.models.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
@@ -45,13 +55,8 @@ class Component(django.db.models.Model):
         return self.name
 
 
-def source_scan(modeladmin, request, queryset):
-    for s in queryset:
-        s.mbd_scan(request)
-source_scan.short_description = "(Re)scan selected sources"
-
 class Source(django.db.models.Model):
-    DESC_UNSCANNED = "please scan to find mirrors"
+    DESC_UNSCANNED = "please activate to find mirrors"
 
     origin = django.db.models.CharField(max_length=60, default="Debian")
     codename = django.db.models.CharField(max_length=60, default="sid")
@@ -67,12 +72,12 @@ class Source(django.db.models.Model):
     class Admin(django.contrib.admin.ModelAdmin):
         search_fields = ["origin", "codename"]
         readonly_fields = ["mirrors", "description"]
-        actions = [source_scan]
+        actions = [action_activate]
 
     def __unicode__(self):
         return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
 
-    def mbd_scan(self, request):
+    def mbd_activate(self, request):
         log.info("Preparing source: {d}".format(d=self))
         self.description = self.DESC_UNSCANNED
         self.mirrors = []

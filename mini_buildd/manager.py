@@ -37,8 +37,6 @@ Expire-Date: 0""")
 
     def mbd_prepare(self):
         self.gnupg.prepare()
-        for r in Repository.objects.all():
-            r.mbd_prepare()
 
     def run(self, incoming_queue, build_queue):
         log.info("Preparing {d}".format(d=self))

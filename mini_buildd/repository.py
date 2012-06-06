@@ -39,6 +39,8 @@ class Repository(django.db.models.Model):
     extdocurl = django.db.models.URLField(blank=True)
 
     class Admin(django.contrib.admin.ModelAdmin):
+        from mini_buildd.models import action_activate
+        actions = [action_activate]
         fieldsets = (
             ("Basics", {
                     "fields": ("id", "host", "layout", "dists", "archs")
@@ -157,11 +159,12 @@ ButAutomaticUpgrades: {bau}
 
         return result.getvalue()
 
-    def mbd_prepare(self):
+    def mbd_activate(self, request):
         ".. todo:: README from 08x; please fix/update."
+        from mini_buildd.models import msg_info
 
         path = self.mbd_get_path()
-        log.info("Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
+        msg_info(request, "Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
 
         misc.mkdirs(path)
         misc.mkdirs(os.path.join(path, "log"))

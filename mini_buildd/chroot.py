@@ -7,16 +7,6 @@ from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
-def chroot_prepare(modeladmin, request, queryset):
-    for c in queryset:
-        c.mbd_prepare(request)
-chroot_prepare.short_description = "Prepare selected sources"
-
-def chroot_purge(modeladmin, request, queryset):
-    for c in queryset:
-        c.mbd_purge(request)
-chroot_purge.short_description = "Purge selected sources"
-
 class Chroot(django.db.models.Model):
     PERSONALITIES = { 'i386': 'linux32' }
 
@@ -25,10 +15,11 @@ class Chroot(django.db.models.Model):
     arch = django.db.models.ForeignKey(Architecture)
 
     class Admin(django.contrib.admin.ModelAdmin):
-        actions = [chroot_prepare, chroot_purge]
+        from mini_buildd.models import action_activate, action_deactivate
+        actions = [action_activate, action_deactivate]
 
     def __unicode__(self):
-        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.mbd_is_prepared() else "please prepare")
+        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.mbd_is_activated() else "please prepare")
 
     def mbd_get_backend(self):
         try:
@@ -89,10 +80,10 @@ class Chroot(django.db.models.Model):
             (["/bin/cp", "--verbose", self.mbd_get_schroot_conf_file(), self.mbd_get_system_schroot_conf_file()],
              ["/bin/rm", "--verbose", self.mbd_get_system_schroot_conf_file()])]
 
-    def mbd_is_prepared(self):
+    def mbd_is_activated(self):
         return os.path.exists(self.mbd_get_system_schroot_conf_file())
 
-    def mbd_prepare(self, request):
+    def mbd_activate(self, request):
         """
         .. todo:: debootstrap
 
@@ -102,8 +93,8 @@ class Chroot(django.db.models.Model):
           - debootstrap include=apt WTF?
         """
         from mini_buildd.models import msg_info
-        if self.mbd_is_prepared():
-            msg_info(request, "Already prepared: {c}".format(c=self))
+        if self.mbd_is_activated():
+            msg_info(request, "Already activated: {c}".format(c=self))
         else:
             msg_info(request, "Preparing {c}: This may take a while...".format(c=self))
             misc.mkdirs(self.mbd_get_path())
@@ -129,7 +120,7 @@ personality={p}
 
             misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
 
-    def mbd_purge(self, request):
+    def mbd_deactivate(self, request):
         from mini_buildd.models import msg_info
         misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())

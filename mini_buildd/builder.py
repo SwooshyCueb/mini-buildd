@@ -145,8 +145,6 @@ class Builder(django.db.models.Model):
     def run(self, queue):
         log.info("{d}: Preparing chroots...".format(d=self))
         self.mbd_sbuild_workaround()
-        for c in Chroot.objects.all():
-            c.prepare()
 
         log.info("{d}: Running...".format(d=self))
         join_threads = []

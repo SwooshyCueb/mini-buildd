@@ -89,7 +89,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         s=models.Source(codename=codename)
         s.save()
-        s.mbd_scan(None)
+        s.mbd_activate(None)
         a, created = models.Architecture.objects.get_or_create(name=arch)
 
         d=models.Distribution(base_source=s)

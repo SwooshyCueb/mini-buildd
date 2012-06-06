@@ -29,7 +29,8 @@ class Changes(debian.deb822.Changes):
         from models import Repository
         dist = self["Distribution"]
         r_id = dist.split("-")[1]
-        log.debug(dist + "/" + r_id)
+        # using unicode leads to strange logging behavior => use str() or encode("utf-8") as workaround
+        log.debug(str(dist + "/" + r_id))
 
         r = Repository.objects.get(id=r_id)
         return r

@@ -30,8 +30,8 @@ mbd_purge()
 mbd_build_install()
 {
 	_head "Building && installing snapshot..."
-	git dch --snapshot --auto
-	git-buildpackage --git-ignore-new -us -uc
+	git dch --snapshot --auto --ignore-branch
+	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
 mini-buildd mini-buildd/options string --verbose --verbose --debug

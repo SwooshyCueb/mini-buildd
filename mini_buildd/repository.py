@@ -7,9 +7,8 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import Distribution
-from mini_buildd.models import Architecture
-from mini_buildd.models import Layout
+from mini_buildd.models import Distribution, Architecture, Layout
+
 class Repository(django.db.models.Model):
     class Meta():
         verbose_name_plural = "Repositories"

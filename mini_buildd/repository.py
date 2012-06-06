@@ -29,9 +29,9 @@ class Repository(django.db.models.Model):
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 
     LINTIAN_MODES = (('disabled',        "Don't run lintian"),
-                     ('never-fail',      "Run lintian and show results"),
+                     ('never-fail',      "Run lintian"),
                      ('fail-on-error',   "Run lintian and fail on errors"),
-                     ('fail-on-warning', "Run lintian and ail on warnings"))
+                     ('fail-on-warning', "Run lintian and fail on warnings"))
     lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 

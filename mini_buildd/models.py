@@ -111,12 +111,11 @@ class Source(django.db.models.Model):
         return "release n=" + self.codename + ", o=" + self.origin
 
 
-
 class PrioSource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
     prio = django.db.models.IntegerField(default=1,
-                               help_text="A apt pin priority value (see 'man apt_preferences')."
-                               "Examples: 1=not automatic, 1001=downgrade'")
+                                         help_text="A apt pin priority value (see 'man apt_preferences')."
+                                         "Examples: 1=not automatic, 1001=downgrade'")
 
     class Meta:
         unique_together = ('source', 'prio')
@@ -133,8 +132,9 @@ class Suite(django.db.models.Model):
         max_length=50, default="~{rid}{nbv}+[1-9]",
         help_text="Mandatory version template; {rid}=repository id, {nbv}=numerical base distribution version.")
 
-    migrates_from = django.db.models.ForeignKey('self', blank=True, null=True,
-                                      help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+    migrates_from = django.db.models.ForeignKey(
+        'self', blank=True, null=True,
+        help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
@@ -149,6 +149,7 @@ class Layout(django.db.models.Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Distribution(django.db.models.Model):
     """

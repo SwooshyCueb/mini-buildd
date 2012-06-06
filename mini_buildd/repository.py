@@ -200,3 +200,4 @@ needs (like pre-seeding debconf variables).
         # Reprepro config
         self._reprepro.prepare()
 
+django.contrib.admin.site.register(Repository)

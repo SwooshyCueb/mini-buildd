@@ -29,6 +29,7 @@ class Mirror(django.db.models.Model):
     def mbd_download_release(self, dist):
         return debian.deb822.Release(urllib.urlopen(self.url + "/dists/" + dist + "/Release"))
 
+django.contrib.admin.site.register(Mirror, Mirror.Admin)
 
 class Architecture(django.db.models.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
@@ -110,6 +111,8 @@ class Source(django.db.models.Model):
     def get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
 
+django.contrib.admin.site.register(Source, Source.Admin)
+
 
 class PrioSource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
@@ -122,6 +125,8 @@ class PrioSource(django.db.models.Model):
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)
+
+django.contrib.admin.site.register(PrioSource)
 
 
 class Suite(django.db.models.Model):
@@ -141,6 +146,8 @@ class Suite(django.db.models.Model):
     def __unicode__(self):
         return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
 
+django.contrib.admin.site.register(Suite)
+
 
 class Layout(django.db.models.Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
@@ -149,6 +156,8 @@ class Layout(django.db.models.Model):
 
     def __unicode__(self):
         return self.name
+
+django.contrib.admin.site.register(Layout)
 
 
 class Distribution(django.db.models.Model):
@@ -174,6 +183,7 @@ class Distribution(django.db.models.Model):
         ".. todo:: somehow indicate extra sources to visible name"
         return self.base_source.origin + ": " + self.base_source.codename
 
+django.contrib.admin.site.register(Distribution)
 
 from mini_buildd import repository
 class Repository(repository.Repository):
@@ -205,3 +215,5 @@ class Remote(django.db.models.Model):
 
     def __unicode__(self):
         return "Remote: {h}".format(h=self.host)
+
+django.contrib.admin.site.register(Remote)

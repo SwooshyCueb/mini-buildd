@@ -67,3 +67,5 @@ Expire-Date: 0""")
             incoming_queue.task_done()
 
         log.info("Stopped {d}".format(d=self))
+
+django.contrib.admin.site.register(Manager)

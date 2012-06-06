@@ -135,6 +135,7 @@ personality={p}
         shutil.rmtree(self.get_path())
         msg_info(request, "Removed from system: {c}".format(c=self))
 
+django.contrib.admin.site.register(Chroot, Chroot.Admin)
 
 
 class FileChroot(Chroot):
@@ -179,6 +180,8 @@ file={t}
             (["/bin/rm", "--recursive", "--one-file-system", "--force", self.get_tmp_dir()],
              [])]
 
+django.contrib.admin.site.register(FileChroot)
+
 
 class LVMChroot(Chroot):
     """ LVM chroot backend. """
@@ -219,6 +222,8 @@ lvm-snapshot-options=--size {s}G
     def get_post_sequence(self):
         return [(["/bin/umount", "-v", self.get_tmp_dir()], [])]
 
+django.contrib.admin.site.register(LVMChroot)
+
 
 class LoopLVMChroot(LVMChroot):
     """ Loop LVM chroot backend. """
@@ -257,3 +262,5 @@ class LoopLVMChroot(LVMChroot):
 
             (["/sbin/vgcreate", "--verbose", self.get_vgname(), loop_device],
              ["/sbin/vgremove", "--verbose", "--force", self.get_vgname()])] + super(LoopLVMChroot, self).get_pre_sequence()
+
+django.contrib.admin.site.register(LoopLVMChroot)

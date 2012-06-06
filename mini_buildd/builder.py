@@ -168,3 +168,5 @@ class Builder(django.db.models.Model):
         #    c.purge()
 
         log.info("{d}: Done.".format(d=self))
+
+django.contrib.admin.site.register(Builder)

@@ -58,6 +58,7 @@ Key known missing features
  - [FEAT] Auto-generated keyring packages.
  - [REFE] Chroot maintentance (apt-update, fs checks)
  - [DEB ] 0.8.x upgradability (not migration)
+ - [FEAT] DB schema upgrade support.
 
 
 In-code TODOS

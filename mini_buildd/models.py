@@ -1,33 +1,94 @@
 # -*- coding: utf-8 -*-
-import socket, os, logging
+import os, datetime, socket, urllib, logging
 
 import django.db.models, django.contrib.admin
+
+import debian.deb822
 
 log = logging.getLogger(__name__)
 
 class Mirror(django.db.models.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
-                          default="http://ftp.debian.org/debian",
-                          help_text="The URL of an apt mirror/repository")
+                                    default="http://ftp.debian.org/debian",
+                                    help_text="The URL of an apt mirror/repository")
 
     class Meta:
-        ordering = ['url']
+        ordering = ["url"]
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        search_fields = ["url"]
 
     def __unicode__(self):
         return self.url
 
-    class Admin(django.contrib.admin.ModelAdmin):
-        search_fields = ['url']
+    def mbd_download_release(self, dist):
+        return debian.deb822.Release(urllib.urlopen(self.url + "/dists/" + dist + "/Release"))
 
+class Architecture(django.db.models.Model):
+    name = django.db.models.CharField(primary_key=True, max_length=50)
+
+    def __unicode__(self):
+        return self.name
+
+class Component(django.db.models.Model):
+    name = django.db.models.CharField(primary_key=True, max_length=50)
+
+    def __unicode__(self):
+        return self.name
+
+def source_scan(modeladmin, request, queryset):
+    for s in queryset:
+        s.mbd_scan()
+source_scan.short_description = "(Re)scan selected sources"
 
 class Source(django.db.models.Model):
-    origin = django.db.models.CharField(max_length=100, default="Debian")
-    codename = django.db.models.CharField(max_length=100, default="sid")
-    mirrors = django.db.models.ManyToManyField('Mirror')
+    DESC_UNSCANNED = "please scan to find mirrors"
+
+    origin = django.db.models.CharField(max_length=60, default="Debian")
+    codename = django.db.models.CharField(max_length=60, default="sid")
+    apt_key = django.db.models.TextField(default="", blank=True)
+
+    mirrors = django.db.models.ManyToManyField(Mirror, null=True)
+    description = django.db.models.CharField(max_length=100, editable=False, default=DESC_UNSCANNED)
 
     class Meta:
-        unique_together = ('origin', 'codename')
-        ordering = ['origin', 'codename']
+        unique_together = ("origin", "codename")
+        ordering = ["origin", "codename"]
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        search_fields = ["origin", "codename"]
+        readonly_fields = ["mirrors", "description"]
+        actions = [source_scan]
+
+    def __unicode__(self):
+        return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
+
+    def mbd_scan(self):
+        log.info("Preparing source: {d}".format(d=self))
+        self.description = self.DESC_UNSCANNED
+        self.mirrors = []
+        for m in Mirror.objects.all():
+            try:
+                log.info("Scanning mirror: {m}".format(m=m))
+                release = m.mbd_download_release(self.codename)
+                origin = release["Origin"]
+                codename = release["Codename"]
+                if self.origin == origin and self.codename == codename:
+                    log.info("Mirror found: {m}".format(m=m))
+                    self.mirrors.add(m)
+                    self.description = release["Description"]
+                    self.save()
+                    # Scan for new archs and components
+                    for a in release["Architectures"].split(" "):
+                        newArch = Architecture(name=a)
+                        log.info("Auto-adding new architecture: {a}".format(a=a))
+                        newArch.save()
+                    for c in release["Components"].split(" "):
+                        newComponent = Component(name=c)
+                        log.info("Auto-adding new component: {c}".format(c=c))
+                        newComponent.save()
+            except:
+                log.info("Mirror {m} not for {s}".format(m=m, s=self))
 
     def get_mirror(self):
         ".. todo:: Returning first mirror only. Should return preferred/working one from mirror list."
@@ -41,11 +102,6 @@ class Source(django.db.models.Model):
     def get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
 
-    def __unicode__(self):
-        return self.origin + ": " + self.codename + " [" + self.get_apt_pin() + "]"
-
-    class Admin(django.contrib.admin.ModelAdmin):
-        search_fields = ['origin', 'codename']
 
 
 class PrioSource(django.db.models.Model):
@@ -59,15 +115,6 @@ class PrioSource(django.db.models.Model):
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)
-
-
-class Architecture(django.db.models.Model):
-    arch = django.db.models.CharField(primary_key=True, max_length=50,
-                            help_text="A valid Debian architecture (the output of 'dpkg --print-architecture' on the architecture)."
-                            "Examples: 'i386', 'amd64', 'powerpc'")
-
-    def __unicode__(self):
-        return self.arch
 
 
 class Suite(django.db.models.Model):

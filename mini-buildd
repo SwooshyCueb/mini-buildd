@@ -154,8 +154,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
             # Start httpd and ftpd
             from mini_buildd import httpd, ftpd
-            misc.start_thread(httpd.HttpD(self._args.httpd_bind, webapp))
-            misc.run_as_thread(ftpd.run, daemon=True, bind=self._args.ftpd_bind, queue=incoming_queue)
+            misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
+            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=incoming_queue)
 
             # Start builder and manager threads
             join_threads = []

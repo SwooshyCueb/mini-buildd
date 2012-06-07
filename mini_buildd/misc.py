@@ -146,6 +146,15 @@ def setup_test_logging(syslog=True):
 
 if __name__ == "__main__":
     setup_test_logging()
+
+    def test_thread(my_arg):
+        print "Test thread: {a}".format(a=my_arg)
+        raise Exception("alles kapott!")
+
+    t = run_as_thread(test_thread, my_arg="katze")
+    import signal
+    signal.pause()
+
     print call(["id", "-u", "-n"])
     #print call(["id", "-syntax-error"], value_on_error="Kapott")
     print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)

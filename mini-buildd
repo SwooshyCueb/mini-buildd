@@ -159,9 +159,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
             # Start builder and manager threads
             join_threads = []
-            from mini_buildd.models import Manager, Builder
-            for d in Manager.objects.all():
-                join_threads.append(misc.start_thread(d, incoming_queue, build_queue))
+            from mini_buildd import manager
+            join_threads.append(misc.run_as_thread(manager.run, incoming_queue=incoming_queue, build_queue=build_queue))
+
+            from mini_buildd.models import Builder
             for b in Builder.objects.all():
                 join_threads.append(misc.start_thread(b, build_queue))
 

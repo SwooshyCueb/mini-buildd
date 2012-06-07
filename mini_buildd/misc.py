@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, errno, subprocess, threading, tempfile, hashlib, logging
+import sys, os, shutil, errno, subprocess, threading, tempfile, hashlib, logging
 
 log = logging.getLogger(__name__)
 
@@ -17,12 +17,6 @@ class BindArgs(object):
 
 def nop(*args, **kwargs):
     pass
-
-def start_thread(obj, *args, **kwargs):
-    thread = threading.Thread(target=obj.run, args=args, kwargs=kwargs)
-    thread.setDaemon(True)
-    thread.start()
-    return thread
 
 def run_as_thread(call=None, daemon=False, **kwargs):
     def run(**kwargs):

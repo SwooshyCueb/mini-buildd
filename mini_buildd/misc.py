@@ -135,6 +135,21 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             rollback(i)
             raise
 
+sbuild_keys_workaround_lock = threading.Lock()
+
+def sbuild_keys_workaround():
+    "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
+    with sbuild_keys_workaround_lock:
+        if os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
+            log.debug("/var/lib/sbuild/apt-keys/sbuild-key.pub: Already exists, skipping")
+        else:
+            t = tempfile.mkdtemp()
+            log.warn("One-time generation of sbuild keys (may take some time)...")
+            call(["sbuild-update", "--keygen"], env=taint_env({"HOME": t}))
+            shutil.rmtree(t)
+            log.info("One-time generation of sbuild keys done")
+
+
 def setup_test_logging(syslog=True):
     if syslog:
         import logging.handlers

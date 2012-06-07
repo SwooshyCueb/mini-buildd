@@ -24,16 +24,18 @@ def start_thread(obj, *args, **kwargs):
     thread.start()
     return thread
 
-def run_as_thread(call, daemon=False, *args, **kwargs):
+def run_as_thread(call=None, daemon=False, **kwargs):
     def run(*args, **kwargs):
+        id = call.__module__ + "." + call.__name__
         try:
-            call(*args, **kwargs)
+            log.info("{id}: Starting...".format(id=id))
+            call(**kwargs)
         except Exception as e:
-            log.exception(call.__name__ + ": " + str(e))
+            log.exception("{i}: Exception: {e}".format(i=id, e=str(e)))
         except:
-            log.exception(call.__name__ + ": Non-standard exception")
+            log.exception("{i}: Non-standard exception".format(i=id))
 
-    thread = threading.Thread(target=run, args=args, kwargs=kwargs)
+    thread = threading.Thread(target=run, kwargs=kwargs)
     thread.setDaemon(daemon)
     thread.start()
     return thread

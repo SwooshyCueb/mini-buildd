@@ -34,7 +34,8 @@ mbd_build_install()
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
-mini-buildd mini-buildd/options string --verbose --verbose --debug
+#mini-buildd mini-buildd/options string --verbose --verbose --debug
+mini-buildd mini-buildd/options string --verbose --debug
 EOF
 	sudo debi
 }

@@ -115,7 +115,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             log.addHandler(h)
 
         # Finally, set log level
-        loglevel = logging.DEBUG if self._args.debug else logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
+        loglevel = logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
         log.setLevel(loglevel)
 
         # Global: Don't propagate exceptions that happen while logging

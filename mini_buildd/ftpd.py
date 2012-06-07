@@ -38,23 +38,21 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
             log.debug("Ignoring incoming file: {f}".format(f=f))
 
 
-class FtpD(pyftpdlib.ftpserver.FTPServer):
-    def __init__(self, bind, queue):
-        log_init()
-        self._bind = misc.BindArgs(bind)
+def run(bind, queue):
+    log_init()
 
-        handler = FtpDHandler
-        handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
-        handler.authorizer.add_anonymous(homedir=setup.HOME_DIR, perm='')
-        handler.authorizer.override_perm(username="anonymous", directory=setup.INCOMING_DIR, perm='elrw')
-        handler.authorizer.override_perm(username="anonymous", directory=setup.REPOSITORIES_DIR, perm='elr', recursive=True)
-        handler.authorizer.override_perm(username="anonymous", directory=setup.LOGS_DIR, perm='elr', recursive=True)
+    ba = misc.BindArgs(bind)
 
-        handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=__version__, V=pyftpdlib.ftpserver.__ver__)
-        handler._mini_buildd_queue = queue
+    handler = FtpDHandler
+    handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
+    handler.authorizer.add_anonymous(homedir=setup.HOME_DIR, perm='')
+    handler.authorizer.override_perm(username="anonymous", directory=setup.INCOMING_DIR, perm='elrw')
+    handler.authorizer.override_perm(username="anonymous", directory=setup.REPOSITORIES_DIR, perm='elr', recursive=True)
+    handler.authorizer.override_perm(username="anonymous", directory=setup.LOGS_DIR, perm='elr', recursive=True)
 
-        pyftpdlib.ftpserver.FTPServer.__init__(self, self._bind.tuple, handler)
+    handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=__version__, V=pyftpdlib.ftpserver.__ver__)
+    handler._mini_buildd_queue = queue
 
-    def run(self):
-        log.info("Starting ftpd on '{b}'.".format(b=self._bind.string))
-        self.serve_forever()
+    ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
+    log.info("Starting ftpd on '{b}'.".format(b=ba.string))
+    ftpd.serve_forever()

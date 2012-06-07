@@ -142,29 +142,28 @@ class Builder(django.db.models.Model):
             misc.call(["sbuild-update", "--keygen"], env=misc.taint_env({"HOME": "/tmp"}))
             log.info("One-time generation of sbuild keys done")
 
-    def run(self, queue):
-        log.info("{d}: Preparing chroots...".format(d=self))
-        self.mbd_sbuild_workaround()
 
-        log.info("{d}: Running...".format(d=self))
-        join_threads = []
-        while True:
-            event = queue.get()
-            if event == "SHUTDOWN":
-                break
-            c = changes.Changes(event)
-            join_threads.append(misc.start_thread(Build(c)))
-            queue.task_done()
+def run(build_queue):
+    builder, created = Builder.objects.get_or_create(id=1)
 
-        log.info("{d}: Shutting down...".format(d=self))
-        for t in join_threads:
-            log.debug("Waiting for {i}".format(i=t))
-            t.join()
+    log.info("{d}: Preparing chroots...".format(d=builder))
+    builder.mbd_sbuild_workaround()
 
-        #log.info("{d}: Purging chroots...".format(d=self))
-        #for c in Chroot.objects.all():
-        #    c.purge()
+    log.info("{d}: Running...".format(d=builder))
+    join_threads = []
+    while True:
+        event = build_queue.get()
+        if event == "SHUTDOWN":
+            break
+        c = changes.Changes(event)
+        join_threads.append(misc.start_thread(Build(c)))
+        build_queue.task_done()
 
-        log.info("{d}: Done.".format(d=self))
+    log.info("{d}: Shutting down...".format(d=builder))
+    for t in join_threads:
+        log.debug("Waiting for {i}".format(i=t))
+        t.join()
+
+    log.info("{d}: Done.".format(d=builder))
 
 django.contrib.admin.site.register(Builder)

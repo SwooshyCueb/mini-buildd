@@ -25,11 +25,12 @@ def start_thread(obj, *args, **kwargs):
     return thread
 
 def run_as_thread(call=None, daemon=False, **kwargs):
-    def run(*args, **kwargs):
+    def run(**kwargs):
         id = call.__module__ + "." + call.__name__
         try:
-            log.info("{id}: Starting...".format(id=id))
+            log.info("{i}: Starting...".format(i=id))
             call(**kwargs)
+            log.info("{i}: Finished.".format(i=id))
         except Exception as e:
             log.exception("{i}: Exception: {e}".format(i=id, e=str(e)))
         except:

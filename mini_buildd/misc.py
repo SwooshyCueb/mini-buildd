@@ -132,10 +132,16 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             rollback(i)
             raise
 
-def setup_test_logging():
-    h = logging.StreamHandler()
-    h.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-    log.addHandler(h)
+def setup_test_logging(syslog=True):
+    if syslog:
+        import logging.handlers
+        sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+        sh.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
+        log.addHandler(sh)
+
+    ch = logging.StreamHandler()
+    ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
+    log.addHandler(ch)
     log.setLevel(logging.DEBUG)
 
 if __name__ == "__main__":

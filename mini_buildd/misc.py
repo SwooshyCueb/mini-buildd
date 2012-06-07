@@ -24,6 +24,20 @@ def start_thread(obj, *args, **kwargs):
     thread.start()
     return thread
 
+def run_as_thread(call, daemon=False, *args, **kwargs):
+    def run(*args, **kwargs):
+        try:
+            call(*args, **kwargs)
+        except Exception as e:
+            log.exception(call.__name__ + ": " + str(e))
+        except:
+            log.exception(call.__name__ + ": Non-standard exception")
+
+    thread = threading.Thread(target=run, args=args, kwargs=kwargs)
+    thread.setDaemon(daemon)
+    thread.start()
+    return thread
+
 def md5_of_file(fn):
     md5 = hashlib.md5()
     with open(fn) as f:

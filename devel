@@ -25,19 +25,35 @@ mbd_purge()
 
 	# @todo: Workaround only as long as mini-buildd doesn't yet do it
 	sudo rm -v -f /etc/schroot/chroot.d/mini-buildd-*
+
+	# Also test mini-buildd's internal sbuild key workaround
+	sudo rm -v -f /var/lib/sbuild/apt-keys/*
 }
 
-mbd_build_install()
+mbd_build()
 {
-	_head "Building && installing snapshot..."
+	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc
+}
+
+mbd_install()
+{
+	_head "Installing snapshot..."
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
 #mini-buildd mini-buildd/options string --verbose --verbose --debug
 mini-buildd mini-buildd/options string --verbose --debug
 EOF
 	sudo debi
+}
+
+mbd_test()
+{
+	(
+		cd ./examples
+		./packages.testbuild
+	)
 }
 
 mbd_default()
@@ -49,33 +65,22 @@ mbd_default()
 	sudo /etc/init.d/mini-buildd restart
 }
 
-mbd_build_install_clean()
+mbd_all()
 {
+	mbd_build
 	mbd_purge
-	mbd_build_install
-}
-
-mbd_build_install_default()
-{
-	mbd_build_install_clean
+	mbd_install
 	mbd_default
-}
-
-mbd_testall()
-{
-	mbd_build_install_default
-	(
-		cd ./examples
-		./packages.testbuild
-	)
+	mbd_test
 }
 
 for c in $(compgen -A function | grep '^mbd_'); do
-	ACTIONS+="${c:4}|"
+	ACTIONS+="[${c:4}] "
 done
 trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
 
-if [ -n "${1}" ]; then
-	mbd_${1}
-	shift
-fi
+[ "${*}" ]
+
+for ACTION in ${*}; do
+	mbd_${ACTION}
+done

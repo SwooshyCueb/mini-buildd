@@ -34,11 +34,6 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                     return models.Architecture(arch=a)
                 tryImport(Architecture)
 
-                # "Builder"
-                def Builder():
-                    return models.Builder(host=host, arch=models.Architecture.objects.get(arch=a))
-                tryImport(Builder)
-
             archs.append("any")
             for a in archs:
                 v="mbd_src_" + d + "_" + t + "_" + a

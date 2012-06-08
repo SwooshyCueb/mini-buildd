@@ -3,13 +3,21 @@ import os, contextlib, logging
 
 import django.db, django.core.exceptions
 
-from mini_buildd import changes, gnupg
+from mini_buildd import misc, changes, gnupg, builder
 
 from mini_buildd.models import Repository
 
 log = logging.getLogger(__name__)
 
-class Manager(django.db.models.Model):
+class Daemon(django.db.models.Model):
+    max_parallel_builds = django.db.models.IntegerField(
+        default=4,
+        help_text="Maximum number of parallel builds.")
+
+    sbuild_parallel = django.db.models.IntegerField(
+        default=1,
+        help_text="Degree of parallelism per build.")
+
     max_parallel_packages = django.db.models.IntegerField(
         default=10,
         help_text="Maximum number of parallel packages to process.")
@@ -21,30 +29,32 @@ Expire-Date: 0""")
 
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
-        super(Manager, self).__init__(*args, **kwargs)
+        super(Daemon, self).__init__(*args, **kwargs)
         self.gnupg = gnupg.GnuPG(self.gnupg_template)
 
     def __unicode__(self):
-        res = "Manager for: "
+        res = "Daemon for: "
         for c in Repository.objects.all():
             res += c.__unicode__() + ", "
         return res
 
     def clean(self):
-        super(Manager, self).clean()
-        if Manager.objects.count() > 0 and self.id != Manager.objects.get().id:
-            raise django.core.exceptions.ValidationError("You can only create one Manager instance!")
+        super(Daemon, self).clean()
+        if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
+            raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
-django.contrib.admin.site.register(Manager)
+django.contrib.admin.site.register(Daemon)
 
-def run(incoming_queue, build_queue):
-    manager, created = Manager.objects.get_or_create(id=1)
+def run(incoming_queue):
+    daemon, created = Daemon.objects.get_or_create(id=1)
 
     # todo: Own GnuPG model
-    log.info("Preparing {d}".format(d=manager))
-    manager.gnupg.prepare()
+    log.info("Preparing {d}".format(d=daemon))
+    daemon.gnupg.prepare()
 
-    log.info("Starting {d}".format(d=manager))
+    join_threads = []
+
+    log.info("Starting {d}".format(d=daemon))
     while True:
         event = incoming_queue.get()
         if event == "SHUTDOWN":
@@ -54,7 +64,7 @@ def run(incoming_queue, build_queue):
         r = c.get_repository()
         if c.is_buildrequest():
             log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-            build_queue.put(event)
+            join_threads.append(misc.run_as_thread(builder.run, br=c))
         elif c.is_buildresult():
             log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
             c.untar(path=r.mbd_get_incoming_path())
@@ -66,4 +76,8 @@ def run(incoming_queue, build_queue):
 
         incoming_queue.task_done()
 
-    log.info("Stopped {d}".format(d=manager))
+    for t in join_threads:
+        log.debug("Waiting for {i}".format(i=t))
+        t.join()
+
+    log.info("Stopped {d}".format(d=daemon))

@@ -208,12 +208,8 @@ class LVMChroot(chroot.LVMChroot):
 class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
 
-from mini_buildd import builder
-class Builder(builder.Builder):
-    pass
-
-from mini_buildd import manager
-class Manager(manager.Manager):
+from mini_buildd import daemon
+class Daemon(daemon.Daemon):
     pass
 
 class Remote(django.db.models.Model):

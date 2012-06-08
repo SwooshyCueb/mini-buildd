@@ -5,8 +5,6 @@ import django.db, django.core.exceptions
 
 from mini_buildd import setup, changes, misc
 
-from mini_buildd.models import Chroot
-
 log = logging.getLogger(__name__)
 
 def results_from_buildlog(fn, changes):
@@ -18,7 +16,7 @@ def results_from_buildlog(fn, changes):
                 s = l.split(":")
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
-def build(br):
+def run(br):
     """
     .. todo:: Builder
 
@@ -112,44 +110,3 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
     res.save()
     res.upload()
-
-
-class Builder(django.db.models.Model):
-    max_parallel_builds = django.db.models.IntegerField(
-        default=4,
-        help_text="Maximum number of parallel builds.")
-
-    sbuild_parallel = django.db.models.IntegerField(
-        default=1,
-        help_text="Degree of parallelism per build.")
-
-    def __unicode__(self):
-        res = "Builder for: "
-        for c in Chroot.objects.all():
-            res += c.__unicode__() + ", "
-        return res
-
-    def clean(self):
-        super(Builder, self).clean()
-        if Builder.objects.count() > 0 and self.id != Builder.objects.get().id:
-            raise django.core.exceptions.ValidationError("You can only create one Builder instance!")
-
-django.contrib.admin.site.register(Builder)
-
-
-def run(build_queue):
-    builder, created = Builder.objects.get_or_create(id=1)
-
-    join_threads = []
-    while True:
-        event = build_queue.get()
-        if event == "SHUTDOWN":
-            break
-        c = changes.Changes(event)
-        join_threads.append(misc.run_as_thread(build, br=c))
-        build_queue.task_done()
-
-    log.info("{d}: Shutting down...".format(d=builder))
-    for t in join_threads:
-        log.debug("Waiting for {i}".format(i=t))
-        t.join()

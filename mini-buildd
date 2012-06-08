@@ -148,20 +148,18 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
-            # Incoming and builder queue
+            # Incoming queue
             incoming_queue = Queue.Queue(maxsize=0)
-            build_queue = Queue.Queue(maxsize=0)
 
             # Start httpd and ftpd
             from mini_buildd import httpd, ftpd
             misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
             misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=incoming_queue)
 
-            # Start builder and manager threads
+            # Start daemon
             join_threads = []
-            from mini_buildd import manager, builder
-            join_threads.append(misc.run_as_thread(manager.run, incoming_queue=incoming_queue, build_queue=build_queue))
-            join_threads.append(misc.run_as_thread(builder.run, build_queue=build_queue))
+            from mini_buildd import daemon
+            join_threads.append(misc.run_as_thread(daemon.run, incoming_queue=incoming_queue))
 
             # Shutdown on SIGTERM or SIGINT
             self._run = True
@@ -170,9 +168,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             while self._run:
                 signal.pause()
 
-            log.info("Signaling shutdown to manager and builder...")
+            log.info("Signaling shutdown...")
             incoming_queue.put("SHUTDOWN")
-            build_queue.put("SHUTDOWN")
 
             for t in join_threads:
                 log.info("Waiting for {i}".format(i=t))

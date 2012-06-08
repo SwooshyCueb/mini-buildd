@@ -125,12 +125,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         c=DefaultChrootClass(dist=d, arch=a)
         c.save()
 
-        b=models.Builder()
-        b.save()
-
-        d=models.Manager()
-        d.save()
-
     def syncdb(self):
         log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)

@@ -14,12 +14,23 @@ def msg_info(request, msg):
 def action_activate(modeladmin, request, queryset):
     for s in queryset:
         s.mbd_activate(request)
-action_activate.short_description = "Activate selected objects"
+action_activate.short_description = "mini-buildd: Activate selected objects"
 
 def action_deactivate(modeladmin, request, queryset):
     for s in queryset:
         s.mbd_deactivate(request)
-action_deactivate.short_description = "Deactivate selected objects"
+action_deactivate.short_description = "mini-buildd: Deactivate selected objects"
+
+class StatusModel(django.db.models.Model):
+    status = django.db.models.CharField(max_length=60, default="purged")
+
+    class Meta:
+        abstract = True
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        actions = [action_activate, action_deactivate]
+        search_fields = ["status"]
+        readonly_fields = ["status"]
 
 
 class Mirror(django.db.models.Model):
@@ -55,7 +66,7 @@ class Component(django.db.models.Model):
         return self.name
 
 
-class Source(django.db.models.Model):
+class Source(StatusModel):
     DESC_UNSCANNED = "please activate to find mirrors"
 
     origin = django.db.models.CharField(max_length=60, default="Debian")
@@ -65,21 +76,20 @@ class Source(django.db.models.Model):
     mirrors = django.db.models.ManyToManyField(Mirror, null=True)
     description = django.db.models.CharField(max_length=100, editable=False, default=DESC_UNSCANNED)
 
-    class Meta:
+    class Meta(StatusModel.Meta):
         unique_together = ("origin", "codename")
         ordering = ["origin", "codename"]
 
-    class Admin(django.contrib.admin.ModelAdmin):
-        search_fields = ["origin", "codename"]
-        readonly_fields = ["mirrors", "description"]
-        actions = [action_activate]
+    class Admin(StatusModel.Admin):
+        search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "description"]
 
     def __unicode__(self):
-        return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
+        return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors): " + self.status
 
     def mbd_activate(self, request):
         log.info("Preparing source: {d}".format(d=self))
-        self.description = self.DESC_UNSCANNED
+        self.status = "purged"
         self.mirrors = []
         for m in Mirror.objects.all():
             try:
@@ -90,6 +100,7 @@ class Source(django.db.models.Model):
                 if self.origin == origin and self.codename == codename:
                     self.mirrors.add(m)
                     self.description = release["Description"]
+                    self.status = "ready"
                     self.save()
                     msg_info(request, "Mirror found: {m}".format(m=m))
                     # Auto-create new archs and components

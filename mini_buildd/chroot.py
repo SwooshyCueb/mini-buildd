@@ -7,19 +7,27 @@ from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
-class Chroot(django.db.models.Model):
+from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
+
+class Chroot(StatusModel):
     PERSONALITIES = { 'i386': 'linux32' }
 
     from mini_buildd.models import Distribution, Architecture
     dist = django.db.models.ForeignKey(Distribution)
     arch = django.db.models.ForeignKey(Architecture)
 
-    class Admin(django.contrib.admin.ModelAdmin):
-        from mini_buildd.models import action_activate, action_deactivate
-        actions = [action_activate, action_deactivate]
+    class Meta(StatusModel.Meta):
+        unique_together = ("dist", "arch")
+        ordering = ["dist", "arch"]
+
+    class Admin(StatusModel.Admin):
+        search_fields = StatusModel.Admin.search_fields + ["dist", "arch"]
+        readonly_fields = StatusModel.Admin.readonly_fields
 
     def __unicode__(self):
-        return "{c}/{a}: {p}".format(c=self.dist.base_source.codename, a=self.arch.name, p="ready" if self.mbd_is_activated() else "please prepare")
+        return "{s}: {c}/{a}".format(
+            s=self.get_status_display(),
+            c=self.dist.base_source.codename, a=self.arch.name)
 
     def mbd_get_backend(self):
         try:
@@ -80,10 +88,7 @@ class Chroot(django.db.models.Model):
             (["/bin/cp", "--verbose", self.mbd_get_schroot_conf_file(), self.mbd_get_system_schroot_conf_file()],
              ["/bin/rm", "--verbose", self.mbd_get_system_schroot_conf_file()])]
 
-    def mbd_is_activated(self):
-        return os.path.exists(self.mbd_get_system_schroot_conf_file())
-
-    def mbd_activate(self, request):
+    def mbd_prepare(self, request):
         """
         .. todo:: debootstrap
 
@@ -93,8 +98,9 @@ class Chroot(django.db.models.Model):
           - debootstrap include=apt WTF?
         """
         from mini_buildd.models import msg_info
-        if self.mbd_is_activated():
-            msg_info(request, "Already activated: {c}".format(c=self))
+        if self.status >= self.STATUS_PREPARED:
+            msg_info(request, "Already prepared: {c}".format(c=self))
+            return self.status
         else:
             msg_info(request, "Preparing {c}: This may take a while...".format(c=self))
             misc.mkdirs(self.mbd_get_path())
@@ -119,12 +125,32 @@ personality={p}
 """.format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
             misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
+            return self.STATUS_PREPARED
 
-    def mbd_deactivate(self, request):
+    def mbd_remove(self, request):
         from mini_buildd.models import msg_info
         misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Removed from system: {c}".format(c=self))
+        return self.STATUS_REMOVED
+
+    def mbd_remove(self, request):
+        self.mirrors = []
+        self.description = ""
+        return self.STATUS_REMOVED
+
+    def mbd_activate(self, request):
+        status = self.mbd_prepare(request)
+        if status >= self.STATUS_PREPARED:
+            return self.STATUS_ACTIVE
+        else:
+            return status
+
+    def mbd_deactivate(self, request):
+        if self.status >= self.STATUS_ACTIVE:
+            return self.STATUS_PREPARED
+        else:
+            return self.status
 
 django.contrib.admin.site.register(Chroot, Chroot.Admin)
 
@@ -171,7 +197,7 @@ file={t}
             (["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()],
              [])]
 
-django.contrib.admin.site.register(FileChroot)
+django.contrib.admin.site.register(FileChroot, Chroot.Admin)
 
 
 class LVMChroot(Chroot):
@@ -213,7 +239,7 @@ lvm-snapshot-options=--size {s}G
     def mbd_get_post_sequence(self):
         return [(["/bin/umount", "-v", self.mbd_get_tmp_dir()], [])]
 
-django.contrib.admin.site.register(LVMChroot)
+django.contrib.admin.site.register(LVMChroot, Chroot.Admin)
 
 
 class LoopLVMChroot(LVMChroot):
@@ -254,4 +280,4 @@ class LoopLVMChroot(LVMChroot):
             (["/sbin/vgcreate", "--verbose", self.mbd_get_vgname(), loop_device],
              ["/sbin/vgremove", "--verbose", "--force", self.mbd_get_vgname()])] + super(LoopLVMChroot, self).mbd_get_pre_sequence()
 
-django.contrib.admin.site.register(LoopLVMChroot)
+django.contrib.admin.site.register(LoopLVMChroot, Chroot.Admin)

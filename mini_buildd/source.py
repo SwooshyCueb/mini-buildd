@@ -39,7 +39,7 @@ class Component(django.db.models.Model):
     def __unicode__(self):
         return self.name
 
-from mini_buildd.models import StatusModel, msg_info
+from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 
 class Source(StatusModel):
     origin = django.db.models.CharField(max_length=60, default="Debian")

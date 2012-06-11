@@ -39,17 +39,15 @@ class Component(django.db.models.Model):
     def __unicode__(self):
         return self.name
 
-from mini_buildd.models import StatusModel
+from mini_buildd.models import StatusModel, msg_info
 
 class Source(StatusModel):
-    DESC_UNSCANNED = "please activate to find mirrors"
-
     origin = django.db.models.CharField(max_length=60, default="Debian")
     codename = django.db.models.CharField(max_length=60, default="sid")
-    apt_key = django.db.models.TextField(default="", blank=True)
+    apt_key = django.db.models.TextField(blank=True, default="")
 
     mirrors = django.db.models.ManyToManyField(Mirror, null=True)
-    description = django.db.models.CharField(max_length=100, editable=False, default=DESC_UNSCANNED)
+    description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
 
     class Meta(StatusModel.Meta):
         unique_together = ("origin", "codename")
@@ -60,35 +58,57 @@ class Source(StatusModel):
         readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "description"]
 
     def __unicode__(self):
-        return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors): " + self.status
+        return self.get_status_display() + ": " + self.origin + " '" + \
+            self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
 
-    def mbd_activate(self, request):
-        log.info("Preparing source: {d}".format(d=self))
-        self.status = "purged"
+    def mbd_prepare(self, request):
         self.mirrors = []
+        status = self.status
         for m in Mirror.objects.all():
             try:
-                log.info("Scanning mirror: {m}".format(m=m))
+                msg_info(request, "Scanning mirror: {m}".format(m=m))
                 release = m.mbd_download_release(self.codename)
                 origin = release["Origin"]
                 codename = release["Codename"]
                 if self.origin == origin and self.codename == codename:
+                    msg_info(request, "Mirror found: {m}".format(m=m))
                     self.mirrors.add(m)
                     self.description = release["Description"]
-                    self.status = "ready"
-                    self.save()
-                    msg_info(request, "Mirror found: {m}".format(m=m))
-                    # Auto-create new archs and components
-                    for a in release["Architectures"].split(" "):
-                        newArch, created = Architecture.objects.get_or_create(name=a)
-                        if created:
-                            msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                    for c in release["Components"].split(" "):
-                        newComponent, created = Component.objects.get_or_create(name=c)
-                        if created:
-                            msg_info(request, "Auto-adding new component: {c}".format(c=c))
-            except:
-                log.info("Mirror {m} not for {s}".format(m=m, s=self))
+                    # Don't care auto-creation of new archs and components
+                    try:
+                        for a in release["Architectures"].split(" "):
+                            newArch, created = Architecture.objects.get_or_create(name=a)
+                            if created:
+                                msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                        for c in release["Components"].split(" "):
+                            newComponent, created = Component.objects.get_or_create(name=c)
+                            if created:
+                                msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                    except Exception as e:
+                        msg_info(request, "Ignoring arch/component auto-add error: {e}".format(e=str(e)))
+                    if status < self.STATUS_PREPARED:
+                        status = self.STATUS_PREPARED
+            except Exception as e:
+                msg_info(request, "Mirror {m} not for {s}: ${e}".format(m=m, s=self, e=str(e)))
+        return status
+
+    def mbd_remove(self, request):
+        self.mirrors = []
+        self.description = ""
+        return self.STATUS_REMOVED
+
+    def mbd_activate(self, request):
+        status = self.mbd_prepare(request)
+        if status >= self.STATUS_PREPARED:
+            return self.STATUS_ACTIVE
+        else:
+            return status
+
+    def mbd_deactivate(self, request):
+        if self.status >= self.STATUS_ACTIVE:
+            return self.STATUS_PREPARED
+        else:
+            return self.status
 
     def mbd_get_mirror(self):
         ".. todo:: Returning first mirror only. Should return preferred one from mirror list."

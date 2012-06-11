@@ -11,24 +11,80 @@ def msg_info(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
     log.info(msg)
 
-def action_activate(modeladmin, request, queryset):
+def msg_error(request, msg):
+    django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
+    log.error(msg)
+
+def msg_warn(request, msg):
+    django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
+    log.warn(msg)
+
+def action(modeladmin, request, queryset, action):
     for s in queryset:
-        s.mbd_activate(request)
-action_activate.short_description = "mini-buildd: Activate selected objects"
+        msg_info(request, "Running: {a}".format(a=action))
+        try:
+            s.status = getattr(s, "mbd_" + action)(request)
+            s.save()
+            msg_info(request, "Run finished: {a}={s}".format(a=action, s=s.status))
+        except Exception as e:
+            s.status = s.STATUS_ERROR
+            s.__last_error = str(e)
+            msg_error(request, "Run failed: {a}={e}".format(a=action, e=str(e)))
+
+def action_prepare(modeladmin, request, queryset):
+    action(modeladmin, request, queryset, "prepare")
+action_prepare.short_description = "mini-buildd: 1 Prepare selected objects"
+
+def action_remove(modeladmin, request, queryset):
+    action(modeladmin, request, queryset, "remove")
+action_remove.short_description = "mini-buildd: 2 Remove selected objects"
+
+def action_activate(modeladmin, request, queryset):
+    action(modeladmin, request, queryset, "activate")
+action_activate.short_description = "mini-buildd: 3 Activate selected objects"
 
 def action_deactivate(modeladmin, request, queryset):
-    for s in queryset:
-        s.mbd_deactivate(request)
-action_deactivate.short_description = "mini-buildd: Deactivate selected objects"
+    action(modeladmin, request, queryset, "deactivate")
+action_deactivate.short_description = "mini-buildd: 4 Deactivate selected objects"
 
 class StatusModel(django.db.models.Model):
-    status = django.db.models.CharField(max_length=60, default="purged")
+    """
+    Abstract model for all models that carry a status.
+
+    ========== ============================
+    Status     Desc
+    ========== ============================
+    removed    Not prepared.
+    prepared   Prepared on system.
+    active     Prepared and activated.
+    error      Prepared and activated.
+    ========== ============================
+
+    ============ ================================
+    Actions      Desc
+    ============ ================================
+    prepare()    Prepare.
+    remove()     Prepare.
+    activate()   Prepare, activate, and check.
+    deactivate() Deactivate.
+    ============ ================================
+    """
+    STATUS_ERROR = -1
+    STATUS_REMOVED = 0
+    STATUS_PREPARED = 1
+    STATUS_ACTIVE = 2
+    STATUS_CHOICES = (
+        (STATUS_ERROR, 'Error'),
+        (STATUS_REMOVED, 'Removed'),
+        (STATUS_PREPARED, 'Prepared'),
+        (STATUS_ACTIVE, 'Active'))
+    status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_REMOVED)
 
     class Meta:
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
-        actions = [action_activate, action_deactivate]
+        actions = [action_prepare, action_remove, action_activate, action_deactivate]
         search_fields = ["status"]
         readonly_fields = ["status"]
 

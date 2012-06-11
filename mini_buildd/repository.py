@@ -39,8 +39,8 @@ class Repository(django.db.models.Model):
     extdocurl = django.db.models.URLField(blank=True)
 
     class Admin(django.contrib.admin.ModelAdmin):
-        from mini_buildd.models import action_activate
-        actions = [action_activate]
+        #from mini_buildd.models import action_activate
+        #actions = [action_activate]
         fieldsets = (
             ("Basics", {
                     "fields": ("id", "host", "layout", "dists", "archs")

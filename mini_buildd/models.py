@@ -19,33 +19,6 @@ def msg_warn(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
-def action(modeladmin, request, queryset, action):
-    for s in queryset:
-        msg_info(request, "Running: {a}".format(a=action))
-        try:
-            s.status = getattr(s, "mbd_" + action)(request)
-            s.save()
-            msg_info(request, "Run finished: {a}={s}".format(a=action, s=s.status))
-        except Exception as e:
-            s.status = s.STATUS_ERROR
-            s.__last_error = str(e)
-            msg_error(request, "Run failed: {a}={e}".format(a=action, e=str(e)))
-
-def action_prepare(modeladmin, request, queryset):
-    action(modeladmin, request, queryset, "prepare")
-action_prepare.short_description = "mini-buildd: 1 Prepare selected objects"
-
-def action_remove(modeladmin, request, queryset):
-    action(modeladmin, request, queryset, "remove")
-action_remove.short_description = "mini-buildd: 2 Remove selected objects"
-
-def action_activate(modeladmin, request, queryset):
-    action(modeladmin, request, queryset, "activate")
-action_activate.short_description = "mini-buildd: 3 Activate selected objects"
-
-def action_deactivate(modeladmin, request, queryset):
-    action(modeladmin, request, queryset, "deactivate")
-action_deactivate.short_description = "mini-buildd: 4 Deactivate selected objects"
 
 class StatusModel(django.db.models.Model):
     """
@@ -84,6 +57,34 @@ class StatusModel(django.db.models.Model):
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
+        def action(self, request, queryset, action):
+            for s in queryset:
+                msg_info(request, "Running: {a}".format(a=action))
+                try:
+                    s.status = getattr(s, "mbd_" + action)(request)
+                    s.save()
+                    msg_info(request, "Run finished: {a}={s}".format(a=action, s=s.status))
+                except Exception as e:
+                    s.status = s.STATUS_ERROR
+                    s.__last_error = str(e)
+                    msg_error(request, "Run failed: {a}={e}".format(a=action, e=str(e)))
+
+        def action_prepare(self, request, queryset):
+            self.action(request, queryset, "prepare")
+        action_prepare.short_description = "mini-buildd: 1 Prepare selected objects"
+
+        def action_remove(self, request, queryset):
+            self.action(request, queryset, "remove")
+        action_remove.short_description = "mini-buildd: 2 Remove selected objects"
+
+        def action_activate(self, request, queryset):
+            self.action(request, queryset, "activate")
+        action_activate.short_description = "mini-buildd: 3 Activate selected objects"
+
+        def action_deactivate(self, request, queryset):
+            self.action(request, queryset, "deactivate")
+        action_deactivate.short_description = "mini-buildd: 4 Deactivate selected objects"
+
         actions = [action_prepare, action_remove, action_activate, action_deactivate]
         search_fields = ["status"]
         readonly_fields = ["status"]

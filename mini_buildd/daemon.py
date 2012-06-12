@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, contextlib, logging
+import os, contextlib, socket, logging
 
 import django.db, django.core.exceptions
 
@@ -10,6 +10,11 @@ from mini_buildd.models import Repository
 log = logging.getLogger(__name__)
 
 class Daemon(django.db.models.Model):
+    fqdn = django.db.models.CharField(
+        max_length=200,
+        default=socket.getfqdn(),
+        help_text="Fully qualified hostname.")
+
     max_parallel_builds = django.db.models.IntegerField(
         default=4,
         help_text="Maximum number of parallel builds.")

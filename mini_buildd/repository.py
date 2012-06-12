@@ -11,7 +11,6 @@ from mini_buildd.models import StatusModel, Distribution, Architecture, Layout, 
 
 class Repository(StatusModel):
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
-    host = django.db.models.CharField(max_length=100, default=socket.getfqdn())
 
     layout = django.db.models.ForeignKey(Layout)
     dists = django.db.models.ManyToManyField(Distribution)
@@ -41,7 +40,7 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("id", "host", "layout", "dists", "archs")
+                    "fields": ("id", "layout", "dists", "archs")
                     }),
             ("Build options", {
                     "fields": ("arch_all", "build_dep_resolver", "lintian_mode", "lintian_extra_options")
@@ -94,8 +93,8 @@ class Repository(StatusModel):
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
-        return "deb ftp://{h}:8067/{r}/{id}/ {dist} {components}".format(
-            h=self.host, r=os.path.basename(setup.REPOSITORIES_DIR),
+        return "deb ftp://{h}:{p}/{r}/{id}/ {dist} {components}".format(
+            h=daemon.Daemon.objects.all()[0].fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
             id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):

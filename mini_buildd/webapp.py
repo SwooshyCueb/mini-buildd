@@ -59,6 +59,25 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'mini_buildd'
                 ))
         self.syncdb()
+        self.setup_default_models()
+
+    def setup_default_models(self):
+        from mini_buildd import models
+        l, created = models.Layout.objects.get_or_create(name="Default")
+        if created:
+            e, created = models.Suite.objects.get_or_create(name="experimental", mandatory_version="~{rid}{nbv}+0")
+            u, created = models.Suite.objects.get_or_create(name="unstable")
+            t, created = models.Suite.objects.get_or_create(name="testing", migrates_from=u)
+            s, created = models.Suite.objects.get_or_create(name="stable", migrates_from=t)
+            l.suites.add(e)
+            l.suites.add(u)
+            l.suites.add(t)
+            l.suites.add(s)
+            l.save()
+
+        codename = misc.call(["lsb_release", "--short", "--codename"], value_on_error="sid").strip()
+        s, created = models.Source.objects.get_or_create(origin="Debian", codename=codename)
+        d, created = models.Distribution.objects.get_or_create(base_source=s)
 
     def set_admin_password(self, password):
         """
@@ -77,53 +96,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         except django.contrib.auth.models.User.DoesNotExist:
             log.info("Creating initial 'admin' user...")
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
-
-    def create_default_config(self, mirror):
-        from mini_buildd import models
-        codename = misc.call(["lsb_release", "--short", "--codename"], value_on_error="sid").strip()
-        arch = misc.call(["dpkg", "--print-architecture"], value_on_error="i386").strip()
-
-        log.info("Creating default config: {c}:{a} from '{m}'".format(c=codename, a=arch, m=mirror))
-        m=models.Mirror(url=mirror)
-        m.save()
-
-        s=models.Source(codename=codename)
-        s.save()
-        s.mbd_activate(None)
-        a, created = models.Architecture.objects.get_or_create(name=arch)
-
-        d=models.Distribution(base_source=s)
-        d.save()
-
-        l=models.Layout(name="Default")
-        l.save()
-        e=models.Suite(name="experimental", mandatory_version="~{rid}{nbv}+0")
-        e.save()
-        l.suites.add(e)
-
-        u=models.Suite(name="unstable")
-        u.save()
-        l.suites.add(u)
-
-        t=models.Suite(name="testing", migrates_from=u)
-        t.save()
-        l.suites.add(t)
-
-        s=models.Suite(name="stable", migrates_from=t)
-        s.save()
-        l.suites.add(s)
-        l.save()
-
-        r=models.Repository(layout=l, arch_all=a)
-        r.save()
-        r.archs.add(a)
-        r.dists.add(d)
-        r.save()
-
-        DefaultChrootClass = models.FileChroot
-        #DefaultChrootClass = models.LoopLVMChroot
-        c=DefaultChrootClass(dist=d, arch=a)
-        c.save()
 
     def syncdb(self):
         log.info("Syncing database...")

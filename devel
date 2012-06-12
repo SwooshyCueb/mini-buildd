@@ -50,19 +50,11 @@ EOF
 
 mbd_test()
 {
+	read -p "About to upload test packages. All configured? [ http://$(hostname -f):8066 ]" dummy
 	(
 		cd ./examples
 		./packages.testbuild
 	)
-}
-
-mbd_default()
-{
-	_head "Creating default config..."
-	_read_mirror
-	sudo su - mini-buildd -c "mini-buildd --foreground --verbose --verbose --debug --create-default-config=${MIRROR}"
-	# @todo: Workaround as long as mini-buildd does not detect the changed config (or code is moved to webapp).
-	sudo /etc/init.d/mini-buildd restart
 }
 
 mbd_all()
@@ -70,7 +62,6 @@ mbd_all()
 	mbd_build
 	mbd_purge
 	mbd_install
-	mbd_default
 	mbd_test
 }
 

@@ -83,9 +83,12 @@ class Source(StatusModel):
                             if created:
                                 msg_info(request, "Auto-adding new component: {c}".format(c=c))
                     except Exception as e:
-                        msg_info(request, "Ignoring arch/component auto-add error: {e}".format(e=str(e)))
+                        msg_warn(request, "Ignoring arch/component auto-add error: {e}".format(e=str(e)))
             except Exception as e:
-                msg_info(request, "Mirror {m} not for {s}: ${e}".format(m=m, s=self, e=str(e)))
+                msg_warn(request, "Mirror '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
+
+        if not len(self.mirrors.all()):
+            raise Exception("{s}: No mirrors found (please add at least one)".format(s=self))
 
     def mbd_unprepare(self, request):
         self.mirrors = []

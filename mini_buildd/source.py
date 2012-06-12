@@ -58,8 +58,7 @@ class Source(StatusModel):
         readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "description"]
 
     def __unicode__(self):
-        return self.get_status_display() + ": " + self.origin + " '" + \
-            self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
+        return self.origin + " '" + self.codename + "': " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
 
     def mbd_prepare(self, request):
         self.mirrors = []

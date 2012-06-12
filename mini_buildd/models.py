@@ -43,6 +43,11 @@ class StatusModel(django.db.models.Model):
         (STATUS_PREPARED, 'Prepared'),
         (STATUS_ACTIVE, 'Active'))
     status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
+    STATUS_COLORS = {
+        STATUS_ERROR: "red",
+        STATUS_UNPREPARED: "yellow",
+        STATUS_PREPARED:"blue",
+        STATUS_ACTIVE: "green" }
 
     class Meta:
         abstract = True
@@ -91,10 +96,14 @@ class StatusModel(django.db.models.Model):
             self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED)
         action_unprepare.short_description = "mini-buildd: 4 Unprepare selected objects"
 
+        def colored_status(self, o):
+            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=o.get_status_display(), c=o.STATUS_COLORS[o.status])
+        colored_status.allow_tags = True
+
         actions = [action_prepare, action_unprepare, action_activate, action_deactivate]
         search_fields = ["status"]
         readonly_fields = ["status"]
-
+        list_display = ('colored_status', '__unicode__')
 
 from mini_buildd import source
 class Mirror(source.Mirror):

@@ -25,9 +25,7 @@ class Chroot(StatusModel):
         readonly_fields = StatusModel.Admin.readonly_fields
 
     def __unicode__(self):
-        return "{s}: {c}/{a}".format(
-            s=self.get_status_display(),
-            c=self.dist.base_source.codename, a=self.arch.name)
+        return "{c}/{a}".format(c=self.dist.base_source.codename, a=self.arch.name)
 
     def mbd_get_backend(self):
         try:

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, logging
+import os, logging, random
 
 import django.conf, django.core.handlers.wsgi, django.core.management
 
@@ -10,10 +10,6 @@ log = logging.getLogger(__name__)
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
     This class represents mini-buildd's web application.
-
-    .. todo:: Django settings open questions
-
-       - SECRET_KEY: ??? wtf?
     """
 
     def __init__(self, home):
@@ -40,7 +36,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 },
             TIME_ZONE = None,
             USE_L10N = True,
-            SECRET_KEY = ")-%wqspscru#-9rl6u0sbbd*yn@$=ic^)-9c$+@@w898co2!7^",
+            SECRET_KEY = self.get_django_secret_key(home),
             ROOT_URLCONF = 'mini_buildd.root_urls',
             STATIC_URL = "/static/",
             STATICFILES_DIRS = ( static_admin_dir, ),
@@ -115,3 +111,30 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             compat08x.exportConf("/dev/stdout")
         else:
             django.core.management.call_command('dumpdata', a, indent=2, format='json')
+
+    def get_django_secret_key(self, home):
+        """
+        This method creates *once* django's SECRET_KEY and/or returns it.
+
+        :param home: mini-buildd's home directory.
+        :type home: string
+        :returns: string -- the (created) key.
+        """
+
+        secret_key_filename = os.path.join(home, ".django_secret_key")
+
+        # the key to create or read from file
+        secret_key = ""
+
+        if not os.path.exists(secret_key_filename):
+            # use same randomize-algorithm as in "django/core/management/commands/startproject.py"
+            secret_key = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+            secret_key_fd = os.open(secret_key_filename, os.O_CREAT | os.O_WRONLY, 0600)
+            os.write(secret_key_fd, secret_key)
+            os.close(secret_key_fd)
+        else:
+            existing_file = open(secret_key_filename, "r")
+            secret_key = existing_file.read()
+            existing_file.close()
+
+        return secret_key

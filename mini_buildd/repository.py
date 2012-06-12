@@ -7,12 +7,9 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import Distribution, Architecture, Layout
+from mini_buildd.models import StatusModel, Distribution, Architecture, Layout, msg_info, msg_warn, msg_error
 
-class Repository(django.db.models.Model):
-    class Meta():
-        verbose_name_plural = "Repositories"
-
+class Repository(StatusModel):
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
     host = django.db.models.CharField(max_length=100, default=socket.getfqdn())
 
@@ -38,9 +35,10 @@ class Repository(django.db.models.Model):
     mail = django.db.models.EmailField(blank=True)
     extdocurl = django.db.models.URLField(blank=True)
 
-    class Admin(django.contrib.admin.ModelAdmin):
-        #from mini_buildd.models import action_activate
-        #actions = [action_activate]
+    class Meta(StatusModel.Meta):
+        verbose_name_plural = "Repositories"
+
+    class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
                     "fields": ("id", "host", "layout", "dists", "archs")
@@ -159,7 +157,7 @@ ButAutomaticUpgrades: {bau}
 
         return result.getvalue()
 
-    def mbd_activate(self, request):
+    def mbd_prepare(self, request):
         ".. todo:: README from 08x; please fix/update."
         from mini_buildd.models import msg_info
 
@@ -213,5 +211,8 @@ needs (like pre-seeding debconf variables).
 
         # Reprepro config
         self._reprepro.prepare()
+
+    def mbd_unprepare(self, request):
+        raise Exception("Not implemented: Can't remove repo from system yet")
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

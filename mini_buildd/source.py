@@ -63,7 +63,6 @@ class Source(StatusModel):
 
     def mbd_prepare(self, request):
         self.mirrors = []
-        status = self.status
         for m in Mirror.objects.all():
             try:
                 msg_info(request, "Scanning mirror: {m}".format(m=m))
@@ -86,29 +85,12 @@ class Source(StatusModel):
                                 msg_info(request, "Auto-adding new component: {c}".format(c=c))
                     except Exception as e:
                         msg_info(request, "Ignoring arch/component auto-add error: {e}".format(e=str(e)))
-                    if status < self.STATUS_PREPARED:
-                        status = self.STATUS_PREPARED
             except Exception as e:
                 msg_info(request, "Mirror {m} not for {s}: ${e}".format(m=m, s=self, e=str(e)))
-        return status
 
-    def mbd_remove(self, request):
+    def mbd_unprepare(self, request):
         self.mirrors = []
         self.description = ""
-        return self.STATUS_REMOVED
-
-    def mbd_activate(self, request):
-        status = self.mbd_prepare(request)
-        if status >= self.STATUS_PREPARED:
-            return self.STATUS_ACTIVE
-        else:
-            return status
-
-    def mbd_deactivate(self, request):
-        if self.status >= self.STATUS_ACTIVE:
-            return self.STATUS_PREPARED
-        else:
-            return self.status
 
     def mbd_get_mirror(self):
         ".. todo:: Returning first mirror only. Should return preferred one from mirror list."

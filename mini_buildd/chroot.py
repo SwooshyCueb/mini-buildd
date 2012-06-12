@@ -99,10 +99,8 @@ class Chroot(StatusModel):
         """
         from mini_buildd.models import msg_info
         if self.status >= self.STATUS_PREPARED:
-            msg_info(request, "Already prepared: {c}".format(c=self))
-            return self.status
+            msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
-            msg_info(request, "Preparing {c}: This may take a while...".format(c=self))
             misc.mkdirs(self.mbd_get_path())
 
             open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
@@ -125,32 +123,13 @@ personality={p}
 """.format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
             misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
-            return self.STATUS_PREPARED
+            msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
-    def mbd_remove(self, request):
+    def mbd_unprepare(self, request):
         from mini_buildd.models import msg_info
         misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
-        msg_info(request, "Removed from system: {c}".format(c=self))
-        return self.STATUS_REMOVED
-
-    def mbd_remove(self, request):
-        self.mirrors = []
-        self.description = ""
-        return self.STATUS_REMOVED
-
-    def mbd_activate(self, request):
-        status = self.mbd_prepare(request)
-        if status >= self.STATUS_PREPARED:
-            return self.STATUS_ACTIVE
-        else:
-            return status
-
-    def mbd_deactivate(self, request):
-        if self.status >= self.STATUS_ACTIVE:
-            return self.STATUS_PREPARED
-        else:
-            return self.status
+        msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
 django.contrib.admin.site.register(Chroot, Chroot.Admin)
 

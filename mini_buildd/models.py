@@ -24,68 +24,74 @@ class StatusModel(django.db.models.Model):
     """
     Abstract model for all models that carry a status.
 
-    ========== ============================
+    ========== =====================================
     Status     Desc
-    ========== ============================
-    removed    Not prepared.
+    ========== =====================================
+    error      Unknown error state.
+    unprepared Not prepared on the system.
     prepared   Prepared on system.
-    active     Prepared and activated.
-    error      Prepared and activated.
-    ========== ============================
-
-    ============ ================================
-    Actions      Desc
-    ============ ================================
-    prepare()    Prepare.
-    remove()     Prepare.
-    activate()   Prepare, activate, and check.
-    deactivate() Deactivate.
-    ============ ================================
+    active     Prepared on the system and activated.
+    ========== =====================================
     """
     STATUS_ERROR = -1
-    STATUS_REMOVED = 0
+    STATUS_UNPREPARED = 0
     STATUS_PREPARED = 1
     STATUS_ACTIVE = 2
     STATUS_CHOICES = (
         (STATUS_ERROR, 'Error'),
-        (STATUS_REMOVED, 'Removed'),
+        (STATUS_UNPREPARED, 'Unprepared'),
         (STATUS_PREPARED, 'Prepared'),
         (STATUS_ACTIVE, 'Active'))
-    status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_REMOVED)
+    status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
 
     class Meta:
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
-        def action(self, request, queryset, action):
+        def action(self, request, queryset, action, success_status):
             for s in queryset:
-                msg_info(request, "Running: {a}".format(a=action))
+                msg_info(request, "{s}: Running '{a}'".format(s=s, a=action))
                 try:
-                    s.status = getattr(s, "mbd_" + action)(request)
+                    getattr(s, "mbd_" + action)(request)
+                    s.status = success_status
                     s.save()
-                    msg_info(request, "Run finished: {a}={s}".format(a=action, s=s.status))
+                    msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
                 except Exception as e:
                     s.status = s.STATUS_ERROR
                     s.__last_error = str(e)
                     msg_error(request, "Run failed: {a}={e}".format(a=action, e=str(e)))
 
         def action_prepare(self, request, queryset):
-            self.action(request, queryset, "prepare")
+            self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED)
         action_prepare.short_description = "mini-buildd: 1 Prepare selected objects"
 
-        def action_remove(self, request, queryset):
-            self.action(request, queryset, "remove")
-        action_remove.short_description = "mini-buildd: 2 Remove selected objects"
-
         def action_activate(self, request, queryset):
-            self.action(request, queryset, "activate")
-        action_activate.short_description = "mini-buildd: 3 Activate selected objects"
+            for s in queryset:
+                # Prepare implicitely if neccessary
+                if s.status < s.STATUS_PREPARED:
+                    self.action_prepare(request, (s,))
+
+                if s.status >= s.STATUS_PREPARED:
+                    s.status = s.STATUS_ACTIVE
+                    s.save()
+                    msg_info(request, "{s}: Activated".format(s=s))
+        action_activate.short_description = "mini-buildd: 2 Activate selected objects"
 
         def action_deactivate(self, request, queryset):
-            self.action(request, queryset, "deactivate")
-        action_deactivate.short_description = "mini-buildd: 4 Deactivate selected objects"
+            for s in queryset:
+                if s.status >= s.STATUS_ACTIVE:
+                    s.status = s.STATUS_PREPARED
+                    s.save()
+                    msg_info(request, "{s}: Deactivated".format(s=s))
+                else:
+                    msg_info(request, "{s}: Already deactivated".format(s=s))
+        action_deactivate.short_description = "mini-buildd: 3 Deactivate selected objects"
 
-        actions = [action_prepare, action_remove, action_activate, action_deactivate]
+        def action_unprepare(self, request, queryset):
+            self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED)
+        action_unprepare.short_description = "mini-buildd: 4 Unprepare selected objects"
+
+        actions = [action_prepare, action_unprepare, action_activate, action_deactivate]
         search_fields = ["status"]
         readonly_fields = ["status"]
 

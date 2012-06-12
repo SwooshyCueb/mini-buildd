@@ -36,14 +36,12 @@ tries to put external code into 'debug' mode as far as supported. Never use this
         group_conf = parser.add_argument_group("Daemon configuration")
         group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
                                 help="Run with this home dir. The only use case to change this for debugging, really.")
-        group_conf.add_argument("-I", "--instdir", action='store', default="/usr/share/pyshared",
-                                help="Run with this installation dir (where mini_buildd python module is located).")
 
         group_db = parser.add_argument_group("Database")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
-                              help="Import FILE to django database and exit. FILE is a absolute or relative (to 'INSTDIR/fixtures/') \
+                              help="Import FILE to django database and exit; must be an absolute path name.') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
         group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                               help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
@@ -134,7 +132,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def run(self):
         from mini_buildd import webapp
-        webapp = webapp.WebApp(self._args.home, instdir=self._args.instdir)
+        webapp = webapp.WebApp(self._args.home)
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:

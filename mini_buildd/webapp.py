@@ -16,7 +16,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
        - SECRET_KEY: ??? wtf?
     """
 
-    def __init__(self, home, instdir):
+    def __init__(self, home):
         ".. todo:: Maybe useful later when we fix up static files."
         if int(django.VERSION[1]) >= 4:
             static_admin_dir = "/usr/share/pyshared/django/contrib/admin/static/"
@@ -25,7 +25,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
-        self._instdir = instdir
 
         django.conf.settings.configure(
             DEBUG = setup.DEBUG,
@@ -108,8 +107,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             log.info("Try loading ad 08x.conf: {f}".format(f=f))
             compat08x.importConf(f)
         else:
-            prefix = "" if f[0] == "/" else self._instdir + "/mini_buildd/fixtures/"
-            django.core.management.call_command('loaddata', prefix  + f)
+            django.core.management.call_command('loaddata', f)
 
     def dumpdata(self, a):
         log.info("Dumping data for: {a}".format(a=a))

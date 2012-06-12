@@ -13,7 +13,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     .. todo:: Django settings open questions
 
-       - SITE_ID: ??? Seems this is needed for admin/doc.
        - SECRET_KEY: ??? wtf?
     """
 
@@ -31,8 +30,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         django.conf.settings.configure(
             DEBUG = setup.DEBUG,
             TEMPLATE_DEBUG = setup.DEBUG,
-
-            SITE_ID = 1,
 
             DATABASES =
             {

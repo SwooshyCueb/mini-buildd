@@ -11,14 +11,24 @@ def sphinx_build_workaround():
     sphinx_build_dir = "build/sphinx"
     sphinx_static_files_build_dir = sphinx_build_dir + "/_static"
     sphinx_static_files_source_dir = "doc/_static"
+    sphinx_template_files_build_dir = sphinx_build_dir + "/_templates"
+    sphinx_template_files_source_dir = "doc/_templates"
 
     if not os.path.exists(sphinx_static_files_build_dir):
         os.makedirs(sphinx_static_files_build_dir)
+
+    if not os.path.exists(sphinx_template_files_build_dir):
+        os.makedirs(sphinx_template_files_build_dir)
 
     # copy static files (shutil.copytree does not fit our needs)
     file_list = os.listdir(sphinx_static_files_source_dir)
     for f in file_list:
         shutil.copy(sphinx_static_files_source_dir + "/" + f, sphinx_static_files_build_dir)
+
+    # copy template files
+    file_list = os.listdir(sphinx_template_files_source_dir)
+    for f in file_list:
+        shutil.copy(sphinx_template_files_source_dir + "/" + f, sphinx_template_files_build_dir)
 
     # copy main files
     shutil.copy("doc/conf.py", sphinx_build_dir)

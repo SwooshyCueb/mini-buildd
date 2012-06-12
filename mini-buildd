@@ -132,7 +132,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
     def run(self):
         from mini_buildd import webapp
-        webapp = webapp.WebApp(self._args.home)
+        webapp = webapp.WebApp()
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:

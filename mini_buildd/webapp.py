@@ -12,7 +12,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     This class represents mini-buildd's web application.
     """
 
-    def __init__(self, home):
+    def __init__(self):
         ".. todo:: Maybe useful later when we fix up static files."
         if int(django.VERSION[1]) >= 4:
             static_admin_dir = "/usr/share/pyshared/django/contrib/admin/static/"
@@ -31,12 +31,12 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': os.path.join(home, "config.sqlite"),
+                    'NAME': os.path.join(setup.HOME_DIR, "config.sqlite"),
                     }
                 },
             TIME_ZONE = None,
             USE_L10N = True,
-            SECRET_KEY = self.get_django_secret_key(home),
+            SECRET_KEY = self.get_django_secret_key(setup.HOME_DIR),
             ROOT_URLCONF = 'mini_buildd.root_urls',
             STATIC_URL = "/static/",
             STATICFILES_DIRS = ( static_admin_dir, ),

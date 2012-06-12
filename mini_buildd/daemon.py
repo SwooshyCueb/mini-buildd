@@ -48,6 +48,15 @@ Expire-Date: 0""")
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
+    def mbd_get_dput_conf(self):
+        return """\
+[mini-buildd-{h}]
+method   = ftp
+fqdn     = {fqdn}:{p}
+login    = anonymous
+incoming = /incoming
+""".format(h=self.fqdn.split(".")[0], fqdn=self.fqdn, p=8067)
+
 django.contrib.admin.site.register(Daemon)
 
 def run(incoming_queue):

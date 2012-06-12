@@ -9,3 +9,8 @@ def get_archive_key(request):
     log.info(request)
     from mini_buildd import daemon
     return django.http.HttpResponse(daemon.Daemon.objects.all()[0].gnupg.get_pub_key(), mimetype="text/plain")
+
+def get_dput_conf(request):
+    log.info(request)
+    from mini_buildd import daemon
+    return django.http.HttpResponse(daemon.Daemon.objects.all()[0].mbd_get_dput_conf(), mimetype="text/plain")

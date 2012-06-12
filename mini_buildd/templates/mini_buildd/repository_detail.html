@@ -45,23 +45,6 @@ Sources:
 <a href="{{ object.extdocurl }}">External documentation</a>
 </li>
 
-<li>
-<b>Repository GnuPG Key</b>
-<pre>
-{{ object.gnupg_pub_key }}
-</pre>
-</li>
-
-<li>
-<b>Configuration for dput (dput.cf)</b>
-<pre>
-[mini-buildd-{{ object.id }}]
-method   = ftp
-fqdn     = localhost:8067
-login    = anonymous
-incoming = /incoming
-</pre>
-</li>
 </ul>
 
 {% endblock %}

@@ -160,22 +160,27 @@ django.contrib.admin.site.register(Layout)
 
 
 class Distribution(django.db.models.Model):
-    """
-    .. todo:: Distribution Model
-
-       - limit to distribution?  limit_choices_to={'codename': 'sid'})
-       - how to limit to source.kind?
-    """
-    base_source = django.db.models.ForeignKey(Source, primary_key=True)
-
-    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True, null=True)
+    base_source = django.db.models.ForeignKey(Source)
+    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
+    components = django.db.models.ManyToManyField(Component)
 
     class Meta:
         verbose_name = "[B3] Distribution"
 
     def __unicode__(self):
-        ".. todo:: somehow indicate extra sources to visible name"
-        return self.base_source.origin + ": " + self.base_source.codename
+        def xtra():
+            result = ""
+            for e in self.extra_sources.all():
+                result += "+ " + e.mbd_id()
+            return result
+
+        def cmps():
+            result = ""
+            for c in self.components.all():
+                result += c.name + " "
+            return result
+
+        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())

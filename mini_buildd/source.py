@@ -14,6 +14,7 @@ class Mirror(django.db.models.Model):
 
     class Meta:
         ordering = ["url"]
+        verbose_name = "[A1] Mirror"
 
     class Admin(django.contrib.admin.ModelAdmin):
         search_fields = ["url"]
@@ -52,6 +53,7 @@ class Source(StatusModel):
     class Meta(StatusModel.Meta):
         unique_together = ("origin", "codename")
         ordering = ["origin", "codename"]
+        verbose_name = "[A2] Source"
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
@@ -117,6 +119,7 @@ class PrioSource(django.db.models.Model):
 
     class Meta:
         unique_together = ('source', 'prio')
+        verbose_name = "[A3] PrioSource"
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)

@@ -35,7 +35,8 @@ class Repository(StatusModel):
     extdocurl = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
-        verbose_name_plural = "Repositories"
+        verbose_name = "[B4] Repository"
+        verbose_name_plural = "[B4] Repositories"
 
     class Admin(StatusModel.Admin):
         fieldsets = (

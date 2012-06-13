@@ -136,6 +136,9 @@ class Suite(django.db.models.Model):
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
+    class Meta:
+        verbose_name = "[B1] Suite"
+
     def __unicode__(self):
         return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
 
@@ -146,6 +149,9 @@ class Layout(django.db.models.Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
                             help_text="Name for the layout.")
     suites = django.db.models.ManyToManyField(Suite)
+
+    class Meta:
+        verbose_name = "[B2] Layout"
 
     def __unicode__(self):
         return self.name
@@ -163,6 +169,9 @@ class Distribution(django.db.models.Model):
     base_source = django.db.models.ForeignKey(Source, primary_key=True)
 
     extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True, null=True)
+
+    class Meta:
+        verbose_name = "[B3] Distribution"
 
     def __unicode__(self):
         ".. todo:: somehow indicate extra sources to visible name"
@@ -202,6 +211,9 @@ class Daemon(daemon.Daemon):
 
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
+
+    class Meta:
+        verbose_name = "[D1] Remote"
 
     def __unicode__(self):
         return "Remote: {h}".format(h=self.host)

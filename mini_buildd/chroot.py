@@ -17,6 +17,7 @@ class Chroot(StatusModel):
     arch = django.db.models.ForeignKey(Architecture)
 
     class Meta(StatusModel.Meta):
+        verbose_name = "[C1] Chroot"
         unique_together = ("dist", "arch")
         ordering = ["dist", "arch"]
 
@@ -141,6 +142,9 @@ class FileChroot(Chroot):
                   ('tar.xz',  "Tar and xz"))
     tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
 
+    class Meta(Chroot.Meta):
+        verbose_name = "[C2] File chroot"
+
     def mbd_get_tar_file(self):
         return os.path.join(self.mbd_get_path(), "source." + self.tar_suffix)
 
@@ -185,6 +189,9 @@ class LVMChroot(Chroot):
     snapshot_size = django.db.models.IntegerField(default=4,
                                                   help_text="Snapshot device file size in GB.")
 
+    class Meta(Chroot.Meta):
+        verbose_name = "[C3] LVM chroot"
+
     def mbd_get_vgname(self):
         try:
             return self.looplvmchroot.mbd_get_vgname()
@@ -223,6 +230,9 @@ class LoopLVMChroot(LVMChroot):
     """ Loop LVM chroot backend. """
     loop_size = django.db.models.IntegerField(default=100,
                                               help_text="Loop device file size in GB.")
+
+    class Meta(Chroot.Meta):
+        verbose_name = "[C4] LVM loop chroot"
 
     def mbd_get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)

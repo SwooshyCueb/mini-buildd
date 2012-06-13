@@ -32,6 +32,10 @@ Key-Type: DSA
 Key-Length: 1024
 Expire-Date: 0""")
 
+    class Meta:
+        verbose_name = "[D2] Daemon"
+        verbose_name_plural = "[D2] Daemon"
+
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
         super(Daemon, self).__init__(*args, **kwargs)

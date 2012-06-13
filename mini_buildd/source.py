@@ -45,17 +45,21 @@ class Component(django.db.models.Model):
 from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 
 class Source(StatusModel):
-    origin = django.db.models.CharField(max_length=60, default="Debian")
-    codename = django.db.models.CharField(max_length=60, default="sid")
-    apt_key_id = django.db.models.CharField(max_length=100, blank=True, default="")
-    apt_key_fingerprint = django.db.models.TextField(blank=True, default="")
-    apt_key = django.db.models.TextField(blank=True, default="")
+    origin = django.db.models.CharField(max_length=60, default="Debian",
+                                        help_text="The exact string of the 'Origin' field of the resp. Release file.")
+    codename = django.db.models.CharField(max_length=60, default="sid",
+                                        help_text="The exact string of the 'Codename' field of the resp. Release file.")
 
+    apt_key_id = django.db.models.CharField(max_length=100, blank=True, default="",
+                                            help_text="Give a key id here to retrieve the actual apt key automatically per configured keyserver.")
+    apt_key = django.db.models.TextField(blank=True, default="",
+                                         help_text="ASCII-armored apt key. Leave the key id blank if you fill this manually.")
+    apt_key_fingerprint = django.db.models.TextField(blank=True, default="")
+
+    description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
     mirrors = django.db.models.ManyToManyField(Mirror, null=True)
     components = django.db.models.ManyToManyField(Component, null=True)
     architectures = django.db.models.ManyToManyField(Architecture, null=True)
-    description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
-
 
     class Meta(StatusModel.Meta):
         unique_together = ("origin", "codename")
@@ -64,7 +68,18 @@ class Source(StatusModel):
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "components", "architectures", "description", "apt_key", "apt_key_fingerprint"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "components", "architectures", "description", "apt_key_fingerprint"]
+        fieldsets = (
+            ("Identity", {
+                    "fields": ("origin", "codename")
+                    }),
+            ("Apt Secure", {
+                    "fields": ("apt_key_id", "apt_key", "apt_key_fingerprint")
+                    }),
+            ("Auto", {
+                    "classes": ("collapse",),
+                    "fields": ("description", "mirrors", "components", "architectures")
+                    }),)
 
     def __unicode__(self):
         return self.mbd_id()+ ": " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"

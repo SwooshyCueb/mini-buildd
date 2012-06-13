@@ -130,8 +130,6 @@ personality={p}
         shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
-django.contrib.admin.site.register(Chroot, Chroot.Admin)
-
 
 class FileChroot(Chroot):
     """ File chroot backend. """
@@ -143,7 +141,7 @@ class FileChroot(Chroot):
     tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C2] File chroot"
+        verbose_name = "[C1] File chroot"
 
     def mbd_get_tar_file(self):
         return os.path.join(self.mbd_get_path(), "source." + self.tar_suffix)
@@ -190,7 +188,7 @@ class LVMChroot(Chroot):
                                                   help_text="Snapshot device file size in GB.")
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C3] LVM chroot"
+        verbose_name = "[C2] LVM chroot"
 
     def mbd_get_vgname(self):
         try:
@@ -232,7 +230,7 @@ class LoopLVMChroot(LVMChroot):
                                               help_text="Loop device file size in GB.")
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C4] LVM loop chroot"
+        verbose_name = "[C3] LVM loop chroot"
 
     def mbd_get_vgname(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)

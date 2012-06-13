@@ -94,6 +94,7 @@ class Repository(StatusModel):
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
+        from mini_buildd import daemon
         return "deb ftp://{h}:{p}/{r}/{id}/ {dist} {components}".format(
             h=daemon.Daemon.objects.all()[0].fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
             id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
@@ -121,6 +122,23 @@ class Repository(StatusModel):
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
         return ""
+
+    def mbd_get_apt_keys(self, dist):
+        ".. todo:: decide what other mini-buildd suites are to be included automatically"
+        dist_split = dist.split("-")
+        base = dist_split[0]
+        id = dist_split[1]
+        suite = dist_split[2]
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+
+        for d in self.dists.all():
+            if d.base_source.codename == base:
+                from mini_buildd import daemon
+                result = daemon.Daemon.objects.all()[0].gnupg.get_pub_key()
+                for e in d.extra_sources.all():
+                    result += e.source.apt_key
+                return result
+        raise Exception("Could not produce apt keys")
 
     def mbd_get_sources(self, dist, suite):
         result = ""

@@ -7,7 +7,78 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import StatusModel, Distribution, Architecture, Layout, msg_info, msg_warn, msg_error
+from mini_buildd.models import StatusModel, Architecture, Source, PrioSource, Component, msg_info, msg_warn, msg_error
+
+class Suite(django.db.models.Model):
+    name = django.db.models.CharField(
+        primary_key=True, max_length=50,
+        help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
+    mandatory_version = django.db.models.CharField(
+        max_length=50, default="~{rid}{nbv}+[1-9]",
+        help_text="Mandatory version template; {rid}=repository id, {nbv}=numerical base distribution version.")
+
+    migrates_from = django.db.models.ForeignKey(
+        'self', blank=True, null=True,
+        help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+    not_automatic = django.db.models.BooleanField(default=True)
+    but_automatic_upgrades = django.db.models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name = "[B1] Suite"
+
+    def __unicode__(self):
+        return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
+
+django.contrib.admin.site.register(Suite)
+
+
+class Layout(django.db.models.Model):
+    name = django.db.models.CharField(primary_key=True, max_length=128,
+                            help_text="Name for the layout.")
+    suites = django.db.models.ManyToManyField(Suite)
+
+    class Meta:
+        verbose_name = "[B2] Layout"
+
+    def __unicode__(self):
+        return self.name
+
+django.contrib.admin.site.register(Layout)
+
+
+class Distribution(django.db.models.Model):
+    base_source = django.db.models.ForeignKey(Source)
+    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
+    components = django.db.models.ManyToManyField(Component)
+
+    class Meta:
+        verbose_name = "[B3] Distribution"
+
+    def __unicode__(self):
+        def xtra():
+            result = ""
+            for e in self.extra_sources.all():
+                result += "+ " + e.mbd_id()
+            return result
+
+        def cmps():
+            result = ""
+            for c in self.components.all():
+                result += c.name + " "
+            return result
+
+        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
+
+    def mbd_get_apt_sources_list(self):
+        res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
+        res += self.base_source.mbd_get_apt_line() + "\n\n"
+        for e in self.extra_sources.all():
+            res += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
+            res += e.source.mbd_get_apt_line() + "\n"
+        return res
+
+
+django.contrib.admin.site.register(Distribution)
 
 class Repository(StatusModel):
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())

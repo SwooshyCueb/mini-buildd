@@ -102,9 +102,13 @@ class Changes(debian.deb822.Changes):
             # Generate sources.list to be used
             open(os.path.join(path, "apt_sources.list"), 'w').write(r.mbd_get_apt_sources_list(self["Distribution"]))
             open(os.path.join(path, "apt_preferences"), 'w').write(r.mbd_get_apt_preferences())
+            open(os.path.join(path, "apt_keys"), 'w').write(r.mbd_get_apt_keys(self["Distribution"]))
 
             # Generate tar from original changes
-            self.tar(tar_path=br._file_path + ".tar", add_files=[os.path.join(path, "apt_sources.list"), os.path.join(path, "apt_preferences")])
+            self.tar(tar_path=br._file_path + ".tar", add_files=[
+                    os.path.join(path, "apt_sources.list"),
+                    os.path.join(path, "apt_preferences"),
+                    os.path.join(path, "apt_keys")])
             br.add_file(br._file_path + ".tar")
 
             br["Base-Distribution"] = codename

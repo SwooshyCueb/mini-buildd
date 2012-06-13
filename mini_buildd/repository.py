@@ -44,7 +44,7 @@ class Repository(StatusModel):
                     "fields": ("id", "layout", "dists", "archs")
                     }),
             ("Build options", {
-                    "fields": ("arch_all", "build_dep_resolver", "lintian_mode", "lintian_extra_options")
+                    "fields": ("arch_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
                     }),
             ("Extra", {
                     "classes": ("collapse",),

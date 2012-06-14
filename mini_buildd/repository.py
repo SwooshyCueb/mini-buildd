@@ -255,8 +255,6 @@ ButAutomaticUpgrades: {bau}
 
         misc.mkdirs(path)
         misc.mkdirs(os.path.join(path, "log"))
-        misc.mkdirs(os.path.join(path, "apt-secure.d"))
-        open(os.path.join(path, "apt-secure.d", "auto-mini-buildd.key"), 'w').write("OBSOLETE")
         misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
@@ -285,10 +283,6 @@ Note that you only need any customization if you need to
 apt-secure extra sources (for example bpo) or have other special
 needs (like pre-seeding debconf variables).
 
- * "apt-secure.d/*.key":
-   What   : Apt-secure custom keys for extra sources; keys are added to all base chroots.
-   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/05_apt-secure).
-   Note   : Don't touch auto-generated key 'auto-mini-buildd.key'.
  * "debconf-preseed.d/*.conf":
    What   : Pre-defined values for debconf (see debconf-set-selections).
    Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/20_debconf-preseed).

@@ -51,8 +51,14 @@ class Distribution(django.db.models.Model):
     extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
     components = django.db.models.ManyToManyField(Component)
 
+    debconf_preseed = django.db.models.TextField(blank=True,
+                                                 help_text="Values to pre-seed build snapshots via 'debconf-set-selections'.")
+
     class Meta:
         verbose_name = "[B3] Distribution"
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        fields = ("base_source", "extra_sources", "components", "debconf_preseed")
 
     def __unicode__(self):
         def xtra():
@@ -78,7 +84,7 @@ class Distribution(django.db.models.Model):
         return res
 
 
-django.contrib.admin.site.register(Distribution)
+django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
 class Repository(StatusModel):
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
@@ -171,7 +177,12 @@ class Repository(StatusModel):
             id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
-        ".. todo:: decide what other mini-buildd suites are to be included automatically"
+        """
+        .. todo::
+
+        - get_apt_sources_list(): decide what other mini-buildd suites are to be included automatically
+        - this and next four funcs: clean up code style && redundancies.
+        """
         dist_split = dist.split("-")
         base = dist_split[0]
         id = dist_split[1]
@@ -195,7 +206,6 @@ class Repository(StatusModel):
         return ""
 
     def mbd_get_apt_keys(self, dist):
-        ".. todo:: decide what other mini-buildd suites are to be included automatically"
         dist_split = dist.split("-")
         base = dist_split[0]
         id = dist_split[1]
@@ -210,6 +220,18 @@ class Repository(StatusModel):
                     result += e.source.apt_key
                 return result
         raise Exception("Could not produce apt keys")
+
+    def mbd_get_debconf_preseed(self, dist):
+        dist_split = dist.split("-")
+        base = dist_split[0]
+        id = dist_split[1]
+        suite = dist_split[2]
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+
+        for d in self.dists.all():
+            if d.base_source.codename == base:
+                return d.debconf_preseed
+        raise Exception("Could not find dist")
 
     def mbd_get_sources(self, dist, suite):
         result = ""
@@ -255,7 +277,6 @@ ButAutomaticUpgrades: {bau}
 
         misc.mkdirs(path)
         misc.mkdirs(os.path.join(path, "log"))
-        misc.mkdirs(os.path.join(path, "debconf-preseed.d"))
         misc.mkdirs(os.path.join(path, "chroots-update.d"))
 
         open(os.path.join(path, "README"), 'w').write("""
@@ -283,10 +304,6 @@ Note that you only need any customization if you need to
 apt-secure extra sources (for example bpo) or have other special
 needs (like pre-seeding debconf variables).
 
- * "debconf-preseed.d/*.conf":
-   What   : Pre-defined values for debconf (see debconf-set-selections).
-   Used by: mbd-update-bld (/usr/share/mini-buildd/chroots-update.d/20_debconf-preseed).
-   Note   : One noteable use case are licenses from non-free like in the sun-java packages.
  * "chroots-update.d/*.hook":
    What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
    Used by: mbd-update-bld.

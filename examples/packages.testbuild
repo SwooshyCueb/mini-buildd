@@ -46,7 +46,8 @@ mbdPrevStable()
 	esac
 }
 
-read -e -i "$(hostname)" -p "mini-buildd reposiory id? " id
+read -e -i "mini-buildd-$(hostname)" -p "Dput target? " dput_target
+read -e -i "test" -p "mini-buildd reposiory id? " id
 read -e -i "$(lsb_release --short --codename)" -p "upload to base distribution? " dist
 read -e -i "experimental" -p "upload to experimental or unstable? " dest
 read -e -i "$(mbdPrevStable ${dist})-${id}-${dest}" -p "auto backports for? " backports
@@ -81,7 +82,7 @@ done
 action=u
 
 while [ "${action}" != "q" ]; do
-	dput -u -f "mini-buildd-${id}" *.changes || true
+	dput -u -f "${dput_target}" *.changes || true
 	read -e -i"r" -p "(q)uit and purge build dir '${builddir}', or (r)e-upload? " action
 done
 rm -rfv "${builddir}"

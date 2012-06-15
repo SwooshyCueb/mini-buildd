@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import threading, Queue, signal, os, argparse, sys, daemon, logging, logging.handlers
+import threading, signal, os, argparse, sys, daemon, logging, logging.handlers
 
 from mini_buildd import __version__, misc, setup
 
@@ -142,18 +142,17 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
-            # Incoming queue
-            incoming_queue = Queue.Queue(maxsize=0)
+            from mini_buildd import daemon, httpd, ftpd
+
+            # Get/Create daemon model instance
+            dm, created = daemon.Daemon.objects.get_or_create(id=1)
 
             # Start httpd and ftpd
-            from mini_buildd import httpd, ftpd
             misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
-            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=incoming_queue)
+            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=dm.incoming_queue)
 
             # Start daemon
-            join_threads = []
-            from mini_buildd import daemon
-            join_threads.append(misc.run_as_thread(daemon.run, incoming_queue=incoming_queue))
+            dm_thread = misc.run_as_thread(daemon.run, dm=dm)
 
             # Shutdown on SIGTERM or SIGINT
             self._run = True
@@ -163,12 +162,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                 signal.pause()
 
             log.info("Signaling shutdown...")
-            incoming_queue.put("SHUTDOWN")
-
-            for t in join_threads:
-                log.info("Waiting for {i}".format(i=t))
-                t.join()
-
+            dm.incoming_queue.put("SHUTDOWN")
+            dm_thread.join()
             log.info("Shutdown complete. Bye...")
 
 # Main processing; the only benefit of the master try/catch is

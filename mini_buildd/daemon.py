@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, contextlib, socket, logging
+import os, Queue, contextlib, socket, logging
 
 import django.db, django.core.exceptions
 
@@ -40,6 +40,7 @@ Expire-Date: 0""")
         ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
         super(Daemon, self).__init__(*args, **kwargs)
         self.gnupg = gnupg.GnuPG(self.gnupg_template)
+        self.incoming_queue = Queue.Queue(maxsize=self.max_parallel_packages)
 
     def __unicode__(self):
         res = "Daemon for: "
@@ -63,18 +64,17 @@ incoming = /incoming
 
 django.contrib.admin.site.register(Daemon)
 
-def run(incoming_queue):
-    daemon, created = Daemon.objects.get_or_create(id=1)
+def run(dm):
+    """.. todo:: Own GnuPG model """
 
-    # todo: Own GnuPG model
-    log.info("Preparing {d}".format(d=daemon))
-    daemon.gnupg.prepare()
+    log.info("Preparing {d}".format(d=dm))
+    dm.gnupg.prepare()
 
-    join_threads = []
+    builds = []
 
-    log.info("Starting {d}".format(d=daemon))
+    log.info("Starting {d}".format(d=dm))
     while True:
-        event = incoming_queue.get()
+        event = dm.incoming_queue.get()
         if event == "SHUTDOWN":
             break
 
@@ -82,7 +82,7 @@ def run(incoming_queue):
         r = c.get_repository()
         if c.is_buildrequest():
             log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-            join_threads.append(misc.run_as_thread(builder.run, br=c))
+            builds.append(misc.run_as_thread(builder.run, br=c))
         elif c.is_buildresult():
             log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
             c.untar(path=r.mbd_get_incoming_path())
@@ -92,10 +92,10 @@ def run(incoming_queue):
             for br in c.gen_buildrequests():
                 br.upload()
 
-        incoming_queue.task_done()
+        dm.incoming_queue.task_done()
 
-    for t in join_threads:
+    for t in builds:
         log.debug("Waiting for {i}".format(i=t))
         t.join()
 
-    log.info("Stopped {d}".format(d=daemon))
+    log.info("Stopped {d}".format(d=dm))

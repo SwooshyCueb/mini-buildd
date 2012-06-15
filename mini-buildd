@@ -149,7 +149,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
             # Start httpd and ftpd
             misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
-            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=dm.incoming_queue)
+            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=dm._incoming_queue)
 
             # Start daemon
             dm_thread = misc.run_as_thread(daemon.run, dm=dm)
@@ -162,7 +162,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                 signal.pause()
 
             log.info("Signaling shutdown...")
-            dm.incoming_queue.put("SHUTDOWN")
+            dm._incoming_queue.put("SHUTDOWN")
             dm_thread.join()
             log.info("Shutdown complete. Bye...")
 

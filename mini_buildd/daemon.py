@@ -57,9 +57,9 @@ Expire-Date: 0
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
         super(Daemon, self).__init__(*args, **kwargs)
-        self.gnupg = gnupg.GnuPG(self.gnupg_template)
-        self.incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
-        self.build_queue = Queue.Queue(maxsize=self.build_queue_size)
+        self._gnupg = gnupg.GnuPG(self.gnupg_template)
+        self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
+        self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
 
     def __unicode__(self):
         res = "Daemon for: "
@@ -71,6 +71,9 @@ Expire-Date: 0
         super(Daemon, self).clean()
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
+
+    def mbd_get_pub_key(self):
+        return self._gnupg.get_pub_key()
 
     def mbd_get_dput_conf(self):
         return """\
@@ -91,15 +94,15 @@ def get():
 
 def run(dm):
     """.. todo:: Own GnuPG model """
-    dm.gnupg.prepare()
+    dm._gnupg.prepare()
 
     # Start builder
-    builder_thread = misc.run_as_thread(builder.run, build_queue=dm.build_queue, sbuild_jobs=dm.sbuild_jobs)
+    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
-        event = dm.incoming_queue.get()
+        event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
-            dm.build_queue.put("SHUTDOWN")
+            dm._build_queue.put("SHUTDOWN")
             break
 
         c = changes.Changes(event)
@@ -107,7 +110,7 @@ def run(dm):
         if c.is_buildrequest():
             log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
             # This may block
-            dm.build_queue.put(event)
+            dm._build_queue.put(event)
         elif c.is_buildresult():
             log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
             c.untar(path=r.mbd_get_incoming_path())
@@ -117,6 +120,6 @@ def run(dm):
             for br in c.gen_buildrequests():
                 br.upload()
 
-        dm.incoming_queue.task_done()
+        dm._incoming_queue.task_done()
 
     builder_thread.join()

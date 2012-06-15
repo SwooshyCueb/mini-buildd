@@ -201,7 +201,7 @@ class Repository(StatusModel):
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
         return "deb ftp://{h}:{p}/{r}/{id}/ {dist} {components}".format(
-            h=daemon.Daemon.objects.all()[0].fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
+            h=daemon.get().fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
             id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
@@ -243,7 +243,7 @@ class Repository(StatusModel):
         for d in self.dists.all():
             if d.base_source.codename == base:
                 from mini_buildd import daemon
-                result = daemon.Daemon.objects.all()[0].gnupg.get_pub_key()
+                result = daemon.get().gnupg.get_pub_key()
                 for e in d.extra_sources.all():
                     result += e.source.apt_key
                 return result

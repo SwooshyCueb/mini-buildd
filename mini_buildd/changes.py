@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, logging, tarfile, ftplib, re, contextlib
+import os, stat, logging, tarfile, ftplib, re, contextlib
 
 import debian.deb822
 
@@ -103,14 +103,16 @@ class Changes(debian.deb822.Changes):
             open(os.path.join(path, "apt_sources.list"), 'w').write(r.mbd_get_apt_sources_list(self["Distribution"]))
             open(os.path.join(path, "apt_preferences"), 'w').write(r.mbd_get_apt_preferences())
             open(os.path.join(path, "apt_keys"), 'w').write(r.mbd_get_apt_keys(self["Distribution"]))
-            open(os.path.join(path, "debconf_preseed"), 'w').write(r.mbd_get_debconf_preseed(self["Distribution"]))
+            chroot_setup_script = os.path.join(path, "chroot_setup_script")
+            open(chroot_setup_script, 'w').write(r.mbd_get_chroot_setup_script(self["Distribution"]))
+            os.chmod(chroot_setup_script, stat.S_IRWXU)
 
             # Generate tar from original changes
             self.tar(tar_path=br._file_path + ".tar", add_files=[
                     os.path.join(path, "apt_sources.list"),
                     os.path.join(path, "apt_preferences"),
                     os.path.join(path, "apt_keys"),
-                    os.path.join(path, "debconf_preseed")])
+                    chroot_setup_script])
             br.add_file(br._file_path + ".tar")
 
             br["Base-Distribution"] = codename

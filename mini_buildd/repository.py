@@ -51,14 +51,39 @@ class Distribution(django.db.models.Model):
     extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
     components = django.db.models.ManyToManyField(Component)
 
-    debconf_preseed = django.db.models.TextField(blank=True,
-                                                 help_text="Values to pre-seed build snapshots via 'debconf-set-selections'.")
+    chroot_setup_script = django.db.models.TextField(blank=True,
+                                                     help_text="""\
+Script that will be run via sbuild's '--chroot-setup-command'.
+<br/>
+Example:
+<pre>
+#!/bin/sh -e
+
+# Accept sun-java6 licence so we can build-depend on it
+echo "sun-java6-bin shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
+echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
+echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
+
+# Workaround for Debian Bug #327477 (bash building)
+[ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd
+[ -e /dev/stdin ] || ln -sv fd/0 /dev/stdin
+[ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
+[ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
+</pre>
+""")
 
     class Meta:
         verbose_name = "[B3] Distribution"
 
     class Admin(django.contrib.admin.ModelAdmin):
-        fields = ("base_source", "extra_sources", "components", "debconf_preseed")
+        fieldsets = (
+            ("Basics", {
+                    "fields": ("base_source", "extra_sources", "components")
+                    }),
+            ("Extra", {
+                    "classes": ("collapse",),
+                    "fields": ("chroot_setup_script",)
+                    }),)
 
     def __unicode__(self):
         def xtra():
@@ -221,7 +246,7 @@ class Repository(StatusModel):
                 return result
         raise Exception("Could not produce apt keys")
 
-    def mbd_get_debconf_preseed(self, dist):
+    def mbd_get_chroot_setup_script(self, dist):
         dist_split = dist.split("-")
         base = dist_split[0]
         id = dist_split[1]
@@ -230,7 +255,8 @@ class Repository(StatusModel):
 
         for d in self.dists.all():
             if d.base_source.codename == base:
-                return d.debconf_preseed
+                # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+                return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
         raise Exception("Could not find dist")
 
     def mbd_get_sources(self, dist, suite):

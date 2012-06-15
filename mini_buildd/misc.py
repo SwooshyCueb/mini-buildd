@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, shutil, errno, subprocess, threading, tempfile, hashlib, logging
+import sys, os, shutil, errno, subprocess, threading, multiprocessing, tempfile, hashlib, logging
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +50,12 @@ def taint_env(taint):
     for e in taint:
         env[e] = taint[e]
     return env
+
+def get_cpus():
+    try:
+        return multiprocessing.cpu_count()
+    except:
+        return 1
 
 def codename2Version(codename):
     known = {

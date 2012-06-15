@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
-import tempfile, logging
+import logging
 
-import django.core.management, django.http
+import django.http
+
+from mini_buildd import daemon
 
 log = logging.getLogger(__name__)
 
 def get_archive_key(request):
-    log.info(request)
-    from mini_buildd import daemon
-    return django.http.HttpResponse(daemon.Daemon.objects.all()[0].gnupg.get_pub_key(), mimetype="text/plain")
+    return django.http.HttpResponse(daemon.get().mbd_get_pub_key(), mimetype="text/plain")
 
 def get_dput_conf(request):
-    log.info(request)
-    from mini_buildd import daemon
-    return django.http.HttpResponse(daemon.Daemon.objects.all()[0].mbd_get_dput_conf(), mimetype="text/plain")
+    return django.http.HttpResponse(daemon.get().mbd_get_dput_conf(), mimetype="text/plain")

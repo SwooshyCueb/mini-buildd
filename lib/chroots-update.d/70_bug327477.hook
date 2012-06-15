@@ -1,5 +1,0 @@
-# Workaround for Debian Bug #327477 (bash building)
-[ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd
-[ -e /dev/stdin ] || ln -sv fd/0 /dev/stdin
-[ -e /dev/stdout ] || ln -sv fd/1 /dev/stdout
-[ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr

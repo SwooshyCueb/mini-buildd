@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, contextlib, socket, logging
+import os, Queue, contextlib, socket, logging
 
 import django.db, django.core.exceptions
 
@@ -15,31 +15,51 @@ class Daemon(django.db.models.Model):
         default=socket.getfqdn(),
         help_text="Fully qualified hostname.")
 
-    max_parallel_builds = django.db.models.IntegerField(
-        default=4,
-        help_text="Maximum number of parallel builds.")
-
-    sbuild_parallel = django.db.models.IntegerField(
-        default=1,
-        help_text="Degree of parallelism per build.")
-
-    max_parallel_packages = django.db.models.IntegerField(
-        default=10,
-        help_text="Maximum number of parallel packages to process.")
-
     gnupg_template = django.db.models.TextField(default="""
 Key-Type: DSA
-Key-Length: 1024
-Expire-Date: 0""")
+Key-Length: 2048
+Expire-Date: 0
+""")
+
+    gnupg_keyserver = django.db.models.CharField(
+        max_length=200,
+        default="subkeys.pgp.net",
+        help_text="GnuPG keyserver to use.")
+
+    incoming_queue_size = django.db.models.SmallIntegerField(
+        default=2*misc.get_cpus(),
+        help_text="Maximum number of parallel packages to process.")
+
+    build_queue_size = django.db.models.SmallIntegerField(
+        default=misc.get_cpus(),
+        help_text="Maximum number of parallel builds.")
+
+    sbuild_jobs = django.db.models.SmallIntegerField(
+        default=1,
+        help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 
     class Meta:
         verbose_name = "[D2] Daemon"
         verbose_name_plural = "[D2] Daemon"
 
+    class Admin(django.contrib.admin.ModelAdmin):
+        fieldsets = (
+            ("Basics", {
+                    "fields": ("fqdn", "gnupg_template", "gnupg_keyserver")
+                    }),
+            ("Manager Options", {
+                    "fields": ("incoming_queue_size",)
+                    }),
+            ("Builder Options", {
+                    "fields": ("build_queue_size", "sbuild_jobs")
+                    }),)
+
     def __init__(self, *args, **kwargs):
-        ".. todo:: GPG: to be replaced in template; Only as long as we dont know better"
+        ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
         super(Daemon, self).__init__(*args, **kwargs)
-        self.gnupg = gnupg.GnuPG(self.gnupg_template)
+        self._gnupg = gnupg.GnuPG(self.gnupg_template)
+        self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
+        self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
 
     def __unicode__(self):
         res = "Daemon for: "
@@ -52,6 +72,9 @@ Expire-Date: 0""")
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
+    def mbd_get_pub_key(self):
+        return self._gnupg.get_pub_key()
+
     def mbd_get_dput_conf(self):
         return """\
 [mini-buildd-{h}]
@@ -61,28 +84,33 @@ login    = anonymous
 incoming = /incoming
 """.format(h=self.fqdn.split(".")[0], fqdn=self.fqdn, p=8067)
 
-django.contrib.admin.site.register(Daemon)
+django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
-def run(incoming_queue):
-    daemon, created = Daemon.objects.get_or_create(id=1)
+def get():
+    dm, created = Daemon.objects.get_or_create(id=1)
+    if created:
+        log.info("New default Daemon model instance created")
+    return dm
 
-    # todo: Own GnuPG model
-    log.info("Preparing {d}".format(d=daemon))
-    daemon.gnupg.prepare()
+def run(dm):
+    """.. todo:: Own GnuPG model """
+    dm._gnupg.prepare()
 
-    join_threads = []
+    # Start builder
+    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
 
-    log.info("Starting {d}".format(d=daemon))
     while True:
-        event = incoming_queue.get()
+        event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
+            dm._build_queue.put("SHUTDOWN")
             break
 
         c = changes.Changes(event)
         r = c.get_repository()
         if c.is_buildrequest():
             log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-            join_threads.append(misc.run_as_thread(builder.run, br=c))
+            # This may block
+            dm._build_queue.put(event)
         elif c.is_buildresult():
             log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
             c.untar(path=r.mbd_get_incoming_path())
@@ -92,10 +120,6 @@ def run(incoming_queue):
             for br in c.gen_buildrequests():
                 br.upload()
 
-        incoming_queue.task_done()
+        dm._incoming_queue.task_done()
 
-    for t in join_threads:
-        log.debug("Waiting for {i}".format(i=t))
-        t.join()
-
-    log.info("Stopped {d}".format(d=daemon))
+    builder_thread.join()

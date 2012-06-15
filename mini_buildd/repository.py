@@ -59,6 +59,9 @@ Example:
 <pre>
 #!/bin/sh -e
 
+# Install these additional packages
+apt-get install ccache
+
 # Accept sun-java6 licence so we can build-depend on it
 echo "sun-java6-bin shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
 echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose

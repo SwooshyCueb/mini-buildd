@@ -243,7 +243,7 @@ class Repository(StatusModel):
         for d in self.dists.all():
             if d.base_source.codename == base:
                 from mini_buildd import daemon
-                result = daemon.get().gnupg.get_pub_key()
+                result = daemon.get().mbd_get_pub_key()
                 for e in d.extra_sources.all():
                     result += e.source.apt_key
                 return result

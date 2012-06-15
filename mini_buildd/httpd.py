@@ -38,6 +38,10 @@ def run(bind, wsgi_app):
     cherrypy.config.update({'server.socket_host': misc.BindArgs(bind).host,
                             'server.socket_port': misc.BindArgs(bind).port})
 
+    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
+    static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = "mini_buildd", root = static_base_dir)
+    cherrypy.tree.mount(static_handler, '/static')
+
     cherrypy.tree.graft(wsgi_app)
     cherrypy.engine.start()
     cherrypy.engine.block()

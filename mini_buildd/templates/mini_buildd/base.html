@@ -1,7 +1,11 @@
 {% load base %}
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN">
-<html lang="en">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
 	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+		<link rel="shortcut icon" href="/static/favicon.ico" />
 		<title>{% block title %}{% endblock %}</title>
 	</head>
 	<body>
@@ -13,6 +17,6 @@
 		<hr/>
 		{% block content %}{% endblock %}
 		<hr/>
-		<small>mini-buildd {% mbd_version %}</small>
+		<span style="font-size:smaller">mini-buildd {% mbd_version %}</span>
 	</body>
 </html>

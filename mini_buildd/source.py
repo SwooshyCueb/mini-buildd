@@ -90,8 +90,9 @@ class Source(StatusModel):
     def mbd_prepare(self, request):
         self.mirrors = []
         if self.apt_key_id:
+            from mini_buildd import daemon
             tg = gnupg.TmpGnuPG()
-            tg.recv_key("subkeys.pgp.net", self.apt_key_id)
+            tg.recv_key(daemon.get().gnupg_keyserver, self.apt_key_id)
             self.apt_key_fingerprint = tg.get_fingerprint(self.apt_key_id)
             self.apt_key = tg.get_pub_key(self.apt_key_id)
         for m in Mirror.objects.all():

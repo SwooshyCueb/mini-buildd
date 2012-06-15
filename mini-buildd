@@ -145,7 +145,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             from mini_buildd import daemon, httpd, ftpd
 
             # Get/Create daemon model instance
-            dm, created = daemon.Daemon.objects.get_or_create(id=1)
+            dm = daemon.get()
 
             # Start httpd and ftpd
             misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)

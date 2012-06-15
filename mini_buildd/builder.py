@@ -16,14 +16,15 @@ def results_from_buildlog(fn, changes):
                 s = l.split(":")
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
-def run(br):
+def build(br, jobs):
     """
     .. todo:: Builder
 
        - DEB_BUILD_OPTIONS
        - [.sbuildrc] proper ccache support (was: Add path for ccache)
        - [.sbuildrc] gpg setup
-       - chroot-setup-command: uses sudo workaround (schroot bug).
+       - schroot bug: chroot-setup-command: uses sudo workaround
+       - sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
     """
     misc.sbuild_keys_workaround()
 
@@ -57,6 +58,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 """.format(apt_allow_unauthenticated=br["Apt-Allow-Unauthenticated"]))
 
     sbuild_cmd = ["sbuild",
+                  "-j{0}".format(jobs),
                   "--dist={0}".format(br["Distribution"]),
                   "--arch={0}".format(br["Architecture"]),
                   "--chroot=mini-buildd-{d}-{a}".format(d=br["Base-Distribution"], a=br["Architecture"]),
@@ -112,3 +114,16 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
     res.save()
     res.upload()
+
+def run(build_queue, sbuild_jobs):
+    builds = []
+    while True:
+        event = build_queue.get()
+        if event == "SHUTDOWN":
+            break
+        builds.append(misc.run_as_thread(build, br=changes.Changes(event), jobs=sbuild_jobs))
+        build_queue.task_done()
+
+    for t in builds:
+        log.debug("Waiting for build: {i}".format(i=t))
+        t.join()

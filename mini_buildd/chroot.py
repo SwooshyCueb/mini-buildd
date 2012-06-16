@@ -12,21 +12,21 @@ from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 class Chroot(StatusModel):
     PERSONALITIES = { 'i386': 'linux32' }
 
-    from mini_buildd.models import Distribution, Architecture
-    dist = django.db.models.ForeignKey(Distribution)
+    from mini_buildd.models import Source, Architecture
+    source = django.db.models.ForeignKey(Source)
     arch = django.db.models.ForeignKey(Architecture)
 
     class Meta(StatusModel.Meta):
         verbose_name = "[C1] Chroot"
-        unique_together = ("dist", "arch")
-        ordering = ["dist", "arch"]
+        unique_together = ("source", "arch")
+        ordering = ["source", "arch"]
 
     class Admin(StatusModel.Admin):
-        search_fields = StatusModel.Admin.search_fields + ["dist", "arch"]
+        search_fields = StatusModel.Admin.search_fields + ["source", "arch"]
         readonly_fields = StatusModel.Admin.readonly_fields
 
     def __unicode__(self):
-        return "{c}/{a}".format(c=self.dist.base_source.codename, a=self.arch.name)
+        return "{c}/{a}".format(c=self.source.codename, a=self.arch.name)
 
     def mbd_get_backend(self):
         try:
@@ -41,10 +41,10 @@ class Chroot(StatusModel):
                     raise Exception("No chroot backend found")
 
     def mbd_get_path(self):
-        return os.path.join(setup.CHROOTS_DIR, self.dist.base_source.codename, self.arch.name)
+        return os.path.join(setup.CHROOTS_DIR, self.source.codename, self.arch.name)
 
     def mbd_get_name(self):
-        return "mini-buildd-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
+        return "mini-buildd-{d}-{a}".format(d=self.source.codename, a=self.arch.name)
 
     def mbd_get_tmp_dir(self):
         d = os.path.join(self.mbd_get_path(), "tmp")
@@ -78,7 +78,7 @@ class Chroot(StatusModel):
     def mbd_get_sequence(self):
         return self.mbd_get_backend().mbd_get_pre_sequence() + [
             (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.name), "--include=apt,sudo",
-              self.dist.base_source.codename, self.mbd_get_tmp_dir(), self.dist.base_source.mbd_get_mirror().url],
+              self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_mirror().url],
              ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
 
             (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],
@@ -233,7 +233,7 @@ class LoopLVMChroot(LVMChroot):
         verbose_name = "[C3] LVM loop chroot"
 
     def mbd_get_vgname(self):
-        return "mini-buildd-loop-{d}-{a}".format(d=self.dist.base_source.codename, a=self.arch.name)
+        return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.arch.name)
 
     def mbd_get_backing_file(self):
         return os.path.join(self.mbd_get_path(), "lvmloop.image")

@@ -117,9 +117,10 @@ class Package(object):
     def update(self, result):
         arch = result["Sbuild-Architecture"]
         status = result["Sbuild-Status"]
-        log.info("{p}: Got build result for '{a}': {s}".format(p=self.pid, a=arch, s=status))
+        retval = result["Sbuildretval"]
+        log.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
 
-        if status == "success" or status == "skipped":
+        if retval == 0:
             self.success[arch] = result
         else:
             self.failed[arch] = result

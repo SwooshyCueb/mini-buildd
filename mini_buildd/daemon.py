@@ -60,6 +60,7 @@ Expire-Date: 0
         self._gnupg = gnupg.GnuPG(self.gnupg_template)
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
+        self._packages = {}
 
     def __unicode__(self):
         res = "Daemon for: "
@@ -92,6 +93,62 @@ def get():
         log.info("New default Daemon model instance created")
     return dm
 
+class Package(object):
+    DONE = 0
+    INCOMPLETE = 1
+
+    def __init__(self, changes):
+        self.changes = changes
+        self.pid = changes.get_pkg_id()
+        self.repository = changes.get_repository()
+        self.requests = self.changes.gen_buildrequests()
+        self.success = {}
+        self.failed = {}
+        self.request_missing_builds()
+
+    def request_missing_builds(self):
+        log.info(self.requests)
+        for key, r in self.requests.items():
+            log.info(str(key))
+            log.info(repr(r))
+            if key not in self.success:
+                r.upload()
+
+    def update(self, result):
+        arch = result["Sbuild-Architecture"]
+        status = result["Sbuild-Status"]
+        log.info("{p}: Got build result for '{a}': {s}".format(p=self.pid, a=arch, s=status))
+
+        if status == "success" or status == "skipped":
+            self.success[arch] = result
+        else:
+            self.failed[arch] = result
+
+        missing = len(self.requests) - len(self.success) - len(self.failed)
+        if missing > 0:
+            log.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
+            return self.INCOMPLETE
+
+        # Finish up
+        log.info("{p}: All build results received".format(p=self.pid))
+        try:
+            if self.failed:
+                raise Exception("{p}: {n} archs failed".format(p=self.pid, n=len(self.failed)))
+
+            for arch, c in self.success.items():
+                c.untar(path=self.repository.mbd_get_incoming_path())
+                self.repository._reprepro.processincoming()
+        except Exception as e:
+            log.error(str(e))
+            # todo Error!
+        finally:
+            for arch, c in self.success.items() + self.failed.items():
+                c.archive()
+            #for arch, c in self.failed.items():
+            #    c.archive()
+            self.changes.archive()
+        return self.DONE
+
 def run(dm):
     """.. todo:: Own GnuPG model """
     dm._gnupg.prepare()
@@ -100,25 +157,23 @@ def run(dm):
     builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
+        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                 format(len(dm._packages), dm._incoming_queue.qsize()))
+
         event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
             dm._build_queue.put("SHUTDOWN")
             break
 
         c = changes.Changes(event)
-        r = c.get_repository()
+        pid = c.get_pkg_id()
         if c.is_buildrequest():
-            log.info("{p}: Got build request for {r}".format(p=c.get_pkg_id(), r=r.id))
-            # This may block
             dm._build_queue.put(event)
         elif c.is_buildresult():
-            log.info("{p}: Got build result for {r}".format(p=c.get_pkg_id(), r=r.id))
-            c.untar(path=r.mbd_get_incoming_path())
-            r._reprepro.processincoming()
+            if dm._packages[pid].update(c) == Package.DONE:
+                del dm._packages[pid]
         else:
-            log.info("{p}: Got user upload for {r}".format(p=c.get_pkg_id(), r=r.id))
-            for br in c.gen_buildrequests():
-                br.upload()
+            dm._packages[pid] = Package(c)
 
         dm._incoming_queue.task_done()
 

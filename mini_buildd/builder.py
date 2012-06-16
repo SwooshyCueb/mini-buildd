@@ -118,9 +118,13 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 def run(build_queue, sbuild_jobs):
     builds = []
     while True:
+        log.info("Builder status: {0} active builds, {0} waiting in queue.".
+                 format(len(builds), build_queue.qsize()))
+
         event = build_queue.get()
         if event == "SHUTDOWN":
             break
+
         builds.append(misc.run_as_thread(build, br=changes.Changes(event), jobs=sbuild_jobs))
         build_queue.task_done()
 

@@ -87,9 +87,14 @@ class Changes(debian.deb822.Changes):
         else:
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
+    def archive(self):
+        ".. todo:: Stub"
+        log.debug("STUB: archive()")
+        pass
+
     def gen_buildrequests(self):
         # Build buildrequest files for all archs
-        br_list = []
+        br_dict = {}
         r = self.get_repository()
         for a in r.archs.all():
             path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
@@ -126,6 +131,6 @@ class Changes(debian.deb822.Changes):
                 br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[r.lintian_mode] + " " + r.lintian_extra_options
 
             br.save()
-            br_list.append(br)
+            br_dict[a.name] = br
 
-        return br_list
+        return br_dict

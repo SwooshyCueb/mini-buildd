@@ -102,9 +102,9 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                               extdocurl=conf08x.mbd_extdocurl)
 
         for d in models.Distribution.objects.all():
-            r.dists.add(d)
+            r.distributions.add(d)
 
         for a in models.Architecture.objects.all():
-            r.archs.add(a)
+            r.architectures.add(a)
         return r
     tryImport(Repository);

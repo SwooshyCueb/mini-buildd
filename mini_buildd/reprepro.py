@@ -23,7 +23,7 @@ Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
-""".format(i=self.repository.mbd_get_incoming_path(), allow=" ".join(self.repository.mbd_uploadable_dists)))
+""".format(i=self.repository.mbd_get_incoming_path(), allow=" ".join(self.repository.mbd_uploadable_distributions)))
 
         open(os.path.join(self.repository.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}

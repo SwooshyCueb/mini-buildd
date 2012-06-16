@@ -15,8 +15,8 @@ def repository_components(repository):
     return repository.get_components()
 
 @register.simple_tag
-def repository_archs(repository, sep=","):
-    return sep.join(repository.get_archs())
+def repository_architectures(repository, sep=","):
+    return sep.join(repository.get_architectures())
 
 @register.simple_tag
 def repository_desc(repository, dist, suite):

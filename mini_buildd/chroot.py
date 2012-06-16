@@ -14,19 +14,19 @@ class Chroot(StatusModel):
 
     from mini_buildd.models import Source, Architecture
     source = django.db.models.ForeignKey(Source)
-    arch = django.db.models.ForeignKey(Architecture)
+    architecture = django.db.models.ForeignKey(Architecture)
 
     class Meta(StatusModel.Meta):
         verbose_name = "[C1] Chroot"
-        unique_together = ("source", "arch")
-        ordering = ["source", "arch"]
+        unique_together = ("source", "architecture")
+        ordering = ["source", "architecture"]
 
     class Admin(StatusModel.Admin):
-        search_fields = StatusModel.Admin.search_fields + ["source", "arch"]
+        search_fields = StatusModel.Admin.search_fields + ["source", "architecture"]
         readonly_fields = StatusModel.Admin.readonly_fields
 
     def __unicode__(self):
-        return "{c}/{a}".format(c=self.source.codename, a=self.arch.name)
+        return "{c}/{a}".format(c=self.source.codename, a=self.architecture.name)
 
     def mbd_get_backend(self):
         try:
@@ -41,10 +41,10 @@ class Chroot(StatusModel):
                     raise Exception("No chroot backend found")
 
     def mbd_get_path(self):
-        return os.path.join(setup.CHROOTS_DIR, self.source.codename, self.arch.name)
+        return os.path.join(setup.CHROOTS_DIR, self.source.codename, self.architecture.name)
 
     def mbd_get_name(self):
-        return "mini-buildd-{d}-{a}".format(d=self.source.codename, a=self.arch.name)
+        return "mini-buildd-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)
 
     def mbd_get_tmp_dir(self):
         d = os.path.join(self.mbd_get_path(), "tmp")
@@ -67,17 +67,17 @@ class Chroot(StatusModel):
 
         .. todo:: Chroot personalities
 
-           - This may be needed for other 32-bit archs, too?
+           - This may be needed for other 32-bit architectures, too?
            - We currently assume we build under linux only.
         """
         try:
-            return self.PERSONALITIES[self.arch.name]
+            return self.PERSONALITIES[self.architecture.name]
         except:
             return "linux"
 
     def mbd_get_sequence(self):
         return self.mbd_get_backend().mbd_get_pre_sequence() + [
-            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.arch.name), "--include=apt,sudo",
+            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=apt,sudo",
               self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_mirror().url],
              ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
 
@@ -233,7 +233,7 @@ class LoopLVMChroot(LVMChroot):
         verbose_name = "[C3] LVM loop chroot"
 
     def mbd_get_vgname(self):
-        return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.arch.name)
+        return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)
 
     def mbd_get_backing_file(self):
         return os.path.join(self.mbd_get_path(), "lvmloop.image")

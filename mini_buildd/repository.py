@@ -118,9 +118,9 @@ class Repository(StatusModel):
     id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
 
     layout = django.db.models.ForeignKey(Layout)
-    dists = django.db.models.ManyToManyField(Distribution)
-    archs = django.db.models.ManyToManyField(Architecture)
-    arch_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
+    distributions = django.db.models.ManyToManyField(Distribution)
+    architectures = django.db.models.ManyToManyField(Architecture)
+    architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
     RESOLVERS = (('apt',       "apt resolver"),
                  ('aptitude',  "aptitude resolver"),
@@ -146,10 +146,10 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("id", "layout", "dists", "archs")
+                    "fields": ("id", "layout", "distributions", "architectures")
                     }),
             ("Build options", {
-                    "fields": ("arch_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
+                    "fields": ("architecture_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
                     }),
             ("Extra", {
                     "classes": ("collapse",),
@@ -160,11 +160,11 @@ class Repository(StatusModel):
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{id}'".format(id=self.id))
 
-        self.mbd_uploadable_dists = []
-        for d in self.dists.all():
+        self.mbd_uploadable_distributions = []
+        for d in self.distributions.all():
             for s in self.layout.suites.all():
                 if s.migrates_from == None:
-                    self.mbd_uploadable_dists.append("{d}-{id}-{s}".format(
+                    self.mbd_uploadable_distributions.append("{d}-{id}-{s}".format(
                             id=self.id,
                             d=d.base_source.codename,
                             s=s.name))
@@ -189,11 +189,11 @@ class Repository(StatusModel):
     def mbd_get_components(self):
         return "main contrib non-free"
 
-    def mbd_get_archs(self):
-        archs = []
-        for a in self.archs.all():
-            archs.append(a.name)
-        return archs
+    def mbd_get_architectures(self):
+        architectures = []
+        for a in self.architectures.all():
+            architectures.append(a.name)
+        return architectures
 
     def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
@@ -217,7 +217,7 @@ class Repository(StatusModel):
         suite = dist_split[2]
         log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
 
-        for d in self.dists.all():
+        for d in self.distributions.all():
             if d.base_source.codename == base:
                 res = d.mbd_get_apt_sources_list()
                 res += "\n"
@@ -240,7 +240,7 @@ class Repository(StatusModel):
         suite = dist_split[2]
         log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
 
-        for d in self.dists.all():
+        for d in self.distributions.all():
             if d.base_source.codename == base:
                 from mini_buildd import daemon
                 result = daemon.get().mbd_get_pub_key()
@@ -256,7 +256,7 @@ class Repository(StatusModel):
         suite = dist_split[2]
         log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
 
-        for d in self.dists.all():
+        for d in self.distributions.all():
             if d.base_source.codename == base:
                 # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
                 return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
@@ -274,7 +274,7 @@ class Repository(StatusModel):
 
     def mbd_reprepro_config(self):
         result = StringIO.StringIO()
-        for d in self.dists.all():
+        for d in self.distributions.all():
             for s in self.layout.suites.all():
                 result.write("""
 Codename: {dist}
@@ -282,7 +282,7 @@ Suite:  {dist}
 Label: {dist}
 Origin: {origin}
 Components: {components}
-Architectures: source {archs}
+Architectures: source {architectures}
 Description: {desc}
 SignWith: default
 NotAutomatic: {na}
@@ -290,7 +290,7 @@ ButAutomaticUpgrades: {bau}
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
            components=self.mbd_get_components(),
-           archs=" ".join(self.mbd_get_archs()),
+           architectures=" ".join(self.mbd_get_architectures()),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))

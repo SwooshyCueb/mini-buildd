@@ -108,7 +108,7 @@ class Source(StatusModel):
                     msg_info(request, "Mirror found: {m}".format(m=m))
                     self.mirrors.add(m)
                     self.description = release["Description"]
-                    # Set archs and components (may be auto-added)
+                    # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
                         newArch, created = Architecture.objects.get_or_create(name=a)
                         if created:

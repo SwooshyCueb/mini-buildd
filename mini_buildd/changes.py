@@ -93,10 +93,10 @@ class Changes(debian.deb822.Changes):
         pass
 
     def gen_buildrequests(self):
-        # Build buildrequest files for all archs
+        # Build buildrequest files for all architectures
         br_dict = {}
         r = self.get_repository()
-        for a in r.archs.all():
+        for a in r.architectures.all():
             path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:
@@ -122,7 +122,7 @@ class Changes(debian.deb822.Changes):
 
             br["Base-Distribution"] = codename
             br["Architecture"] = a.name
-            if a == r.arch_all:
+            if a == r.architecture_all:
                 br["Arch-All"] = "Yes"
             br["Build-Dep-Resolver"] = r.build_dep_resolver
             br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"

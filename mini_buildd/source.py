@@ -45,17 +45,20 @@ class Component(django.db.models.Model):
 from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 
 class Source(StatusModel):
+    # Identity
     origin = django.db.models.CharField(max_length=60, default="Debian",
                                         help_text="The exact string of the 'Origin' field of the resp. Release file.")
     codename = django.db.models.CharField(max_length=60, default="sid",
-                                        help_text="The exact string of the 'Codename' field of the resp. Release file.")
+                                          help_text="The exact string of the 'Codename' field of the resp. Release file.")
 
+    # Apt Secure
     apt_key_id = django.db.models.CharField(max_length=100, blank=True, default="",
                                             help_text="Give a key id here to retrieve the actual apt key automatically per configured keyserver.")
     apt_key = django.db.models.TextField(blank=True, default="",
                                          help_text="ASCII-armored apt key. Leave the key id blank if you fill this manually.")
     apt_key_fingerprint = django.db.models.TextField(blank=True, default="")
 
+    # Automatic
     description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
     mirrors = django.db.models.ManyToManyField(Mirror, null=True)
     components = django.db.models.ManyToManyField(Component, null=True)
@@ -76,7 +79,7 @@ class Source(StatusModel):
             ("Apt Secure", {
                     "fields": ("apt_key_id", "apt_key", "apt_key_fingerprint")
                     }),
-            ("Auto", {
+            ("Automatic", {
                     "classes": ("collapse",),
                     "fields": ("description", "mirrors", "components", "architectures")
                     }),)

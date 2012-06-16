@@ -52,13 +52,6 @@ read -e -i "$(lsb_release --short --codename)" -p "upload to base distribution? 
 read -e -i "experimental" -p "upload to experimental or unstable? " dest
 read -e -i "$(mbdPrevStable ${dist})-${id}-${dest}" -p "auto backports for? " backports
 
-version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
-if [ "${dest}" = "experimental" ]; then
-	version+="0"
-else
-	version+="1"
-fi
-
 PKG_DIR="$(dirname $(readlink -f ${0}))/packages/"
 PACKAGES="${*}"
 [ -n "${PACKAGES}" ] || PACKAGES=$(ls "${PKG_DIR}/")
@@ -70,12 +63,25 @@ cd "${builddir}"
 
 for P in ${PACKAGES}; do
 	(
-		cp -a "${PKG_DIR}/${P}" "${P}"
-		cd "${P}"
-		autoreconf --force --install
-		debchange --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
+		version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
+		if cp -a "${PKG_DIR}/${P}" "${P}"; then
+			cd "${P}"
+			autoreconf --force --install
+		else
+			apt-get source "${P}"
+			DIR=$(find . -maxdepth 1 -mindepth 1 -type d -name "${P}*")
+			[ -n "${DIR}" ]
+			version="$(echo ${DIR} | rev | cut -d- -f1 | rev)-${version}"
+			cd "${DIR}"
+		fi
+		if [ "${dest}" = "experimental" ]; then
+			version+="0"
+		else
+			version+="1"
+		fi
+		debchange -b --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
 		[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
-		dpkg-buildpackage -us -uc -S
+		dpkg-buildpackage -d -us -uc -S -sa
 	)
 done
 

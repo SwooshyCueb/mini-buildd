@@ -117,7 +117,7 @@ class Package(object):
     def update(self, result):
         arch = result["Sbuild-Architecture"]
         status = result["Sbuild-Status"]
-        retval = result["Sbuildretval"]
+        retval = int(result["Sbuildretval"])
         log.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
 
         if retval == 0:

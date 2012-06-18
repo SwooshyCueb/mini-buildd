@@ -55,4 +55,13 @@ def run(bind, queue):
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
     log.info("Starting ftpd on '{b}'.".format(b=ba.string))
-    ftpd.serve_forever()
+
+    global _RUN
+    _RUN = True
+    while _RUN:
+        ftpd.serve_forever(count=1)
+    ftpd.close()
+
+def shutdown():
+    global _RUN
+    _RUN = False

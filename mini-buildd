@@ -126,9 +126,12 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._setup()
         self._setup_logging()
 
-    def shutdown(self, signum=-1, frame=-1):
+    def on_signal(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)
-        self._run = False
+        if signum == signal.SIGTERM or signum == signal.SIGINT:
+            self._status = "SHUTDOWN"
+        elif signum == signal.SIGHUP:
+            self._status = "RELOAD"
 
     def run(self):
         from mini_buildd import webapp
@@ -144,27 +147,31 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         else:
             from mini_buildd import daemon, httpd, ftpd
 
-            # Get/Create daemon model instance
-            dm = daemon.get()
-
-            # Start httpd and ftpd
-            misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
-            misc.run_as_thread(ftpd.run,  daemon=True, bind=self._args.ftpd_bind, queue=dm._incoming_queue)
-
-            # Start daemon
-            dm_thread = misc.run_as_thread(daemon.run, dm=dm)
-
             # Shutdown on SIGTERM or SIGINT
-            self._run = True
-            signal.signal(signal.SIGTERM, self.shutdown)
-            signal.signal(signal.SIGINT, self.shutdown)
-            while self._run:
-                signal.pause()
+            self._status = "RELOAD"
+            signal.signal(signal.SIGTERM, self.on_signal)
+            signal.signal(signal.SIGINT, self.on_signal)
+            signal.signal(signal.SIGHUP, self.on_signal)
 
-            log.info("Signaling shutdown...")
-            dm._incoming_queue.put("SHUTDOWN")
-            dm_thread.join()
-            log.info("Shutdown complete. Bye...")
+            # Start httpd webapp
+            httpd_thread = misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
+
+            while self._status == "RELOAD":
+                # Get/Create daemon model instance (singleton-like)
+                daemon.create_runner()
+
+                # Start ftpd
+                ftpd_thread = misc.run_as_thread(ftpd.run, bind=self._args.ftpd_bind, queue=daemon.runner()._incoming_queue)
+
+                # Start daemon
+                dm_thread = misc.run_as_thread(daemon.run, dm=daemon.runner())
+
+                signal.pause()
+                ftpd.shutdown()
+                daemon.runner()._incoming_queue.put("SHUTDOWN")
+                dm_thread.join()
+                ftpd_thread.join()
+                log.info("Shutdown complete. Bye...")
 
 # Main processing; the only benefit of the master try/catch is
 # that we can generate a error message to log on exception --

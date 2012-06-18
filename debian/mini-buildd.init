@@ -45,12 +45,15 @@ case "$1" in
 	stop)
 		run_with_log "Stopping" start-stop-daemon --stop --oknodo --quiet --name ${NAME} --user mini-buildd --retry 30
 		;;
+	reload)
+		run_with_log "Reloading" start-stop-daemon --stop --signal HUP --oknodo --quiet --name ${NAME} --user mini-buildd
+		;;
 	force-reload|restart)
 		$0 stop
 		$0 start
 		;;
 	*)
-		echo "Usage: /etc/init.d/mini-buildd {start|stop|restart|force-reload}" >&2
+		echo "Usage: /etc/init.d/mini-buildd {start|stop|restart|reload|force-reload}" >&2
 		exit 1
 		;;
 esac

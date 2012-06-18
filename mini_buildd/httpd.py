@@ -21,6 +21,9 @@ def log_init():
     # subscribe to channel
     cherrypy.engine.subscribe('log', cherry_log)
 
+    # HTTP errors (status codes: 4xx-5xx)
+    http_error = cherrypy._cperror.HTTPError
+    http_error.set_response = lambda msg: log.log(logging.ERROR, msg)
 
 def run(bind, wsgi_app):
     """

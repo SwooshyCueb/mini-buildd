@@ -13,12 +13,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
 
     def __init__(self):
-        ".. todo:: Maybe useful later when we fix up static files."
-        if int(django.VERSION[1]) >= 4:
-            static_admin_dir = "/usr/share/pyshared/django/contrib/admin/static/"
-        else:
-            static_admin_dir = "/usr/share/pyshared/django/contrib/admin/media/"
-
         log.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
@@ -39,14 +33,12 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             SECRET_KEY = self.get_django_secret_key(setup.HOME_DIR),
             ROOT_URLCONF = 'mini_buildd.root_urls',
             STATIC_URL = "/static/",
-            STATICFILES_DIRS = ( static_admin_dir, ),
             INSTALLED_APPS = (
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'django.contrib.admin',
                 'django.contrib.sessions',
                 'django.contrib.admindocs',
-                'django.contrib.staticfiles',
                 'django_extensions',
                 'mini_buildd'
                 ))
@@ -92,11 +84,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def syncdb(self):
         log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)
-
-    def collectstatic(self):
-        ".. todo:: Maybe useful later when we fix up static files."
-        log.info("Collecting static data...")
-        django.core.management.call_command('collectstatic', interactive=False, verbosity=2)
 
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":

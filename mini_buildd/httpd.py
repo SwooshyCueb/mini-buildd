@@ -1,6 +1,7 @@
 # coding: utf-8
 import logging
 import cherrypy
+import django
 from mini_buildd import misc
 
 log = logging.getLogger(__name__)
@@ -41,9 +42,22 @@ def run(bind, wsgi_app):
     cherrypy.config.update({'server.socket_host': misc.BindArgs(bind).host,
                             'server.socket_port': misc.BindArgs(bind).port})
 
-    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
-    static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = "mini_buildd", root = static_base_dir)
-    cherrypy.tree.mount(static_handler, '/static')
+    # static files: django admin
+    static_base_dir_da = "/usr/share/pyshared/django/contrib/admin"
+
+    if int(django.VERSION[1]) >= 4:
+        static_sub_dir_da = "static"
+    else:
+        static_sub_dir_da = "media"
+
+    static_handler_da = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_da, root = static_base_dir_da)
+    cherrypy.tree.mount(static_handler_da, '/static/admin')
+
+    # static files: mini buildd
+    static_base_dir_mb = "/usr/share/pyshared/mini_buildd/static"
+    static_sub_dir_mb = "mini_buildd"
+    static_handler_mb = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_mb, root = static_base_dir_mb)
+    cherrypy.tree.mount(static_handler_mb,  '/static')
 
     cherrypy.tree.graft(wsgi_app)
     cherrypy.engine.start()

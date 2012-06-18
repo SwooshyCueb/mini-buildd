@@ -88,10 +88,20 @@ incoming = /incoming
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
 def get():
-    dm, created = Daemon.objects.get_or_create(id=1)
+    daemon, created = Daemon.objects.get_or_create(id=1)
     if created:
         log.info("New default Daemon model instance created")
-    return dm
+    return daemon
+
+def create_runner():
+    global _RUNNER
+    _RUNNER = get()
+
+def runner():
+    global _RUNNER
+    if _RUNNER == None:
+        raise Exception("Internal error: No global daemon runner instance.")
+    return _RUNNER
 
 class Package(object):
     DONE = 0

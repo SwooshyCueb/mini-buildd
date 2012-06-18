@@ -3,7 +3,7 @@ import os, Queue, contextlib, socket, logging
 
 import django.db, django.core.exceptions
 
-from mini_buildd import misc, changes, gnupg, builder
+from mini_buildd import misc, changes, gnupg, ftpd, builder
 
 from mini_buildd.models import Repository
 
@@ -14,6 +14,11 @@ class Daemon(django.db.models.Model):
         max_length=200,
         default=socket.getfqdn(),
         help_text="Fully qualified hostname.")
+
+    ftpd_bind = django.db.models.CharField(
+        max_length=200,
+        default="0.0.0.0:8067",
+        help_text="FTP Server IP/Hostname and port to bind to.")
 
     gnupg_template = django.db.models.TextField(default="""
 Key-Type: DSA
@@ -45,7 +50,7 @@ Expire-Date: 0
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("fqdn", "gnupg_template", "gnupg_keyserver")
+                    "fields": ("fqdn", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
                     }),
             ("Manager Options", {
                     "fields": ("incoming_queue_size",)
@@ -160,11 +165,16 @@ class Package(object):
             self.changes.archive()
         return self.DONE
 
-def run(dm):
+def run():
     """.. todo:: Own GnuPG model """
+    # Get/Create daemon model instance (singleton-like)
+    create_runner()
+    dm = runner()
+
     dm._gnupg.prepare()
 
-    # Start builder
+    # Start ftpd and builder
+    ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
     builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
@@ -174,6 +184,7 @@ def run(dm):
         event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
             dm._build_queue.put("SHUTDOWN")
+            ftpd.shutdown()
             break
 
         c = changes.Changes(event)
@@ -189,3 +200,4 @@ def run(dm):
         dm._incoming_queue.task_done()
 
     builder_thread.join()
+    ftpd_thread.join()

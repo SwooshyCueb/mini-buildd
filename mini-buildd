@@ -19,8 +19,6 @@ class Main():
                             help="Don't daemonize, log to console.")
         parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
                             help="Web Server IP/Hostname and port to bind to.")
-        parser.add_argument("-F", "--ftpd-bind", action='store', default="0.0.0.0:8067",
-                            help="FTP Server IP/Hostname and port to bind to.")
 
         group_log = parser.add_argument_group("Logging")
         group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
@@ -145,7 +143,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
-            from mini_buildd import daemon, httpd, ftpd
+            from mini_buildd import daemon, httpd
 
             # Shutdown on SIGTERM or SIGINT
             self._status = "RELOAD"
@@ -157,20 +155,11 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             httpd_thread = misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             while self._status == "RELOAD":
-                # Get/Create daemon model instance (singleton-like)
-                daemon.create_runner()
-
-                # Start ftpd
-                ftpd_thread = misc.run_as_thread(ftpd.run, bind=self._args.ftpd_bind, queue=daemon.runner()._incoming_queue)
-
-                # Start daemon
-                dm_thread = misc.run_as_thread(daemon.run, dm=daemon.runner())
-
+                log.info("(Re)loading daemon...")
+                dm_thread = misc.run_as_thread(daemon.run)
                 signal.pause()
-                ftpd.shutdown()
                 daemon.runner()._incoming_queue.put("SHUTDOWN")
                 dm_thread.join()
-                ftpd_thread.join()
                 log.info("Shutdown complete. Bye...")
 
 # Main processing; the only benefit of the master try/catch is

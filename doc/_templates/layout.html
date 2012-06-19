@@ -1,4 +1,10 @@
 {% extends "!layout.html" %}
+
+{% block linktags %}
+    <link rel="shortcut icon" href="/static/favicon.ico" />
+    {{ super() }}
+{% endblock %}
+
 {% block rootrellink %}
     <li><a href="../">mini-buildd home</a> &raquo;</li>
     {{ super() }}

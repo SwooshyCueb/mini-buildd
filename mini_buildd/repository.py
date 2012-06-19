@@ -136,7 +136,7 @@ class Repository(StatusModel):
     lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
-    mail_notify = django.db.models.ManyToManyField(EmailAddress)
+    mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
     extdocurl = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):

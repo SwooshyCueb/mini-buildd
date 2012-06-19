@@ -50,7 +50,7 @@ Expire-Date: 0
         default="localhost:25",
         help_text="SMTP server (and optionally port) for mail sending.")
 
-    mail_notify = django.db.models.ManyToManyField(EmailAddress)
+    mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
 
     class Meta:
         verbose_name = "[D2] Daemon"

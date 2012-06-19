@@ -19,6 +19,16 @@ def msg_warn(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
+class EmailAddress(django.db.models.Model):
+    address = django.db.models.EmailField(
+        primary_key=True,
+        max_length=254,
+        help_text="E-Mail address.")
+
+    def __unicode__(self):
+        return self.address
+
+django.contrib.admin.site.register(EmailAddress)
 
 class StatusModel(django.db.models.Model):
     """

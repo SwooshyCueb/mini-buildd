@@ -7,7 +7,7 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import StatusModel, Architecture, Source, PrioSource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioSource, Component, msg_info, msg_warn, msg_error
 
 class Suite(django.db.models.Model):
     name = django.db.models.CharField(
@@ -136,7 +136,7 @@ class Repository(StatusModel):
     lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
-    mail = django.db.models.EmailField(blank=True)
+    mail_notify = django.db.models.ManyToManyField(EmailAddress)
     extdocurl = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
@@ -153,7 +153,7 @@ class Repository(StatusModel):
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("mail", "extdocurl")
+                    "fields": ("mail_notify", "extdocurl")
                     }),)
 
     def __init__(self, *args, **kwargs):

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-import os, Queue, contextlib, socket, logging
+import os, Queue, contextlib, socket, smtplib, logging
 
-import django.db, django.core.exceptions
+from email.mime.text import MIMEText
+
+import django.db, django.core.exceptions, django.contrib.auth.models
 
 from mini_buildd import misc, changes, gnupg, ftpd, builder
 
-from mini_buildd.models import Repository
+from mini_buildd.models import Repository, EmailAddress
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +45,13 @@ Expire-Date: 0
         default=1,
         help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 
+    mail_smtpserver = django.db.models.CharField(
+        max_length=254,
+        default="localhost:25",
+        help_text="SMTP server (and optionally port) for mail sending.")
+
+    mail_notify = django.db.models.ManyToManyField(EmailAddress)
+
     class Meta:
         verbose_name = "[D2] Daemon"
         verbose_name_plural = "[D2] Daemon"
@@ -57,7 +66,10 @@ Expire-Date: 0
                     }),
             ("Builder Options", {
                     "fields": ("build_queue_size", "sbuild_jobs")
-                    }),)
+                    }),
+            ("EMail Options", {
+                    "fields": ("mail_smtpserver", "mail_notify")
+                    }))
 
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
@@ -129,6 +141,40 @@ class Package(object):
             if key not in self.success:
                 r.upload()
 
+    def notify(self):
+        def subject():
+            return "{s}: {p} ({n}/{t} failed)".format(
+                s="Failed" if self.failed else "Build",
+                p=self.pid,
+                n=len(self.failed),
+                t=len(self.requests))
+
+        msg = MIMEText(self.changes.dump(), _charset="UTF-8")
+        log.info("{s}".format(s=subject()))
+
+        m_from = "{u}@{h}".format(u="mini-buildd", h=runner().fqdn)
+        m_to = []
+
+        for m in runner().mail_notify.all():
+            m_to.append(m.address)
+        for m in self.repository.mail_notify.all():
+            m_to.append(m.address)
+
+        if m_to:
+            try:
+                msg['Subject'] = subject()
+                msg['From'] = m_from
+                msg['To'] = ", ".join(m_to)
+
+                s = smtplib.SMTP(runner().mail_smtpserver)
+                s.sendmail(m_from, m_to, msg.as_string())
+                s.quit()
+                log.info("{p}: Mail sent to {r}".format(p=self.pid, r=str(m_to)))
+            except Exception as e:
+                log.error("Email sending failed: {e}".format(e=str(e)))
+        else:
+            log.warn("No email notify configured, skipping: {s}".format(s=subject()))
+
     def update(self, result):
         arch = result["Sbuild-Architecture"]
         status = result["Sbuild-Status"]
@@ -160,9 +206,8 @@ class Package(object):
         finally:
             for arch, c in self.success.items() + self.failed.items():
                 c.archive()
-            #for arch, c in self.failed.items():
-            #    c.archive()
             self.changes.archive()
+            self.notify()
         return self.DONE
 
 def run():

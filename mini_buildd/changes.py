@@ -61,6 +61,8 @@ class Changes(debian.deb822.Changes):
         if s.migrates_from:
             raise Exception("Migrating distribution '{d}': You can't upload here".format(d=dist, s=suite))
 
+        s.mbd_check_version(r, d, self["Version"])
+
         return r, d, s
 
     def get_spool_dir(self, base_dir):

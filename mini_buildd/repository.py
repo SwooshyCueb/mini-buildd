@@ -14,8 +14,8 @@ class Suite(django.db.models.Model):
         primary_key=True, max_length=50,
         help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
     mandatory_version = django.db.models.CharField(
-        max_length=50, default="~{rid}{nbv}+[1-9]",
-        help_text="Mandatory version template; {rid}=repository id, {nbv}=numerical base distribution version.")
+        max_length=50, default="~{id}{bv}\+[1-9]",
+        help_text="Mandatory version template; {id}=repository id, {bv}=numerical base distribution version.")
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
@@ -28,6 +28,15 @@ class Suite(django.db.models.Model):
 
     def __unicode__(self):
         return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
+
+    def mbd_get_mandatory_version(self, repository, dist):
+        return self.mandatory_version.format(id=repository.id, bv=misc.codename2Version(dist.base_source.codename))
+
+    def mbd_check_version(self, repository, dist, version):
+        m = self.mbd_get_mandatory_version(repository, dist)
+        regex = re.compile(m)
+        if not regex.search(version):
+            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=self.name, m=m, v=version))
 
 django.contrib.admin.site.register(Suite)
 
@@ -270,7 +279,7 @@ class Repository(StatusModel):
         return result
 
     def mbd_get_mandatory_version(self, dist, suite):
-        return suite.mandatory_version.format(rid=self.id, nbv=misc.codename2Version(dist.base_source.codename))
+        return suite.get_mandatory_version(self, dist)
 
     def mbd_reprepro_config(self):
         result = StringIO.StringIO()

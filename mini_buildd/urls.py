@@ -15,5 +15,4 @@ urlpatterns = patterns('',
                        (r"^download/dput.cf$", views.get_dput_conf),
                        (r"^repositories/$", django.views.generic.list_detail.object_list, info_dict),
                        (r"^repositories/(?P<object_id>.+)/$", django.views.generic.list_detail.object_detail, info_dict),
-                       (r"^manual/(?P<path>.*)$", django.views.static.serve, {'document_root': setup.MANUAL_DIR, 'show_indexes': True})
 )

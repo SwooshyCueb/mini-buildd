@@ -62,6 +62,9 @@ distutils.core.setup(
     scripts = ["mini-buildd"],
     packages = ["mini_buildd"],
     package_data = {"mini_buildd": ["templates/mini_buildd/*.html",
+                                    "templates/admin/*.html",
                                     "templatetags/*.py",
                                     "fixtures/*.json",
-                                    "static/mini_buildd/*"]})
+                                    "static/css/*.css",
+                                    "static/images/*.png",
+                                    "static/*.*"]})

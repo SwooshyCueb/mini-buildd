@@ -6,17 +6,35 @@
 	<head>
 		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
 		<link rel="shortcut icon" href="/static/favicon.ico" />
+		<link rel="stylesheet" type="text/css" href="/static/css/mini-buildd.css" />
 		<title>{% block title %}{% endblock %}</title>
 	</head>
 	<body>
-		<a href="/mini_buildd/">Home</a> |
-		<a href="/admin/mini_buildd/">Configure</a> |
-		<a href="/mini_buildd/download/archive.key">Download Archive Key</a> |
-		<a href="/mini_buildd/download/dput.cf">Download Dput Config</a> |
-		<a href="/mini_buildd/manual/index.html">Manual</a>
-		<hr/>
-		{% block content %}{% endblock %}
-		<hr/>
-		<span style="font-size:smaller">mini-buildd {% mbd_version %}</span>
+<!-- Header -->
+<div id="mb_header">
+	<div id="mb_branding">
+		<img src="/static/images/icon_48x48.png" alt="mini-buildd logo" />
+	</div>
+	<div id="mb_navigation">
+		<ul>
+			<li class="first"><a href="/mini_buildd/">Home</a></li>
+			<li><a href="/admin/mini_buildd/">Configure</a></li>
+			<li><a href="/mini_buildd/download/archive.key">Download Archive Key</a></li>
+			<li><a href="/mini_buildd/download/dput.cf">Download Dput Config</a></li>
+			<li><a href="/manual/index.html">Manual</a></li>
+		</ul>
+	</div>
+</div>
+<!-- END Header -->
+<!-- Content -->
+<div id="mb_content">
+	{% block content %}{% endblock %}
+</div>
+<!-- END Content -->
+<!-- Footer -->
+<div id="mb_footer">
+	<p class="version">mini-buildd {% mbd_version %}</p>
+</div>
+<!-- END Footer -->
 	</body>
 </html>

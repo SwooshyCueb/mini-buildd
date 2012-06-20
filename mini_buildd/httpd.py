@@ -42,23 +42,43 @@ def run(bind, wsgi_app):
     cherrypy.config.update({'server.socket_host': misc.BindArgs(bind).host,
                             'server.socket_port': misc.BindArgs(bind).port})
 
-    # static files: django admin
-    static_base_dir_da = "/usr/share/pyshared/django/contrib/admin"
+    # static files base dir: mini-buildd
+    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
+
+    # static files base dir: manual
+    static_base_dir_manual = "/usr/share/doc/mini-buildd/html"
+
+    # static files base dir: django admin
+    static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
 
     if int(django.VERSION[1]) >= 4:
-        static_sub_dir_da = "static"
+        static_sub_dir_admin = "static"
     else:
-        static_sub_dir_da = "media"
+        static_sub_dir_admin = "media"
 
-    static_handler_da = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_da, root = static_base_dir_da)
-    cherrypy.tree.mount(static_handler_da, '/static/admin')
+    static_handler_admin = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_admin, root = static_base_dir_admin)
+    cherrypy.tree.mount(static_handler_admin, '/static/admin')
 
-    # static files: mini buildd
-    static_base_dir_mb = "/usr/share/pyshared/mini_buildd/static"
-    static_sub_dir_mb = "mini_buildd"
-    static_handler_mb = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_mb, root = static_base_dir_mb)
-    cherrypy.tree.mount(static_handler_mb,  '/static')
+    # static files: css
+    static_sub_dir_css = "css"
+    static_handler_css = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_css, root = static_base_dir)
+    cherrypy.tree.mount(static_handler_css, '/static/css')
 
+    # static files: images
+    static_sub_dir_images = "images"
+    static_handler_images = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_images, root = static_base_dir)
+    cherrypy.tree.mount(static_handler_images, '/static/images')
+
+    # static files: manual
+    static_handler_manual = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir_manual)
+    cherrypy.tree.mount(static_handler_manual, '/manual')
+
+    # static files: .
+    static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir)
+    cherrypy.tree.mount(static_handler, '/static')
+
+    # register wsgi app (django)
     cherrypy.tree.graft(wsgi_app)
+
     cherrypy.engine.start()
     cherrypy.engine.block()

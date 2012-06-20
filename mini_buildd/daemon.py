@@ -102,6 +102,30 @@ login    = anonymous
 incoming = /incoming
 """.format(h=self.fqdn.split(".")[0], fqdn=self.fqdn, p=8067)
 
+    def mbd_notify(self, subject, body, repository=None):
+        m_from = "{u}@{h}".format(u="mini-buildd", h=self.fqdn)
+        m_to = []
+        for m in self.mail_notify.all():
+            m_to.append(m.address)
+        if repository:
+            for m in repository.mail_notify.all():
+                m_to.append(m.address)
+
+        if m_to:
+            try:
+                body['Subject'] = subject
+                body['From'] = m_from
+                body['To'] = ", ".join(m_to)
+
+                s = smtplib.SMTP(self.mail_smtpserver)
+                s.sendmail(m_from, m_to, body.as_string())
+                s.quit()
+                log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
+            except Exception as e:
+                log.error("Failed: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
+        else:
+            log.warn("No email notify configured, skipping: {s}".format(s=subject))
+
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
 def get():
@@ -135,8 +159,8 @@ class Package(object):
             self.request_missing_builds()
         except Exception as e:
             log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
-            msg = MIMEText(self.changes.dump(), _charset="UTF-8")
-            self.email("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), msg)
+            body = MIMEText(self.changes.dump(), _charset="UTF-8")
+            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
             raise
 
     def request_missing_builds(self):
@@ -147,37 +171,14 @@ class Package(object):
             if key not in self.success:
                 r.upload()
 
-    def email(self, subject, msg):
-        m_from = "{u}@{h}".format(u="mini-buildd", h=runner().fqdn)
-        m_to = []
-        for m in runner().mail_notify.all():
-            m_to.append(m.address)
-        if getattr(self, "repository", False):
-            for m in self.repository.mail_notify.all():
-                m_to.append(m.address)
-
-        if m_to:
-            try:
-                msg['Subject'] = subject
-                msg['From'] = m_from
-                msg['To'] = ", ".join(m_to)
-
-                s = smtplib.SMTP(runner().mail_smtpserver)
-                s.sendmail(m_from, m_to, msg.as_string())
-                s.quit()
-                log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
-            except Exception as e:
-                log.error("Failed: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
-        else:
-            log.warn("No email notify configured, skipping: {s}".format(s=subject))
-
     def notify(self):
-        msg = MIMEText(self.changes.dump(), _charset="UTF-8")
-        self.email("{s}: {p} ({n}/{t} failed)".format(
+        body = MIMEText(self.changes.dump(), _charset="UTF-8")
+        runner().mbd_notify(
+            "{s}: {p} ({f}/{r} failed)".format(
                 s="Failed" if self.failed else "Build",
-                p=self.pid,
-                n=len(self.failed),
-                t=len(self.requests)), msg)
+                p=self.pid, f=len(self.failed), r=len(self.requests)),
+            body,
+            self.repository)
 
     def update(self, result):
         arch = result["Sbuild-Architecture"]

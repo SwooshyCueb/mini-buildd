@@ -48,6 +48,13 @@ EOF
 	sudo debi
 }
 
+mbd_default()
+{
+	# copy to avoid perm problems
+	cp ./mini_buildd/fixtures/test.squeeze.${1}.json /tmp/fix.json
+	sudo su - mini-buildd -c "mini-buildd --loaddata=/tmp/fix.json"
+}
+
 mbd_test()
 {
 	read -p "About to upload test packages. All configured? [ http://$(hostname -f):8066 ]" dummy
@@ -65,13 +72,20 @@ mbd_all()
 	mbd_test
 }
 
+sep=" "
 for c in $(compgen -A function | grep '^mbd_'); do
-	ACTIONS+="[${c:4}] "
+	ACTIONS+="${sep}${c:4}"
+	sep="|"
 done
-trap "printf '\nUsage: ${0} ${ACTIONS}\n' >&2" ERR
+trap "printf '\nUsage: ${0}${ACTIONS}[_arg1_arg2..] \n' >&2" ERR
 
 [ "${*}" ]
 
 for ACTION in ${*}; do
-	mbd_${ACTION}
+	func=$(echo "${ACTION}" | cut -d_ -f1)
+	args=""
+	if echo "${ACTION}" | grep -q "_"; then
+		args=$(echo "${ACTION}" | cut -d_ -f2- | tr "_" " ")
+	fi
+	mbd_${func} ${args}
 done

@@ -68,7 +68,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                   "--chroot-setup-command=sudo apt-get update",
                   "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=path),
                   "--build-dep-resolver={r}".format(r=br["Build-Dep-Resolver"]),
-                  "--verbose", "--nolog", "--log-external-command-output", "--log-external-command-error"]
+                  "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
     if "Arch-All" in br:
         sbuild_cmd.append("--arch-all")

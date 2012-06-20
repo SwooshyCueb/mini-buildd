@@ -45,6 +45,9 @@ def run(bind, wsgi_app):
     # static files base dir: mini-buildd
     static_base_dir = "/usr/share/pyshared/mini_buildd/static"
 
+    # static files base dir: manual
+    static_base_dir_manual = "/usr/share/doc/mini-buildd/html"
+
     # static files base dir: django admin
     static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
 
@@ -59,17 +62,20 @@ def run(bind, wsgi_app):
     # static files: css
     static_sub_dir_css = "css"
     static_handler_css = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_css, root = static_base_dir)
-    cherrypy.tree.mount(static_handler_css,  '/static/css')
+    cherrypy.tree.mount(static_handler_css, '/static/css')
 
     # static files: images
-    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
     static_sub_dir_images = "images"
     static_handler_images = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_images, root = static_base_dir)
-    cherrypy.tree.mount(static_handler_images,  '/static/images')
+    cherrypy.tree.mount(static_handler_images, '/static/images')
+
+    # static files: manual
+    static_handler_manual = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir_manual)
+    cherrypy.tree.mount(static_handler_manual, '/manual')
 
     # static files: .
     static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir)
-    cherrypy.tree.mount(static_handler,  '/static')
+    cherrypy.tree.mount(static_handler, '/static')
 
     # register wsgi app (django)
     cherrypy.tree.graft(wsgi_app)

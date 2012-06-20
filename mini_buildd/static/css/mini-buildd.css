@@ -1,0 +1,108 @@
+/* Mini-buildd specific style definitions. */
+
+/* GLOBAL */
+
+body
+{
+	margin: 0;
+	color: #333333;
+	font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans", "Verdana", Arial, sans-serif;
+	font-size: 12px;
+}
+
+a:link, a:visited
+{
+	color: #5b80b2;
+	text-decoration: none;
+}
+
+a:hover
+{
+	color: #003366;
+}
+
+
+/* HEADER */
+
+#mb_header
+{
+	width: 100%;
+	margin: 0;
+	background-color: #417690;
+	color: #ffffcc;
+	overflow: hidden;
+	font-size: 14px;
+}
+
+#mb_header a:link, #mb_header a:visited
+{
+	color: white;
+}
+
+#mb_header a:hover
+{
+	text-decoration: underline;
+}
+
+
+/* BRANDING */
+
+#mb_branding img
+{
+	float: left;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-top: 8px;
+	margin-bottom: 8px;
+}
+
+
+/* NAVIGATION */
+
+#mb_navigation ul
+{
+	margin-top: 25px;
+	margin-left: 6px;
+}
+
+#mb_navigation li
+{ 
+	list-style: none;
+	display: inline;
+	margin: 0;
+	padding-left: 8px;
+	border-left: 1px solid #ffffcc;
+	padding-right: 5px;
+	padding-top: 2px;
+	padding-bottom: 2px;
+}
+
+#mb_navigation li.first
+{
+	padding-left: 0px;
+	border-left: 0;
+}
+
+
+/* CONTENT */
+
+#mb_content
+{
+	padding-left: 15px;
+	padding-right: 15px;
+}
+
+
+/* FOOTER */
+
+#mb_footer
+{
+	width: 100%;
+	border-top: 1px solid #cccccc;
+	padding-left: 15px;
+}
+
+#mb_footer p.version
+{
+	margin-top: 4px;
+}

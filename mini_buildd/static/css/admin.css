@@ -1,0 +1,14 @@
+/* New mini-buildd specific style definitions. */
+#mb_django_admin_branding img
+{
+	float: left;
+	margin-left: 10px;
+	margin-right: 10px;
+	margin-bottom: 8px;
+}
+
+/* Extension of existing (default) style definitions. */
+#user-tools
+{
+	margin-top: 25px;
+}

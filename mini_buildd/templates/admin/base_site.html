@@ -1,0 +1,22 @@
+{% extends "admin/base.html" %}
+{% load i18n %}
+
+{% block title %}{{ title }} | {% trans 'Configuration of Mini-buildd' %}{% endblock %}
+
+{% block extrahead %}
+<link rel="shortcut icon" href="/static/favicon.ico" />
+<link rel="stylesheet" type="text/css" href="/static/css/admin.css" />
+{% endblock %}
+
+{% block branding %}
+<div id="mb_django_admin_branding">
+  <img src="/static/images/icon_48x48.png" alt="mini-buildd logo" />
+  <h1>{% trans 'Configuration of Mini-buildd' %}</h1>
+</div>
+{% endblock %}
+
+{% block nav-global %}
+<div id="mb_django_admin_navigation">
+  <a href="/">mini-buildd home</a> &raquo; configuration
+</div>
+{% endblock %}

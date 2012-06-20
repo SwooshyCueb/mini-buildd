@@ -20,6 +20,12 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             DEBUG = setup.DEBUG,
             TEMPLATE_DEBUG = setup.DEBUG,
 
+            TEMPLATE_DIRS = ['/usr/share/pyshared/mini_buildd/templates'],
+            TEMPLATE_LOADERS = (
+                'django.template.loaders.filesystem.Loader',
+                'django.template.loaders.app_directories.Loader',
+                 ),
+
             DATABASES =
             {
                 'default':

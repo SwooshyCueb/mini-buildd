@@ -152,8 +152,8 @@ class Package(object):
         self.changes = changes
         self.pid = changes.get_pkg_id()
         try:
-            self.repository = changes.get_repository()
-            self.requests = self.changes.gen_buildrequests()
+            self.repository, self.dist, self.suite = changes.get_repository()
+            self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
             self.success = {}
             self.failed = {}
             self.request_missing_builds()
@@ -248,7 +248,7 @@ def run():
             else:
                 dm._packages[pid] = Package(c)
         except Exception as e:
-            log.error("Exception in daemon loop: {e}".format(e=str(e)))
+            log.exception("Exception in daemon loop: {e}".format(e=str(e)))
         finally:
             dm._incoming_queue.task_done()
 

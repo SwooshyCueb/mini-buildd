@@ -127,11 +127,17 @@ class Package(object):
     def __init__(self, changes):
         self.changes = changes
         self.pid = changes.get_pkg_id()
-        self.repository = changes.get_repository()
-        self.requests = self.changes.gen_buildrequests()
-        self.success = {}
-        self.failed = {}
-        self.request_missing_builds()
+        try:
+            self.repository = changes.get_repository()
+            self.requests = self.changes.gen_buildrequests()
+            self.success = {}
+            self.failed = {}
+            self.request_missing_builds()
+        except Exception as e:
+            log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
+            msg = MIMEText(self.changes.dump(), _charset="UTF-8")
+            self.email("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), msg)
+            raise
 
     def request_missing_builds(self):
         log.info(self.requests)
@@ -141,39 +147,37 @@ class Package(object):
             if key not in self.success:
                 r.upload()
 
-    def notify(self):
-        def subject():
-            return "{s}: {p} ({n}/{t} failed)".format(
-                s="Failed" if self.failed else "Build",
-                p=self.pid,
-                n=len(self.failed),
-                t=len(self.requests))
-
-        msg = MIMEText(self.changes.dump(), _charset="UTF-8")
-        log.info("{s}".format(s=subject()))
-
+    def email(self, subject, msg):
         m_from = "{u}@{h}".format(u="mini-buildd", h=runner().fqdn)
         m_to = []
-
         for m in runner().mail_notify.all():
             m_to.append(m.address)
-        for m in self.repository.mail_notify.all():
-            m_to.append(m.address)
+        if getattr(self, "repository", False):
+            for m in self.repository.mail_notify.all():
+                m_to.append(m.address)
 
         if m_to:
             try:
-                msg['Subject'] = subject()
+                msg['Subject'] = subject
                 msg['From'] = m_from
                 msg['To'] = ", ".join(m_to)
 
                 s = smtplib.SMTP(runner().mail_smtpserver)
                 s.sendmail(m_from, m_to, msg.as_string())
                 s.quit()
-                log.info("{p}: Mail sent to {r}".format(p=self.pid, r=str(m_to)))
+                log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
             except Exception as e:
-                log.error("Email sending failed: {e}".format(e=str(e)))
+                log.error("Failed: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
         else:
-            log.warn("No email notify configured, skipping: {s}".format(s=subject()))
+            log.warn("No email notify configured, skipping: {s}".format(s=subject))
+
+    def notify(self):
+        msg = MIMEText(self.changes.dump(), _charset="UTF-8")
+        self.email("{s}: {p} ({n}/{t} failed)".format(
+                s="Failed" if self.failed else "Build",
+                p=self.pid,
+                n=len(self.failed),
+                t=len(self.requests)), msg)
 
     def update(self, result):
         arch = result["Sbuild-Architecture"]
@@ -232,17 +236,20 @@ def run():
             ftpd.shutdown()
             break
 
-        c = changes.Changes(event)
-        pid = c.get_pkg_id()
-        if c.is_buildrequest():
-            dm._build_queue.put(event)
-        elif c.is_buildresult():
-            if dm._packages[pid].update(c) == Package.DONE:
-                del dm._packages[pid]
-        else:
-            dm._packages[pid] = Package(c)
-
-        dm._incoming_queue.task_done()
+        try:
+            c = changes.Changes(event)
+            pid = c.get_pkg_id()
+            if c.is_buildrequest():
+                dm._build_queue.put(event)
+            elif c.is_buildresult():
+                if dm._packages[pid].update(c) == Package.DONE:
+                    del dm._packages[pid]
+            else:
+                dm._packages[pid] = Package(c)
+        except Exception as e:
+            log.error("Exception in daemon loop: {e}".format(e=str(e)))
+        finally:
+            dm._incoming_queue.task_done()
 
     builder_thread.join()
     ftpd_thread.join()

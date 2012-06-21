@@ -8,8 +8,10 @@ Most models are split into separate modules, but we keep pseudo
 declarations for all models here for convenience.
 
 Naming conventions
-------------------
+==================
 
+Model class and field names
+---------------------------
 All model class names and all field names must be **human
 readable with no abbrevations** (as django, per default,
 displays the internal names intelligently to the end user).
@@ -29,6 +31,14 @@ This should rather read::
   allow_email_to
 
 To group fields together for the end user, use AdminModel's *fieldset* option.
+
+Methods
+-------
+
+Methods that represent mini-buildd logic should go into the
+models directly, but must be prefixed with "mbd_". This avoids
+conflicts with method names form the django model's class, but
+still keeps the logic where it belongs.
 """
 
 import os, datetime, socket, urllib, logging

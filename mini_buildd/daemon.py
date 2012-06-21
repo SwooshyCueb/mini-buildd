@@ -49,7 +49,7 @@ Expire-Date: 0
         help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 
     # EMail options
-    mail_smtpserver = django.db.models.CharField(
+    smtp_server = django.db.models.CharField(
         max_length=254,
         default="{h}:25".format(h=socket.getfqdn()),
         help_text="SMTP server (and optionally port) for mail sending.")
@@ -80,7 +80,7 @@ prevent original package maintainers to be spammed.
                     "fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")
                     }),
             ("E-Mail Options", {
-                    "fields": ("mail_smtpserver", "mail_notify", "allow_email_to")
+                    "fields": ("smtp_server", "mail_notify", "allow_email_to")
                     }))
 
     def __init__(self, *args, **kwargs):
@@ -143,7 +143,8 @@ incoming = /incoming
                 body['From'] = m_from
                 body['To'] = ", ".join(m_to)
 
-                s = smtplib.SMTP(self.mail_smtpserver)
+                ba = misc.BindArgs(self.smtp_server)
+                s = smtplib.SMTP(ba.host, ba.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
                 log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))

@@ -99,7 +99,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                               layout=models.Layout.objects.get(name="Default"),
                               apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
                               mail=conf08x.mbd_mail,
-                              extdocurl=conf08x.mbd_extdocurl)
+                              external_home_url=conf08x.mbd_extdocurl)
 
         for d in models.Distribution.objects.all():
             r.distributions.add(d)

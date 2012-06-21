@@ -146,7 +146,7 @@ class Repository(StatusModel):
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
     mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
-    extdocurl = django.db.models.URLField(blank=True)
+    external_home_url = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
         verbose_name = "[B4] Repository"
@@ -162,7 +162,7 @@ class Repository(StatusModel):
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("mail_notify", "extdocurl")
+                    "fields": ("mail_notify", "external_home_url")
                     }),)
 
     def __init__(self, *args, **kwargs):

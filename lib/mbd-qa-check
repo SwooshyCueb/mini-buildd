@@ -48,22 +48,6 @@ MBD_TMP_SCP="scp -o StrictHostKeyChecking=no -P ${mbd_sshport}"
 #  Check functions must deliver 0 (fine), 1 (warn) or 2 (fail) return status.
 #  Note that all checks are run "set +e".
 
-# Check mandatory version part
-mbdQACheckVersion()
-{
-	local retval=0
-	local mandatory=$(mbdGetMandatoryVersionPart "${mbdParseCF_dist}")
-	local info="Mandatory version part \"${mandatory}\" for distribution \"${mbdParseCF_dist}\" in \"${mbdParseCF_version}\""
-
-	if echo "${mbdParseCF_version}" | grep --quiet "${mandatory}"; then
-		echo "I: ${info}: Included."
-	else
-		echo "I: ${info}: Missing."
-		retval=2
-	fi
-	return ${retval}
-}
-
 # Check that source package is not in repo yet
 mbdQACheckNew()
 {

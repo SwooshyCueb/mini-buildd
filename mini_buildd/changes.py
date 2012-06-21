@@ -25,17 +25,45 @@ class Changes(debian.deb822.Changes):
         return self.BUILDRESULT_RE.match(self._file_name)
 
     def get_repository(self):
-        ".. todo:: Check that base dist is really supported by this repo"
         from models import Repository
-        dist = self["Distribution"]
-        r_id = dist.split("-")[1]
-        # python 2.6: changes delivers unicode. Using unicode
-        # leads to strange logging behavior => use str() or
-        # encode("utf-8") as workaround
-        log.debug((dist + u"/" + r_id).encode("UTF-8"))
 
-        r = Repository.objects.get(id=r_id)
-        return r
+        # Check and parse distribution
+        dist = self["Distribution"]
+        dist_s = self["Distribution"].split(u"-")
+        if len(dist_s) != 3:
+            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
+        codename, id, suite = dist_s[0], dist_s[1], dist_s[2]
+
+        # Get repository for id
+        try:
+            r = Repository.objects.get(id=id)
+        except:
+            raise Exception("Unsupported distribution '{d}': No such repository id '{i}'".format(d=dist, i=id))
+
+        # Get distribution for codename
+        found = False
+        for d in r.distributions.all():
+            if d.base_source.codename == dist_s[0]:
+                found = True
+                break
+        if not found:
+            raise Exception("Unsupported distribution '{d}': No such codename '{c}'".format(d=dist, c=codename))
+
+        # Get uploadable suite
+        found = False
+        for s in r.layout.suites.all():
+            if s.name == suite:
+                found = True
+                break
+        if not found:
+            raise Exception("Unsupported distribution '{d}': No such suite '{s}'".format(d=dist, s=suite))
+
+        if s.migrates_from:
+            raise Exception("Migrating distribution '{d}': You can't upload here".format(d=dist, s=suite))
+
+        s.mbd_check_version(r, d, self["Version"])
+
+        return r, d, s
 
     def get_spool_dir(self, base_dir):
         return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
@@ -92,24 +120,21 @@ class Changes(debian.deb822.Changes):
         log.debug("STUB: archive()")
         pass
 
-    def gen_buildrequests(self):
+    def gen_buildrequests(self, repository, dist):
         # Build buildrequest files for all architectures
         br_dict = {}
-        r = self.get_repository()
-        for a in r.architectures.all():
+        for a in repository.architectures.all():
             path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 
-            codename = br["Distribution"].split("-")[0]
-
-            # Generate sources.list to be used
-            open(os.path.join(path, "apt_sources.list"), 'w').write(r.mbd_get_apt_sources_list(self["Distribution"]))
-            open(os.path.join(path, "apt_preferences"), 'w').write(r.mbd_get_apt_preferences())
-            open(os.path.join(path, "apt_keys"), 'w').write(r.mbd_get_apt_keys(self["Distribution"]))
+            # Generate sources.list et.al. to be used
+            open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
+            open(os.path.join(path, "apt_preferences"), 'w').write(repository.mbd_get_apt_preferences())
+            open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
             chroot_setup_script = os.path.join(path, "chroot_setup_script")
-            open(chroot_setup_script, 'w').write(r.mbd_get_chroot_setup_script(self["Distribution"]))
+            open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
             os.chmod(chroot_setup_script, stat.S_IRWXU)
 
             # Generate tar from original changes
@@ -120,15 +145,15 @@ class Changes(debian.deb822.Changes):
                     chroot_setup_script])
             br.add_file(br._file_path + ".tar")
 
-            br["Base-Distribution"] = codename
+            br["Base-Distribution"] = dist.base_source.codename
             br["Architecture"] = a.name
-            if a == r.architecture_all:
+            if a == repository.architecture_all:
                 br["Arch-All"] = "Yes"
-            br["Build-Dep-Resolver"] = r.build_dep_resolver
-            br["Apt-Allow-Unauthenticated"] = "1" if r.apt_allow_unauthenticated else "0"
-            if r.lintian_mode != "disabled":
+            br["Build-Dep-Resolver"] = repository.build_dep_resolver
+            br["Apt-Allow-Unauthenticated"] = "1" if repository.apt_allow_unauthenticated else "0"
+            if repository.lintian_mode != "disabled":
                 # Generate lintian options
-                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[r.lintian_mode] + " " + r.lintian_extra_options
+                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[repository.lintian_mode] + " " + repository.lintian_extra_options
 
             br.save()
             br_dict[a.name] = br

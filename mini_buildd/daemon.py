@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, Queue, contextlib, socket, smtplib, logging
+import os, re, Queue, contextlib, socket, smtplib, logging
 
 from email.mime.text import MIMEText
 
@@ -114,11 +114,11 @@ login    = anonymous
 incoming = /incoming
 """.format(h=self.hostname.split(".")[0], hostname=self.hostname, p=8067)
 
-    def mbd_notify(self, subject, body, repository=None):
+    def mbd_notify(self, subject, body, repository=None, changes=None):
         m_to = []
         m_to_allow = re.compile(self.allow_emails_to)
         def add_to(address):
-            if address and m_to_allow.match(address):
+            if address and m_to_allow.search(address):
                 m_to.append(address)
             else:
                 log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
@@ -130,10 +130,11 @@ incoming = /incoming
         if repository:
             for m in repository.notify.all():
                 add_to(m.address)
-            if repository.notify_maintainer:
-                add_to(self.changes.get("Maintainer"))
-            if repository.notify_changed_by:
-                add_to(self.changes.get("Changed-By"))
+            if changes:
+                if repository.notify_maintainer:
+                    add_to(changes.get("Maintainer"))
+                if repository.notify_changed_by:
+                    add_to(changes.get("Changed-By"))
 
         if m_to:
             try:
@@ -185,7 +186,7 @@ class Package(object):
         except Exception as e:
             log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
             body = MIMEText(self.changes.dump(), _charset="UTF-8")
-            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)))
+            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
             raise
 
     def request_missing_builds(self):
@@ -203,7 +204,8 @@ class Package(object):
                 s="Failed" if self.failed else "Build",
                 p=self.pid, f=len(self.failed), r=len(self.requests)),
             body,
-            self.repository)
+            self.repository,
+            self.changes)
 
     def update(self, result):
         arch = result["Sbuild-Architecture"]

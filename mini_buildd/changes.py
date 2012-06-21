@@ -26,7 +26,7 @@ class Changes(debian.deb822.Changes):
 
     def get(self, key):
         try:
-            result = self[key]
+            return self[key]
         except:
             return ""
 

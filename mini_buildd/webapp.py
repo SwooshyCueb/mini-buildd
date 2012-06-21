@@ -55,7 +55,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         from mini_buildd import models
         l, created = models.Layout.objects.get_or_create(name="Default")
         if created:
-            e, created = models.Suite.objects.get_or_create(name="experimental", mandatory_version="~{id}{codeversion}\+0")
+            e, created = models.Suite.objects.get_or_create(name="experimental", mandatory_version="~{identity}{codeversion}\+0")
             u, created = models.Suite.objects.get_or_create(name="unstable")
             t, created = models.Suite.objects.get_or_create(name="testing", migrates_from=u)
             s, created = models.Suite.objects.get_or_create(name="stable", migrates_from=t)

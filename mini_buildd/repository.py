@@ -14,8 +14,8 @@ class Suite(django.db.models.Model):
         primary_key=True, max_length=50,
         help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
     mandatory_version = django.db.models.CharField(
-        max_length=50, default="~{id}{codeversion}\+[1-9]",
-        help_text="Mandatory version template; {id}=repository id, {codeversion}=numerical base distribution version (see Source Model).")
+        max_length=50, default="~{identity}{codeversion}\+[1-9]",
+        help_text="Mandatory version template; {identity}=repository identity, {codeversion}=numerical base distribution version (see Source Model).")
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
@@ -30,7 +30,7 @@ class Suite(django.db.models.Model):
         return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
 
     def mbd_get_mandatory_version(self, repository, dist):
-        return self.mandatory_version.format(id=repository.id, codeversion=dist.base_source.codeversion)
+        return self.mandatory_version.format(identity=repository.identity, codeversion=dist.base_source.codeversion)
 
     def mbd_check_version(self, repository, dist, version):
         m = self.mbd_get_mandatory_version(repository, dist)
@@ -124,7 +124,7 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
 class Repository(StatusModel):
-    id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
+    identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
 
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
@@ -184,7 +184,7 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("id", "layout", "distributions", "architectures")
+                    "fields": ("identity", "layout", "distributions", "architectures")
                     }),
             ("Build options", {
                     "fields": ("architecture_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
@@ -196,33 +196,33 @@ class Repository(StatusModel):
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
-        log.debug("Initializing repository '{id}'".format(id=self.id))
+        log.debug("Initializing repository '{identity}'".format(identity=self.identity))
 
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
             for s in self.layout.suites.all():
                 if s.migrates_from == None:
-                    self.mbd_uploadable_distributions.append("{d}-{id}-{s}".format(
-                            id=self.id,
+                    self.mbd_uploadable_distributions.append("{d}-{identity}-{s}".format(
+                            identity=self.identity,
                             d=d.base_source.codename,
                             s=s.name))
 
         self._reprepro = reprepro.Reprepro(self)
 
     def __unicode__(self):
-        return self.id
+        return self.identity
 
     def mbd_get_path(self):
-        return os.path.join(setup.REPOSITORIES_DIR, self.id)
+        return os.path.join(setup.REPOSITORIES_DIR, self.identity)
 
     def mbd_get_incoming_path(self):
         return os.path.join(self.mbd_get_path(), "incoming")
 
     def mbd_get_dist(self, dist, suite):
-        return dist.base_source.codename + "-" + self.id + "-" + suite.name
+        return dist.base_source.codename + "-" + self.identity + "-" + suite.name
 
     def mbd_get_origin(self):
-        return "mini-buildd" + self.id
+        return "mini-buildd" + self.identity
 
     def mbd_get_components(self):
         return "main contrib non-free"
@@ -234,13 +234,13 @@ class Repository(StatusModel):
         return architectures
 
     def mbd_get_desc(self, dist, suite):
-        return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
+        return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
-        return "deb ftp://{h}:{p}/{r}/{id}/ {dist} {components}".format(
+        return "deb ftp://{h}:{p}/{r}/{identity}/ {dist} {components}".format(
             h=daemon.get().fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
-            id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
+            identity=self.identity, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
         """
@@ -251,9 +251,9 @@ class Repository(StatusModel):
         """
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -274,9 +274,9 @@ class Repository(StatusModel):
     def mbd_get_apt_keys(self, dist):
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -290,9 +290,9 @@ class Repository(StatusModel):
     def mbd_get_chroot_setup_script(self, dist):
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -340,7 +340,7 @@ ButAutomaticUpgrades: {bau}
         from mini_buildd.models import msg_info
 
         path = self.mbd_get_path()
-        msg_info(request, "Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
+        msg_info(request, "Preparing repository: {identity} in '{path}'".format(identity=self.identity, path=path))
 
         misc.mkdirs(path)
         misc.mkdirs(os.path.join(path, "log"))

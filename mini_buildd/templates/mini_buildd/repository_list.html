@@ -7,7 +7,7 @@
 <h1>Repositories</h1>
 
 {% for r in object_list %}
-<a href="{{ r.id }}/">{{ r.id }}</a><br/>
+<a href="{{ r.identity }}/">{{ r.identity }}</a><br/>
 {% endfor %}
 
 {% endblock %}

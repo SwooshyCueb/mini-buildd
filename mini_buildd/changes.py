@@ -38,13 +38,13 @@ class Changes(debian.deb822.Changes):
         dist_s = self["Distribution"].split(u"-")
         if len(dist_s) != 3:
             raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
-        codename, id, suite = dist_s[0], dist_s[1], dist_s[2]
+        codename, identity, suite = dist_s[0], dist_s[1], dist_s[2]
 
-        # Get repository for id
+        # Get repository for identity
         try:
-            r = Repository.objects.get(id=id)
+            r = Repository.objects.get(identity=identity)
         except:
-            raise Exception("Unsupported distribution '{d}': No such repository id '{i}'".format(d=dist, i=id))
+            raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
 
         # Get distribution for codename
         found = False

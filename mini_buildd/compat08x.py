@@ -95,7 +95,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             tryImport(Distribution)
 
     def Repository():
-        r = models.Repository(id=conf08x.mbd_id, host=conf08x.mbd_rephost,
+        r = models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
                               layout=models.Layout.objects.get(name="Default"),
                               apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
                               mail=conf08x.mbd_mail,

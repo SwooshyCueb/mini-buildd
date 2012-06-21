@@ -24,6 +24,12 @@ class Changes(debian.deb822.Changes):
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
 
+    def get(self, key):
+        try:
+            result = self[key]
+        except:
+            return ""
+
     def get_repository(self):
         from models import Repository
 

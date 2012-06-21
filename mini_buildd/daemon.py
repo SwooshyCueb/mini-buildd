@@ -12,6 +12,7 @@ from mini_buildd.models import Repository, EmailAddress
 log = logging.getLogger(__name__)
 
 class Daemon(django.db.models.Model):
+    # Basics
     fqdn = django.db.models.CharField(
         max_length=200,
         default=socket.getfqdn(),
@@ -22,6 +23,7 @@ class Daemon(django.db.models.Model):
         default="0.0.0.0:8067",
         help_text="FTP Server IP/Hostname and port to bind to.")
 
+    # GnuPG options
     gnupg_template = django.db.models.TextField(default="""
 Key-Type: DSA
 Key-Length: 2048
@@ -33,6 +35,7 @@ Expire-Date: 0
         default="subkeys.pgp.net",
         help_text="GnuPG keyserver to use.")
 
+    # Load options
     incoming_queue_size = django.db.models.SmallIntegerField(
         default=2*misc.get_cpus(),
         help_text="Maximum number of parallel packages to process.")
@@ -45,12 +48,24 @@ Expire-Date: 0
         default=1,
         help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 
+    # EMail options
     mail_smtpserver = django.db.models.CharField(
         max_length=254,
-        default="localhost:25",
+        default="{h}:25".format(h=socket.getfqdn()),
         help_text="SMTP server (and optionally port) for mail sending.")
 
     mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
+    allow_email_to = django.db.models.CharField(
+        max_length=254,
+        default=".*@{h}".format(h=socket.getfqdn()),
+        help_text="""\
+Regex to allow sending E-Mails to. Use '.*' to allow all -- it's
+however recommended to put this to s.th. like '.*@myemail.domain', to
+prevent original package maintainers to be spammed.
+
+[Spamming could occur if you enable the 'Changed-By' or
+'Maintainer' notify options in repositories.]
+""")
 
     class Meta:
         verbose_name = "[D2] Daemon"
@@ -61,14 +76,11 @@ Expire-Date: 0
             ("Basics", {
                     "fields": ("fqdn", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
                     }),
-            ("Manager Options", {
-                    "fields": ("incoming_queue_size",)
+            ("Load Options", {
+                    "fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")
                     }),
-            ("Builder Options", {
-                    "fields": ("build_queue_size", "sbuild_jobs")
-                    }),
-            ("EMail Options", {
-                    "fields": ("mail_smtpserver", "mail_notify")
+            ("E-Mail Options", {
+                    "fields": ("mail_smtpserver", "mail_notify", "allow_email_to")
                     }))
 
     def __init__(self, *args, **kwargs):
@@ -103,13 +115,27 @@ incoming = /incoming
 """.format(h=self.fqdn.split(".")[0], fqdn=self.fqdn, p=8067)
 
     def mbd_notify(self, subject, body, repository=None):
-        m_from = "{u}@{h}".format(u="mini-buildd", h=self.fqdn)
         m_to = []
+        m_to_allow = re.compile(self.allow_email_to)
+        def add_to(address):
+            if address and m_to_allow.match(address):
+                m_to.append(address)
+            else:
+                log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_email_to, a=address))
+
+        m_from = "{u}@{h}".format(u="mini-buildd", h=self.fqdn)
+
         for m in self.mail_notify.all():
-            m_to.append(m.address)
+            add_to(m.address)
         if repository:
             for m in repository.mail_notify.all():
-                m_to.append(m.address)
+                add_to(m.address)
+
+            # todo: Enable this after repo update
+            #if repository.notify_maintainer:
+            #    add_to(self.changes.get("Maintainer"))
+            #if repository.notify_changed_by:
+            #    add_to(self.changes.get("Changed-By"))
 
         if m_to:
             try:
@@ -124,7 +150,7 @@ incoming = /incoming
             except Exception as e:
                 log.error("Failed: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
         else:
-            log.warn("No email notify configured, skipping: {s}".format(s=subject))
+            log.warn("No email addresses found, skipping: {s}".format(s=subject))
 
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
@@ -160,7 +186,7 @@ class Package(object):
         except Exception as e:
             log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
             body = MIMEText(self.changes.dump(), _charset="UTF-8")
-            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
+            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)))
             raise
 
     def request_missing_builds(self):

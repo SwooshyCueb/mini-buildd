@@ -27,7 +27,7 @@ class Suite(django.db.models.Model):
         verbose_name = "[B1] Suite"
 
     def __unicode__(self):
-        return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
+        return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
     def mbd_get_mandatory_version(self, repository, dist):
         return self.mandatory_version.format(identity=repository.identity, codeversion=dist.base_source.codeversion)
@@ -99,18 +99,18 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 
     def __unicode__(self):
         def xtra():
-            result = ""
+            result = u""
             for e in self.extra_sources.all():
                 result += "+ " + e.mbd_id()
             return result
 
         def cmps():
-            result = ""
+            result = u""
             for c in self.components.all():
                 result += c.name + " "
             return result
 
-        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
+        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())

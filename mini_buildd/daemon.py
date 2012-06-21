@@ -93,7 +93,7 @@ prevent original package maintainers to be spammed.
         self._packages = {}
 
     def __unicode__(self):
-        res = "Daemon for: "
+        res = u"Daemon for: "
         for c in Repository.objects.all():
             res += c.__unicode__() + ", "
         return res

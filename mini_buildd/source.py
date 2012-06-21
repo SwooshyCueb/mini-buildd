@@ -89,10 +89,10 @@ class Source(StatusModel):
                     }),)
 
     def __unicode__(self):
-        return self.mbd_id()+ ": " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
+        return u"{i}: {d} ({m} mirrors)".format(i=self.mbd_id(), d=self.description, m=len(self.mirrors.all()))
 
     def mbd_id(self):
-        return self.origin + " '" + self.codename + "'"
+        return "{o} '{c}'".format(o=self.origin, c=self.codename)
 
     def mbd_prepare(self, request):
         self.mirrors = []
@@ -180,9 +180,9 @@ class PrioritySource(django.db.models.Model):
         verbose_name = "[A3] Priority source"
 
     def __unicode__(self):
-        return self.source.__unicode__() + ": Priority=" + str(self.priority)
+        return u"{i}: Priority={p}".format(i=self.source.__unicode__(), p=self.priority)
 
     def mbd_id(self):
-        return "{i} (Priority {p})".format(i=self.source.mbd_id(), p=self.priority)
+        return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
 
 django.contrib.admin.site.register(PrioritySource)

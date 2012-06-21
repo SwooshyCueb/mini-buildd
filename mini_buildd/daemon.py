@@ -2,6 +2,7 @@
 import os, re, Queue, contextlib, socket, smtplib, logging
 
 from email.mime.text import MIMEText
+import email.utils
 
 import django.db, django.core.exceptions, django.contrib.auth.models
 
@@ -132,9 +133,9 @@ incoming = /incoming
                 add_to(m.address)
             if changes:
                 if repository.notify_maintainer:
-                    add_to(changes.get("Maintainer"))
+                    add_to(email.utils.parseaddr(changes.get("Maintainer"))[1])
                 if repository.notify_changed_by:
-                    add_to(changes.get("Changed-By"))
+                    add_to(email.utils.parseaddr(changes.get("Changed-By"))[1])
 
         if m_to:
             try:
@@ -148,7 +149,7 @@ incoming = /incoming
                 s.quit()
                 log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
             except Exception as e:
-                log.error("Failed: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
+                log.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=str(m_to), e=str(e)))
         else:
             log.warn("No email addresses found, skipping: {s}".format(s=subject))
 

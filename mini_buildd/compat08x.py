@@ -49,7 +49,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
 
                         slist = value.split(";")
                         pin = slist[1] if len(slist) > 1 else ""
-                        prio = slist[2] if len(slist) > 2 else "1"
+                        priority = slist[2] if len(slist) > 2 else "1"
 
                         # Do some magic to find "origin", not configured explicitly in 0.8.x config
                         origin="FIXME: No known origin (0.8.x 'extra source' import)"
@@ -79,7 +79,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                         if (t == "extra"):
                             # "PrioritySource"
                             def PrioritySource():
-                                ps = models.PrioritySource(source=models.Source.objects.get(codename=codename, origin=origin), prio=prio)
+                                ps = models.PrioritySource(source=models.Source.objects.get(codename=codename, origin=origin), priority=priority)
                                 ps.save()
                                 # Add it to dist
                                 dist = models.Distribution.objects.get(base_source=models.Source.objects.get(codename=d, origin="Debian"))

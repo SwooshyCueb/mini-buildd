@@ -171,18 +171,18 @@ django.contrib.admin.site.register(Source, Source.Admin)
 
 class PrioritySource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
-    prio = django.db.models.IntegerField(default=1,
-                                         help_text="A apt pin priority value (see 'man apt_preferences')."
-                                         "Examples: 1=not automatic, 1001=downgrade'")
+    priority = django.db.models.IntegerField(default=1,
+                                             help_text="A apt pin priority value (see 'man apt_preferences')."
+                                             "Examples: 1=not automatic, 1001=downgrade'")
 
     class Meta:
-        unique_together = ('source', 'prio')
+        unique_together = ('source', 'priority')
         verbose_name = "[A3] PrioritySource"
 
     def __unicode__(self):
-        return self.source.__unicode__() + ": Prio=" + str(self.prio)
+        return self.source.__unicode__() + ": Prio=" + str(self.priority)
 
     def mbd_id(self):
-        return "{i} (Prio {p})".format(i=self.source.mbd_id(), p=self.prio)
+        return "{i} (Priority {p})".format(i=self.source.mbd_id(), p=self.priority)
 
 django.contrib.admin.site.register(PrioritySource)

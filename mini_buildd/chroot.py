@@ -134,26 +134,34 @@ personality={p}
 class FileChroot(Chroot):
     """ File chroot backend. """
 
-    TAR_SUFFIX = (('tar',     "Tar only, don't pack"),
-                  ('tar.gz',  "Tar and gzip"),
-                  ('tar.bz2', "Tar and bzip2"),
-                  ('tar.xz',  "Tar and xz"))
-    tar_suffix = django.db.models.CharField(max_length=10, choices=TAR_SUFFIX, default="tar")
+    COMPRESSION_NONE = 0
+    COMPRESSION_GZIP = 1
+    COMPRESSION_BZIP2 = 2
+    COMPRESSION_XZ = 3
+    COMPRESSION_CHOICES = (
+        (COMPRESSION_NONE,  "no compression"),
+        (COMPRESSION_GZIP,  "gzip"),
+        (COMPRESSION_BZIP2, "bzip2"),
+        (COMPRESSION_XZ,    "xz"))
+
+    compression = django.db.models.SmallIntegerField(choices=COMPRESSION_CHOICES, default=COMPRESSION_NONE)
+
+    TAR_ARGS = {
+        COMPRESSION_NONE:  [],
+        COMPRESSION_GZIP:  ["--gzip"],
+        COMPRESSION_BZIP2: ["--bzip2"],
+        COMPRESSION_XZ:    ["--xz"]}
+    TAR_SUFFIX = {
+        COMPRESSION_NONE:  "tar",
+        COMPRESSION_GZIP:  "tar.gz",
+        COMPRESSION_BZIP2: "tar.bz2",
+        COMPRESSION_XZ:    "tar.xz"}
 
     class Meta(Chroot.Meta):
         verbose_name = "[C1] File chroot"
 
     def mbd_get_tar_file(self):
-        return os.path.join(self.mbd_get_path(), "source." + self.tar_suffix)
-
-    def mbd_get_tar_compression_opts(self):
-        if self.tar_suffix == "tar.gz":
-            return ["--gzip"]
-        if self.tar_suffix == "tar.bz2":
-            return ["--bzip2"]
-        if self.tar_suffix == "tar.xz":
-            return ["--xz"]
-        return []
+        return os.path.join(self.mbd_get_path(), "source." + self.TAR_SUFFIX[self.compression])
 
     def mbd_get_schroot_conf(self):
         return """\
@@ -170,7 +178,7 @@ file={t}
               "--create",
               "--directory={d}".format(d=self.mbd_get_tmp_dir()),
               "--file={f}".format(f=self.mbd_get_tar_file()) ] +
-             self.mbd_get_tar_compression_opts() +
+             self.TAR_ARGS[self.compression] +
              ["."],
              []),
             (["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()],

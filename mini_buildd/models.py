@@ -202,12 +202,12 @@ class Daemon(daemon.Daemon):
 
 
 class Remote(django.db.models.Model):
-    host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
+    host = django.db.models.CharField(primary_key=True, max_length=255, default=socket.getfqdn())
 
     class Meta:
         verbose_name = "[D1] Remote"
 
     def __unicode__(self):
-        return "Remote: {h}".format(h=self.host)
+        return self.host
 
 django.contrib.admin.site.register(Remote)

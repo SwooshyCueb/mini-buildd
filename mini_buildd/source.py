@@ -180,7 +180,7 @@ class PrioritySource(django.db.models.Model):
         verbose_name = "[A3] PrioritySource"
 
     def __unicode__(self):
-        return self.source.__unicode__() + ": Prio=" + str(self.priority)
+        return self.source.__unicode__() + ": Priority=" + str(self.priority)
 
     def mbd_id(self):
         return "{i} (Priority {p})".format(i=self.source.mbd_id(), p=self.priority)

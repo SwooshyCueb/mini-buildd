@@ -28,7 +28,7 @@ For example, **don't** try to do sort of "grouping" using names like::
 This should rather read::
 
   smtp_server
-  allow_email_to
+  allow_emails_to
 
 To group fields together for the end user, use AdminModel's *fieldset* option.
 

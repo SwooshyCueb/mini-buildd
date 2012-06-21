@@ -168,7 +168,13 @@ class Repository(StatusModel):
     piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
     piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
 
-    mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
+    notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
+                                              help_text="Arbitary list of email addresses to notify.")
+    notify_changed_by = django.db.models.BooleanField(default=False,
+                                                      help_text="Notify the address in the 'Changed-By' field of the uploaded changes file.")
+    notify_maintainer = django.db.models.BooleanField(default=False,
+                                                      help_text="Notify the address in the 'Maintainer' field of the uploaded changes file.")
+
     external_home_url = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
@@ -185,7 +191,7 @@ class Repository(StatusModel):
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("mail_notify", "external_home_url")
+                    "fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")
                     }),)
 
     def __init__(self, *args, **kwargs):

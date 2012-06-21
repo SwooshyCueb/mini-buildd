@@ -54,8 +54,8 @@ Expire-Date: 0
         default="{h}:25".format(h=socket.getfqdn()),
         help_text="SMTP server (and optionally port) for mail sending.")
 
-    mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
-    allow_email_to = django.db.models.CharField(
+    notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
+    allow_emails_to = django.db.models.CharField(
         max_length=254,
         default=".*@{h}".format(h=socket.getfqdn()),
         help_text="""\
@@ -80,7 +80,7 @@ prevent original package maintainers to be spammed.
                     "fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")
                     }),
             ("E-Mail Options", {
-                    "fields": ("smtp_server", "mail_notify", "allow_email_to")
+                    "fields": ("smtp_server", "notify", "allow_emails_to")
                     }))
 
     def __init__(self, *args, **kwargs):
@@ -116,26 +116,24 @@ incoming = /incoming
 
     def mbd_notify(self, subject, body, repository=None):
         m_to = []
-        m_to_allow = re.compile(self.allow_email_to)
+        m_to_allow = re.compile(self.allow_emails_to)
         def add_to(address):
             if address and m_to_allow.match(address):
                 m_to.append(address)
             else:
-                log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_email_to, a=address))
+                log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
 
         m_from = "{u}@{h}".format(u="mini-buildd", h=self.fqdn)
 
-        for m in self.mail_notify.all():
+        for m in self.notify.all():
             add_to(m.address)
         if repository:
-            for m in repository.mail_notify.all():
+            for m in repository.notify.all():
                 add_to(m.address)
-
-            # todo: Enable this after repo update
-            #if repository.notify_maintainer:
-            #    add_to(self.changes.get("Maintainer"))
-            #if repository.notify_changed_by:
-            #    add_to(self.changes.get("Changed-By"))
+            if repository.notify_maintainer:
+                add_to(self.changes.get("Maintainer"))
+            if repository.notify_changed_by:
+                add_to(self.changes.get("Changed-By"))
 
         if m_to:
             try:

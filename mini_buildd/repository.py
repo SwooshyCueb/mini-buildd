@@ -154,6 +154,20 @@ class Repository(StatusModel):
     lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
+    # piuparts not used atm; placeholder for later
+    PIUPARTS_DISABLED = 0
+    PIUPARTS_RUN_ONLY = 1
+    PIUPARTS_FAIL_ON_ERROR = 2
+    PIUPARTS_FAIL_ON_WARNING = 3
+    PIUPARTS_CHOICES = (
+        (PIUPARTS_DISABLED,        "Don't run piuparts"),
+        (PIUPARTS_RUN_ONLY,        "Run piuparts"),
+        (PIUPARTS_FAIL_ON_ERROR,   "Run piuparts and fail on errors"),
+        (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
+    piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
+    piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
+    piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
+
     mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
     external_home_url = django.db.models.URLField(blank=True)
 

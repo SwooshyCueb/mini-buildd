@@ -142,11 +142,16 @@ class Repository(StatusModel):
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 
-    LINTIAN_MODES = (('disabled',        "Don't run lintian"),
-                     ('never-fail',      "Run lintian"),
-                     ('fail-on-error',   "Run lintian and fail on errors"),
-                     ('fail-on-warning', "Run lintian and fail on warnings"))
-    lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
+    LINTIAN_DISABLED = 0
+    LINTIAN_RUN_ONLY = 1
+    LINTIAN_FAIL_ON_ERROR = 2
+    LINTIAN_FAIL_ON_WARNING = 3
+    LINTIAN_CHOICES = (
+        (LINTIAN_DISABLED,        "Don't run lintian"),
+        (LINTIAN_RUN_ONLY,        "Run lintian"),
+        (LINTIAN_FAIL_ON_ERROR,   "Run lintian and fail on errors"),
+        (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
+    lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
     mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)

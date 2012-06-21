@@ -157,9 +157,14 @@ class Changes(debian.deb822.Changes):
                 br["Arch-All"] = "Yes"
             br["Build-Dep-Resolver"] = repository.get_build_dep_resolver_display()
             br["Apt-Allow-Unauthenticated"] = "1" if repository.apt_allow_unauthenticated else "0"
-            if repository.lintian_mode != "disabled":
+            if repository.lintian_mode != repository.LINTIAN_DISABLED:
                 # Generate lintian options
-                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[repository.lintian_mode] + " " + repository.lintian_extra_options
+                modeargs = {
+                    repository.LINTIAN_DISABLED:        "",
+                    repository.LINTIAN_RUN_ONLY:        "",
+                    repository.LINTIAN_FAIL_ON_ERROR:   "",
+                    repository.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
+                br["Run-Lintian"] = modeargs[repository.lintian_mode] + u" " + repository.lintian_extra_options
 
             br.save()
             br_dict[a.name] = br

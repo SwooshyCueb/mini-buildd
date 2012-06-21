@@ -62,16 +62,14 @@ def msg_warn(request, msg):
     log.warn(msg)
 
 class EmailAddress(django.db.models.Model):
-    address = django.db.models.EmailField(
-        primary_key=True,
-        max_length=254,
-        help_text="E-Mail address.")
+    address = django.db.models.EmailField(primary_key=True, max_length=255)
+    name = django.db.models.CharField(blank=True, max_length=255)
 
     class Meta:
         verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
-        return self.address
+        return u"{n} <{a}>".format(n=self.name, a=self.address)
 
 django.contrib.admin.site.register(EmailAddress)
 

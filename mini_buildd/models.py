@@ -160,19 +160,16 @@ class StatusModel(django.db.models.Model):
         readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')
 
+
 from mini_buildd import source
 class Mirror(source.Mirror):
     pass
-
 class Architecture(source.Architecture):
     pass
-
 class Component(source.Component):
     pass
-
 class Source(source.Source):
     pass
-
 class PrioritySource(source.PrioritySource):
     pass
 
@@ -191,19 +188,18 @@ class Repository(repository.Repository):
 from mini_buildd import chroot
 class Chroot(chroot.Chroot):
     pass
-
 class FileChroot(chroot.FileChroot):
     pass
-
 class LVMChroot(chroot.LVMChroot):
     pass
-
 class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
+
 
 from mini_buildd import daemon
 class Daemon(daemon.Daemon):
     pass
+
 
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(max_length=99, default=socket.getfqdn())

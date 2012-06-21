@@ -1,4 +1,32 @@
 # -*- coding: utf-8 -*-
+"""
+Generic module for models of the django application *mini_buildd*::
+
+  from mini_buildd import models
+
+Most models are split into separate modules, but we keep pseudo
+declarations for all models here for convenience.
+
+Field name conventions
+----------------------
+
+All **lowercase**, **seperatedy by underscores**, **human readable with no
+abbrevations** (as django, per default, displays the field names
+intelligently to the end user).
+
+For example, **don't** try to do sort of "grouping" using names like::
+
+  email_smtpserver
+  email_allow_regex
+
+This should rather read::
+
+  smtp_server
+  allow_email_to
+
+To group fields together for the end user, use AdminModel's *fieldset* option.
+"""
+
 import os, datetime, socket, urllib, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages

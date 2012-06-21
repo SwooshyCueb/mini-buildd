@@ -155,7 +155,7 @@ class Changes(debian.deb822.Changes):
             br["Architecture"] = a.name
             if a == repository.architecture_all:
                 br["Arch-All"] = "Yes"
-            br["Build-Dep-Resolver"] = repository.build_dep_resolver
+            br["Build-Dep-Resolver"] = repository.get_build_dep_resolver_display()
             br["Apt-Allow-Unauthenticated"] = "1" if repository.apt_allow_unauthenticated else "0"
             if repository.lintian_mode != "disabled":
                 # Generate lintian options

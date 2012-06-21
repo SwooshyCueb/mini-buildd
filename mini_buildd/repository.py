@@ -131,10 +131,14 @@ class Repository(StatusModel):
     architectures = django.db.models.ManyToManyField(Architecture)
     architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
-    RESOLVERS = (('apt',       "apt resolver"),
-                 ('aptitude',  "aptitude resolver"),
-                 ('internal',  "internal resolver"))
-    build_dep_resolver = django.db.models.CharField(max_length=10, choices=RESOLVERS, default="apt")
+    RESOLVER_APT = 0
+    RESOLVER_APTITUDE = 1
+    RESOLVER_INTERNAL = 2
+    RESOLVER_CHOICES = (
+        (RESOLVER_APT, "apt"),
+        (RESOLVER_APTITUDE, "aptitude"),
+        (RESOLVER_INTERNAL, "internal"))
+    build_dep_resolver = django.db.models.SmallIntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 

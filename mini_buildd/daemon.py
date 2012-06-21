@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class Daemon(django.db.models.Model):
     # Basics
-    fqdn = django.db.models.CharField(
+    hostname = django.db.models.CharField(
         max_length=200,
         default=socket.getfqdn(),
         help_text="Fully qualified hostname.")
@@ -74,7 +74,7 @@ prevent original package maintainers to be spammed.
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("fqdn", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
+                    "fields": ("hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
                     }),
             ("Load Options", {
                     "fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")
@@ -109,10 +109,10 @@ prevent original package maintainers to be spammed.
         return """\
 [mini-buildd-{h}]
 method   = ftp
-fqdn     = {fqdn}:{p}
+hostname     = {hostname}:{p}
 login    = anonymous
 incoming = /incoming
-""".format(h=self.fqdn.split(".")[0], fqdn=self.fqdn, p=8067)
+""".format(h=self.hostname.split(".")[0], hostname=self.hostname, p=8067)
 
     def mbd_notify(self, subject, body, repository=None):
         m_to = []
@@ -123,7 +123,7 @@ incoming = /incoming
             else:
                 log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
 
-        m_from = "{u}@{h}".format(u="mini-buildd", h=self.fqdn)
+        m_from = "{u}@{h}".format(u="mini-buildd", h=self.hostname)
 
         for m in self.notify.all():
             add_to(m.address)

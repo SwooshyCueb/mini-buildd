@@ -20,6 +20,10 @@ mbdBasedist2Version()
 	echo -n "${version}"
 }
 
+# Be sure the "Changed-By" E-Mail in changes is set reasonably
+# so we don't accidentiually spam someone while testing ;)
+export DEBEMAIL="$(id -n -u)@$(hostname -f)"
+
 mbdPrevStable()
 {
 	case $1 in
@@ -89,6 +93,7 @@ action=u
 
 while [ "${action}" != "q" ]; do
 	dput -u -f "${dput_target}" *.changes || true
+	printf "I: Working dir: $(pwd)\n"
 	read -e -i"r" -p "(q)uit and purge build dir '${builddir}', or (r)e-upload? " action
 done
 rm -rfv "${builddir}"

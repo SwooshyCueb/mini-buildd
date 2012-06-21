@@ -177,7 +177,7 @@ class PrioritySource(django.db.models.Model):
 
     class Meta:
         unique_together = ('source', 'priority')
-        verbose_name = "[A3] PrioritySource"
+        verbose_name = "[A3] Priority source"
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Priority=" + str(self.priority)

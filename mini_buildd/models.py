@@ -7,12 +7,16 @@ Generic module for models of the django application *mini_buildd*::
 Most models are split into separate modules, but we keep pseudo
 declarations for all models here for convenience.
 
-Field name conventions
-----------------------
+Naming conventions
+------------------
 
-All **lowercase**, **seperatedy by underscores**, **human readable with no
-abbrevations** (as django, per default, displays the field names
-intelligently to the end user).
+All model class names and all field names must be **human
+readable with no abbrevations** (as django, per default,
+displays the internal names intelligently to the end user).
+
+*Model class names* must be in **CamelCase**.
+
+*Field names* must be all **lowercase** and **seperatedy by underscores**.
 
 For example, **don't** try to do sort of "grouping" using names like::
 
@@ -156,7 +160,7 @@ class Component(source.Component):
 class Source(source.Source):
     pass
 
-class PrioSource(source.PrioSource):
+class PrioritySource(source.PrioritySource):
     pass
 
 

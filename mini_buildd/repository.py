@@ -7,7 +7,7 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioSource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
 
 class Suite(django.db.models.Model):
     name = django.db.models.CharField(
@@ -57,7 +57,7 @@ django.contrib.admin.site.register(Layout)
 
 class Distribution(django.db.models.Model):
     base_source = django.db.models.ForeignKey(Source)
-    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
+    extra_sources = django.db.models.ManyToManyField(PrioritySource, blank=True)
     components = django.db.models.ManyToManyField(Component)
 
     chroot_setup_script = django.db.models.TextField(blank=True,

@@ -169,7 +169,7 @@ class Source(StatusModel):
 django.contrib.admin.site.register(Source, Source.Admin)
 
 
-class PrioSource(django.db.models.Model):
+class PrioritySource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
     prio = django.db.models.IntegerField(default=1,
                                          help_text="A apt pin priority value (see 'man apt_preferences')."
@@ -177,7 +177,7 @@ class PrioSource(django.db.models.Model):
 
     class Meta:
         unique_together = ('source', 'prio')
-        verbose_name = "[A3] PrioSource"
+        verbose_name = "[A3] PrioritySource"
 
     def __unicode__(self):
         return self.source.__unicode__() + ": Prio=" + str(self.prio)
@@ -185,4 +185,4 @@ class PrioSource(django.db.models.Model):
     def mbd_id(self):
         return "{i} (Prio {p})".format(i=self.source.mbd_id(), p=self.prio)
 
-django.contrib.admin.site.register(PrioSource)
+django.contrib.admin.site.register(PrioritySource)

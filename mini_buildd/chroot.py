@@ -189,8 +189,8 @@ django.contrib.admin.site.register(FileChroot, Chroot.Admin)
 
 class LVMChroot(Chroot):
     """ LVM chroot backend. """
-    vgname = django.db.models.CharField(max_length=80, default="auto",
-                                        help_text="Give a pre-existing LVM volume group name. Just leave it on 'auto' for loop lvm chroots.")
+    volume_group = django.db.models.CharField(max_length=80, default="auto",
+                                              help_text="Give a pre-existing LVM volume group name. Just leave it on 'auto' for loop lvm chroots.")
     filesystem = django.db.models.CharField(max_length=10, default="ext2")
     snapshot_size = django.db.models.IntegerField(default=4,
                                                   help_text="Snapshot device file size in GB.")
@@ -198,14 +198,14 @@ class LVMChroot(Chroot):
     class Meta(Chroot.Meta):
         verbose_name = "[C2] LVM chroot"
 
-    def mbd_get_vgname(self):
+    def mbd_get_volume_group(self):
         try:
-            return self.looplvmchroot.mbd_get_vgname()
+            return self.looplvmchroot.mbd_get_volume_group()
         except:
-            return self.vgname
+            return self.volume_group
 
     def mbd_get_lvm_device(self):
-        return "/dev/{v}/{n}".format(v=self.mbd_get_vgname(), n=self.mbd_get_name())
+        return "/dev/{v}/{n}".format(v=self.mbd_get_volume_group(), n=self.mbd_get_name())
 
     def mbd_get_schroot_conf(self):
         return """\
@@ -217,7 +217,7 @@ lvm-snapshot-options=--size {s}G
 
     def mbd_get_pre_sequence(self):
         return [
-            (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.mbd_get_name()), self.mbd_get_vgname()],
+            (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.mbd_get_name()), self.mbd_get_volume_group()],
              ["/sbin/lvremove", "--verbose", "--force", self.mbd_get_lvm_device()]),
 
             (["/sbin/mkfs.{f}".format(f=self.filesystem), self.mbd_get_lvm_device()],
@@ -240,7 +240,7 @@ class LoopLVMChroot(LVMChroot):
     class Meta(Chroot.Meta):
         verbose_name = "[C3] LVM loop chroot"
 
-    def mbd_get_vgname(self):
+    def mbd_get_volume_group(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)
 
     def mbd_get_backing_file(self):
@@ -270,7 +270,7 @@ class LoopLVMChroot(LVMChroot):
             (["/sbin/pvcreate", "--verbose", loop_device],
              ["/sbin/pvremove", "--verbose", loop_device]),
 
-            (["/sbin/vgcreate", "--verbose", self.mbd_get_vgname(), loop_device],
-             ["/sbin/vgremove", "--verbose", "--force", self.mbd_get_vgname()])] + super(LoopLVMChroot, self).mbd_get_pre_sequence()
+            (["/sbin/vgcreate", "--verbose", self.mbd_get_volume_group(), loop_device],
+             ["/sbin/vgremove", "--verbose", "--force", self.mbd_get_volume_group()])] + super(LoopLVMChroot, self).mbd_get_pre_sequence()
 
 django.contrib.admin.site.register(LoopLVMChroot, Chroot.Admin)

@@ -67,6 +67,9 @@ class EmailAddress(django.db.models.Model):
         max_length=254,
         help_text="E-Mail address.")
 
+    class Meta:
+        verbose_name_plural = "Email addresses"
+
     def __unicode__(self):
         return self.address
 

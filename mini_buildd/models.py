@@ -1,4 +1,46 @@
 # -*- coding: utf-8 -*-
+"""
+Generic module for models of the django application *mini_buildd*::
+
+  from mini_buildd import models
+
+Most models are split into separate modules, but we keep pseudo
+declarations for all models here for convenience.
+
+Naming conventions
+==================
+
+Model class and field names
+---------------------------
+All model class names and all field names must be **human
+readable with no abbrevations** (as django, per default,
+displays the internal names intelligently to the end user).
+
+*Model class names* must be in **CamelCase**.
+
+*Field names* must be all **lowercase** and **seperatedy by underscores**.
+
+For example, **don't** try to do sort of "grouping" using names like::
+
+  email_smtpserver
+  email_allow_regex
+
+This should rather read::
+
+  smtp_server
+  allow_emails_to
+
+To group fields together for the end user, use AdminModel's *fieldset* option.
+
+Methods
+-------
+
+Methods that represent mini-buildd logic should go into the
+models directly, but must be prefixed with "mbd_". This avoids
+conflicts with method names form the django model's class, but
+still keeps the logic where it belongs.
+"""
+
 import os, datetime, socket, urllib, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages
@@ -20,13 +62,14 @@ def msg_warn(request, msg):
     log.warn(msg)
 
 class EmailAddress(django.db.models.Model):
-    address = django.db.models.EmailField(
-        primary_key=True,
-        max_length=254,
-        help_text="E-Mail address.")
+    address = django.db.models.EmailField(primary_key=True, max_length=255)
+    name = django.db.models.CharField(blank=True, max_length=255)
+
+    class Meta:
+        verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
-        return self.address
+        return u"{n} <{a}>".format(n=self.name, a=self.address)
 
 django.contrib.admin.site.register(EmailAddress)
 
@@ -115,20 +158,17 @@ class StatusModel(django.db.models.Model):
         readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')
 
+
 from mini_buildd import source
 class Mirror(source.Mirror):
     pass
-
 class Architecture(source.Architecture):
     pass
-
 class Component(source.Component):
     pass
-
 class Source(source.Source):
     pass
-
-class PrioSource(source.PrioSource):
+class PrioritySource(source.PrioritySource):
     pass
 
 
@@ -146,27 +186,26 @@ class Repository(repository.Repository):
 from mini_buildd import chroot
 class Chroot(chroot.Chroot):
     pass
-
 class FileChroot(chroot.FileChroot):
     pass
-
 class LVMChroot(chroot.LVMChroot):
     pass
-
 class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
+
 
 from mini_buildd import daemon
 class Daemon(daemon.Daemon):
     pass
 
+
 class Remote(django.db.models.Model):
-    host = django.db.models.CharField(max_length=99, default=socket.getfqdn())
+    host = django.db.models.CharField(primary_key=True, max_length=255, default=socket.getfqdn())
 
     class Meta:
         verbose_name = "[D1] Remote"
 
     def __unicode__(self):
-        return "Remote: {h}".format(h=self.host)
+        return self.host
 
 django.contrib.admin.site.register(Remote)

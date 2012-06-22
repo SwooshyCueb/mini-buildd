@@ -24,6 +24,12 @@ class Changes(debian.deb822.Changes):
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
 
+    def get(self, key):
+        try:
+            return self[key]
+        except:
+            return ""
+
     def get_repository(self):
         from models import Repository
 
@@ -32,13 +38,13 @@ class Changes(debian.deb822.Changes):
         dist_s = self["Distribution"].split(u"-")
         if len(dist_s) != 3:
             raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
-        codename, id, suite = dist_s[0], dist_s[1], dist_s[2]
+        codename, identity, suite = dist_s[0], dist_s[1], dist_s[2]
 
-        # Get repository for id
+        # Get repository for identity
         try:
-            r = Repository.objects.get(id=id)
+            r = Repository.objects.get(identity=identity)
         except:
-            raise Exception("Unsupported distribution '{d}': No such repository id '{i}'".format(d=dist, i=id))
+            raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
 
         # Get distribution for codename
         found = False
@@ -65,8 +71,17 @@ class Changes(debian.deb822.Changes):
 
         return r, d, s
 
-    def get_spool_dir(self, base_dir):
-        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+    def _get_spool_dir(self, base_dir):
+        return os.path.join(base_dir, u"_".join([self["Distribution"], self["Source"], self["Version"]]))
+
+    def get_build_dir(self):
+        return u"_".join([self._get_spool_dir(setup.BUILDS_DIR), self["Architecture"]])
+
+    def get_package_dir(self, architecture=""):
+        return os.path.join(self._get_spool_dir(setup.PACKAGES_DIR), architecture)
+
+    def get_log_dir(self):
+        return os.path.join(setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -88,14 +103,14 @@ class Changes(debian.deb822.Changes):
         self.dump(fd=open(self._file_path, "w+"))
 
     def upload(self, host="localhost", port=8067):
-        log.info("FTP: Uploading changes: '{f}' to '{h}'...". format(f=self._file_name, h=host))
+        log.info("FTP: Uploading changes: '{f}' to '{h}'...".format(f=self._file_name, h=host))
         ftp = ftplib.FTP()
         ftp.connect(host, port)
         ftp.login()
         ftp.cwd("/incoming")
         for fd in self.get_files() + [ {"name": self._file_name} ]:
             f = fd["name"]
-            log.debug("FTP: Uploading file: '{f}'". format(f=f))
+            log.debug("FTP: Uploading file: '{f}'".format(f=f))
             ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
     def tar(self, tar_path, add_files=[]):
@@ -116,15 +131,28 @@ class Changes(debian.deb822.Changes):
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
-        ".. todo:: Stub"
-        log.debug("STUB: archive()")
-        pass
+        logdir=self.get_log_dir()
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
+        for fd in [ {"name": self._file_name} ] + self.get_files():
+            f = os.path.join(os.path.dirname(self._file_path), fd["name"])
+            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
+            os.rename(f, os.path.join(logdir, fd["name"]))
+
+    def remove(self):
+        log.info("Removing changes: '{f}'".format(f=self._file_path))
+        for fd in [ {"name": self._file_name} ] + self.get_files():
+            f = os.path.join(os.path.dirname(self._file_path), fd["name"])
+            log.debug("Removing: '{f}'".format(f=fd["name"]))
+            os.remove(f)
 
     def gen_buildrequests(self, repository, dist):
         # Build buildrequest files for all architectures
         br_dict = {}
         for a in repository.architectures.all():
-            path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
+            path = self.get_package_dir(a.name)
+
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
@@ -149,11 +177,16 @@ class Changes(debian.deb822.Changes):
             br["Architecture"] = a.name
             if a == repository.architecture_all:
                 br["Arch-All"] = "Yes"
-            br["Build-Dep-Resolver"] = repository.build_dep_resolver
+            br["Build-Dep-Resolver"] = repository.get_build_dep_resolver_display()
             br["Apt-Allow-Unauthenticated"] = "1" if repository.apt_allow_unauthenticated else "0"
-            if repository.lintian_mode != "disabled":
+            if repository.lintian_mode != repository.LINTIAN_DISABLED:
                 # Generate lintian options
-                br["Run-Lintian"] = {"never-fail": "", "fail-on-error": "", "fail-on-warning": "--fail-on-warning"}[repository.lintian_mode] + " " + repository.lintian_extra_options
+                modeargs = {
+                    repository.LINTIAN_DISABLED:        "",
+                    repository.LINTIAN_RUN_ONLY:        "",
+                    repository.LINTIAN_FAIL_ON_ERROR:   "",
+                    repository.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
+                br["Run-Lintian"] = modeargs[repository.lintian_mode] + u" " + repository.lintian_extra_options
 
             br.save()
             br_dict[a.name] = br

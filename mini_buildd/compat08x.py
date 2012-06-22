@@ -49,7 +49,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
 
                         slist = value.split(";")
                         pin = slist[1] if len(slist) > 1 else ""
-                        prio = slist[2] if len(slist) > 2 else "1"
+                        priority = slist[2] if len(slist) > 2 else "1"
 
                         # Do some magic to find "origin", not configured explicitly in 0.8.x config
                         origin="FIXME: No known origin (0.8.x 'extra source' import)"
@@ -77,16 +77,16 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                         tryImport(Source)
 
                         if (t == "extra"):
-                            # "PrioSource"
-                            def PrioSource():
-                                ps = models.PrioSource(source=models.Source.objects.get(codename=codename, origin=origin), prio=prio)
+                            # "PrioritySource"
+                            def PrioritySource():
+                                ps = models.PrioritySource(source=models.Source.objects.get(codename=codename, origin=origin), priority=priority)
                                 ps.save()
                                 # Add it to dist
                                 dist = models.Distribution.objects.get(base_source=models.Source.objects.get(codename=d, origin="Debian"))
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
-                            tryImport(PrioSource)
+                            tryImport(PrioritySource)
 
                         if (t == "base"):
                             # "Distribution"
@@ -95,11 +95,11 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             tryImport(Distribution)
 
     def Repository():
-        r = models.Repository(id=conf08x.mbd_id, host=conf08x.mbd_rephost,
+        r = models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
                               layout=models.Layout.objects.get(name="Default"),
                               apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
                               mail=conf08x.mbd_mail,
-                              extdocurl=conf08x.mbd_extdocurl)
+                              external_home_url=conf08x.mbd_extdocurl)
 
         for d in models.Distribution.objects.all():
             r.distributions.add(d)

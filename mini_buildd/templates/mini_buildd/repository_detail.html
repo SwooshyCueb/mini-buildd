@@ -1,11 +1,11 @@
 {% extends "mini_buildd/base.html" %}
 {% load repository %}
 
-{% block title %}mini-buildd repository {{ object.id }}{% endblock %}
+{% block title %}mini-buildd repository {{ object.identity }}{% endblock %}
 
 {% block content %}
 
-<h1>mini-buildd repository {{ object.id }}</h1>
+<h1>mini-buildd repository {{ object.identity }}</h1>
 
 Architectures: {% repository_architectures object %} <br/>
 
@@ -17,7 +17,7 @@ Architectures: {% repository_architectures object %} <br/>
 
 {% for s in object.layout.suites.all %}
 
-<h4>{{ d.base_source.codename }}-{{ object.id }}-{{ s.name }}: {% repository_desc object d s %} </h4>
+<h4>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}: {% repository_desc object d s %} </h4>
 
 Mandatory version part: <tt>{% repository_mandatory_version object d s %}</tt> <br/>
 
@@ -42,7 +42,7 @@ Sources:
 
 <ul>
 <li>
-<a href="{{ object.extdocurl }}">External documentation</a>
+<a href="{{ object.external_home_url }}">External documentation</a>
 </li>
 
 </ul>

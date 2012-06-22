@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, re, subprocess, logging
+import os, shutil, re, subprocess, logging
 
 import django.db, django.core.exceptions
 
@@ -16,10 +16,15 @@ def results_from_buildlog(fn, changes):
                 s = l.split(":")
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
+def build_clean(br):
+    shutil.rmtree(br.get_build_dir())
+    br.remove()
+
 def build(br, jobs):
     """
     .. todo:: Builder
 
+       - Upload "internal error" result on exception to requesting mini-buildd.
        - DEB_BUILD_OPTIONS
        - [.sbuildrc] proper ccache support (was: Add path for ccache)
        - [.sbuildrc] gpg setup
@@ -30,11 +35,12 @@ def build(br, jobs):
 
     pkg_info = "{s}-{v}:{a}".format(s=br["Source"], v=br["Version"], a=br["Architecture"])
 
-    path = br.get_spool_dir(setup.BUILDS_DIR)
-    br.untar(path=path)
+    build_dir = br.get_build_dir()
+    try:
+        br.untar(path=build_dir)
 
-    # Generate .sbuildrc for this run (not all is configurable via switches).
-    open(os.path.join(path, ".sbuildrc"), 'w').write("""
+        # Generate .sbuildrc for this run (not all is configurable via switches).
+        open(os.path.join(build_dir, ".sbuildrc"), 'w').write("""
 # Set "user" mode explicitely (already default).  Means the
 # retval tells us if the sbuild run was ok. We also dont have to
 # configure "mailto".
@@ -57,65 +63,84 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 1;
 """.format(apt_allow_unauthenticated=br["Apt-Allow-Unauthenticated"]))
 
-    sbuild_cmd = ["sbuild",
-                  "-j{0}".format(jobs),
-                  "--dist={0}".format(br["Distribution"]),
-                  "--arch={0}".format(br["Architecture"]),
-                  "--chroot=mini-buildd-{d}-{a}".format(d=br["Base-Distribution"], a=br["Architecture"]),
-                  "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=path),
-                  "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=path),
-                  "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=path),
-                  "--chroot-setup-command=sudo apt-get update",
-                  "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=path),
-                  "--build-dep-resolver={r}".format(r=br["Build-Dep-Resolver"]),
-                  "--nolog", "--log-external-command-output", "--log-external-command-error"]
+        sbuild_cmd = ["sbuild",
+                      "-j{0}".format(jobs),
+                      "--dist={0}".format(br["Distribution"]),
+                      "--arch={0}".format(br["Architecture"]),
+                      "--chroot=mini-buildd-{d}-{a}".format(d=br["Base-Distribution"], a=br["Architecture"]),
+                      "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=build_dir),
+                      "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=build_dir),
+                      "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=build_dir),
+                      "--chroot-setup-command=sudo apt-get update",
+                      "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=build_dir),
+                      "--build-dep-resolver={r}".format(r=br["Build-Dep-Resolver"]),
+                      "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
-    if "Arch-All" in br:
-        sbuild_cmd.append("--arch-all")
-        sbuild_cmd.append("--source")
+        if "Arch-All" in br:
+            sbuild_cmd.append("--arch-all")
+            sbuild_cmd.append("--source")
 
-    if "Run-Lintian" in br:
-        sbuild_cmd.append("--run-lintian")
-        sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
-        sbuild_cmd.append("--lintian-opts={o}".format(o=br["Run-Lintian"]))
+        if "Run-Lintian" in br:
+            sbuild_cmd.append("--run-lintian")
+            sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
+            sbuild_cmd.append("--lintian-opts={o}".format(o=br["Run-Lintian"]))
 
-    if setup.DEBUG:
-        sbuild_cmd.append("--verbose")
+        if setup.DEBUG:
+            sbuild_cmd.append("--verbose")
 
-    sbuild_cmd.append("{s}_{v}.dsc".format(s=br["Source"], v=br["Version"]))
+        sbuild_cmd.append("{s}_{v}.dsc".format(s=br["Source"], v=br["Version"]))
 
-    buildlog = os.path.join(path, "{s}_{v}_{a}.buildlog".format(s=br["Source"], v=br["Version"], a=br["Architecture"]))
-    log.info("{p}: Starting sbuild".format(p=pkg_info))
-    log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
-    with open(buildlog, "w") as l:
-        retval = subprocess.call(sbuild_cmd,
-                                 cwd=path, env=misc.taint_env({"HOME": path}),
-                                 stdout=l, stderr=subprocess.STDOUT)
+        buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=br["Source"], v=br["Version"], a=br["Architecture"]))
+        log.info("{p}: Starting sbuild".format(p=pkg_info))
+        log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
+        with open(buildlog, "w") as l:
+            retval = subprocess.call(sbuild_cmd,
+                                     cwd=build_dir, env=misc.taint_env({"HOME": build_dir}),
+                                     stdout=l, stderr=subprocess.STDOUT)
 
-    res = changes.Changes(os.path.join(path,
-                                       "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                       format(s=br["Source"], v=br["Version"], a=br["Architecture"])))
-    for v in ["Distribution", "Source", "Version"]:
-        res[v] = br[v]
+        res = changes.Changes(os.path.join(build_dir,
+                                           "{s}_{v}_mini-buildd-buildresult_{a}.changes".
+                                           format(s=br["Source"], v=br["Version"], a=br["Architecture"])))
+        for v in ["Distribution", "Source", "Version", "Architecture"]:
+            res[v] = br[v]
 
-    # Add build results to build request object
-    res["Sbuildretval"] = str(retval)
-    results_from_buildlog(buildlog, res)
+        # Add build results to build request object
+        res["Sbuildretval"] = str(retval)
+        results_from_buildlog(buildlog, res)
 
-    log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Sbuild-Status"]))
-    res.add_file(buildlog)
-    build_changes_file = os.path.join(path,
-                                      "{s}_{v}_{a}.changes".
-                                      format(s=br["Source"], v=br["Version"], a=br["Architecture"]))
-    if os.path.exists(build_changes_file):
-        build_changes = changes.Changes(build_changes_file)
-        build_changes.tar(tar_path=res._file_path + ".tar")
-        res.add_file(res._file_path + ".tar")
+        log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=res["Sbuild-Status"]))
+        res.add_file(buildlog)
+        build_changes_file = os.path.join(build_dir,
+                                          "{s}_{v}_{a}.changes".
+                                          format(s=br["Source"], v=br["Version"], a=br["Architecture"]))
+        if os.path.exists(build_changes_file):
+            build_changes = changes.Changes(build_changes_file)
+            build_changes.tar(tar_path=res._file_path + ".tar")
+            res.add_file(res._file_path + ".tar")
 
-    res.save()
-    res.upload()
+        res.save()
+    except Exception as e:
+        log.error("Build internal error: {e}".format(e=str(e)))
+        build_clean(br)
+        # todo: internal_error.upload(...)
+        return
+
+    # Finally, try to upload to requesting mini-buildd; if the
+    # upload fails, we keep all data and try later.
+    try:
+        res.upload()
+    except Exception as e:
+        log.error("Upload failed (trying later): {e}".format(e=str(e)))
+
+    # Success, cleanup spool and incoming
+    build_clean(br)
 
 def run(build_queue, sbuild_jobs):
+    """
+    .. todo:: Builder
+
+      - Upload retry.
+    """
     builds = []
     while True:
         log.info("Builder status: {0} active builds, {0} waiting in queue.".

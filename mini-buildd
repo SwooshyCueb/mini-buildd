@@ -63,12 +63,14 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         setup.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
 
         vardir = os.path.join(self._args.home, "var")
-        setup.SPOOL_DIR    = os.path.join(vardir, "spool")
-        setup.BUILDS_DIR   = os.path.join(vardir, "builds")
-        setup.LOGS_DIR     = os.path.join(vardir, "logs")
+        setup.LOG_DIR     = os.path.join(vardir, "log")
         setup.CHROOTS_DIR  = os.path.join(vardir, "chroots")
 
-        self.LOG_FILE = os.path.join(setup.LOGS_DIR, "daemon.log")
+        spooldir = os.path.join(vardir, "spool")
+        setup.BUILDS_DIR   = os.path.join(spooldir, "builds")
+        setup.PACKAGES_DIR = os.path.join(spooldir, "packages")
+
+        self.LOG_FILE = os.path.join(setup.LOG_DIR, "daemon.log")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
@@ -79,7 +81,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         # Create base directories
         misc.mkdirs(setup.INCOMING_DIR)
         misc.mkdirs(setup.REPOSITORIES_DIR)
-        misc.mkdirs(setup.LOGS_DIR)
+        misc.mkdirs(setup.LOG_DIR)
 
     def _setup_logging(self):
         #loggers = string.split(self._args.loggers, ",")

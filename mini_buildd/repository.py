@@ -7,15 +7,15 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioSource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
 
 class Suite(django.db.models.Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=50,
         help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
     mandatory_version = django.db.models.CharField(
-        max_length=50, default="~{id}{bv}\+[1-9]",
-        help_text="Mandatory version template; {id}=repository id, {bv}=numerical base distribution version.")
+        max_length=50, default="~{identity}{codeversion}\+[1-9]",
+        help_text="Mandatory version template; {identity}=repository identity, {codeversion}=numerical base distribution version (see Source Model).")
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
@@ -27,10 +27,10 @@ class Suite(django.db.models.Model):
         verbose_name = "[B1] Suite"
 
     def __unicode__(self):
-        return self.name + " (" + ("<= " + self.migrates_from.name if self.migrates_from else "uploadable") + ")"
+        return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
     def mbd_get_mandatory_version(self, repository, dist):
-        return self.mandatory_version.format(id=repository.id, bv=misc.codename2Version(dist.base_source.codename))
+        return self.mandatory_version.format(identity=repository.identity, codeversion=dist.base_source.codeversion)
 
     def mbd_check_version(self, repository, dist, version):
         m = self.mbd_get_mandatory_version(repository, dist)
@@ -57,7 +57,7 @@ django.contrib.admin.site.register(Layout)
 
 class Distribution(django.db.models.Model):
     base_source = django.db.models.ForeignKey(Source)
-    extra_sources = django.db.models.ManyToManyField(PrioSource, blank=True)
+    extra_sources = django.db.models.ManyToManyField(PrioritySource, blank=True)
     components = django.db.models.ManyToManyField(Component)
 
     chroot_setup_script = django.db.models.TextField(blank=True,
@@ -99,18 +99,18 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 
     def __unicode__(self):
         def xtra():
-            result = ""
+            result = u""
             for e in self.extra_sources.all():
                 result += "+ " + e.mbd_id()
             return result
 
         def cmps():
-            result = ""
+            result = u""
             for c in self.components.all():
                 result += c.name + " "
             return result
 
-        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
+        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
@@ -124,29 +124,58 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
 class Repository(StatusModel):
-    id = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
+    identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
 
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
     architectures = django.db.models.ManyToManyField(Architecture)
     architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
-    RESOLVERS = (('apt',       "apt resolver"),
-                 ('aptitude',  "aptitude resolver"),
-                 ('internal',  "internal resolver"))
-    build_dep_resolver = django.db.models.CharField(max_length=10, choices=RESOLVERS, default="apt")
+    RESOLVER_APT = 0
+    RESOLVER_APTITUDE = 1
+    RESOLVER_INTERNAL = 2
+    RESOLVER_CHOICES = (
+        (RESOLVER_APT, "apt"),
+        (RESOLVER_APTITUDE, "aptitude"),
+        (RESOLVER_INTERNAL, "internal"))
+    build_dep_resolver = django.db.models.SmallIntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 
-    LINTIAN_MODES = (('disabled',        "Don't run lintian"),
-                     ('never-fail',      "Run lintian"),
-                     ('fail-on-error',   "Run lintian and fail on errors"),
-                     ('fail-on-warning', "Run lintian and fail on warnings"))
-    lintian_mode = django.db.models.CharField(max_length=20, choices=LINTIAN_MODES, default="fail-on-error")
+    LINTIAN_DISABLED = 0
+    LINTIAN_RUN_ONLY = 1
+    LINTIAN_FAIL_ON_ERROR = 2
+    LINTIAN_FAIL_ON_WARNING = 3
+    LINTIAN_CHOICES = (
+        (LINTIAN_DISABLED,        "Don't run lintian"),
+        (LINTIAN_RUN_ONLY,        "Run lintian"),
+        (LINTIAN_FAIL_ON_ERROR,   "Run lintian and fail on errors"),
+        (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
+    lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
-    mail_notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
-    extdocurl = django.db.models.URLField(blank=True)
+    # piuparts not used atm; placeholder for later
+    PIUPARTS_DISABLED = 0
+    PIUPARTS_RUN_ONLY = 1
+    PIUPARTS_FAIL_ON_ERROR = 2
+    PIUPARTS_FAIL_ON_WARNING = 3
+    PIUPARTS_CHOICES = (
+        (PIUPARTS_DISABLED,        "Don't run piuparts"),
+        (PIUPARTS_RUN_ONLY,        "Run piuparts"),
+        (PIUPARTS_FAIL_ON_ERROR,   "Run piuparts and fail on errors"),
+        (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
+    piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
+    piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
+    piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
+
+    notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
+                                              help_text="Arbitary list of email addresses to notify.")
+    notify_changed_by = django.db.models.BooleanField(default=False,
+                                                      help_text="Notify the address in the 'Changed-By' field of the uploaded changes file.")
+    notify_maintainer = django.db.models.BooleanField(default=False,
+                                                      help_text="Notify the address in the 'Maintainer' field of the uploaded changes file.")
+
+    external_home_url = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
         verbose_name = "[B4] Repository"
@@ -155,45 +184,45 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("id", "layout", "distributions", "architectures")
+                    "fields": ("identity", "layout", "distributions", "architectures")
                     }),
             ("Build options", {
                     "fields": ("architecture_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("mail_notify", "extdocurl")
+                    "fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")
                     }),)
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
-        log.debug("Initializing repository '{id}'".format(id=self.id))
+        log.debug("Initializing repository '{identity}'".format(identity=self.identity))
 
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
             for s in self.layout.suites.all():
                 if s.migrates_from == None:
-                    self.mbd_uploadable_distributions.append("{d}-{id}-{s}".format(
-                            id=self.id,
+                    self.mbd_uploadable_distributions.append("{d}-{identity}-{s}".format(
+                            identity=self.identity,
                             d=d.base_source.codename,
                             s=s.name))
 
         self._reprepro = reprepro.Reprepro(self)
 
     def __unicode__(self):
-        return self.id
+        return self.identity
 
     def mbd_get_path(self):
-        return os.path.join(setup.REPOSITORIES_DIR, self.id)
+        return os.path.join(setup.REPOSITORIES_DIR, self.identity)
 
     def mbd_get_incoming_path(self):
         return os.path.join(self.mbd_get_path(), "incoming")
 
     def mbd_get_dist(self, dist, suite):
-        return dist.base_source.codename + "-" + self.id + "-" + suite.name
+        return dist.base_source.codename + "-" + self.identity + "-" + suite.name
 
     def mbd_get_origin(self):
-        return "mini-buildd" + self.id
+        return "mini-buildd" + self.identity
 
     def mbd_get_components(self):
         return "main contrib non-free"
@@ -205,13 +234,13 @@ class Repository(StatusModel):
         return architectures
 
     def mbd_get_desc(self, dist, suite):
-        return "{d} {s} packages for {id}".format(id=self.id, d=dist.base_source.codename, s=suite.name)
+        return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
-        return "deb ftp://{h}:{p}/{r}/{id}/ {dist} {components}".format(
-            h=daemon.get().fqdn, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
-            id=self.id, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
+        return "deb ftp://{h}:{p}/{r}/{identity}/ {dist} {components}".format(
+            h=daemon.get().hostname, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
+            identity=self.identity, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
         """
@@ -222,9 +251,9 @@ class Repository(StatusModel):
         """
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -245,9 +274,9 @@ class Repository(StatusModel):
     def mbd_get_apt_keys(self, dist):
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -261,9 +290,9 @@ class Repository(StatusModel):
     def mbd_get_chroot_setup_script(self, dist):
         dist_split = dist.split("-")
         base = dist_split[0]
-        id = dist_split[1]
+        identity = dist_split[1]
         suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=id, s=suite))
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         for d in self.distributions.all():
             if d.base_source.codename == base:
@@ -311,7 +340,7 @@ ButAutomaticUpgrades: {bau}
         from mini_buildd.models import msg_info
 
         path = self.mbd_get_path()
-        msg_info(request, "Preparing repository: {id} in '{path}'".format(id=self.id, path=path))
+        msg_info(request, "Preparing repository: {identity} in '{path}'".format(identity=self.identity, path=path))
 
         misc.mkdirs(path)
         misc.mkdirs(os.path.join(path, "log"))

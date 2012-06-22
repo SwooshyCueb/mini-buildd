@@ -58,8 +58,12 @@ class Source(StatusModel):
                                          help_text="ASCII-armored apt key. Leave the key id blank if you fill this manually.")
     apt_key_fingerprint = django.db.models.TextField(blank=True, default="")
 
-    # Automatic
+    # Extra
     description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
+    codeversion = django.db.models.CharField(max_length=50, editable=False, blank=True, default="")
+    codeversion_override = django.db.models.CharField(
+        max_length=50, blank=True, default="",
+        help_text="Leave empty unless the automated way (via the Release file's 'Version' field) is broken. The codeversion is only used for base sources.")
     mirrors = django.db.models.ManyToManyField(Mirror, null=True)
     components = django.db.models.ManyToManyField(Component, null=True)
     architectures = django.db.models.ManyToManyField(Architecture, null=True)
@@ -71,7 +75,7 @@ class Source(StatusModel):
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["mirrors", "components", "architectures", "description", "apt_key_fingerprint"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "mirrors", "components", "architectures", "description", "apt_key_fingerprint"]
         fieldsets = (
             ("Identity", {
                     "fields": ("origin", "codename")
@@ -79,16 +83,16 @@ class Source(StatusModel):
             ("Apt Secure", {
                     "fields": ("apt_key_id", "apt_key", "apt_key_fingerprint")
                     }),
-            ("Automatic", {
+            ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("description", "mirrors", "components", "architectures")
+                    "fields": ("description", "codeversion", "codeversion_override", "mirrors", "components", "architectures")
                     }),)
 
     def __unicode__(self):
-        return self.mbd_id()+ ": " + self.description + " (" + str(len(self.mirrors.all())) + " mirrors)"
+        return u"{i}: {d} ({m} mirrors)".format(i=self.mbd_id(), d=self.description, m=len(self.mirrors.all()))
 
     def mbd_id(self):
-        return self.origin + " '" + self.codename + "'"
+        return "{o} '{c}'".format(o=self.origin, c=self.codename)
 
     def mbd_prepare(self, request):
         self.mirrors = []
@@ -104,10 +108,23 @@ class Source(StatusModel):
                 release = m.mbd_download_release(self.codename)
                 origin = release["Origin"]
                 codename = release["Codename"]
+
                 if self.origin == origin and self.codename == codename:
                     msg_info(request, "Mirror found: {m}".format(m=m))
                     self.mirrors.add(m)
                     self.description = release["Description"]
+
+                    # Set codeversion
+                    self.codeversion = ""
+                    if self.codeversion_override:
+                        self.codeversion = self.codeversion_override
+                    else:
+                        try:
+                            version = release["Version"].split(u".")
+                            self.codeversion = version[0] + version[1]
+                        except:
+                            self.codeversion = codename.upper()
+
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
                         newArch, created = Architecture.objects.get_or_create(name=a)
@@ -152,20 +169,20 @@ class Source(StatusModel):
 django.contrib.admin.site.register(Source, Source.Admin)
 
 
-class PrioSource(django.db.models.Model):
+class PrioritySource(django.db.models.Model):
     source = django.db.models.ForeignKey(Source)
-    prio = django.db.models.IntegerField(default=1,
-                                         help_text="A apt pin priority value (see 'man apt_preferences')."
-                                         "Examples: 1=not automatic, 1001=downgrade'")
+    priority = django.db.models.IntegerField(default=1,
+                                             help_text="A apt pin priority value (see 'man apt_preferences')."
+                                             "Examples: 1=not automatic, 1001=downgrade'")
 
     class Meta:
-        unique_together = ('source', 'prio')
-        verbose_name = "[A3] PrioSource"
+        unique_together = ('source', 'priority')
+        verbose_name = "[A3] Priority source"
 
     def __unicode__(self):
-        return self.source.__unicode__() + ": Prio=" + str(self.prio)
+        return u"{i}: Priority={p}".format(i=self.source.__unicode__(), p=self.priority)
 
     def mbd_id(self):
-        return "{i} (Prio {p})".format(i=self.source.mbd_id(), p=self.prio)
+        return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
 
-django.contrib.admin.site.register(PrioSource)
+django.contrib.admin.site.register(PrioritySource)

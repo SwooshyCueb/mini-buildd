@@ -6,7 +6,6 @@ from mini_buildd import misc
 
 log = logging.getLogger(__name__)
 
-
 def log_init():
     """
     Setup CherryPy to use mini-buildd's logging mechanisms.
@@ -16,15 +15,22 @@ def log_init():
     # listener
     def cherry_log(msg, level):
         log.log(level, msg)
-        # to enforce 'DEBUG-logging' use the following line instead
-        # log.log(logging.DEBUG, msg)
 
     # subscribe to channel
     cherrypy.engine.subscribe('log', cherry_log)
 
+    # turn off stderr/stdout logging
+    cherrypy.log.screen = False
+
     # HTTP errors (status codes: 4xx-5xx)
     http_error = cherrypy._cperror.HTTPError
     http_error.set_response = lambda msg: log.log(logging.ERROR, msg)
+
+def exit():
+    """
+    Stop the CherryPy engine.
+    """
+    cherrypy.engine.exit()
 
 def run(bind, wsgi_app):
     """

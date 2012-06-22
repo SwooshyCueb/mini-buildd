@@ -71,8 +71,14 @@ class Changes(debian.deb822.Changes):
 
         return r, d, s
 
-    def get_spool_dir(self, base_dir):
-        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+    def _get_spool_dir(self, base_dir, architecture):
+        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], architecture)
+
+    def get_build_dir(self):
+        return self._get_spool_dir(setup.BUILDS_DIR, self["Architecture"])
+
+    def get_package_dir(self, architecture):
+        return self._get_spool_dir(setup.PACKAGES_DIR, architecture)
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -130,7 +136,8 @@ class Changes(debian.deb822.Changes):
         # Build buildrequest files for all architectures
         br_dict = {}
         for a in repository.architectures.all():
-            path = os.path.join(setup.SPOOL_DIR, self["Distribution"], self["Source"], self["Version"], a.name)
+            path = self.get_package_dir(a.name)
+
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]

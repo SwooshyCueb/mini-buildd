@@ -30,7 +30,7 @@ def build(br, jobs):
 
     pkg_info = "{s}-{v}:{a}".format(s=br["Source"], v=br["Version"], a=br["Architecture"])
 
-    path = br.get_spool_dir(setup.BUILDS_DIR)
+    path = br.get_build_dir()
     br.untar(path=path)
 
     # Generate .sbuildrc for this run (not all is configurable via switches).

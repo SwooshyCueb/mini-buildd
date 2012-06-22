@@ -2,7 +2,7 @@
 import logging
 import cherrypy
 import django
-from mini_buildd import misc
+from mini_buildd import misc, setup
 
 log = logging.getLogger(__name__)
 
@@ -82,6 +82,10 @@ def run(bind, wsgi_app):
     # static files: .
     static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir)
     cherrypy.tree.mount(static_handler, '/static')
+
+    # access mini-buildd's log dir
+    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = setup.LOG_DIR)
+    cherrypy.tree.mount(static_handler_log, '/log')
 
     # register wsgi app (django)
     cherrypy.tree.graft(wsgi_app)

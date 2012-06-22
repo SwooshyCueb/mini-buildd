@@ -107,6 +107,11 @@ prevent original package maintainers to be spammed.
         ba = misc.BindArgs(self.ftpd_bind)
         return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
 
+    def mbd_get_http_url(self):
+        ".. todo:: Port should be the one given with args, not hardcoded."
+        #ba = misc.BindArgs(self.ftpd_bind)
+        return u"http://{h}:{p}".format(h=self.hostname, p=8066)
+
     def mbd_get_pub_key(self):
         return self._gnupg.get_pub_key()
 
@@ -203,7 +208,15 @@ class Package(object):
                 r.upload()
 
     def notify(self):
-        body = MIMEText(self.changes.dump(), _charset="UTF-8")
+        results = u""
+        for arch, c in self.failed.items() + self.success.items():
+            for fd in c.get_files():
+                results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=runner().mbd_get_http_url() + "/" +
+                                                     os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, fd["name"]))
+
+        results += u"\n"
+        body = MIMEText(results + self.changes.dump(), _charset="UTF-8")
+
         runner().mbd_notify(
             "{s}: {p} ({f}/{r} failed)".format(
                 s="Failed" if self.failed else "Build",

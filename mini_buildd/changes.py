@@ -71,14 +71,14 @@ class Changes(debian.deb822.Changes):
 
         return r, d, s
 
-    def _get_spool_dir(self, base_dir, architecture):
-        return os.path.join(base_dir, self["Distribution"], self["Source"], self["Version"], architecture)
+    def _get_spool_dir(self, base_dir):
+        return os.path.join(base_dir, u"_".join([self["Distribution"], self["Source"], self["Version"]]))
 
     def get_build_dir(self):
-        return self._get_spool_dir(setup.BUILDS_DIR, self["Architecture"])
+        return u"_".join([self._get_spool_dir(setup.BUILDS_DIR), self["Architecture"]])
 
     def get_package_dir(self, architecture):
-        return self._get_spool_dir(setup.PACKAGES_DIR, architecture)
+        return os.path.join(self._get_spool_dir(setup.PACKAGES_DIR), architecture)
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])

@@ -80,8 +80,8 @@ class Changes(debian.deb822.Changes):
     def get_package_dir(self, architecture=""):
         return os.path.join(self._get_spool_dir(setup.PACKAGES_DIR), architecture)
 
-    def get_logs_dir(self):
-        return os.path.join(setup.LOGS_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+    def get_log_dir(self):
+        return os.path.join(setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -131,14 +131,14 @@ class Changes(debian.deb822.Changes):
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
-        logsdir=self.get_logs_dir()
-        if not os.path.exists(logsdir):
-            os.makedirs(logsdir)
-        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logsdir))
+        logdir=self.get_log_dir()
+        if not os.path.exists(logdir):
+            os.makedirs(logdir)
+        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
         for fd in [ {"name": self._file_name} ] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logsdir))
-            os.rename(f, os.path.join(logsdir, fd["name"]))
+            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
+            os.rename(f, os.path.join(logdir, fd["name"]))
 
     def remove(self):
         log.info("Removing changes: '{f}'".format(f=self._file_path))

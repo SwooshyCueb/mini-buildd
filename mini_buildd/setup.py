@@ -8,7 +8,7 @@ REPOSITORIES_DIR = None
 
 BUILDS_DIR = None
 PACKAGES_DIR = None
-LOGS_DIR = None
+LOG_DIR = None
 CHROOTS_DIR = None
 
 MANUAL_DIR = None

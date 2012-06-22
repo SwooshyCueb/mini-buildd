@@ -151,7 +151,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             signal.signal(signal.SIGHUP, self.on_signal)
 
             # Start httpd webapp
-            httpd_thread = misc.run_as_thread(httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
+            httpd_thread = misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             while self._status == "RELOAD":
                 log.info("(Re)loading daemon...")
@@ -160,6 +160,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
                 daemon.runner()._incoming_queue.put("SHUTDOWN")
                 dm_thread.join()
                 log.info("Shutdown complete. Bye...")
+
+            httpd.exit()
 
 # Main processing; the only benefit of the master try/catch is
 # that we can generate a error message to log on exception --

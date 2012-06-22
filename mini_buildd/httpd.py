@@ -58,7 +58,7 @@ def run(bind, wsgi_app):
     static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
 
     if int(django.VERSION[1]) >= 4:
-        static_sub_dir_admin = "static"
+        static_sub_dir_admin = "static/admin"
     else:
         static_sub_dir_admin = "media"
 

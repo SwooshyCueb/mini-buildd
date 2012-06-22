@@ -238,9 +238,10 @@ class Repository(StatusModel):
 
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
-        return "deb ftp://{h}:{p}/{r}/{identity}/ {dist} {components}".format(
-            h=daemon.get().hostname, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
-            identity=self.identity, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
+        return "deb {u}/{r}/{i}/ {d} {c}".format(
+            u=daemon.get().get_ftp_url(),
+            r=os.path.basename(setup.REPOSITORIES_DIR),
+            i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
         """

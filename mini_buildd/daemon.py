@@ -103,6 +103,10 @@ prevent original package maintainers to be spammed.
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
+    def mbd_get_ftp_url(self):
+        ba = misc.BindArgs(self.ftpd_bind)
+        return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
+
     def mbd_get_pub_key(self):
         return self._gnupg.get_pub_key()
 

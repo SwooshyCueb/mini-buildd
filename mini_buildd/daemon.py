@@ -226,7 +226,7 @@ class Package(object):
             self.changes)
 
     def update(self, result):
-        arch = result["Sbuild-Architecture"]
+        arch = result["Architecture"]
         status = result["Sbuild-Status"]
         retval = int(result["Sbuildretval"])
         log.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))

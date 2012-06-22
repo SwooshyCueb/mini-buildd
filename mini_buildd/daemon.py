@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, re, Queue, contextlib, socket, smtplib, logging
+import os, shutil, re, Queue, contextlib, socket, smtplib, logging
 
 from email.mime.text import MIMEText
 import email.utils
@@ -237,9 +237,14 @@ class Package(object):
             log.error(str(e))
             # todo Error!
         finally:
-            for arch, c in self.success.items() + self.failed.items():
+            # Archive build results and request
+            for arch, c in self.success.items() + self.failed.items() + self.requests.items():
                 c.archive()
+            # Archive incoming changes
             self.changes.archive()
+            # Purge complete package dir
+            shutil.rmtree(os.path.dirname(self.changes.get_package_dir()))
+
             self.notify()
         return self.DONE
 

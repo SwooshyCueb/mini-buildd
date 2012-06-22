@@ -77,8 +77,11 @@ class Changes(debian.deb822.Changes):
     def get_build_dir(self):
         return u"_".join([self._get_spool_dir(setup.BUILDS_DIR), self["Architecture"]])
 
-    def get_package_dir(self, architecture):
+    def get_package_dir(self, architecture=""):
         return os.path.join(self._get_spool_dir(setup.PACKAGES_DIR), architecture)
+
+    def get_logs_dir(self):
+        return os.path.join(setup.LOGS_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -100,14 +103,14 @@ class Changes(debian.deb822.Changes):
         self.dump(fd=open(self._file_path, "w+"))
 
     def upload(self, host="localhost", port=8067):
-        log.info("FTP: Uploading changes: '{f}' to '{h}'...". format(f=self._file_name, h=host))
+        log.info("FTP: Uploading changes: '{f}' to '{h}'...".format(f=self._file_name, h=host))
         ftp = ftplib.FTP()
         ftp.connect(host, port)
         ftp.login()
         ftp.cwd("/incoming")
         for fd in self.get_files() + [ {"name": self._file_name} ]:
             f = fd["name"]
-            log.debug("FTP: Uploading file: '{f}'". format(f=f))
+            log.debug("FTP: Uploading file: '{f}'".format(f=f))
             ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
 
     def tar(self, tar_path, add_files=[]):
@@ -128,15 +131,20 @@ class Changes(debian.deb822.Changes):
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
-        ".. todo:: Stub"
-        log.debug("STUB: archive()")
-        pass
-
-    def remove(self):
-        log.info("Removing changes: '{f}'". format(f=self._file_path))
+        logsdir=self.get_logs_dir()
+        if not os.path.exists(logsdir):
+            os.makedirs(logsdir)
+        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logsdir))
         for fd in [ {"name": self._file_name} ] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Removing: '{f}'". format(f=fd["name"]))
+            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logsdir))
+            os.rename(f, os.path.join(logsdir, fd["name"]))
+
+    def remove(self):
+        log.info("Removing changes: '{f}'".format(f=self._file_path))
+        for fd in [ {"name": self._file_name} ] + self.get_files():
+            f = os.path.join(os.path.dirname(self._file_path), fd["name"])
+            log.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
 
     def gen_buildrequests(self, repository, dist):

@@ -34,25 +34,22 @@ Status Desc                                                           Effort Est
                                                                                         obsoletes mini-dinstall.
 80%    New default distribution scheme with (manual) staging via      1/2/3
        reprepro.
-70%    Integrate web application into mini-buildd (config)            3/6/9             This introduces django and the django admin interface into
+80%    Integrate web application into mini-buildd (config)            3/6/9             This introduces django and the django admin interface into
                                                                                         mini-buildd. Initial replacement of current static html page.
-70%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
+80%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
                                                                                         eventually.
-50%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
+70%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
                                                                                         i.e., one can build packages.
-20%    Django (non-config) web app                                    3/4/7             Minimalistic. Show mini-buildd's status plus package migration.
-10%    Integrate and test new infrastructure                          6/9/14            Integrate features, bug fixing and fine tuning.
+30%    Django (non-config) web app                                    3/4/7             Minimalistic. Show mini-buildd's status plus package migration.
+20%    Integrate and test new infrastructure                          6/9/14            Integrate features, bug fixing and fine tuning.
 ====== ============================================================== ================= ======================================================================
 
 
-Key known missing features
+Known missing features
 ====================================
 
- - [REGR] Support repo keys && loop through to builders.
- - [REGR] Support preseed && loop through to builders.
  - [FEAT] Complete auth via gnupg.
  - [FEAT] Remotes support.
- - [REGR] Notification support.
  - [REGR] 0.8.x pre-build qa-checks.
  - [REGR] Auto backports.
  - [FEAT] Auto-generated keyring packages.

@@ -101,7 +101,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         res = changes.Changes(os.path.join(build_dir,
                                            "{s}_{v}_mini-buildd-buildresult_{a}.changes".
                                            format(s=br["Source"], v=br["Version"], a=br["Architecture"])))
-        for v in ["Distribution", "Source", "Version"]:
+        for v in ["Distribution", "Source", "Version", "Architecture"]:
             res[v] = br[v]
 
         # Add build results to build request object

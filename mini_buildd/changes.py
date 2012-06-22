@@ -132,6 +132,13 @@ class Changes(debian.deb822.Changes):
         log.debug("STUB: archive()")
         pass
 
+    def remove(self):
+        log.info("Removing changes: '{f}'". format(f=self._file_path))
+        for fd in [ {"name": self._file_name} ] + self.get_files():
+            f = os.path.join(os.path.dirname(self._file_path), fd["name"])
+            log.debug("Removing: '{f}'". format(f=fd["name"]))
+            os.remove(f)
+
     def gen_buildrequests(self, repository, dist):
         # Build buildrequest files for all architectures
         br_dict = {}

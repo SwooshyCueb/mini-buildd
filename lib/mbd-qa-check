@@ -209,16 +209,3 @@ mbdQACheckBackports()
 	fi
 	return ${retval}
 }
-
-# Download DBP via dput
-mbdQACheckDownloadDBP()
-{
-	local retval=0
-	if dput -f -u mini-buildd-${mbd_id} ${mbdParseCF_package}_${MBD_TMP_ARCH}.changes; then
-		echo "I: Uploaded for ${MBD_TMP_ARCH}."
-	else
-		echo "W: No DBP from ${MBD_TMP_ARCH} - skipping. This is ok if there are no packages to build for this arch."
-		retval=1
-	fi
-	return ${retval}
-}

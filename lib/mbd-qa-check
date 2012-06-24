@@ -129,50 +129,6 @@ mbdQACheckUploadDSP()
 	return ${retval}
 }
 
-# Check for lintian errors
-mbdQACheckLintian()
-{
-	local lf="${MBD_TMP_CF}.lintian"
-
-	${MBD_LIB}/mbd-lintian -C "mbd-${mbdParseCF_dist}-${MBD_TMP_ARCH}" -c "${MBD_TMP_CF}" >"${lf}" || true
-
-	# @hack for lintian: Some lintian tests need to be ignored (and -X does not seem to work):
-	#  - "bad-distribution-in-changes-file": As our dists are not supported by lintian.
-	#  - "bad-version" (all bad-version* errors): As in lintian/sarge, Tilde-Versioning results in errors.
-	#  - "no-description-in-changes-file": since dpkg 1.4.16: Changes files in source only uploads have no description field any more.
-	#  - "menu-item-creates-new-root-section": for lintian <= etch, this is an ERROR, but imho should be a WARNING only, and not let builds fail.
-	#  - "changelog-should-mention-nmu": Does not make sense for mini-buildd.
-	#  - "source-nmu-has-incorrect-version-number": Does not make sense for mini-buildd.
-	grep --invert-match "\( bad-.*distribution-in-changes-file\| bad-version\| no-description-in-changes-file\| menu-item-creates-new-root-section\| changelog-should-mention-nmu\| source-nmu-has-incorrect-version-number\| maintainer-upload-has-incorrect-version-number\| binary-nmu-debian-revision-in-source\| binary-nmu-uses-old-version-style \)" "${lf}" >"${lf}.mbd" || true
-
-	# Check if we have errors ans/or warnings; at the same time output
-	# error lines via grep.
-	local errors=false
-	local warnings=false
-	! grep '^E: .*$' "${lf}.mbd" || errors=true
-	! grep '^W: .*$' "${lf}.mbd" || warnings=true
-
-	# Compute the retval
-	local retval=0
-	if ${errors}; then
-		if ${mbdParseCF_mbd_backport_mode}; then
-			echo "I: mini-buildd: Backport mode: Treating above lintian errors as warnings."
-			retval=1
-		else
-			retval=2
-		fi
-	elif ${warnings}; then
-		retval=1
-	fi
-
-	echo
-	echo "I: ----------------------------------------------------------------------"
-	echo "I: Verbose lintian descriptions (issues not shown above are ignored):"
-	echo "I: ----------------------------------------------------------------------"
-	cat "${lf}"
-	return ${retval}
-}
-
 # Check if it builds from source
 mbdQACheckBuild()
 {

@@ -99,36 +99,6 @@ mbdQACheckOrig()
 	return ${retval}
 }
 
-# Do and check DSP upload to all build hosts
-mbdQACheckUploadDSP()
-{
-	local retval=0
-	local repOrig="${MBD_HOME}/rep/${mbdParseCF_dist}/${mbdParseCF_orig_tarball}"
-
-	for arch in $(mbdD2SList "${mbd_archs}"); do
-		mbdParseArch "${arch}"
-		local buildDir="bld/builds/$(mbdBId2BDir "${mbdParseArch_arch}" "${MBD_TMP_BUILDID}")"
-
-		echo "I: Uploading for ${mbdParseArch_host}/${mbdParseArch_arch}."
-
-		if ! (${MBD_TMP_SSH} "${mbdParseArch_host}" mkdir -p -v "${buildDir}" && ${MBD_TMP_SCP} -p ${mbdParseCF_files} "${mbdParseArch_host}:${buildDir}/"); then
-			echo "E: Error uploading DSP to build host ${mbdParseArch_host}."
-			retval=2
-		else
-			echo "I: Files from changes uploaded: ${mbdParseCF_files}."
-			if [ ! -e "${mbdParseCF_orig_tarball}" -a -e "${repOrig}" ]; then
-				if ! ${MBD_TMP_SCP} -p "${repOrig}" "${mbdParseArch_host}:${buildDir}/"; then
-					echo "E: Error uploading orig tarball from repo."
-					retval=2
-				else
-					echo "I: Orig tarball from repo uploaded: ${mbdParseCF_orig_tarball}"
-				fi
-			fi
-		fi
-	done
-	return ${retval}
-}
-
 mbdQACheckBackports()
 {
 	local retval=0

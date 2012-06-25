@@ -91,8 +91,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         sbuild_cmd.append("{s}_{v}.dsc".format(s=br["Source"], v=br["Version"]))
 
         buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=br["Source"], v=br["Version"], a=br["Architecture"]))
-        log.info("{p}: Starting sbuild".format(p=pkg_info))
-        log.debug("{p}: Sbuild options: {c}".format(p=pkg_info, c=sbuild_cmd))
+        log.info("{p}: Running sbuild: {c}".format(p=pkg_info, c=sbuild_cmd))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
                                      cwd=build_dir, env=misc.taint_env({"HOME": build_dir}),

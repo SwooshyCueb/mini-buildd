@@ -7,7 +7,19 @@ from mini_buildd import setup, misc, reprepro
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import EmailAddress, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models import StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
+
+class EmailAddress(django.db.models.Model):
+    address = django.db.models.EmailField(primary_key=True, max_length=255)
+    name = django.db.models.CharField(blank=True, max_length=255)
+
+    class Meta:
+        verbose_name_plural = "Email addresses"
+
+    def __unicode__(self):
+        return u"{n} <{a}>".format(n=self.name, a=self.address)
+
+django.contrib.admin.site.register(EmailAddress)
 
 class Suite(django.db.models.Model):
     name = django.db.models.CharField(
@@ -238,9 +250,10 @@ class Repository(StatusModel):
 
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
-        return "deb ftp://{h}:{p}/{r}/{identity}/ {dist} {components}".format(
-            h=daemon.get().hostname, p=8067, r=os.path.basename(setup.REPOSITORIES_DIR),
-            identity=self.identity, dist=self.mbd_get_dist(dist, suite), components=self.mbd_get_components())
+        return "deb {u}/{r}/{i}/ {d} {c}".format(
+            u=daemon.get().mbd_get_ftp_url(),
+            r=os.path.basename(setup.REPOSITORIES_DIR),
+            i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 
     def mbd_get_apt_sources_list(self, dist):
         """

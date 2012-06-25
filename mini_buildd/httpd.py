@@ -2,7 +2,7 @@
 import logging
 import cherrypy
 import django
-from mini_buildd import misc
+from mini_buildd import misc, setup
 
 log = logging.getLogger(__name__)
 
@@ -58,7 +58,7 @@ def run(bind, wsgi_app):
     static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
 
     if int(django.VERSION[1]) >= 4:
-        static_sub_dir_admin = "static"
+        static_sub_dir_admin = "static/admin"
     else:
         static_sub_dir_admin = "media"
 
@@ -82,6 +82,10 @@ def run(bind, wsgi_app):
     # static files: .
     static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir)
     cherrypy.tree.mount(static_handler, '/static')
+
+    # access mini-buildd's log dir
+    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = setup.LOG_DIR)
+    cherrypy.tree.mount(static_handler_log, '/log')
 
     # register wsgi app (django)
     cherrypy.tree.graft(wsgi_app)

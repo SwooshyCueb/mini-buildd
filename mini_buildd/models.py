@@ -61,18 +61,6 @@ def msg_warn(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
-class EmailAddress(django.db.models.Model):
-    address = django.db.models.EmailField(primary_key=True, max_length=255)
-    name = django.db.models.CharField(blank=True, max_length=255)
-
-    class Meta:
-        verbose_name_plural = "Email addresses"
-
-    def __unicode__(self):
-        return u"{n} <{a}>".format(n=self.name, a=self.address)
-
-django.contrib.admin.site.register(EmailAddress)
-
 class StatusModel(django.db.models.Model):
     """
     Abstract model for all models that carry a status.
@@ -173,6 +161,8 @@ class PrioritySource(source.PrioritySource):
 
 
 from mini_buildd import repository
+class EmailAddress(repository.EmailAddress):
+    pass
 class Suite(repository.Suite):
     pass
 class Layout(repository.Layout):

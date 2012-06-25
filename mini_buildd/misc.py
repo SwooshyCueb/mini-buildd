@@ -92,16 +92,19 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
 
     log.info("Calling: {a}".format(a=args))
     try:
+        olog = log.debug
         try:
             subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
+        except:
+            olog=log.error
         finally:
             if log_output:
                 stdout.seek(0)
                 for line in stdout:
-                    log.debug("Call stdout: {l}".format(l=line.rstrip('\n')))
+                    olog("Call stdout: {l}".format(l=line.rstrip('\n')))
                 stderr.seek(0)
                 for line in stderr:
-                    log.debug("Call stderr: {l}".format(l=line.rstrip('\n')))
+                    olog("Call stderr: {l}".format(l=line.rstrip('\n')))
     except:
         log.error("Call failed: {a}".format(a=args))
         if value_on_error != None:

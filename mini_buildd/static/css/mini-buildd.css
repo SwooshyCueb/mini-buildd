@@ -21,6 +21,15 @@ a:hover
 	color: #003366;
 }
 
+#mb_branding a.image:link, #mb_branding a.image:visited, #mb_branding a.image:hover
+{
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	border: 0;
+	text-decoration: none;
+}
+
+
 /* HEADER */
 
 #mb_header

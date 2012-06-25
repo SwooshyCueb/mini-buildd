@@ -79,6 +79,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         if "Arch-All" in br:
             sbuild_cmd.append("--arch-all")
             sbuild_cmd.append("--source")
+            sbuild_cmd.append("--debbuildopt=-sa")
 
         if "Run-Lintian" in br:
             sbuild_cmd.append("--run-lintian")

@@ -48,7 +48,10 @@ def md5_of_file(fn):
 def taint_env(taint):
     env = os.environ.copy()
     for e in taint:
-        env[e] = taint[e]
+        if taint[e] == None:
+            del env[e]
+        else:
+            env[e] = taint[e]
     return env
 
 def get_cpus():

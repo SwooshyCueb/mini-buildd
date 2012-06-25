@@ -54,6 +54,19 @@ def taint_env(taint):
             env[e] = taint[e]
     return env
 
+# Set env for APT in chroots
+# Note: Especially when mbd-setup-chroots is called via
+# dpkg-reconfigure, some set environemt variables harm debconf
+# in debootstrap; that's why we need it primarily.
+APT_ENV = {
+    # debconf: Use noninteractive frontend
+    "DEBIAN_FRONTEND" : "noninteractive",
+    # debootstrap/debconf: Unset some envs that might confuse debconf run in debootstrap
+    "DEBCONF_RECONFIGURE": None,
+    "DEBCONF_REDIR": None,
+    "DEBIAN_HAS_FRONTEND": None,
+    }
+
 def get_cpus():
     try:
         return multiprocessing.cpu_count()

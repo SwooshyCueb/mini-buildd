@@ -91,7 +91,6 @@ class Chroot(StatusModel):
         """
         .. todo:: debootstrap
 
-          - mbdAptEnv ??
           - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
           - debootstrap include=apt WTF?
@@ -121,7 +120,9 @@ personality={p}
 {b}
 """.format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
-            misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
+            misc.call_sequence(self.mbd_get_sequence(),
+                               run_as_root=True,
+                               env=misc.taint_env(misc.APT_ENV))
             msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
     def mbd_unprepare(self, request):

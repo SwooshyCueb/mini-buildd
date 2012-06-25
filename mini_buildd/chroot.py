@@ -77,7 +77,7 @@ class Chroot(StatusModel):
 
     def mbd_get_sequence(self):
         return self.mbd_get_backend().mbd_get_pre_sequence() + [
-            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=apt,sudo",
+            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
               self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_mirror().url],
              ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
 
@@ -93,7 +93,6 @@ class Chroot(StatusModel):
 
           - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
-          - debootstrap include=apt WTF?
         """
         from mini_buildd.models import msg_info
         if self.status >= self.STATUS_PREPARED:

@@ -87,6 +87,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         if setup.DEBUG:
             sbuild_cmd.append("--verbose")
+            sbuild_cmd.append("--chroot-setup-command=env")
 
         sbuild_cmd.append("{s}_{v}.dsc".format(s=br["Source"], v=br["Version"]))
 

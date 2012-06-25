@@ -1,0 +1,26 @@
+/* New mini-buildd specific style definitions. */
+
+div.related img.logo
+{
+	float: left;
+	margin: -27px 10px 0px  0px;
+}
+
+
+/* Extension of existing (default) style definitions. */
+
+div.related ul
+{
+	padding: 35px 8px 14px 10px;
+	line-height: 15px;
+	font-size: 15px;
+	background-image:url('/static/images/sp_header_background_gradient.png');
+	background-position-top: 0px;
+	background-position-left: 0px;
+	background-repeat: repeat-x;
+}
+
+div.related a:link, div.related a:visited, div.related a:hover
+{
+	font-size: 15px;
+}

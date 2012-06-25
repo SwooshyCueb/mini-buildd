@@ -1,14 +1,33 @@
 /* New mini-buildd specific style definitions. */
+
+#mb_django_admin_branding h1
+{
+	color: #ffffcc;
+}
+
 #mb_django_admin_branding img
 {
 	float: left;
-	margin-left: 10px;
-	margin-right: 10px;
-	margin-bottom: 8px;
+	margin: 0px 10px 8px 10px;
 }
 
 /* Extension of existing (default) style definitions. */
-#user-tools
+#user-tools {
+	font-size: 12px;
+	padding: 38px 10px 8px 0px;
+	position: absolute;
+}
+
+#header
 {
-	margin-top: 25px;
+	font-size: 14px;
+	background-image:url('/static/images/da_header_background_gradient.png');
+	background-position-top: 0px;
+	background-position-left: 0px;
+	background-repeat: repeat-x;
+}
+
+#header a
+{
+	font-size: 14px;
 }

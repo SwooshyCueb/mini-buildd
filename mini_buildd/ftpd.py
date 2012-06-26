@@ -1,5 +1,5 @@
 # coding: utf-8
-import os, stat, re, logging
+import os, stat, glob, re, logging
 
 import pyftpdlib.ftpserver
 
@@ -24,19 +24,20 @@ def log_init():
     pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 
-class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
-    _CHANGES_RE = re.compile("^.*\.changes$")
+_CHANGES_RE = re.compile("^.*\.changes$")
+def handle_incoming_file(queue, f):
+    global _CHANGES_RE
+    if _CHANGES_RE.match(f):
+        log.info("Incoming changes file: {f}".format(f=f))
+        queue.put(f)
+    else:
+        log.debug("Ignoring incoming file: {f}".format(f=f))
 
+class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, f):
         # Make any incoming file read-only as soon as it arrives; avoids multiple user uploads of the same file
         os.chmod(f, stat.S_IRUSR | stat.S_IRGRP)
-
-        if self._CHANGES_RE.match(f):
-            log.info("Incoming changes file: {f}".format(f=f))
-            self._mini_buildd_queue.put(f)
-        else:
-            log.debug("Ignoring incoming file: {f}".format(f=f))
-
+        handle_incoming_file(self._mini_buildd_queue, f)
 
 def run(bind, queue):
     log_init()
@@ -52,6 +53,10 @@ def run(bind, queue):
 
     handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=__version__, V=pyftpdlib.ftpserver.__ver__)
     handler._mini_buildd_queue = queue
+
+    # Re-push all existing files in incoming
+    for f in glob.glob(setup.INCOMING_DIR + "/*"):
+        handle_incoming_file(queue, f)
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
     log.info("Starting ftpd on '{b}'.".format(b=ba.string))

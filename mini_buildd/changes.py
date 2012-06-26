@@ -14,6 +14,7 @@ class Changes(debian.deb822.Changes):
     def __init__(self, file_path):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
+        self._sha1 = misc.sha1_of_file(file_path) if os.path.exists(file_path) else None
         super(Changes, self).__init__(file(file_path) if os.path.exists(file_path) else [])
         # Be sure base dir is always available
         misc.mkdirs(os.path.dirname(file_path))
@@ -71,14 +72,8 @@ class Changes(debian.deb822.Changes):
 
         return r, d, s
 
-    def _get_spool_dir(self, base_dir):
-        return os.path.join(base_dir, u"_".join([self["Distribution"], self["Source"], self["Version"]]))
-
-    def get_build_dir(self):
-        return u"_".join([self._get_spool_dir(setup.BUILDS_DIR), self["Architecture"]])
-
-    def get_package_dir(self, architecture=""):
-        return os.path.join(self._get_spool_dir(setup.PACKAGES_DIR), architecture)
+    def get_spool_dir(self):
+        return os.path.join(setup.SPOOL_DIR, self._sha1)
 
     def get_log_dir(self):
         return os.path.join(setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
@@ -151,7 +146,7 @@ class Changes(debian.deb822.Changes):
         # Build buildrequest files for all architectures
         br_dict = {}
         for a in repository.architectures.all():
-            path = self.get_package_dir(a.name)
+            path = os.path.join(self.get_spool_dir(), a.name)
 
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
             for v in ["Distribution", "Source", "Version"]:

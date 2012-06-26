@@ -17,7 +17,7 @@ def results_from_buildlog(fn, changes):
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
 def build_clean(br):
-    shutil.rmtree(br.get_build_dir())
+    shutil.rmtree(br.get_spool_dir())
     br.remove()
 
 def build(br, jobs):
@@ -35,7 +35,7 @@ def build(br, jobs):
 
     pkg_info = "{s}-{v}:{a}".format(s=br["Source"], v=br["Version"], a=br["Architecture"])
 
-    build_dir = br.get_build_dir()
+    build_dir = br.get_spool_dir()
     try:
         br.untar(path=build_dir)
 

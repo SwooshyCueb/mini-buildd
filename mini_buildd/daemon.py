@@ -260,7 +260,7 @@ class Package(object):
             # Archive incoming changes
             self.changes.archive()
             # Purge complete package dir
-            shutil.rmtree(os.path.dirname(self.changes.get_package_dir()))
+            shutil.rmtree(self.changes.get_spool_dir())
 
             self.notify()
         return self.DONE

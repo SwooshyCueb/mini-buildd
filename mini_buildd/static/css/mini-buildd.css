@@ -73,6 +73,7 @@ a:hover
 {
 	float: left;
 	margin: 8px 10px 8px 10px;
+	border: 0;
 }
 
 /* NAVIGATION */
@@ -83,7 +84,7 @@ a:hover
 }
 
 #mb_navigation li
-{ 
+{
 	list-style: none;
 	display: inline;
 	margin: 0;

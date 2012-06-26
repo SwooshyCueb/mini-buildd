@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import threading, signal, os, argparse, sys, daemon, logging, logging.handlers
+import threading, signal, os, pwd, argparse, sys, daemon, logging, logging.handlers
 
 from mini_buildd import __version__, misc, setup
 
@@ -114,6 +114,13 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
 
+    def _setup_environment(self):
+        os.environ.clear()
+        os.environ["HOME"] = self._args.home
+        os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
+        for k in ("USER", "LOGNAME"):
+            os.environ[k] = pwd.getpwuid(os.getuid())[0]
+
     def __init__(self):
         self._args = self.parse_args()
         # Daemonize early
@@ -121,6 +128,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()
         self._setup()
         self._setup_logging()
+        self._setup_environment()
 
     def on_signal(self, signum=-1, frame=-1):
         log.debug("Got signal: %s" % signum)

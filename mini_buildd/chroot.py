@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, shutil, re, glob, tempfile, pwd, logging
+import os, shutil, re, glob, tempfile, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages
 
@@ -103,7 +103,7 @@ class Chroot(StatusModel):
             open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
-""".format(u=pwd.getpwuid(os.getuid())[0]))
+""".format(u=os.getenv("USER")))
 
             open(self.mbd_get_schroot_conf_file(), 'w').write("""
 [{n}]

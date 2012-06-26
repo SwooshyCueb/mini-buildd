@@ -41,11 +41,6 @@ def build(br, jobs):
 
         # Generate .sbuildrc for this run (not all is configurable via switches).
         open(os.path.join(build_dir, ".sbuildrc"), 'w').write("""
-# Set "user" mode explicitely (already default).  Means the
-# retval tells us if the sbuild run was ok. We also dont have to
-# configure "mailto".
-$sbuild_mode = 'user';
-
 # We update sources.list on the fly via chroot-setup commands;
 # this update occurs before, so we dont need it.
 $apt_update = 0;

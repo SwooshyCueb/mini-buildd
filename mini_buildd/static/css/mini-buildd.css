@@ -21,6 +21,14 @@ a:hover
 	color: #003366;
 }
 
+#mb_branding a.image:link, #mb_branding a.image:visited, #mb_branding a.image:hover
+{
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	border: 0;
+	text-decoration: none;
+}
+
 
 /* HEADER */
 
@@ -28,41 +36,50 @@ a:hover
 {
 	width: 100%;
 	margin: 0;
-	background-color: #417690;
+	background-image:url('/static/images/mb_header_background_gradient.png');
+	background-position-top: 0px;
+	background-position-left: 0px;
+	background-repeat: repeat-x;
 	color: #ffffcc;
 	overflow: hidden;
-	font-size: 14px;
+	font-size: 15px;
 }
 
 #mb_header a:link, #mb_header a:visited
 {
-	color: white;
+	font-size: 15px;
+	color: #ffffff;
+	border-left: 1px solid transparent;
+	border-right: 1px solid transparent;
+	margin: 0;
+	padding: 35px 8px 16px 8px;
 }
 
 #mb_header a:hover
 {
+	font-size: 15px;
+	color: #ffffff;
+	background-color: #afc1c4;
+	border-left: 1px solid #57859a; /*417690;*/
+	border-right: 1px solid #57859a; /*417690; #635543;*/
+	margin: 0;
+	padding: 35px 8px 16px 8px;
 	text-decoration: underline;
 }
-
 
 /* BRANDING */
 
 #mb_branding img
 {
 	float: left;
-	margin-left: 10px;
-	margin-right: 10px;
-	margin-top: 8px;
-	margin-bottom: 8px;
+	margin: 8px 10px 8px 10px;
 }
-
 
 /* NAVIGATION */
 
 #mb_navigation ul
 {
-	margin-top: 25px;
-	margin-left: 6px;
+	margin: 35px 0px 0px 6px;
 }
 
 #mb_navigation li
@@ -70,11 +87,7 @@ a:hover
 	list-style: none;
 	display: inline;
 	margin: 0;
-	padding-left: 8px;
-	border-left: 1px solid #ffffcc;
-	padding-right: 5px;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding: 2px 0px 2px 0px;
 }
 
 #mb_navigation li.first
@@ -83,7 +96,6 @@ a:hover
 	border-left: 0;
 }
 
-
 /* CONTENT */
 
 #mb_content
@@ -91,7 +103,6 @@ a:hover
 	padding-left: 15px;
 	padding-right: 15px;
 }
-
 
 /* FOOTER */
 

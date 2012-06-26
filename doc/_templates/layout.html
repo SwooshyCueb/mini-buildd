@@ -2,10 +2,12 @@
 
 {% block linktags %}
     <link rel="shortcut icon" href="/static/favicon.ico" />
+    <link rel="stylesheet" type="text/css" href="/static/css/sphinx.css" />
     {{ super() }}
 {% endblock %}
 
 {% block rootrellink %}
+    <a title="Mini-buildd Home" href="/"><img class="logo" src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
     <li><a href="../">mini-buildd home</a> &raquo;</li>
     {{ super() }}
 {% endblock %}

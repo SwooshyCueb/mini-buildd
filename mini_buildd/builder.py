@@ -96,7 +96,8 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         log.info("{p}: Running sbuild: {c}".format(p=pkg_info, c=sbuild_cmd))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
-                                     cwd=build_dir, env=misc.taint_env({"HOME": build_dir}),
+                                     cwd=build_dir,
+                                     env=misc.taint_env({"HOME": build_dir}),
                                      stdout=l, stderr=subprocess.STDOUT)
 
         res = changes.Changes(os.path.join(build_dir,

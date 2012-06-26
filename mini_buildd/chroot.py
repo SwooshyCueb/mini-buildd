@@ -119,9 +119,7 @@ personality={p}
 {b}
 """.format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
-            misc.call_sequence(self.mbd_get_sequence(),
-                               run_as_root=True,
-                               env=misc.taint_env(misc.APT_ENV))
+            misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
             msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
     def mbd_unprepare(self, request):

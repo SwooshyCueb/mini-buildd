@@ -118,7 +118,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._args = self.parse_args()
         # Daemonize early
         if not self._args.foreground:
-            daemon.DaemonContext(umask=0022).open()
+            daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()
         self._setup()
         self._setup_logging()
 

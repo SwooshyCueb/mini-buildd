@@ -35,8 +35,8 @@ def run_as_thread(call=None, daemon=False, **kwargs):
     thread.start()
     return thread
 
-def md5_of_file(fn):
-    md5 = hashlib.md5()
+def hash_of_file(fn, hash_type=hashlib.md5):
+    md5 = hash_type()
     with open(fn) as f:
         while True:
             data = f.read(128)
@@ -44,6 +44,12 @@ def md5_of_file(fn):
                 break
             md5.update(data)
     return md5.hexdigest()
+
+def md5_of_file(fn):
+    return hash_of_file(fn, hash_type=hashlib.md5)
+
+def sha1_of_file(fn):
+    return hash_of_file(fn, hash_type=hashlib.sha1)
 
 def taint_env(taint):
     env = os.environ.copy()

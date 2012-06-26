@@ -21,9 +21,9 @@ def sphinx_build_workaround():
         os.makedirs(sphinx_template_files_build_dir)
 
     # copy static files (shutil.copytree does not fit our needs)
-    file_list = os.listdir(sphinx_static_files_source_dir)
-    for f in file_list:
-        shutil.copy(sphinx_static_files_source_dir + "/" + f, sphinx_static_files_build_dir)
+    #file_list = os.listdir(sphinx_static_files_source_dir)
+    #for f in file_list:
+    #    shutil.copy(sphinx_static_files_source_dir + "/" + f, sphinx_static_files_build_dir)
 
     # copy template files
     file_list = os.listdir(sphinx_template_files_source_dir)

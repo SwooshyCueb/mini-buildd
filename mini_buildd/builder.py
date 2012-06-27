@@ -17,7 +17,7 @@ def results_from_buildlog(fn, changes):
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
 def build_clean(br):
-    if not self.DEBUG:
+    if not setup.DEBUG:
         shutil.rmtree(br.get_spool_dir())
         br.remove()
 

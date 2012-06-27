@@ -76,7 +76,7 @@
                 <!-- DISTRIBUTIONS AND REPOSITORIES -->
                 <div class="inner-box">
                     <table>
-            {% for model in app.models %}{% if model.name == "Suites" %}
+            {% for model in app.models %}{% if model.name == "Layouts" %}
                         <caption>Distributions and Repositories</caption>
                         <tr>
                 {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
@@ -84,13 +84,6 @@
                 {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
                         </tr>
             {% endif %}{% endfor %}
-                        <tr>
-            {% for model in app.models %}{% if model.name == "Layouts" %}
-                {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-                {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-                {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-            {% endif %}{% endfor %}
-                        </tr>
                         <tr>
             {% for model in app.models %}{% if model.name == "Distributions" %}
                 {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}

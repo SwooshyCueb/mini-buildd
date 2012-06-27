@@ -159,6 +159,7 @@ class Repository(StatusModel):
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
     mandatory_architectures = django.db.models.ManyToManyField(Architecture)
+    optional_architectures = django.db.models.ManyToManyField(Architecture, related_name="OptionalArchitecture", blank=True)
     architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
     RESOLVER_APT = 0
@@ -214,10 +215,13 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("identity", "layout", "distributions", "mandatory_architectures")
+                    "fields": ("identity", "layout", "distributions")
+                    }),
+            ("Architectures", {
+                    "fields": ("mandatory_architectures", "optional_architectures", "architecture_all")
                     }),
             ("Build options", {
-                    "fields": ("architecture_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
+                    "fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
                     }),
             ("Extra", {
                     "classes": ("collapse",),

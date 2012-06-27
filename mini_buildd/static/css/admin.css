@@ -49,7 +49,6 @@
 {
 	font-size: 14px;
 	background: url("/static/images/da_header_background_gradient.png") repeat-x scroll left top;
-	background-repeat: repeat-x;
 }
 
 #header a

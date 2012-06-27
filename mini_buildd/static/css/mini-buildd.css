@@ -36,10 +36,7 @@ a:hover
 {
 	width: 100%;
 	margin: 0;
-	background-image:url('/static/images/mb_header_background_gradient.png');
-	background-position-top: 0px;
-	background-position-left: 0px;
-	background-repeat: repeat-x;
+	background: url("/static/images/mb_header_background_gradient.png") repeat-x scroll left top;
 	color: #ffffcc;
 	overflow: hidden;
 	font-size: 15px;

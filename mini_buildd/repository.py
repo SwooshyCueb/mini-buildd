@@ -71,6 +71,47 @@ class Distribution(django.db.models.Model):
     extra_sources = django.db.models.ManyToManyField(PrioritySource, blank=True)
     components = django.db.models.ManyToManyField(Component)
 
+    mandatory_architectures = django.db.models.ManyToManyField(Architecture)
+    optional_architectures = django.db.models.ManyToManyField(Architecture, related_name="OptionalArchitecture", blank=True)
+    architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
+
+    RESOLVER_APT = 0
+    RESOLVER_APTITUDE = 1
+    RESOLVER_INTERNAL = 2
+    RESOLVER_CHOICES = (
+        (RESOLVER_APT, "apt"),
+        (RESOLVER_APTITUDE, "aptitude"),
+        (RESOLVER_INTERNAL, "internal"))
+    build_dep_resolver = django.db.models.SmallIntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
+
+    apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
+
+    LINTIAN_DISABLED = 0
+    LINTIAN_RUN_ONLY = 1
+    LINTIAN_FAIL_ON_ERROR = 2
+    LINTIAN_FAIL_ON_WARNING = 3
+    LINTIAN_CHOICES = (
+        (LINTIAN_DISABLED,        "Don't run lintian"),
+        (LINTIAN_RUN_ONLY,        "Run lintian"),
+        (LINTIAN_FAIL_ON_ERROR,   "Run lintian and fail on errors"),
+        (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
+    lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
+    lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
+
+    # piuparts not used atm; placeholder for later
+    PIUPARTS_DISABLED = 0
+    PIUPARTS_RUN_ONLY = 1
+    PIUPARTS_FAIL_ON_ERROR = 2
+    PIUPARTS_FAIL_ON_WARNING = 3
+    PIUPARTS_CHOICES = (
+        (PIUPARTS_DISABLED,        "Don't run piuparts"),
+        (PIUPARTS_RUN_ONLY,        "Run piuparts"),
+        (PIUPARTS_FAIL_ON_ERROR,   "Run piuparts and fail on errors"),
+        (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
+    piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
+    piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
+    piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
+
     chroot_setup_script = django.db.models.TextField(blank=True,
                                                      help_text="""\
 Script that will be run via sbuild's '--chroot-setup-command'.
@@ -113,6 +154,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             ("Basics", {
                     "fields": ("base_source", "extra_sources", "components")
                     }),
+            ("Architectures", {
+                    "fields": ("mandatory_architectures", "optional_architectures", "architecture_all")
+                    }),
+            ("Build options", {
+                    "fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
+                    }),
             ("Extra", {
                     "classes": ("collapse",),
                     "fields": ("chroot_setup_script", "sbuildrc_snippet")
@@ -133,6 +180,14 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
         return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
 
+    def mbd_get_architectures(self):
+        architectures = []
+        for a in self.mandatory_architectures.all():
+            architectures.append(a.name)
+        for a in self.optional_architectures.all():
+            architectures.append(a.name)
+        return architectures
+
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
         res += self.base_source.mbd_get_apt_line() + "\n\n"
@@ -149,46 +204,6 @@ class Repository(StatusModel):
 
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
-    mandatory_architectures = django.db.models.ManyToManyField(Architecture)
-    optional_architectures = django.db.models.ManyToManyField(Architecture, related_name="OptionalArchitecture", blank=True)
-    architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
-
-    RESOLVER_APT = 0
-    RESOLVER_APTITUDE = 1
-    RESOLVER_INTERNAL = 2
-    RESOLVER_CHOICES = (
-        (RESOLVER_APT, "apt"),
-        (RESOLVER_APTITUDE, "aptitude"),
-        (RESOLVER_INTERNAL, "internal"))
-    build_dep_resolver = django.db.models.SmallIntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
-
-    apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
-
-    LINTIAN_DISABLED = 0
-    LINTIAN_RUN_ONLY = 1
-    LINTIAN_FAIL_ON_ERROR = 2
-    LINTIAN_FAIL_ON_WARNING = 3
-    LINTIAN_CHOICES = (
-        (LINTIAN_DISABLED,        "Don't run lintian"),
-        (LINTIAN_RUN_ONLY,        "Run lintian"),
-        (LINTIAN_FAIL_ON_ERROR,   "Run lintian and fail on errors"),
-        (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
-    lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
-    lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
-
-    # piuparts not used atm; placeholder for later
-    PIUPARTS_DISABLED = 0
-    PIUPARTS_RUN_ONLY = 1
-    PIUPARTS_FAIL_ON_ERROR = 2
-    PIUPARTS_FAIL_ON_WARNING = 3
-    PIUPARTS_CHOICES = (
-        (PIUPARTS_DISABLED,        "Don't run piuparts"),
-        (PIUPARTS_RUN_ONLY,        "Run piuparts"),
-        (PIUPARTS_FAIL_ON_ERROR,   "Run piuparts and fail on errors"),
-        (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
-    piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
-    piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
-    piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
 
     notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
                                               help_text="Arbitary list of email addresses to notify.")
@@ -207,14 +222,7 @@ class Repository(StatusModel):
             ("Basics", {
                     "fields": ("identity", "layout", "distributions")
                     }),
-            ("Architectures", {
-                    "fields": ("mandatory_architectures", "optional_architectures", "architecture_all")
-                    }),
-            ("Build options", {
-                    "fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
-                    }),
-            ("Extra", {
-                    "classes": ("collapse",),
+            ("Notify and extra options", {
                     "fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")
                     }),)
 
@@ -250,12 +258,6 @@ class Repository(StatusModel):
 
     def mbd_get_components(self):
         return "main contrib non-free"
-
-    def mbd_get_architectures(self):
-        mandatory_architectures = []
-        for a in self.mandatory_architectures.all():
-            mandatory_architectures.append(a.name)
-        return mandatory_architectures
 
     def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
@@ -345,7 +347,7 @@ ButAutomaticUpgrades: {bau}
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
            components=self.mbd_get_components(),
-           architectures=" ".join(self.mbd_get_architectures()),
+           architectures=" ".join(d.mbd_get_architectures()),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))

@@ -67,7 +67,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         codename = misc.call(["lsb_release", "--short", "--codename"], value_on_error="sid").strip()
         s, created = models.Source.objects.get_or_create(origin="Debian", codename=codename)
-        d, created = models.Distribution.objects.get_or_create(base_source=s)
 
     def set_admin_password(self, password):
         """

@@ -143,12 +143,12 @@ class Changes(debian.deb822.Changes):
             os.remove(f)
 
     def gen_buildrequests(self, repository, dist):
-        # Build buildrequest files for all mandatory_architectures
+        # Build buildrequest files for all architectures
         br_dict = {}
-        for a in repository.mandatory_architectures.all():
-            path = os.path.join(self.get_spool_dir(), a.name)
+        for a in dist.mbd_get_architectures():
+            path = os.path.join(self.get_spool_dir(), a)
 
-            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a.name)))
+            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))
             for v in ["Distribution", "Source", "Version"]:
                 br[v] = self[v]
 
@@ -159,7 +159,7 @@ class Changes(debian.deb822.Changes):
             chroot_setup_script = os.path.join(path, "chroot_setup_script")
             open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
             os.chmod(chroot_setup_script, stat.S_IRWXU)
-            open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a.name))
+            open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
             # Generate tar from original changes
             self.tar(tar_path=br._file_path + ".tar", add_files=[
@@ -171,21 +171,21 @@ class Changes(debian.deb822.Changes):
             br.add_file(br._file_path + ".tar")
 
             br["Base-Distribution"] = dist.base_source.codename
-            br["Architecture"] = a.name
-            if a == repository.architecture_all:
+            br["Architecture"] = a
+            if a == dist.architecture_all:
                 br["Arch-All"] = "Yes"
-            br["Build-Dep-Resolver"] = repository.get_build_dep_resolver_display()
-            br["Apt-Allow-Unauthenticated"] = "1" if repository.apt_allow_unauthenticated else "0"
-            if repository.lintian_mode != repository.LINTIAN_DISABLED:
+            br["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
+            br["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
+            if dist.lintian_mode != dist.LINTIAN_DISABLED:
                 # Generate lintian options
                 modeargs = {
-                    repository.LINTIAN_DISABLED:        "",
-                    repository.LINTIAN_RUN_ONLY:        "",
-                    repository.LINTIAN_FAIL_ON_ERROR:   "",
-                    repository.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
-                br["Run-Lintian"] = modeargs[repository.lintian_mode] + u" " + repository.lintian_extra_options
+                    dist.LINTIAN_DISABLED:        "",
+                    dist.LINTIAN_RUN_ONLY:        "",
+                    dist.LINTIAN_FAIL_ON_ERROR:   "",
+                    dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
+                br["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
 
             br.save()
-            br_dict[a.name] = br
+            br_dict[a] = br
 
         return br_dict

@@ -245,7 +245,7 @@ class Package(object):
         log.info("{p}: All build results received".format(p=self.pid))
         try:
             if self.failed:
-                raise Exception("{p}: {n} architectures failed".format(p=self.pid, n=len(self.failed)))
+                raise Exception("{p}: {n} Mandatory architectures failed".format(p=self.pid, n=len(self.failed)))
 
             for arch, c in self.success.items():
                 c.untar(path=self.repository.mbd_get_incoming_path())

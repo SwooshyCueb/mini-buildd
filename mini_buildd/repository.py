@@ -158,7 +158,7 @@ class Repository(StatusModel):
 
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
-    architectures = django.db.models.ManyToManyField(Architecture)
+    mandatory_architectures = django.db.models.ManyToManyField(Architecture)
     architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
 
     RESOLVER_APT = 0
@@ -214,7 +214,7 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("identity", "layout", "distributions", "architectures")
+                    "fields": ("identity", "layout", "distributions", "mandatory_architectures")
                     }),
             ("Build options", {
                     "fields": ("architecture_all", "build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
@@ -258,10 +258,10 @@ class Repository(StatusModel):
         return "main contrib non-free"
 
     def mbd_get_architectures(self):
-        architectures = []
-        for a in self.architectures.all():
-            architectures.append(a.name)
-        return architectures
+        mandatory_architectures = []
+        for a in self.mandatory_architectures.all():
+            mandatory_architectures.append(a.name)
+        return mandatory_architectures
 
     def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)

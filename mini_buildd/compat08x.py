@@ -105,6 +105,6 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
             r.distributions.add(d)
 
         for a in models.Architecture.objects.all():
-            r.architectures.add(a)
+            r.mandatory_architectures.add(a)
         return r
     tryImport(Repository);

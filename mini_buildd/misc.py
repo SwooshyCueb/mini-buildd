@@ -18,6 +18,19 @@ class BindArgs(object):
 def nop(*args, **kwargs):
     pass
 
+def parse_distribution(dist):
+    """Parse a mini-buildd distribution of the form BASE-ID-SUITE into a triple in that order.
+
+    >>> parse_distribution("squeeze-test-unstable")
+    ('squeeze', 'test', 'unstable')
+    """
+    dist_split = dist.split("-")
+    base = dist_split[0]
+    identity = dist_split[1]
+    suite = dist_split[2]
+    return base, identity, suite
+
+
 def subst_placeholders(s, p):
     """Substitue placeholders in string from a dict.
 

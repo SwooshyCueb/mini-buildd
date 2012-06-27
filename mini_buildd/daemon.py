@@ -277,6 +277,8 @@ def run():
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
     builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
 
+    stray_buildresults = []
+
     while True:
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
                  format(len(dm._packages), dm._incoming_queue.qsize()))
@@ -288,15 +290,26 @@ def run():
             break
 
         try:
+            def update_packages(build_result):
+                pid = build_result.get_pkg_id()
+                if pid in dm._packages:
+                    if dm._packages[pid].update(build_result) == Package.DONE:
+                        del dm._packages[pid]
+                    return True
+                return False
+
             c = changes.Changes(event)
-            pid = c.get_pkg_id()
             if c.is_buildrequest():
                 dm._build_queue.put(event)
             elif c.is_buildresult():
-                if dm._packages[pid].update(c) == Package.DONE:
-                    del dm._packages[pid]
+                if not update_packages(c):
+                    stray_buildresults.append(c)
             else:
+                pid = c.get_pkg_id()
                 dm._packages[pid] = Package(c)
+                for br in stray_buildresults:
+                    update_packages(br)
+
         except Exception as e:
             log.exception("Exception in daemon loop: {e}".format(e=str(e)))
         finally:

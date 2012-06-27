@@ -18,6 +18,14 @@ class BindArgs(object):
 def nop(*args, **kwargs):
     pass
 
+def subst_placeholders(s, p):
+    for key, value in p.items():
+        s = s.replace("%{p}%".format(p=key), value)
+    return s
+
+def fromdos(s):
+    return s.replace('\r\n', '\n').replace('\r', '')
+
 def run_as_thread(call=None, daemon=False, **kwargs):
     def run(**kwargs):
         id = call.__module__ + "." + call.__name__

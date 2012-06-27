@@ -11,23 +11,70 @@
 	margin: 0px 10px 8px 10px;
 }
 
+#mb_box h1.mini-buildd
+{
+	background: url("/static/admin/img/admin/default-bg.gif") repeat-x scroll left top #7CA0C7;
+	color: white;
+	margin: 0;
+	font-size: 14px;
+	padding: 2px 0px 2px 5px;
+}
+
+#mb_box caption
+{
+	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
+	background-color: #417690;
+	border-left: 1px solid #417690;
+	border-right: 1px solid #417690;
+	font-size: 11px;
+	padding: 5px 0px 4px 4px;
+}
+
+#mb_box .inner-box
+{
+	margin: 12px;
+	border: 1px solid #cccccc;
+}
+
 /* Extension of existing (default) style definitions. */
+
 #user-tools {
 	font-size: 12px;
 	padding: 38px 10px 8px 0px;
 	position: absolute;
 }
 
+/* "Mini-buildd"-App Caption */
 #header
 {
 	font-size: 14px;
-	background-image:url('/static/images/da_header_background_gradient.png');
-	background-position-top: 0px;
-	background-position-left: 0px;
-	background-repeat: repeat-x;
+	background: url("/static/images/da_header_background_gradient.png") repeat-x scroll left top;
 }
 
 #header a
 {
 	font-size: 14px;
+}
+
+#content-main caption
+{
+	font-size: 11px;
+	padding: 5px 0px 4px 4px;
+}
+
+/* "Auth"-App Caption */
+#content-main caption.mb
+{
+	font-size: 14px;
+	padding: 2px 0px 2px 5px;
+}
+
+#content-main a.changelink
+{
+	padding-right: 1px;
+}
+
+#content-main .module.mb
+{
+	margin-top: 12px;
 }

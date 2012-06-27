@@ -26,8 +26,11 @@ class Suite(django.db.models.Model):
         primary_key=True, max_length=50,
         help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
     mandatory_version = django.db.models.CharField(
-        max_length=50, default="~{identity}{codeversion}\+[1-9]",
-        help_text="Mandatory version template; {identity}=repository identity, {codeversion}=numerical base distribution version (see Source Model).")
+        max_length=50, default="~%IDENTITY%%CODEVERSION%\+[1-9]",
+        help_text="""Mandatory version regex; you may use these placeholders:<br/>
+
+%IDENTITY%: Repository identity<br/>
+%CODEVERSION%: Numerical base distribution version (see Source Model).""")
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
@@ -42,7 +45,9 @@ class Suite(django.db.models.Model):
         return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
     def mbd_get_mandatory_version(self, repository, dist):
-        return self.mandatory_version.format(identity=repository.identity, codeversion=dist.base_source.codeversion)
+        return misc.subst_placeholders(self.mandatory_version,
+                                       { "IDENTITY": repository.identity,
+                                         "CODEVERSION": dist.base_source.codeversion })
 
     def mbd_check_version(self, repository, dist, version):
         m = self.mbd_get_mandatory_version(repository, dist)

@@ -69,8 +69,7 @@ prevent original package maintainers to be spammed.
 """)
 
     class Meta:
-        verbose_name = "[D2] Daemon"
-        verbose_name_plural = "[D2] Daemon"
+        verbose_name_plural = "Daemon"
 
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (

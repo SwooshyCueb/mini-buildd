@@ -192,9 +192,6 @@ class Daemon(daemon.Daemon):
 class Remote(django.db.models.Model):
     host = django.db.models.CharField(primary_key=True, max_length=255, default=socket.getfqdn())
 
-    class Meta:
-        verbose_name = "[D1] Remote"
-
     def __unicode__(self):
         return self.host
 

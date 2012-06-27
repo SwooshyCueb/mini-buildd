@@ -35,9 +35,6 @@ class Suite(django.db.models.Model):
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
-    class Meta:
-        verbose_name = "[B1] Suite"
-
     def __unicode__(self):
         return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
@@ -57,9 +54,6 @@ class Layout(django.db.models.Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
                             help_text="Name for the layout.")
     suites = django.db.models.ManyToManyField(Suite)
-
-    class Meta:
-        verbose_name = "[B2] Layout"
 
     def __unicode__(self):
         return self.name
@@ -95,9 +89,6 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 [ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
 </pre>
 """)
-
-    class Meta:
-        verbose_name = "[B3] Distribution"
 
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
@@ -190,8 +181,7 @@ class Repository(StatusModel):
     external_home_url = django.db.models.URLField(blank=True)
 
     class Meta(StatusModel.Meta):
-        verbose_name = "[B4] Repository"
-        verbose_name_plural = "[B4] Repositories"
+        verbose_name_plural = "Repositories"
 
     class Admin(StatusModel.Admin):
         fieldsets = (

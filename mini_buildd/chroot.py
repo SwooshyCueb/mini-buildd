@@ -17,7 +17,6 @@ class Chroot(StatusModel):
     architecture = django.db.models.ForeignKey(Architecture)
 
     class Meta(StatusModel.Meta):
-        verbose_name = "[C1] Chroot"
         unique_together = ("source", "architecture")
         ordering = ["source", "architecture"]
 
@@ -156,7 +155,7 @@ class FileChroot(Chroot):
         COMPRESSION_XZ:    "tar.xz"}
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C1] File chroot"
+        pass
 
     def mbd_get_tar_file(self):
         return os.path.join(self.mbd_get_path(), "source." + self.TAR_SUFFIX[self.compression])
@@ -194,7 +193,7 @@ class LVMChroot(Chroot):
                                                   help_text="Snapshot device file size in GB.")
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C2] LVM chroot"
+        pass
 
     def mbd_get_volume_group(self):
         try:
@@ -236,7 +235,7 @@ class LoopLVMChroot(LVMChroot):
                                               help_text="Loop device file size in GB.")
 
     class Meta(Chroot.Meta):
-        verbose_name = "[C3] LVM loop chroot"
+        pass
 
     def mbd_get_volume_group(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)

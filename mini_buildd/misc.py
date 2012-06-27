@@ -19,6 +19,11 @@ def nop(*args, **kwargs):
     pass
 
 def subst_placeholders(s, p):
+    """Substitue placeholders in string from a dict.
+
+    >>> subst_placeholders("Repoversionstring: %IDENTITY%%CODEVERSION%", { "IDENTITY": "test", "CODEVERSION": "60" })
+    'Repoversionstring: test60'
+    """
     for key, value in p.items():
         s = s.replace("%{p}%".format(p=key), value)
     return s
@@ -82,6 +87,14 @@ def mkdirs(path):
             log.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
+    """Wrapper around subprocess.call().
+
+    >>> call(["echo", "-n", "hallo"])
+    'hallo'
+    >>> call(["id", "-syntax-error"], value_on_error="Kapott")
+    'Kapott'
+    """
+
     if run_as_root:
         args = ["sudo"] + args
 
@@ -95,6 +108,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
         except:
             olog=log.error
+            raise
         finally:
             if log_output:
                 stdout.seek(0)
@@ -114,6 +128,12 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
     return stdout.read()
 
 def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, rollback_only=False, **kwargs):
+    """Run sequences of calls with rolbback support.
+
+    >>> call_sequence([(["echo", "-n", "cmd0"], ["echo", "-n", "rollback cmd0"])])
+    >>> call_sequence([(["echo", "cmd0"], ["echo", "rollback cmd0"])], rollback_only=True)
+    """
+
     def rollback(pos):
         for i in range(pos, -1, -1):
             if calls[i][1]:
@@ -167,31 +187,5 @@ def setup_test_logging(syslog=True):
 if __name__ == "__main__":
     setup_test_logging()
 
-    def test_thread(my_arg):
-        print "Test thread: {a}".format(a=my_arg)
-        raise Exception("alles kapott!")
-
-    t = run_as_thread(test_thread, my_arg="katze")
-    import signal
-    signal.pause()
-
-    print call(["id", "-u", "-n"])
-    #print call(["id", "-syntax-error"], value_on_error="Kapott")
-    print call(["id", "-syntax-error"], value_on_error="Kapott", log_output=False)
-
-    print call(["env"], env=taint_env({"Kuh": "Sack"}))
-    print call(["env"])
-
-    call_sequence([
-            (["echo", "cmd0"],    ["echo", "Rollback only: cmd0"]),
-            (["echo", "cmd1"],    ["echo", "Rollback only: cmd1"]),
-            (["echo", "cmd2"],    ["echo", "Rollback only: cmd2"]),
-            (["false"],           ["echo", "Rollback only: cmd3"]),
-            ], rollback_only=True, log_output=False)
-
-    call_sequence([
-            (["echo", "cmd0"],    ["echo", "Rollback: cmd0"]),
-            (["echo", "cmd1"],    ["echo", "Rollback: cmd1"]),
-            (["echo", "cmd2"],    ["echo", "Rollback: cmd2"]),
-            (["false"],           ["echo", "Rollback: cmd3"]),
-            ], run_as_root=True, log_output=False)
+    import doctest
+    doctest.testmod()

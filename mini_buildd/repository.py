@@ -266,76 +266,53 @@ class Repository(StatusModel):
             r=os.path.basename(setup.REPOSITORIES_DIR),
             i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 
+    def mbd_find_dist(self, dist):
+        base, identity, suite = misc.parse_distribution(dist)
+        log.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
+
+        if identity == self.identity:
+            for d in self.distributions.all():
+                if d.base_source.codename == base:
+                    for s in self.layout.suites.all():
+                        if s.name == suite:
+                            return d,s
+        raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=dist))
+
     def mbd_get_apt_sources_list(self, dist):
         """
         .. todo::
 
         - get_apt_sources_list(): decide what other mini-buildd suites are to be included automatically
-        - this and next four funcs: clean up code style && redundancies.
         """
-        dist_split = dist.split("-")
-        base = dist_split[0]
-        identity = dist_split[1]
-        suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
-
-        for d in self.distributions.all():
-            if d.base_source.codename == base:
-                res = d.mbd_get_apt_sources_list()
-                res += "\n"
-                for s in self.layout.suites.all():
-                    if s.name == suite:
-                        res += "# Mini-Buildd: {d}\n".format(d=dist)
-                        res += self.mbd_get_apt_line(d, s)
-                        return res
-
-        raise Exception("Could not produce sources.list")
+        d,s = self.mbd_find_dist(dist)
+        res = d.mbd_get_apt_sources_list()
+        res += "\n"
+        res += "# Mini-Buildd: {d}\n".format(d=dist)
+        res += self.mbd_get_apt_line(d, s)
+        return res
 
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
         return ""
 
     def mbd_get_apt_keys(self, dist):
-        dist_split = dist.split("-")
-        base = dist_split[0]
-        identity = dist_split[1]
-        suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
-
-        for d in self.distributions.all():
-            if d.base_source.codename == base:
-                from mini_buildd import daemon
-                result = daemon.get().mbd_get_pub_key()
-                for e in d.extra_sources.all():
-                    result += e.source.apt_key
-                return result
+        d,s = self.mbd_find_dist(dist)
+        from mini_buildd import daemon
+        result = daemon.get().mbd_get_pub_key()
+        for e in d.extra_sources.all():
+            result += e.source.apt_key
+            return result
         raise Exception("Could not produce apt keys")
 
     def mbd_get_chroot_setup_script(self, dist):
-        dist_split = dist.split("-")
-        base = dist_split[0]
-        identity = dist_split[1]
-        suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
-
-        for d in self.distributions.all():
-            if d.base_source.codename == base:
-                # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-                return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
-        raise Exception("Could not find dist")
+        d,s = self.mbd_find_dist(dist)
+        # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+        return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
 
     def mbd_get_sbuildrc_snippet(self, dist):
-        dist_split = dist.split("-")
-        base = dist_split[0]
-        identity = dist_split[1]
-        suite = dist_split[2]
-        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
-
-        for d in self.distributions.all():
-            if d.base_source.codename == base:
-                # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-                return d.sbuildrc_snippet.replace('\r\n', '\n').replace('\r', '')
-        raise Exception("Could not find dist")
+        d,s = self.mbd_find_dist(dist)
+        # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+        return d.sbuildrc_snippet.replace('\r\n', '\n').replace('\r', '')
 
     def mbd_get_sources(self, dist, suite):
         result = ""

@@ -20,6 +20,29 @@ def build_clean(br):
     shutil.rmtree(br.get_spool_dir())
     br.remove()
 
+def generate_sbuildrc(path, br):
+    " Generate .sbuildrc for a build request (not all is configurable via switches, unfortunately)."
+
+    with open(os.path.join(path, ".sbuildrc"), 'w') as f:
+        # Automatic part part
+        f.write("""\
+# We update sources.list on the fly via chroot-setup commands;
+# this update occurs before, so we don't need it.
+$apt_update = 0;
+
+# Allow unauthenticated apt toggle
+$apt_allow_unauthenticated = {apt_allow_unauthenticated};
+
+# Builder identity
+$pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
+""".format(apt_allow_unauthenticated=br["Apt-Allow-Unauthenticated"]))
+        # Copy the custom snippet
+        shutil.copyfileobj(open(os.path.join(path, "sbuildrc_snippet"), 'rb'), f)
+        f.write("""
+# don't remove this, Perl needs it:
+1;
+""")
+
 def build(br, jobs):
     """
     .. todo:: Builder
@@ -39,24 +62,7 @@ def build(br, jobs):
     try:
         br.untar(path=build_dir)
 
-        # Generate .sbuildrc for this run (not all is configurable via switches).
-        open(os.path.join(build_dir, ".sbuildrc"), 'w').write("""
-# We update sources.list on the fly via chroot-setup commands;
-# this update occurs before, so we dont need it.
-$apt_update = 0;
-
-# Allow unauthenticated apt toggle
-$apt_allow_unauthenticated = {apt_allow_unauthenticated};
-
-#$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
-##$build_environment = {{ 'CCACHE_DIR' => '$HOME/.ccache' }};
-
-# Builder identity
-$pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
-
-# don't remove this, Perl needs it:
-1;
-""".format(apt_allow_unauthenticated=br["Apt-Allow-Unauthenticated"]))
+        generate_sbuildrc(build_dir, br)
 
         sbuild_cmd = ["sbuild",
                       "-j{0}".format(jobs),

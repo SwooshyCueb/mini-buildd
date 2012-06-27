@@ -95,6 +95,17 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
 [ -e /dev/stderr ] || ln -sv fd/2 /dev/stderr
 </pre>
 """)
+    sbuildrc_snippet = django.db.models.TextField(blank=True,
+                                                  help_text="""\
+Perl snippet to be added in the .sbuildrc for each build.
+<br/>
+Example:
+<pre>
+# Enable ccache
+$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
+$build_environment = { 'CCACHE_DIR' => '%CHROOTDIR%/.ccache' };
+</pre>
+""")
 
     class Meta:
         verbose_name = "[B3] Distribution"
@@ -106,7 +117,7 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-se
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("chroot_setup_script",)
+                    "fields": ("chroot_setup_script", "sbuildrc_snippet")
                     }),)
 
     def __unicode__(self):
@@ -311,6 +322,19 @@ class Repository(StatusModel):
             if d.base_source.codename == base:
                 # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
                 return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
+        raise Exception("Could not find dist")
+
+    def mbd_get_sbuildrc_snippet(self, dist):
+        dist_split = dist.split("-")
+        base = dist_split[0]
+        identity = dist_split[1]
+        suite = dist_split[2]
+        log.debug("Sources list for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
+
+        for d in self.distributions.all():
+            if d.base_source.codename == base:
+                # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+                return d.sbuildrc_snippet.replace('\r\n', '\n').replace('\r', '')
         raise Exception("Could not find dist")
 
     def mbd_get_sources(self, dist, suite):

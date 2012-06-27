@@ -17,8 +17,9 @@ def results_from_buildlog(fn, changes):
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
 def build_clean(br):
-    shutil.rmtree(br.get_spool_dir())
-    br.remove()
+    if not self.DEBUG:
+        shutil.rmtree(br.get_spool_dir())
+        br.remove()
 
 def generate_sbuildrc(path, br):
     " Generate .sbuildrc for a build request (not all is configurable via switches, unfortunately)."

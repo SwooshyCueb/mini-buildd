@@ -80,13 +80,13 @@ Example:
 <pre>
 #!/bin/sh -e
 
-# Install these additional packages
-apt-get install ccache
+# Have ccache ready in builds
+apt-get --yes --no-install-recommends install ccache
 
 # Accept sun-java6 licence so we can build-depend on it
-echo "sun-java6-bin shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
-echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
-echo "sun-java6-jre shared/accepted-sun-dlj-v1-1  boolean true" | debconf-set-selections --verbose
+echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose
+echo "sun-java6-jdk shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose
+echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose
 
 # Workaround for Debian Bug #327477 (bash building)
 [ -e /dev/fd ] || ln -sv /proc/self/fd /dev/fd

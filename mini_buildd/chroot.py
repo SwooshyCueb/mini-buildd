@@ -98,7 +98,7 @@ class Chroot(StatusModel):
         if self.status >= self.STATUS_PREPARED:
             msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
-            misc.mkdirs(self.mbd_get_path())
+            misc.mkdirs(os.path.join(self.mbd_get_path(), setup.CHROOT_LIBDIR))
 
             open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
 {u} ALL=(ALL) ALL

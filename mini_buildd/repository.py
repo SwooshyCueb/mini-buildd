@@ -102,13 +102,15 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-sel
 """)
     sbuildrc_snippet = django.db.models.TextField(blank=True,
                                                   help_text="""\
-Perl snippet to be added in the .sbuildrc for each build.
+Perl snippet to be added in the .sbuildrc for each build.; you may use these placeholders:<br/>
+<br/>
+%LIBDIR%: Per-chroot persistent dir; may be used for data that should persist beteeen builds (caches, ...).<br/>
 <br/>
 Example:
 <pre>
 # Enable ccache
 $path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
-$build_environment = { 'CCACHE_DIR' => '%CHROOTDIR%/.ccache' };
+$build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 </pre>
 """)
 
@@ -314,10 +316,12 @@ class Repository(StatusModel):
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return misc.fromdos(d.chroot_setup_script)
 
-    def mbd_get_sbuildrc_snippet(self, dist):
+    def mbd_get_sbuildrc_snippet(self, dist, arch):
         d,s = self.mbd_find_dist(dist)
+        libdir = os.path.join(setup.CHROOTS_DIR, d.base_source.codename, arch, setup.CHROOT_LIBDIR)
+
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return misc.fromdos(d.sbuildrc_snippet)
+        return misc.fromdos(misc.subst_placeholders(d.sbuildrc_snippet, { "LIBDIR": libdir }))
 
     def mbd_get_sources(self, dist, suite):
         result = ""

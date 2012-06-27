@@ -159,7 +159,7 @@ class Changes(debian.deb822.Changes):
             chroot_setup_script = os.path.join(path, "chroot_setup_script")
             open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
             os.chmod(chroot_setup_script, stat.S_IRWXU)
-            open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"]))
+            open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a.name))
 
             # Generate tar from original changes
             self.tar(tar_path=br._file_path + ".tar", add_files=[

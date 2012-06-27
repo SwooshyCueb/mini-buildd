@@ -65,6 +65,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         vardir = os.path.join(self._args.home, "var")
         setup.LOG_DIR     = os.path.join(vardir, "log")
         setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
+        setup.CHROOT_LIBDIR = os.path.join("libdir")
         setup.SPOOL_DIR   = os.path.join(vardir, "spool")
 
         self.LOG_FILE = os.path.join(setup.LOG_DIR, "daemon.log")

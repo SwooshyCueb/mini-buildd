@@ -307,12 +307,12 @@ class Repository(StatusModel):
     def mbd_get_chroot_setup_script(self, dist):
         d,s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return d.chroot_setup_script.replace('\r\n', '\n').replace('\r', '')
+        return misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist):
         d,s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return d.sbuildrc_snippet.replace('\r\n', '\n').replace('\r', '')
+        return misc.fromdos(d.sbuildrc_snippet)
 
     def mbd_get_sources(self, dist, suite):
         result = ""

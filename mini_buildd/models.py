@@ -43,7 +43,7 @@ still keeps the logic where it belongs.
 
 import os, datetime, socket, urllib, logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages
+import django.db.models, django.contrib.admin, django.contrib.messages, django.core.exceptions
 
 import debian.deb822
 
@@ -61,7 +61,21 @@ def msg_warn(request, msg):
     django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
-class StatusModel(django.db.models.Model):
+class Model(django.db.models.Model):
+    """Abstract father model for all mini-buildd models.
+
+    - Make sure no config is saved while the daemon is running.
+    """
+    class Meta:
+        abstract = True
+
+    def clean(self):
+        import daemon
+        if daemon.get().is_running():
+            raise django.core.exceptions.ValidationError(u"""Please deactivate the Daemon instance to change any configuration!""")
+        super(Model, self).clean()
+
+class StatusModel(Model):
     """
     Abstract model for all models that carry a status.
 

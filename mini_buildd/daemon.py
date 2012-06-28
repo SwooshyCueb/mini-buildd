@@ -343,6 +343,9 @@ class _Daemon():
         self.update_model()
         self.start()
 
+    def is_running(self):
+        return self.daemon_thread != None
+
 def get():
     global _INSTANCE
     assert(_INSTANCE)

@@ -132,7 +132,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._setup_environment()
 
     def on_signal(self, signum=-1, frame=-1):
-        log.debug("Got signal: %s" % signum)
+        log.info("Got signal: %s" % signum)
         if signum == signal.SIGTERM or signum == signal.SIGINT:
             self._status = "SHUTDOWN"
         elif signum == signal.SIGHUP:

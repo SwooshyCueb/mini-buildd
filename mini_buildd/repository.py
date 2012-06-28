@@ -187,7 +187,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         for ma in self.mandatory_architectures.all():
             for oa in self.optional_architectures.all():
                 if ma.name == oa.name:
-                    raise django.core.exceptions.ValidationError(u"Architecture {a} is in both, mandatory and optional architectures!".formt(a=ma.name))
+                    raise django.core.exceptions.ValidationError(u"Architecture {a} is in both, mandatory and optional architectures!".format(a=ma.name))
 
     def clean(self):
         # self._mbd_clean_architectures()

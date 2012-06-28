@@ -116,19 +116,14 @@ class StatusModel(django.db.models.Model):
                 # Prepare implicitely if neccessary
                 if s.status < s.STATUS_PREPARED:
                     self.action_prepare(request, (s,))
-
                 if s.status >= s.STATUS_PREPARED:
-                    s.status = s.STATUS_ACTIVE
-                    s.save()
-                    msg_info(request, "{s}: Activated".format(s=s))
+                    self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE)
         action_activate.short_description = "mini-buildd: 2 Activate selected objects"
 
         def action_deactivate(self, request, queryset):
             for s in queryset:
                 if s.status >= s.STATUS_ACTIVE:
-                    s.status = s.STATUS_PREPARED
-                    s.save()
-                    msg_info(request, "{s}: Deactivated".format(s=s))
+                    self.action(request, (s,), "deactivate", StatusModel.STATUS_PREPARED)
                 else:
                     msg_info(request, "{s}: Already deactivated".format(s=s))
         action_deactivate.short_description = "mini-buildd: 3 Deactivate selected objects"
@@ -146,6 +141,11 @@ class StatusModel(django.db.models.Model):
         readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')
 
+    def mbd_activate(self, request):
+        pass
+
+    def mbd_deactivate(self, request):
+        pass
 
 from mini_buildd import source
 class Mirror(source.Mirror):

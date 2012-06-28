@@ -158,15 +158,17 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             signal.signal(signal.SIGINT, self.on_signal)
             signal.signal(signal.SIGHUP, self.on_signal)
 
+            # Get one global daemon instance
+            daemon = daemon._Daemon()
+
             # Start httpd webapp
             httpd_thread = misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             while self._status == "RELOAD":
                 log.info("(Re)loading daemon...")
-                dm_thread = misc.run_as_thread(daemon.run)
+                daemon.reload()
                 signal.pause()
-                daemon.runner()._incoming_queue.put("SHUTDOWN")
-                dm_thread.join()
+                daemon.stop()
                 log.info("Shutdown complete. Bye...")
 
             httpd.exit()

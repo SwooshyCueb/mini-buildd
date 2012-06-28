@@ -286,7 +286,7 @@ class Repository(StatusModel):
     def mbd_get_apt_line(self, dist, suite):
         from mini_buildd import daemon
         return "deb {u}/{r}/{i}/ {d} {c}".format(
-            u=daemon.get().mbd_get_ftp_url(),
+            u=daemon.get().model.mbd_get_ftp_url(),
             r=os.path.basename(setup.REPOSITORIES_DIR),
             i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 
@@ -322,7 +322,7 @@ class Repository(StatusModel):
     def mbd_get_apt_keys(self, dist):
         d,s = self.mbd_find_dist(dist)
         from mini_buildd import daemon
-        result = daemon.get().mbd_get_pub_key()
+        result = daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             result += e.source.apt_key
             return result

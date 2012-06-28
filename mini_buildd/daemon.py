@@ -12,7 +12,9 @@ from mini_buildd.models import Repository, EmailAddress
 
 log = logging.getLogger(__name__)
 
-class Daemon(django.db.models.Model):
+from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
+
+class Daemon(StatusModel):
     # Basics
     hostname = django.db.models.CharField(
         max_length=200,
@@ -68,10 +70,10 @@ prevent original package maintainers to be spammed.
 'Maintainer' notify options in repositories.]
 """)
 
-    class Meta:
+    class Meta(StatusModel.Meta):
         verbose_name_plural = "Daemon"
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
                     "fields": ("hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
@@ -101,6 +103,18 @@ prevent original package maintainers to be spammed.
         super(Daemon, self).clean()
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
+
+    def mbd_prepare(self, r):
+        msg_info(r, "Preparing GnuPG...")
+        self._gnupg.prepare()
+
+    def mbd_activate(self, r):
+        msg_info(r, "(Re-)starting daemon...")
+        get().start()
+
+    def mbd_deactivate(self, r):
+        msg_info(r, "Stopping daemon...")
+        get().stop()
 
     def mbd_get_ftp_url(self):
         ba = misc.BindArgs(self.ftpd_bind)
@@ -163,22 +177,6 @@ incoming = /incoming
 
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
-def get():
-    daemon, created = Daemon.objects.get_or_create(id=1)
-    if created:
-        log.info("New default Daemon model instance created")
-    return daemon
-
-def create_runner():
-    global _RUNNER
-    _RUNNER = get()
-
-def runner():
-    global _RUNNER
-    if _RUNNER == None:
-        raise Exception("Internal error: No global daemon runner instance.")
-    return _RUNNER
-
 class Package(object):
     DONE = 0
     INCOMPLETE = 1
@@ -195,7 +193,7 @@ class Package(object):
         except Exception as e:
             log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
             body = MIMEText(self.changes.dump(), _charset="UTF-8")
-            runner().mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
+            get().model.mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
             raise
 
     def request_missing_builds(self):
@@ -210,13 +208,13 @@ class Package(object):
         results = u""
         for arch, c in self.failed.items() + self.success.items():
             for fd in c.get_files():
-                results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=runner().mbd_get_http_url() + "/" +
+                results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=get().model.mbd_get_http_url() + "/" +
                                                      os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, fd["name"]))
 
         results += u"\n"
         body = MIMEText(results + self.changes.dump(), _charset="UTF-8")
 
-        runner().mbd_notify(
+        get().model.mbd_notify(
             "{s}: {p} ({f}/{r} failed)".format(
                 s="Failed" if self.failed else "Build",
                 p=self.pid, f=len(self.failed), r=len(self.requests)),
@@ -267,10 +265,7 @@ class Package(object):
 def run():
     """.. todo:: Own GnuPG model """
     # Get/Create daemon model instance (singleton-like)
-    create_runner()
-    dm = runner()
-
-    dm._gnupg.prepare()
+    dm = get().model
 
     # Start ftpd and builder
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
@@ -316,3 +311,36 @@ def run():
 
     builder_thread.join()
     ftpd_thread.join()
+
+class _Daemon():
+    def update_model(self):
+        self.model, created = Daemon.objects.get_or_create(id=1)
+        if created:
+            log.info("New default Daemon model instance created")
+        log.info("Model instance updated...")
+
+    def __init__(self):
+        self.update_model()
+        self.daemon_thread = None
+        global _INSTANCE
+        _INSTANCE = self
+
+    def start(self):
+        if not self.daemon_thread:
+            self.daemon_thread = misc.run_as_thread(run)
+
+    def stop(self):
+        if self.daemon_thread:
+            self.model._incoming_queue.put("SHUTDOWN")
+            self.daemon_thread.join()
+        self.daemon_thread = None
+
+    def reload(self):
+        self.stop()
+        self.update_model()
+        self.start()
+
+def get():
+    global _INSTANCE
+    assert(_INSTANCE)
+    return _INSTANCE

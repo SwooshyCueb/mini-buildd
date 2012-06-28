@@ -8,7 +8,7 @@ import django.db, django.core.exceptions, django.contrib.auth.models
 
 from mini_buildd import misc, changes, gnupg, ftpd, builder
 
-from mini_buildd.models import Repository, EmailAddress
+from mini_buildd.models import Repository, Chroot, EmailAddress
 
 log = logging.getLogger(__name__)
 
@@ -94,10 +94,13 @@ prevent original package maintainers to be spammed.
         self._packages = {}
 
     def __unicode__(self):
-        res = u"Daemon for: "
-        for c in Repository.objects.all():
-            res += c.__unicode__() + ", "
-        return res
+        reps = []
+        for r in Repository.objects.all():
+            reps.append(r.__unicode__())
+        chroots = []
+        for c in Chroot.objects.all():
+            chroots.append(c.__unicode__())
+        return u"Repositories: {r} | Chroots: {c}".format(r=",".join(reps), c=",".join(chroots))
 
     def clean(self):
         super(Daemon, self).clean()

@@ -145,7 +145,7 @@ class Changes(debian.deb822.Changes):
     def gen_buildrequests(self, repository, dist):
         # Build buildrequest files for all architectures
         br_dict = {}
-        for a in dist.mbd_get_architectures():
+        for a in dist.mbd_get_all_architectures():
             path = os.path.join(self.get_spool_dir(), a)
 
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))

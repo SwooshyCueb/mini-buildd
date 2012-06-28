@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import StringIO, os, re, datetime, socket, logging
 
-import django.db
+import django.db, django.core.exceptions
 
 from mini_buildd import setup, misc, reprepro
 
@@ -180,13 +180,34 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
         return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
 
-    def mbd_get_architectures(self):
+    def _mbd_clean_architectures(self):
+        ".. todo:: Not enabled in clean() as code does not work there: ManyToMany fields keep old values until actually saved (??)."
+        if not self.architecture_all in self.mandatory_architectures.all():
+            raise django.core.exceptions.ValidationError("Architecture-All must be a mandatory architecture!")
+        for ma in self.mandatory_architectures.all():
+            for oa in self.optional_architectures.all():
+                if ma.name == oa.name:
+                    raise django.core.exceptions.ValidationError(u"Architecture {a} is in both, mandatory and optional architectures!".formt(a=ma.name))
+
+    def clean(self):
+        # self._mbd_clean_architectures()
+        super(Distribution, self).clean()
+
+    def _mbd_get_architectures(self, m2m_objects):
         architectures = []
-        for a in self.mandatory_architectures.all():
-            architectures.append(a.name)
-        for a in self.optional_architectures.all():
-            architectures.append(a.name)
+        for o in m2m_objects:
+            for a in o.all():
+                architectures.append(a.name)
         return architectures
+
+    def mbd_get_mandatory_architectures(self):
+        return self._mbd_get_architectures([self.mandatory_architectures])
+
+    def mbd_get_optional_architectures(self):
+        return self._mbd_get_architectures([self.optional_architectures])
+
+    def mbd_get_all_architectures(self):
+        return self._mbd_get_architectures([self.mandatory_architectures, self.optional_architectures])
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
@@ -347,7 +368,7 @@ ButAutomaticUpgrades: {bau}
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
            components=self.mbd_get_components(),
-           architectures=" ".join(d.mbd_get_architectures()),
+           architectures=" ".join(d.mbd_get_all_architectures()),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))

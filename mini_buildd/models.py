@@ -203,7 +203,7 @@ class Daemon(daemon.Daemon):
     pass
 
 
-class Remote(django.db.models.Model):
+class Remote(Model):
     host = django.db.models.CharField(primary_key=True, max_length=255, default=socket.getfqdn())
 
     def __unicode__(self):

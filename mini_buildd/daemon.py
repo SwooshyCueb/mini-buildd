@@ -8,11 +8,9 @@ import django.db, django.core.exceptions, django.contrib.auth.models
 
 from mini_buildd import misc, changes, gnupg, ftpd, builder
 
-from mini_buildd.models import Repository, Chroot, EmailAddress
+from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info, msg_warn, msg_error
 
 log = logging.getLogger(__name__)
-
-from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 
 class Daemon(StatusModel):
     # Basics

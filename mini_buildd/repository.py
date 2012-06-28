@@ -5,11 +5,11 @@ import django.db, django.core.exceptions
 
 from mini_buildd import setup, misc, reprepro
 
+from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
+
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
-
-class EmailAddress(django.db.models.Model):
+class EmailAddress(Model):
     address = django.db.models.EmailField(primary_key=True, max_length=255)
     name = django.db.models.CharField(blank=True, max_length=255)
 
@@ -21,7 +21,7 @@ class EmailAddress(django.db.models.Model):
 
 django.contrib.admin.site.register(EmailAddress)
 
-class Suite(django.db.models.Model):
+class Suite(Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=50,
         help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
@@ -55,7 +55,7 @@ class Suite(django.db.models.Model):
 django.contrib.admin.site.register(Suite)
 
 
-class Layout(django.db.models.Model):
+class Layout(Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
                             help_text="Name for the layout.")
     suites = django.db.models.ManyToManyField(Suite)
@@ -66,7 +66,7 @@ class Layout(django.db.models.Model):
 django.contrib.admin.site.register(Layout)
 
 
-class Distribution(django.db.models.Model):
+class Distribution(Model):
     base_source = django.db.models.ForeignKey(Source)
     extra_sources = django.db.models.ManyToManyField(PrioritySource, blank=True)
     components = django.db.models.ManyToManyField(Component)

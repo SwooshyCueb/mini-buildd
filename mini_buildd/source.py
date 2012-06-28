@@ -7,9 +7,11 @@ import debian.deb822
 
 from mini_buildd import gnupg
 
+from mini_buildd.models import Model, StatusModel, msg_info, msg_warn, msg_error
+
 log = logging.getLogger(__name__)
 
-class Mirror(django.db.models.Model):
+class Mirror(Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
                                     default="http://ftp.debian.org/debian",
                                     help_text="The URL of an apt mirror/repository")
@@ -28,20 +30,18 @@ class Mirror(django.db.models.Model):
 
 django.contrib.admin.site.register(Mirror, Mirror.Admin)
 
-class Architecture(django.db.models.Model):
+class Architecture(Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
     def __unicode__(self):
         return self.name
 
 
-class Component(django.db.models.Model):
+class Component(Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
     def __unicode__(self):
         return self.name
-
-from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
 
 class Source(StatusModel):
     # Identity
@@ -167,7 +167,7 @@ class Source(StatusModel):
 django.contrib.admin.site.register(Source, Source.Admin)
 
 
-class PrioritySource(django.db.models.Model):
+class PrioritySource(Model):
     source = django.db.models.ForeignKey(Source)
     priority = django.db.models.IntegerField(default=1,
                                              help_text="A apt pin priority value (see 'man apt_preferences')."

@@ -325,8 +325,7 @@ class Repository(StatusModel):
         result = daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             result += e.source.apt_key
-            return result
-        raise Exception("Could not produce apt keys")
+        return result
 
     def mbd_get_chroot_setup_script(self, dist):
         d,s = self.mbd_find_dist(dist)

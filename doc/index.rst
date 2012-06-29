@@ -28,7 +28,7 @@ Enter the web application's `configuration section </admin/mini_buildd/>`_.
 
 .. note::
    - Adding chroots could take a while -- *stay tuned!*
-   - To *trying out* mini-buildd it is recommended to name the repository "test".
+   - To *try out* mini-buildd, it is recommended to name the repository "test".
 
 Uploading
 +++++++++

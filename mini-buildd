@@ -136,7 +136,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         if signum == signal.SIGTERM or signum == signal.SIGINT:
             self._status = "SHUTDOWN"
         elif signum == signal.SIGHUP:
-            self._status = "RELOAD"
+            self._status = "RESTART"
 
     def run(self):
         from mini_buildd import webapp
@@ -153,7 +153,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             from mini_buildd import daemon, httpd
 
             # Shutdown on SIGTERM or SIGINT
-            self._status = "RELOAD"
+            self._status = "RESTART"
             signal.signal(signal.SIGTERM, self.on_signal)
             signal.signal(signal.SIGINT, self.on_signal)
             signal.signal(signal.SIGHUP, self.on_signal)
@@ -164,13 +164,14 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             # Start httpd webapp
             httpd_thread = misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
 
-            while self._status == "RELOAD":
-                log.info("(Re)loading daemon...")
-                daemon.reload()
+            while True:
                 signal.pause()
-                daemon.stop()
-                log.info("Shutdown complete. Bye...")
+                if self._status == "RESTART":
+                    daemon.restart()
+                else:
+                    break
 
+            daemon.stop()
             httpd.exit()
 
 # Main processing; the only benefit of the master try/catch is

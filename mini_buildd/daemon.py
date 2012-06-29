@@ -110,12 +110,10 @@ prevent original package maintainers to be spammed.
         self._gnupg.prepare()
 
     def mbd_activate(self, r):
-        msg_info(r, "(Re-)starting daemon...")
-        get().start()
+        get().restart(r)
 
     def mbd_deactivate(self, r):
-        msg_info(r, "Stopping daemon...")
-        get().stop()
+        get().stop(r)
 
     def mbd_get_ftp_url(self):
         ba = misc.BindArgs(self.ftpd_bind)
@@ -314,35 +312,55 @@ def run():
     ftpd_thread.join()
 
 class _Daemon():
+    def __init__(self):
+        self.update_model()
+        self.thread = None
+        global _INSTANCE
+        _INSTANCE = self
+        if self.model.status == StatusModel.STATUS_ACTIVE:
+            self.start()
+        else:
+            log.info("Daemon NOT started (activate first)")
+
     def update_model(self):
         self.model, created = Daemon.objects.get_or_create(id=1)
         if created:
             log.info("New default Daemon model instance created")
-        log.info("Model instance updated...")
+        log.info("Daemon model instance updated...")
 
-    def __init__(self):
-        self.update_model()
-        self.daemon_thread = None
-        global _INSTANCE
-        _INSTANCE = self
+    def start(self, r=None):
+        if not self.thread:
+            self.update_model()
+            self.thread = misc.run_as_thread(run)
+            msg_info(r, "Daemon started")
+        else:
+            msg_info(r, "Daemon already started")
 
-    def start(self):
-        if not self.daemon_thread:
-            self.daemon_thread = misc.run_as_thread(run)
-
-    def stop(self):
-        if self.daemon_thread:
+    def stop(self, r=None):
+        if self.thread:
             self.model._incoming_queue.put("SHUTDOWN")
-            self.daemon_thread.join()
-        self.daemon_thread = None
+            self.thread.join()
+            self.thread = None
+            self.update_model()
+            msg_info(r, "Daemon stopped")
+        else:
+            msg_info(r, "Daemon already stopped")
 
-    def reload(self):
-        self.stop()
-        self.update_model()
-        self.start()
+    def restart(self, r=None):
+        self.stop(r)
+        self.start(r)
 
     def is_running(self):
-        return self.daemon_thread != None
+        return self.thread != None
+
+    def status_as_html(self):
+        return u"""
+{id}: {s}<p/>
+Package status: {p} active packages, {c} changes waiting in incoming.<br>
+Builder status: {b} active builds, {q} waiting in queue.<br>
+""".format(id=self.model, s=self.model.get_status_display(),
+           p=len(self.model._packages), c=self.model._incoming_queue.qsize(),
+           b="?", q=self.model._build_queue.qsize())
 
 def get():
     global _INSTANCE

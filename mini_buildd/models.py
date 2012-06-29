@@ -50,15 +50,15 @@ import debian.deb822
 log = logging.getLogger(__name__)
 
 def msg_info(request, msg):
-    django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
+    if request: django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
     log.info(msg)
 
 def msg_error(request, msg):
-    django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
+    if request: django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
     log.error(msg)
 
 def msg_warn(request, msg):
-    django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
+    if request: django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
 class Model(django.db.models.Model):
@@ -110,16 +110,16 @@ class StatusModel(Model):
     class Admin(django.contrib.admin.ModelAdmin):
         def action(self, request, queryset, action, success_status):
             for s in queryset:
-                msg_info(request, "{s}: Running '{a}'".format(s=s, a=action))
+                old_status = s.status
                 try:
-                    getattr(s, "mbd_" + action)(request)
                     s.status = success_status
                     s.save()
+                    getattr(s, "mbd_" + action)(request)
                     msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
                 except Exception as e:
-                    s.status = s.STATUS_ERROR
-                    s.__last_error = str(e)
-                    msg_error(request, "Run failed: {a}={e}".format(a=action, e=str(e)))
+                    s.status = old_status
+                    s.save()
+                    msg_error(request, "{s}: '{a}' FAILED (keeping old status {o}): {e}".format(s=s, a=action, o=s.get_status_display(), e=str(e)))
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED)

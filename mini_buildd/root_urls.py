@@ -12,6 +12,3 @@ urlpatterns = django.conf.urls.defaults.patterns(
     django.conf.urls.defaults.url(r"^admin/doc/", django.conf.urls.defaults.include('django.contrib.admindocs.urls')),
     django.conf.urls.defaults.url(r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
     )
-
-".. todo:: http/django: Proper static files serving. This does only work in django DEBUG mode"
-urlpatterns += django.contrib.staticfiles.urls.staticfiles_urlpatterns()

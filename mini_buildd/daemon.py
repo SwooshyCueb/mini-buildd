@@ -133,7 +133,7 @@ prevent original package maintainers to be spammed.
         return """\
 [mini-buildd-{h}]
 method   = ftp
-hostname     = {hostname}:{p}
+fqdn     = {hostname}:{p}
 login    = anonymous
 incoming = /incoming
 """.format(h=self.hostname.split(".")[0], hostname=self.hostname, p=8067)

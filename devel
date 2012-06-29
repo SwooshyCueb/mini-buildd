@@ -51,7 +51,7 @@ EOF
 mbd_default()
 {
 	# copy to avoid perm problems
-	cp ./mini_buildd/fixtures/test.squeeze.${1}.json /tmp/fix.json
+	cp ./mini_buildd/fixtures/${1}.json /tmp/fix.json
 	sudo su - mini-buildd -c "mini-buildd --loaddata=/tmp/fix.json"
 }
 

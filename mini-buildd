@@ -82,7 +82,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         misc.mkdirs(setup.LOG_DIR)
 
     def _setup_logging(self):
-        #loggers = string.split(self._args.loggers, ",")
         loggers = self._args.loggers.split(",")
         if self._args.foreground:
             loggers.append("console")

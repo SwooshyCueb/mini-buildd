@@ -172,7 +172,7 @@ class Changes(debian.deb822.Changes):
 
             br["Base-Distribution"] = dist.base_source.codename
             br["Architecture"] = a
-            if a == dist.architecture_all:
+            if a == dist.architecture_all.name:
                 br["Arch-All"] = "Yes"
             br["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
             br["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"

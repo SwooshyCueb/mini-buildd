@@ -209,8 +209,10 @@ class Package(object):
         results = u""
         for arch, c in self.failed.items() + self.success.items():
             for fd in c.get_files():
-                results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=get().model.mbd_get_http_url() + "/" +
-                                                     os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, fd["name"]))
+                f = fd["name"]
+                if re.compile("^.*\.buildlog$").match(f):
+                    results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=get().model.mbd_get_http_url() + "/" +
+                                                         os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, f))
 
         results += u"\n"
         body = MIMEText(results + self.changes.dump(), _charset="UTF-8")

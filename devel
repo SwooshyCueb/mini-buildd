@@ -60,7 +60,7 @@ mbd_test()
 	read -p "About to upload test packages. All configured? [ http://$(hostname -f):8066 ]" dummy
 	(
 		cd ./examples
-		./packages.testbuild
+		./packages.testbuild ${1}
 	)
 }
 

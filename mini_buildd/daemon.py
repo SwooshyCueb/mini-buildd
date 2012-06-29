@@ -357,15 +357,19 @@ class _Daemon():
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
-        packages = "<ul>"
-        for p in self.model._packages:
-            packages += "<li>{p}</li>".format(p=p)
-        packages += "</ul>"
+        def packages():
+            packages = "<ul>"
+            for p in self.model._packages:
+                packages += "<li>{p}</li>".format(p=p)
+            packages += "</ul>"
+            return packages
 
-        builds = "<ul>"
-        for b in self.model._builds:
-            builds += "<li>{b}</li>".format(b=b.name)
-        builds += "</ul>"
+        def builds():
+            builds = "<ul>"
+            for b in self.model._builds:
+                builds += "<li>{b}</li>".format(b=b.name)
+            builds += "</ul>"
+            return builds
 
         return u"""
 <hr/>
@@ -379,8 +383,8 @@ class _Daemon():
 {builds}
 <hr/>
 """.format(s="Running" if self.is_running() else "Stopped", id=self.model, c=self.model._incoming_queue.qsize(),
-           p=len(self.model._packages), packages=packages,
-           b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds)
+           p=len(self.model._packages), packages=packages(),
+           b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds())
 
 def get():
     global _INSTANCE

@@ -139,13 +139,12 @@ def build(br, jobs):
     # Success, cleanup spool and incoming
     build_clean(br)
 
-def run(build_queue, sbuild_jobs):
+def run(build_queue, builds, sbuild_jobs):
     """
     .. todo:: Builder
 
       - Upload retry.
     """
-    builds = []
     while True:
         log.info("Builder status: {0} active builds, {0} waiting in queue.".
                  format(len(builds), build_queue.qsize()))
@@ -153,8 +152,10 @@ def run(build_queue, sbuild_jobs):
         event = build_queue.get()
         if event == "SHUTDOWN":
             break
-
-        builds.append(misc.run_as_thread(build, br=changes.Changes(event), jobs=sbuild_jobs))
+        br=changes.Changes(event)
+        t = misc.run_as_thread(build, br=br, jobs=sbuild_jobs)
+        t.name = "Building '{p}' for {d}:{a}".format(p=br.get_pkg_id(), d=br["Distribution"], a=br["Architecture"])
+        builds.append(t)
         build_queue.task_done()
 
     for t in builds:

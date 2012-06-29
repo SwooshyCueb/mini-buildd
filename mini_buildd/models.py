@@ -88,18 +88,15 @@ class StatusModel(Model):
     active     Prepared on the system and activated.
     ========== =====================================
     """
-    STATUS_ERROR = -1
     STATUS_UNPREPARED = 0
     STATUS_PREPARED = 1
     STATUS_ACTIVE = 2
     STATUS_CHOICES = (
-        (STATUS_ERROR, 'Error'),
         (STATUS_UNPREPARED, 'Unprepared'),
         (STATUS_PREPARED, 'Prepared'),
         (STATUS_ACTIVE, 'Active'))
     status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
     STATUS_COLORS = {
-        STATUS_ERROR: "red",
         STATUS_UNPREPARED: "yellow",
         STATUS_PREPARED:"blue",
         STATUS_ACTIVE: "green" }
@@ -110,16 +107,13 @@ class StatusModel(Model):
     class Admin(django.contrib.admin.ModelAdmin):
         def action(self, request, queryset, action, success_status):
             for s in queryset:
-                old_status = s.status
                 try:
+                    getattr(s, "mbd_" + action)(request)
                     s.status = success_status
                     s.save()
-                    getattr(s, "mbd_" + action)(request)
                     msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
                 except Exception as e:
-                    s.status = old_status
-                    s.save()
-                    msg_error(request, "{s}: '{a}' FAILED (keeping old status {o}): {e}".format(s=s, a=action, o=s.get_status_display(), e=str(e)))
+                    msg_error(request, "{s}: '{a}' FAILED: {e}".format(s=s, a=action, e=str(e)))
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED)

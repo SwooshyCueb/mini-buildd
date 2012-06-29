@@ -11,6 +11,34 @@ repository. Its general notion is that of add-ons for a Debian
 base distribution (like etch, lenny, or sid) with an emphasis
 on clean builds and package checking.
 
+Quickstart
+==========
+
+Administration
+++++++++++++++
+
+Enter the web application's `configuration section </admin/mini_buildd/>`_.
+
+1. **Add** mirror(s).
+2. **Add** source(s) and **activate**.
+3. **Add** distribution(s).
+4. **Add** at least one repository and **activate**.
+5. **Add** chroot(s) and **activate**.
+6. Configure and **activate** the daemon.
+
+.. note::
+   - Adding chroots could take a while -- *stay tuned!*
+   - To *trying out* mini-buildd it is recommended to name the repository "test".
+
+Uploading
++++++++++
+- Use mini-buildd's `Dput config </mini_buildd/download/dput.cf>`_.
+*...to be continued...*
+
+Using the repository
+++++++++++++++++++++
+*...to be continued...*
+
 Manual
 ======
 

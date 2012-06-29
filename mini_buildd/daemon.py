@@ -90,6 +90,8 @@ prevent original package maintainers to be spammed.
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
+        self._builds = []
+        self._stray_buildresults = []
 
     def __unicode__(self):
         reps = []
@@ -268,9 +270,7 @@ def run():
 
     # Start ftpd and builder
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, sbuild_jobs=dm.sbuild_jobs)
-
-    stray_buildresults = []
+    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, builds=dm._builds, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
@@ -296,11 +296,11 @@ def run():
                 dm._build_queue.put(event)
             elif c.is_buildresult():
                 if not update_packages(c):
-                    stray_buildresults.append(c)
+                    dm._stray_buildresults.append(c)
             else:
                 pid = c.get_pkg_id()
                 dm._packages[pid] = Package(c)
-                for br in stray_buildresults:
+                for br in dm._stray_buildresults:
                     update_packages(br)
 
         except Exception as e:
@@ -354,13 +354,31 @@ class _Daemon():
         return self.thread != None
 
     def status_as_html(self):
+        """.. todo:: This should be mutex-locked. """
+        packages = "<ul>"
+        for p in self.model._packages:
+            packages += "<li>{p}</li>".format(p=p)
+        packages += "</ul>"
+
+        builds = "<ul>"
+        for b in self.model._builds:
+            builds += "<li>{b}</li>".format(b=b.name)
+        builds += "</ul>"
+
         return u"""
-{id}: {s}<p/>
-Package status: {p} active packages, {c} changes waiting in incoming.<br>
-Builder status: {b} active builds, {q} waiting in queue.<br>
-""".format(id=self.model, s=self.model.get_status_display(),
-           p=len(self.model._packages), c=self.model._incoming_queue.qsize(),
-           b="?", q=self.model._build_queue.qsize())
+<hr/>
+<h3>{s}: {id}</h3>
+
+{c} changes files pending in incoming.
+
+<h4>{p} active packages</h4>
+{packages}
+<h4>{p} active builds ({q} pending)</h4>
+{builds}
+<hr/>
+""".format(s=self.model.get_status_display(), id=self.model, c=self.model._incoming_queue.qsize(),
+           p=len(self.model._packages), packages=packages,
+           b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds)
 
 def get():
     global _INSTANCE

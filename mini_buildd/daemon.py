@@ -378,7 +378,7 @@ class _Daemon():
 <h4>{p} active builds ({q} pending)</h4>
 {builds}
 <hr/>
-""".format(s=self.model.get_status_display(), id=self.model, c=self.model._incoming_queue.qsize(),
+""".format(s="Running" if self.is_running() else "Stopped", id=self.model, c=self.model._incoming_queue.qsize(),
            p=len(self.model._packages), packages=packages,
            b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds)
 

@@ -25,9 +25,9 @@ class Main():
                                help="Lower log level. Give twice for max logs.")
         group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
                                help="Tighten log level. Give twice for min logs.")
-        group_log.add_argument("-d", "--debug", action='store_true', default=False,
-                               help="Enable 'debug mode'. This will set logging vebosity to max, and also \
-tries to put external code into 'debug' mode as far as supported. Never use this for production.")
+        group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
+                               help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
+django,ftpd,build,sbuild")
         group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
                                help="Comma-separated list of loggers (file,syslog,console) to use.")
 
@@ -55,7 +55,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
     def _setup(self):
         # Set global variables that really make no sense to
         # propagate through
-        setup.DEBUG = self._args.debug
+        setup.DEBUG = self._args.debug.split(",")
 
         setup.HOME_DIR = self._args.home
 

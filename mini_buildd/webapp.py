@@ -17,8 +17,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         super(WebApp, self).__init__()
 
         django.conf.settings.configure(
-            DEBUG = setup.DEBUG,
-            TEMPLATE_DEBUG = setup.DEBUG,
+            DEBUG = "django" in setup.DEBUG,
+            TEMPLATE_DEBUG = "django" in setup.DEBUG,
 
             TEMPLATE_DIRS = ['/usr/share/pyshared/mini_buildd/templates'],
             TEMPLATE_LOADERS = (

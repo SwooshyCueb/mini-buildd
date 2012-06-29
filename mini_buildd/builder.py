@@ -17,9 +17,11 @@ def results_from_buildlog(fn, changes):
                 changes["Sbuild-" + s[0]] = s[1].strip()
 
 def build_clean(br):
-    if not setup.DEBUG:
+    if "build" in setup.DEBUG:
+        log.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=br.get_spool_dir()))
+    else:
         shutil.rmtree(br.get_spool_dir())
-        br.remove()
+    br.remove()
 
 def generate_sbuildrc(path, br):
     " Generate .sbuildrc for a build request (not all is configurable via switches, unfortunately)."
@@ -88,9 +90,9 @@ def build(br, jobs):
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=br["Run-Lintian"]))
 
-        if setup.DEBUG:
+        if "sbuild" in setup.DEBUG:
             sbuild_cmd.append("--verbose")
-            sbuild_cmd.append("--chroot-setup-command=env")
+            sbuild_cmd.append("--debug")
 
         sbuild_cmd.append("{s}_{v}.dsc".format(s=br["Source"], v=br["Version"]))
 

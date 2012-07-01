@@ -43,7 +43,7 @@ mbd_install()
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
 #mini-buildd mini-buildd/options string --verbose --verbose --debug
-mini-buildd mini-buildd/options string --verbose
+mini-buildd mini-buildd/options string --verbose --debug=main,django
 EOF
 	sudo debi
 }

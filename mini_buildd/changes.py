@@ -98,15 +98,20 @@ class Changes(debian.deb822.Changes):
         self.dump(fd=open(self._file_path, "w+"))
 
     def upload(self, host="localhost", port=8067):
-        log.info("FTP: Uploading changes: '{f}' to '{h}'...".format(f=self._file_name, h=host))
-        ftp = ftplib.FTP()
-        ftp.connect(host, port)
-        ftp.login()
-        ftp.cwd("/incoming")
-        for fd in self.get_files() + [ {"name": self._file_name} ]:
-            f = fd["name"]
-            log.debug("FTP: Uploading file: '{f}'".format(f=f))
-            ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
+        upload = os.path.splitext(self._file_path)[0] + ".upload"
+        if os.path.exists(upload):
+            log.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
+        else:
+            ftp = ftplib.FTP()
+            ftp.connect(host, port)
+            ftp.login()
+            ftp.cwd("/incoming")
+            for fd in self.get_files() + [ {"name": self._file_name} ]:
+                f = fd["name"]
+                log.debug("FTP: Uploading file: '{f}'".format(f=f))
+                ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
+            open(upload, "w").write("{h}:{p}".format(h=host, p=port))
+            log.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=host))
 
     def tar(self, tar_path, add_files=[]):
         with contextlib.closing(tarfile.open(tar_path, "w")) as tar:

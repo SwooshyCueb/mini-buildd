@@ -153,14 +153,14 @@ class Changes(debian.deb822.Changes):
 
     def gen_buildrequests(self, repository, dist):
         # Build buildrequest files for all architectures
-        br_dict = {}
+        breq_dict = {}
         for a in dist.mbd_get_all_architectures():
             path = os.path.join(self.get_spool_dir(), a)
 
-            br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))
-            if br.is_new():
+            breq = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))
+            if breq.is_new():
                 for v in ["Distribution", "Source", "Version"]:
-                    br[v] = self[v]
+                    breq[v] = self[v]
 
                 # Generate sources.list et.al. to be used
                 open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
@@ -172,20 +172,20 @@ class Changes(debian.deb822.Changes):
                 open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
                 # Generate tar from original changes
-                self.tar(tar_path=br._file_path + ".tar", add_files=[
+                self.tar(tar_path=breq._file_path + ".tar", add_files=[
                         os.path.join(path, "apt_sources.list"),
                         os.path.join(path, "apt_preferences"),
                         os.path.join(path, "apt_keys"),
                         chroot_setup_script,
                         os.path.join(path, "sbuildrc_snippet")])
-                br.add_file(br._file_path + ".tar")
+                breq.add_file(breq._file_path + ".tar")
 
-                br["Base-Distribution"] = dist.base_source.codename
-                br["Architecture"] = a
+                breq["Base-Distribution"] = dist.base_source.codename
+                breq["Architecture"] = a
                 if a == dist.architecture_all.name:
-                    br["Arch-All"] = "Yes"
-                br["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
-                br["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
+                    breq["Arch-All"] = "Yes"
+                breq["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
+                breq["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
                 if dist.lintian_mode != dist.LINTIAN_DISABLED:
                     # Generate lintian options
                     modeargs = {
@@ -193,11 +193,11 @@ class Changes(debian.deb822.Changes):
                         dist.LINTIAN_RUN_ONLY:        "",
                         dist.LINTIAN_FAIL_ON_ERROR:   "",
                         dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
-                    br["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
+                    breq["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
 
-                br.save()
+                breq.save()
             else:
-                log.info("Re-using existing buildrequest: {b}".format(b=br._file_name))
-            br_dict[a] = br
+                log.info("Re-using existing buildrequest: {b}".format(b=breq._file_name))
+            breq_dict[a] = breq
 
-        return br_dict
+        return breq_dict

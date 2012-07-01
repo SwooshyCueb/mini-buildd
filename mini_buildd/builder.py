@@ -135,11 +135,9 @@ def build(br, jobs):
     # upload fails, we keep all data and try later.
     try:
         res.upload()
+        build_clean(br)
     except Exception as e:
         log.error("Upload failed (trying later): {e}".format(e=str(e)))
-
-    # Success, cleanup spool and incoming
-    build_clean(br)
 
 def run(build_queue, builds, sbuild_jobs):
     """

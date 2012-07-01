@@ -14,10 +14,14 @@ class Changes(debian.deb822.Changes):
     def __init__(self, file_path):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
-        self._sha1 = misc.sha1_of_file(file_path) if os.path.exists(file_path) else None
-        super(Changes, self).__init__(file(file_path) if os.path.exists(file_path) else [])
+        self._new = not os.path.exists(file_path)
+        self._sha1 = None if self._new else misc.sha1_of_file(file_path)
+        super(Changes, self).__init__([] if self._new else file(file_path))
         # Be sure base dir is always available
         misc.mkdirs(os.path.dirname(file_path))
+
+    def is_new(self):
+        return self._new
 
     def is_buildrequest(self):
         return self.BUILDREQUEST_RE.match(self._file_name)
@@ -154,43 +158,46 @@ class Changes(debian.deb822.Changes):
             path = os.path.join(self.get_spool_dir(), a)
 
             br = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))
-            for v in ["Distribution", "Source", "Version"]:
-                br[v] = self[v]
+            if br.is_new():
+                for v in ["Distribution", "Source", "Version"]:
+                    br[v] = self[v]
 
-            # Generate sources.list et.al. to be used
-            open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
-            open(os.path.join(path, "apt_preferences"), 'w').write(repository.mbd_get_apt_preferences())
-            open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
-            chroot_setup_script = os.path.join(path, "chroot_setup_script")
-            open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
-            os.chmod(chroot_setup_script, stat.S_IRWXU)
-            open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
+                # Generate sources.list et.al. to be used
+                open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
+                open(os.path.join(path, "apt_preferences"), 'w').write(repository.mbd_get_apt_preferences())
+                open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
+                chroot_setup_script = os.path.join(path, "chroot_setup_script")
+                open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
+                os.chmod(chroot_setup_script, stat.S_IRWXU)
+                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
-            # Generate tar from original changes
-            self.tar(tar_path=br._file_path + ".tar", add_files=[
-                    os.path.join(path, "apt_sources.list"),
-                    os.path.join(path, "apt_preferences"),
-                    os.path.join(path, "apt_keys"),
-                    chroot_setup_script,
-                    os.path.join(path, "sbuildrc_snippet")])
-            br.add_file(br._file_path + ".tar")
+                # Generate tar from original changes
+                self.tar(tar_path=br._file_path + ".tar", add_files=[
+                        os.path.join(path, "apt_sources.list"),
+                        os.path.join(path, "apt_preferences"),
+                        os.path.join(path, "apt_keys"),
+                        chroot_setup_script,
+                        os.path.join(path, "sbuildrc_snippet")])
+                br.add_file(br._file_path + ".tar")
 
-            br["Base-Distribution"] = dist.base_source.codename
-            br["Architecture"] = a
-            if a == dist.architecture_all.name:
-                br["Arch-All"] = "Yes"
-            br["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
-            br["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
-            if dist.lintian_mode != dist.LINTIAN_DISABLED:
-                # Generate lintian options
-                modeargs = {
-                    dist.LINTIAN_DISABLED:        "",
-                    dist.LINTIAN_RUN_ONLY:        "",
-                    dist.LINTIAN_FAIL_ON_ERROR:   "",
-                    dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
-                br["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
+                br["Base-Distribution"] = dist.base_source.codename
+                br["Architecture"] = a
+                if a == dist.architecture_all.name:
+                    br["Arch-All"] = "Yes"
+                br["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
+                br["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
+                if dist.lintian_mode != dist.LINTIAN_DISABLED:
+                    # Generate lintian options
+                    modeargs = {
+                        dist.LINTIAN_DISABLED:        "",
+                        dist.LINTIAN_RUN_ONLY:        "",
+                        dist.LINTIAN_FAIL_ON_ERROR:   "",
+                        dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
+                    br["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
 
-            br.save()
+                br.save()
+            else:
+                log.info("Re-using existing buildrequest: {b}".format(b=br._file_name))
             br_dict[a] = br
 
         return br_dict

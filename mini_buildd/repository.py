@@ -401,11 +401,8 @@ gnupghome {h}
         msg_info(request, "Prepared reprepro config: {d}".format(d=basedir))
 
     def mbd_unprepare(self, request):
-        if "repository" in setup.DEBUG:
-            if os.path.exists(self.mbd_get_path()):
-                shutil.rmtree(self.mbd_get_path())
-                msg_warn(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
-        else:
-            raise Exception("Can't remove repo from system (restart with '--debug=repository' to enable)")
+        if os.path.exists(self.mbd_get_path()):
+            shutil.rmtree(self.mbd_get_path())
+            msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

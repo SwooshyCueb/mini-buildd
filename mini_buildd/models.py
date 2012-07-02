@@ -43,7 +43,7 @@ still keeps the logic where it belongs.
 
 import os, datetime, socket, urllib, logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages, django.core.exceptions
+import django.db.models, django.contrib.admin, django.contrib.messages, django.core.exceptions, django.template.response
 
 import debian.deb822
 
@@ -137,7 +137,23 @@ class StatusModel(Model):
         action_deactivate.short_description = "mini-buildd: 3 Deactivate selected objects"
 
         def action_unprepare(self, request, queryset):
-            self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED)
+            if request.POST.get("confirm"):
+                self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED)
+            else:
+                return django.template.response.TemplateResponse(
+                    request,
+                    "admin/confirm.html",
+                    {
+                        "title": ("Are you sure?"),
+                        "queryset": queryset,
+                        "action": "action_unprepare",
+                        "desc": """\
+Unpreparing means all the data associated by preparation will be
+removed from the system. Especially for repositories,
+this would mean losing all packages!
+""",
+                        "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME },
+                    current_app=self.admin_site.name)
         action_unprepare.short_description = "mini-buildd: 4 Unprepare selected objects"
 
         def colored_status(self, o):

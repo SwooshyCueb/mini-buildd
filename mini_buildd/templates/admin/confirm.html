@@ -1,0 +1,21 @@
+{% extends "admin/base_site.html" %}
+{% load i18n l10n %}
+
+{% block content %}
+<form action="" method="post">{% csrf_token %}
+	<p>Run <b>{{ action }}</b> on following objects:</p>
+
+	<p>{{ desc }}</p>
+
+	<ul>{{ queryset|unordered_list }}</ul>
+
+	<div>
+		{% for o in queryset %}
+		<input type="hidden" name="{{ action_checkbox_name }}" value="{{ o.pk|unlocalize }}" />
+		{% endfor %}
+		<input type="hidden" name="action" value="{{ action }}" />
+		<input type="hidden" name="confirm" value="yes" />
+		<input type="submit" value="{% trans "Yes, I'm sure" %}" />
+	</div>
+</form>
+{% endblock %}

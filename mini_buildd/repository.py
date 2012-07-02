@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import StringIO, os, re, datetime, socket, logging
+import StringIO, os, shutil, re, datetime, socket, logging
 
 import django.db, django.core.exceptions
 
@@ -260,8 +260,6 @@ class Repository(StatusModel):
                             d=d.base_source.codename,
                             s=s.name))
 
-        self._reprepro = reprepro.Reprepro(self)
-
     def __unicode__(self):
         return self.identity
 
@@ -416,9 +414,32 @@ needs (like pre-seeding debconf variables).
 """.format(date=datetime.datetime.now()))
 
         # Reprepro config
-        self._reprepro.prepare()
+        misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
+        misc.mkdirs(self.mbd_get_incoming_path())
+        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
+        open(os.path.join(self.mbd_get_path(), "conf", "incoming"), 'w').write("""\
+Name: INCOMING
+TempDir: /tmp
+IncomingDir: {i}
+Allow: {allow}
+""".format(i=self.mbd_get_incoming_path(), allow=" ".join(self.mbd_uploadable_distributions)))
+
+        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
+gnupghome {h}
+""".format(h=os.path.join(setup.HOME_DIR, ".gnupg")))
+
+        # Update all indices (or create on initial install) via reprepro
+        repo = reprepro.Reprepro(self.mbd_get_path())
+        repo.clearvanished()
+        repo.export()
+        log.info("Prepared reprepro config: {d}".format(d=self.mbd_get_path()))
 
     def mbd_unprepare(self, request):
-        raise Exception("Not implemented: Can't remove repo from system yet")
+        if "repository" in setup.DEBUG:
+            if os.path.exists(self.mbd_get_path()):
+                shutil.rmtree(self.mbd_get_path())
+                msg_warn(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
+        else:
+            raise Exception("Can't remove repo from system (restart with '--debug=repository' to enable)")
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

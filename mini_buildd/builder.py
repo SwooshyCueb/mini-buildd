@@ -1,11 +1,45 @@
 # -*- coding: utf-8 -*-
-import os, shutil, re, subprocess, logging
+import os, time, datetime, shutil, re, subprocess, logging
 
 import django.db, django.core.exceptions
 
 from mini_buildd import setup, changes, misc
 
 log = logging.getLogger(__name__)
+
+class Status(object):
+    def __init__(self):
+        self._builds = {}
+
+    def start(self, key):
+        # TODO: LOCK
+        self._builds[key] = (time.time(), 0)
+
+    def build(self, key):
+        # TODO: LOCK
+        start, build = self._builds[key]
+        build = time.time()
+        self._builds[key] = (start, build)
+
+    def done(self, key):
+        # TODO: LOCK
+        del self._builds[key]
+
+    def get_html(self):
+        # TODO: LOCK
+        def builds():
+            builds = ""
+            for key,value in self._builds.items():
+                start, done = value
+                builds += "<li><b>{s}</b>: {k} ({d})</li>".format(s="Building" if done == 0 else "Upload pending",
+                                                                  k=key,
+                                                                  d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
+            return builds
+
+        return u"""\
+<h4>{n} active builds</h4>
+<ul>{b}</ul>
+""".format(n=len(self._builds), b=builds())
 
 def buildlog_to_buildresult(fn, bres):
     regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
@@ -46,7 +80,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 1;
 """)
 
-def build(breq, jobs):
+def build(breq, jobs, status):
     """
     .. todo:: Builder
 
@@ -60,6 +94,7 @@ def build(breq, jobs):
     misc.sbuild_keys_workaround()
 
     pkg_info = "{s}-{v}:{a}".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])
+    status.start(pkg_info)
 
     build_dir = breq.get_spool_dir()
 
@@ -136,33 +171,24 @@ def build(breq, jobs):
     else:
         log.info("Re-using existing buildresult: {b}".format(b=breq._file_name))
 
+    status.build(pkg_info)
+
     # Finally, try to upload to requesting mini-buildd; if the
     # upload fails, we keep all data and try later.
     try:
         bres.upload()
         build_clean(breq)
+        status.done(pkg_info)
     except Exception as e:
         log.error("Upload failed (trying later): {e}".format(e=str(e)))
 
-def run(build_queue, builds, sbuild_jobs):
-    """
-    .. todo:: Builder
-
-      - Upload retry.
-    """
+def run(queue, status, sbuild_jobs):
     while True:
         log.info("Builder status: {0} active builds, {0} waiting in queue.".
-                 format(len(builds), build_queue.qsize()))
+                 format(0, queue.qsize()))
 
-        event = build_queue.get()
+        event = queue.get()
         if event == "SHUTDOWN":
             break
-        breq=changes.Changes(event)
-        t = misc.run_as_thread(build, breq=breq, jobs=sbuild_jobs)
-        t.name = "Building '{p}' for {d}:{a}".format(p=breq.get_pkg_id(), d=breq["Distribution"], a=breq["Architecture"])
-        builds.append(t)
-        build_queue.task_done()
-
-    for t in builds:
-        log.debug("Waiting for build: {i}".format(i=t))
-        t.join()
+        misc.run_as_thread(build, daemon=True, breq=changes.Changes(event), jobs=sbuild_jobs, status=status)
+        queue.task_done()

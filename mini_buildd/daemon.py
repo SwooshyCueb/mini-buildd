@@ -121,7 +121,7 @@ prevent original package maintainers to be spammed.
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
-        self._builds = []
+        self._builder_status = builder.Status()
         self._stray_buildresults = []
 
     def __unicode__(self):
@@ -303,7 +303,7 @@ def run():
 
     # Start ftpd and builder
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, builds=dm._builds, sbuild_jobs=dm.sbuild_jobs)
+    builder_thread = misc.run_as_thread(builder.run, queue=dm._build_queue, status=dm._builder_status, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
@@ -395,27 +395,23 @@ class _Daemon():
             packages += "</ul>"
             return packages
 
-        def builds():
-            builds = "<ul>"
-            for b in self.model._builds:
-                builds += "<li>{b}</li>".format(b=b.name)
-            builds += "</ul>"
-            return builds
-
         return u"""
 <hr/>
 <h3>{s}: {id}</h3>
 
 {c} changes files pending in incoming.
+<br/>
+{b} build requests pending in queue.
 
 <h4>{p} active packages</h4>
 {packages}
-<h4>{p} active builds ({q} pending)</h4>
-{builds}
+
+{builder_status}
 <hr/>
-""".format(s="Running" if self.is_running() else "Stopped", id=self.model, c=self.model._incoming_queue.qsize(),
+""".format(s="Running" if self.is_running() else "Stopped", id=self.model,
+           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
            p=len(self.model._packages), packages=packages(),
-           b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds())
+           builder_status=self.model._builder_status.get_html())
 
 def get():
     global _INSTANCE

@@ -376,63 +376,29 @@ ButAutomaticUpgrades: {bau}
         ".. todo:: README from 08x; please fix/update."
         from mini_buildd.models import msg_info
 
-        path = self.mbd_get_path()
-        msg_info(request, "Preparing repository: {identity} in '{path}'".format(identity=self.identity, path=path))
-
-        misc.mkdirs(path)
-        misc.mkdirs(os.path.join(path, "log"))
-        misc.mkdirs(os.path.join(path, "chroots-update.d"))
-
-        open(os.path.join(path, "README"), 'w').write("""
-Automatically produced by mini-buildd on {date}.
-Manual changes to this file are NOT preserved.
-
-README for "~/.mini-buildd/": Place for local configuration
-
-DO CHANGES ON THE REPOSITORY HOST ONLY. On builder-only hosts,
-this directory is SYNCED from the repository host.
-
-Preinstall hook
-=====================================
-Putting an executable file "preinstall" here will run this with
-the full path to a "build" (i.e., all tests passed, to-be
-installed) changes-file.
-
-You may use this as temporary workaround to dput packages to
-other repositories or to additionally use another package
-manager like reprepro in parallel.
-
-Base chroot maintenance customization
-=====================================
-Note that you only need any customization if you need to
-apt-secure extra sources (for example bpo) or have other special
-needs (like pre-seeding debconf variables).
-
- * "chroots-update.d/*.hook":
-   What   : Custom hooks (shell snippets). Run in all base chroots as root (!).
-   Used by: mbd-update-bld.
-""".format(date=datetime.datetime.now()))
+        basedir = self.mbd_get_path()
+        msg_info(request, "Preparing repository: {identity} in '{basedir}'".format(identity=self.identity, basedir=basedir))
 
         # Reprepro config
-        misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
+        misc.mkdirs(os.path.join(basedir, "conf"))
         misc.mkdirs(self.mbd_get_incoming_path())
-        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
-        open(os.path.join(self.mbd_get_path(), "conf", "incoming"), 'w').write("""\
+        open(os.path.join(basedir, "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
+        open(os.path.join(basedir, "conf", "incoming"), 'w').write("""\
 Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
 """.format(i=self.mbd_get_incoming_path(), allow=" ".join(self.mbd_uploadable_distributions)))
 
-        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
+        open(os.path.join(basedir, "conf", "options"), 'w').write("""\
 gnupghome {h}
 """.format(h=os.path.join(setup.HOME_DIR, ".gnupg")))
 
         # Update all indices (or create on initial install) via reprepro
-        repo = reprepro.Reprepro(self.mbd_get_path())
+        repo = reprepro.Reprepro(basedir)
         repo.clearvanished()
         repo.export()
-        log.info("Prepared reprepro config: {d}".format(d=self.mbd_get_path()))
+        msg_info(request, "Prepared reprepro config: {d}".format(d=basedir))
 
     def mbd_unprepare(self, request):
         if "repository" in setup.DEBUG:

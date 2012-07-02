@@ -8,38 +8,43 @@ from mini_buildd import setup, changes, misc
 log = logging.getLogger(__name__)
 
 class Status(object):
+    "... todo:: Some of these methods require locking(?)"
+
     def __init__(self):
-        self._builds = {}
+        self._building = {}
+        self._pending = {}
+
+    def building(self):
+        return len(self._building)
 
     def start(self, key):
-        # TODO: LOCK
-        self._builds[key] = (time.time(), 0)
+        self._building[key] = (time.time(), 0)
 
     def build(self, key):
-        # TODO: LOCK
-        start, build = self._builds[key]
-        build = time.time()
-        self._builds[key] = (start, build)
+        start, build = self._building[key]
+        del self._building[key]
+        self._pending[key] = (start, time.time())
 
     def done(self, key):
-        # TODO: LOCK
-        del self._builds[key]
+        del self._pending[key]
 
     def get_html(self):
-        # TODO: LOCK
-        def builds():
-            builds = ""
-            for key,value in self._builds.items():
+        def html_li(d):
+            html = ""
+            for key,value in d.items():
                 start, done = value
-                builds += "<li><b>{s}</b>: {k} ({d})</li>".format(s="Building" if done == 0 else "Upload pending",
-                                                                  k=key,
-                                                                  d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
-            return builds
+                html += "<li>{k} ({d})</li>".format(k=key, d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
+            return html
 
         return u"""\
 <h4>{n} active builds</h4>
+<h5>{nb} building:</h5>
 <ul>{b}</ul>
-""".format(n=len(self._builds), b=builds())
+<h5>{np} pending:</h5>
+<ul>{p}</ul>
+""".format(n=len(self._building)+len(self._pending),
+           nb=len(self._building), b=html_li(self._building),
+           np=len(self._pending), p=html_li(self._pending))
 
 def buildlog_to_buildresult(fn, bres):
     regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
@@ -182,13 +187,33 @@ def build(breq, jobs, status):
     except Exception as e:
         log.error("Upload failed (trying later): {e}".format(e=str(e)))
 
-def run(queue, status, sbuild_jobs):
-    while True:
-        log.info("Builder status: {0} active builds, {0} waiting in queue.".
-                 format(0, queue.qsize()))
+def run(queue, status, build_queue_size, sbuild_jobs):
+    threads = []
+    def threads_cleanup():
+        rm = []
+        for t in threads:
+            if not t.is_alive():
+                t.join()
+                rm.append(t)
+        for t in rm:
+            threads.remove(t)
 
+    while True:
         event = queue.get()
         if event == "SHUTDOWN":
             break
-        misc.run_as_thread(build, daemon=True, breq=changes.Changes(event), jobs=sbuild_jobs, status=status)
+
+        log.info("Builder status: {0} active builds, {0} waiting in queue.".
+                 format(0, queue.qsize()))
+
+        while status.building() >= build_queue_size:
+            log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
+            time.sleep(15)
+
+        threads.append(misc.run_as_thread(build, breq=changes.Changes(event), jobs=sbuild_jobs, status=status))
         queue.task_done()
+
+        threads_cleanup()
+
+    for t in threads:
+        t.join()

@@ -303,17 +303,17 @@ def run():
 
     # Start ftpd and builder
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = misc.run_as_thread(builder.run, queue=dm._build_queue, status=dm._builder_status, sbuild_jobs=dm.sbuild_jobs)
+    builder_thread = misc.run_as_thread(builder.run, queue=dm._build_queue,
+                                        status=dm._builder_status,
+                                        build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
-        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                 format(len(dm._packages), dm._incoming_queue.qsize()))
-
         event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
-            dm._build_queue.put("SHUTDOWN")
-            ftpd.shutdown()
             break
+
+        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                 format(len(dm._packages), dm._incoming_queue.qsize()))
 
         try:
             def update_packages(build_result):
@@ -341,6 +341,8 @@ def run():
         finally:
             dm._incoming_queue.task_done()
 
+    dm._build_queue.put("SHUTDOWN")
+    ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
 

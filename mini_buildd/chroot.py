@@ -16,13 +16,25 @@ class Chroot(StatusModel):
     source = django.db.models.ForeignKey(Source)
     architecture = django.db.models.ForeignKey(Architecture)
 
+    personality = django.db.models.CharField(max_length=50, editable=False, blank=True, default="",
+                                             help_text="""\
+Schroot 'personality' value (see 'schroot'); for 32bit chroots
+running on a 64bit host, this must be 'linux32'.
+""")
+    personality_override = django.db.models.CharField(max_length=50, blank=True, default="",
+                                                      help_text=""""\
+Leave empty unless you want to override the automated way (via
+an internal mapping). Please report manual overrides so it can
+go to the default mapping.
+""")
+
     class Meta(StatusModel.Meta):
         unique_together = ("source", "architecture")
         ordering = ["source", "architecture"]
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["source", "architecture"]
-        readonly_fields = StatusModel.Admin.readonly_fields
+        readonly_fields = StatusModel.Admin.readonly_fields + [ "personality" ]
 
     def __unicode__(self):
         return "{c}/{a}".format(c=self.source.codename, a=self.architecture.name)
@@ -59,21 +71,6 @@ class Chroot(StatusModel):
     def mbd_get_sudoers_workaround_file(self):
         return os.path.join(self.mbd_get_path(), "sudoers_workaround")
 
-    def mbd_get_personality(self):
-        """
-        On 64bit hosts, 32bit schroots must be configured
-        with a *linux32* personality to work.
-
-        .. todo:: Chroot personalities
-
-           - This may be needed for other 32-bit architectures, too?
-           - We currently assume we build under linux only.
-        """
-        try:
-            return self.PERSONALITIES[self.architecture.name]
-        except:
-            return "linux"
-
     def mbd_get_sequence(self):
         return self.mbd_get_backend().mbd_get_pre_sequence() + [
             (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
@@ -99,6 +96,16 @@ class Chroot(StatusModel):
         else:
             misc.mkdirs(os.path.join(self.mbd_get_path(), setup.CHROOT_LIBDIR))
 
+            # Set personality
+            self.personality = ""
+            if self.personality_override:
+                self.personality = self.personality_override
+            else:
+                try:
+                    self.personality = self.PERSONALITIES[self.architecture.name]
+                except:
+                    self.personality = "linux"
+
             open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
@@ -116,7 +123,7 @@ personality={p}
 
 # Backend specific config
 {b}
-""".format(n=self.mbd_get_name(), p=self.mbd_get_personality(), b=self.mbd_get_backend().mbd_get_schroot_conf()))
+""".format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
             misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
             msg_info(request, "Chroot {c}: Prepared on system".format(c=self))

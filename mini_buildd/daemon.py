@@ -1,4 +1,35 @@
 # -*- coding: utf-8 -*-
+"""
+.. graphviz::
+
+  digraph flow_simple
+  {
+    subgraph cluster_0
+    {
+      style=filled;
+      color=lightgrey;
+      label="mini-buildd";
+      "Packager";
+      "Repository";
+    }
+    subgraph cluster_1
+    {
+      style=filled;
+      color=lightgrey;
+      label="mini-buildd";
+      "Builder";
+      label = "mini-buildd";
+    }
+    "Developer" -> "Packager" [label="Upload source package"];
+    "Packager" -> "Builder" [label="Build request amd64"];
+    "Packager" -> "Builder" [label="Build request i386"];
+    "Builder" -> "Packager" [label="Build result amd64"];
+    "Builder" -> "Packager" [label="Build result i386"];
+    "Packager" -> "Repository" [label="install(amd64, i386)"];
+    "Repository" -> "User" [label="apt"];
+  }
+"""
+
 import os, shutil, re, Queue, contextlib, socket, smtplib, logging
 
 from email.mime.text import MIMEText
@@ -90,7 +121,7 @@ prevent original package maintainers to be spammed.
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
-        self._builds = []
+        self._builder_status = builder.Status()
         self._stray_buildresults = []
 
     def __unicode__(self):
@@ -272,17 +303,17 @@ def run():
 
     # Start ftpd and builder
     ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = misc.run_as_thread(builder.run, build_queue=dm._build_queue, builds=dm._builds, sbuild_jobs=dm.sbuild_jobs)
+    builder_thread = misc.run_as_thread(builder.run, queue=dm._build_queue,
+                                        status=dm._builder_status,
+                                        build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
-        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                 format(len(dm._packages), dm._incoming_queue.qsize()))
-
         event = dm._incoming_queue.get()
         if event == "SHUTDOWN":
-            dm._build_queue.put("SHUTDOWN")
-            ftpd.shutdown()
             break
+
+        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                 format(len(dm._packages), dm._incoming_queue.qsize()))
 
         try:
             def update_packages(build_result):
@@ -310,6 +341,8 @@ def run():
         finally:
             dm._incoming_queue.task_done()
 
+    dm._build_queue.put("SHUTDOWN")
+    ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
 
@@ -357,30 +390,30 @@ class _Daemon():
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
-        packages = "<ul>"
-        for p in self.model._packages:
-            packages += "<li>{p}</li>".format(p=p)
-        packages += "</ul>"
-
-        builds = "<ul>"
-        for b in self.model._builds:
-            builds += "<li>{b}</li>".format(b=b.name)
-        builds += "</ul>"
+        def packages():
+            packages = "<ul>"
+            for p in self.model._packages:
+                packages += "<li>{p}</li>".format(p=p)
+            packages += "</ul>"
+            return packages
 
         return u"""
 <hr/>
 <h3>{s}: {id}</h3>
 
 {c} changes files pending in incoming.
+<br/>
+{b} build requests pending in queue.
 
 <h4>{p} active packages</h4>
 {packages}
-<h4>{p} active builds ({q} pending)</h4>
-{builds}
+
+{builder_status}
 <hr/>
-""".format(s="Running" if self.is_running() else "Stopped", id=self.model, c=self.model._incoming_queue.qsize(),
-           p=len(self.model._packages), packages=packages,
-           b=len(self.model._builds), q=self.model._build_queue.qsize(), builds=builds)
+""".format(s="Running" if self.is_running() else "Stopped", id=self.model,
+           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
+           p=len(self.model._packages), packages=packages(),
+           builder_status=self.model._builder_status.get_html())
 
 def get():
     global _INSTANCE

@@ -1,4 +1,4 @@
-DEBUG = False
+DEBUG = None
 
 # Global directory paths
 HOME_DIR = None

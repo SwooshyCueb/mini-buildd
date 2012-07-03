@@ -20,7 +20,7 @@ def log_init():
      enabled in debug mode.
     """
     pyftpdlib.ftpserver.log = lambda msg: log.debug(msg)
-    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if setup.DEBUG else misc.nop
+    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if "ftpd" in setup.DEBUG else misc.nop
     pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 

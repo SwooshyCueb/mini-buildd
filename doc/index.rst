@@ -69,12 +69,13 @@ Administration
 
 Enter the web application's `configuration section </admin/mini_buildd/>`_.
 
-1. **Add** mirror(s).
-2. **Add** source(s) and **activate**.
-3. **Add** distribution(s).
-4. **Add** at least one repository and **activate**.
-5. **Add** chroot(s) and **activate**.
-6. Configure and **activate** the daemon.
+1. **Prepare** the daemon.
+2. **Add** mirror(s).
+3. **Add** source(s) and **activate**.
+4. **Add** distribution(s).
+5. **Add** at least one repository and **activate**.
+6. **Add** chroot(s) and **activate**.
+7. **Activate** the daemon.
 
 .. note::
    - Adding chroots could take a while -- *stay tuned!*

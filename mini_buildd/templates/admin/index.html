@@ -46,6 +46,19 @@
         <div class="module mb">
             <div id="mb_box">
                 <h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">Mini-buildd</a></h1>
+                <!-- DAEMON -->
+                <div class="inner-box">
+                    <table>
+                        <caption>Daemon</caption>
+                        <tr>
+            {% for model in app.models %}{% if model.name == "Daemon" %}
+                {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
+                {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
+                {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
+            {% endif %}{% endfor %}
+                        </tr>
+                    </table>
+                </div>
                 <!-- MIRRORS AND SOURCES -->
                 <div class="inner-box">
                     <table>
@@ -127,19 +140,12 @@
                         </tr>
                     </table>
                 </div>
-                <!-- DAEMON AND REMOTES -->
+                <!-- REMOTES -->
                 <div class="inner-box">
                     <table>
-                        <caption>Daemon and Remotes</caption>
+                        <caption>Remotes</caption>
                         <tr>
             {% for model in app.models %}{% if model.name == "Remotes" %}
-                {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-                {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-                {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-            {% endif %}{% endfor %}
-                        </tr>
-                        <tr>
-            {% for model in app.models %}{% if model.name == "Daemon" %}
                 {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
                 {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
                 {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}

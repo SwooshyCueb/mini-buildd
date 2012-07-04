@@ -56,6 +56,11 @@
 	font-size: 14px;
 }
 
+#content-main table
+{
+	width: 100%;
+}
+
 #content-main caption
 {
 	font-size: 11px;

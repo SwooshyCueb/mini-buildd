@@ -282,7 +282,7 @@ class Package(object):
 
             for arch, c in self.success.items():
                 c.untar(path=self.repository.mbd_get_incoming_path())
-                self.repository._reprepro.processincoming()
+                self.repository.mbd_reprepro().processincoming()
         except Exception as e:
             log.error(str(e))
             # todo Error!

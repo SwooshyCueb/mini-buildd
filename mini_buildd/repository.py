@@ -372,33 +372,34 @@ ButAutomaticUpgrades: {bau}
 
         return result.getvalue()
 
+    def mbd_reprepro(self):
+        return reprepro.Reprepro(self.mbd_get_path())
+
     def mbd_prepare(self, request):
         ".. todo:: README from 08x; please fix/update."
         from mini_buildd.models import msg_info
 
-        basedir = self.mbd_get_path()
-        msg_info(request, "Preparing repository: {identity} in '{basedir}'".format(identity=self.identity, basedir=basedir))
-
         # Reprepro config
-        misc.mkdirs(os.path.join(basedir, "conf"))
+        misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
         misc.mkdirs(self.mbd_get_incoming_path())
-        open(os.path.join(basedir, "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
-        open(os.path.join(basedir, "conf", "incoming"), 'w').write("""\
+        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
+        open(os.path.join(self.mbd_get_path(), "conf", "incoming"), 'w').write("""\
 Name: INCOMING
 TempDir: /tmp
 IncomingDir: {i}
 Allow: {allow}
 """.format(i=self.mbd_get_incoming_path(), allow=" ".join(self.mbd_uploadable_distributions)))
 
-        open(os.path.join(basedir, "conf", "options"), 'w').write("""\
+        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
 """.format(h=os.path.join(setup.HOME_DIR, ".gnupg")))
 
         # Update all indices (or create on initial install) via reprepro
-        repo = reprepro.Reprepro(basedir)
+        repo = self.mbd_reprepro()
         repo.clearvanished()
         repo.export()
-        msg_info(request, "Prepared reprepro config: {d}".format(d=basedir))
+
+        msg_info(request, "Prepared repository '{i}' in '{b}'".format(i=self.identity, b=self.mbd_get_path()))
 
     def mbd_unprepare(self, request):
         if os.path.exists(self.mbd_get_path()):

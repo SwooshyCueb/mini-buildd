@@ -65,9 +65,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             l.suites.add(s)
             l.save()
 
-        codename = misc.call(["lsb_release", "--short", "--codename"], value_on_error="sid").strip()
-        s, created = models.Source.objects.get_or_create(origin="Debian", codename=codename)
-
     def set_admin_password(self, password):
         """
         This method sets the password for the administrator.

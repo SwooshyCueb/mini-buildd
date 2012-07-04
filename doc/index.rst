@@ -69,7 +69,7 @@ Administration
 
 Enter the web application's `configuration section </admin/mini_buildd/>`_.
 
-1. **Prepare** the daemon.
+1. **Configure** and **prepare** the daemon instance.
 2. **Add** mirror(s).
 3. **Add** source(s) and **activate**.
 4. **Add** distribution(s).
@@ -78,6 +78,7 @@ Enter the web application's `configuration section </admin/mini_buildd/>`_.
 7. **Activate** the daemon.
 
 .. note::
+   - *[Un]prepare* and *[de]activate* actions can be called from a model's list view.
    - Adding chroots could take a while -- *stay tuned!*
    - To *try out* mini-buildd, it is recommended to name the repository "test".
 

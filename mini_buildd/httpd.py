@@ -84,7 +84,8 @@ def run(bind, wsgi_app):
     cherrypy.tree.mount(static_handler, '/static')
 
     # access mini-buildd's log dir
-    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = setup.LOG_DIR)
+    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = setup.LOG_DIR,
+                                                          content_types={"log": "text/plain", "buildlog": "text/plain"})
     cherrypy.tree.mount(static_handler_log, '/log')
 
     # register wsgi app (django)

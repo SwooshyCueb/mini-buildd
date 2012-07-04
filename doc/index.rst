@@ -41,17 +41,17 @@ Known missing features
 
 For 1.0:
 
- - [FEAT] Auth via gnupg (user uploads, buildrequests, buildresults)
- - [FEAT] Remotes support.
- - [REGR] Enhanced reprepro support, integrate 0.8.x pre-build qa-checks: NEW, ORIG.
- - [FEAT] Proper handling of all model stati (chroot, source, repository).
+ - [FEAT] [50%] Auth via gnupg (user uploads, buildrequests, buildresults).
+ - [FEAT] [60%] Support for Remotes.
+ - [REGR] [50%] 0.8.x pre-build qa-checks: NEW, ORIG (via reprepro).
+ - [FEAT] [20%] WebApp: Add package search and propagation feature.
 
 Optional, maybe 1.2:
 
- - [REGR] Auto backports.
+ - [REGR] Auto-backports.
+ - [REGR] Chroot maintentance (apt-update, fs checks).
  - [FEAT] Auto-generated keyring packages.
- - [REFE] Chroot maintentance (apt-update, fs checks)
- - [DEB ] 0.8.x upgradability (not migration)
+ - [DEB ] 0.8.x upgradability (not migration).
  - [FEAT] DB schema upgrade support.
 
 

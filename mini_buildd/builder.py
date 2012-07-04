@@ -91,7 +91,6 @@ def build(breq, jobs, status):
 
        - Upload "internal error" result on exception to requesting mini-buildd.
        - DEB_BUILD_OPTIONS
-       - [.sbuildrc] proper ccache support (was: Add path for ccache)
        - [.sbuildrc] gpg setup
        - schroot bug: chroot-setup-command: uses sudo workaround
        - sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')

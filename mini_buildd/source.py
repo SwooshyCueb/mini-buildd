@@ -149,7 +149,7 @@ class Source(StatusModel):
         self.apt_key_fingerprint = ""
 
     def mbd_get_mirror(self):
-        ".. todo:: Returning first mirror only. Should return preferred one from mirror list."
+        ".. todo:: Returning first mirror only. Should return preferred one from mirror list, and fail if no mirrors found."
         for m in self.mirrors.all():
             return m
 

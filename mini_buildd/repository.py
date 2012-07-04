@@ -376,7 +376,6 @@ ButAutomaticUpgrades: {bau}
         return reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
-        ".. todo:: README from 08x; please fix/update."
         from mini_buildd.models import msg_info
 
         # Reprepro config

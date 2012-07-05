@@ -4,10 +4,11 @@
 
 body
 {
-	margin: 0;
 	color: #333333;
 	font-family: "Lucida Grande","DejaVu Sans","Bitstream Vera Sans", "Verdana", Arial, sans-serif;
 	font-size: 12px;
+	margin: 0;
+	padding: 0;
 }
 
 a:link, a:visited
@@ -35,7 +36,6 @@ a:hover
 #mb_header
 {
 	width: 100%;
-	margin: 0;
 	background: url("/static/images/mb_header_background_gradient.png") repeat-x scroll left top;
 	color: #ffffcc;
 	overflow: hidden;
@@ -98,20 +98,89 @@ a:hover
 
 #mb_content
 {
-	padding-left: 15px;
-	padding-right: 15px;
+	margin: 15px 15px 15px 15px;
 }
+
+#mb_content .box
+{
+	border: 1px solid #aec1c3;
+	margin: 15px 0px 15px 0px;
+}
+
+#mb_content h1.box-caption
+{
+	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
+	background-color: #57859a;
+	color: white;
+	font-size: 14px;
+	font-weight: bold;
+	margin: 0;
+	padding: 2px 0px 3px 5px;
+	border-top: 2px solid #57859a;
+	border-right: 2px solid #57859a;
+}
+
+
+#mb_content h1, #mb_content h2, #mb_content h3, #mb_content h4, #mb_content h5
+{
+	color: #417690;
+	font-weight: bold;
+	padding: 0px 10px 0px 10px;
+}
+
+#mb_content h1 {
+	font-size: 15px;
+}
+
+#mb_content h2 {
+	font-size: 14px;
+}
+
+#mb_content h3 {
+	font-size: 13px;
+}
+
+#mb_content h4 {
+	font-size: 12px;
+}
+
+#mb_content h5 {
+	font-size: 11px;
+}
+
+#mb_content p, #mb_content ul
+{
+	margin: 5px 10px 5px 10px;
+}
+
+#mb_content li
+{
+	margin: 2px 0px 2px 0px;
+}
+
+
+/* todo: do we need this some time? */
+#mb_content caption.box
+{
+	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
+	background-color: #417690;
+	font-size: 11px;
+	padding: 5px 0px 4px 4px;
+}
+
+
 
 /* FOOTER */
 
 #mb_footer
 {
 	width: 100%;
-	border-top: 1px solid #cccccc;
+	border-top: 1px solid #57859a;;
 	padding-left: 15px;
 }
 
 #mb_footer p.version
 {
-	margin-top: 4px;
+	margin: 3px 15px 0 0;
+	color: #888888
 }

@@ -87,6 +87,7 @@ go to the default mapping.
         """
         .. todo:: debootstrap
 
+          - debootstrap rollback fix.
           - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
         """

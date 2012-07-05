@@ -3,44 +3,39 @@
  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
 <html xmlns="http://www.w3.org/1999/xhtml">
-	<head>
-		<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-		<link rel="shortcut icon" href="/static/favicon.ico" />
-		<link rel="stylesheet" type="text/css" href="/static/css/mini-buildd.css" />
-		<title>{% block title %}{% endblock %}</title>
-	</head>
-	<body>
-<!-- Header -->
-<div id="mb_header">
-	<div id="mb_branding">
+  <head>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="shortcut icon" href="/static/favicon.ico" />
+	<link rel="stylesheet" type="text/css" href="/static/css/mini-buildd.css" />
+	<title>{% block title %}{% endblock %}</title>
+  </head>
+  <body>
+	<!-- Header -->
+	<div id="mb_header">
+	  <div id="mb_branding">
 		<a class="image" title="Mini-buildd Home" href="/"><img src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
-	</div>
-	<div id="mb_navigation">
+	  </div>
+	  <div id="mb_navigation">
 		<ul>
-			<li class="first"><a href="/mini_buildd/">Home</a></li>
-			<li><a href="/admin/">Configure</a></li>
-			<li><a href="/manual/index.html">Documentation</a></li>
-			<li><a href="/mini_buildd/download/archive.key">Download Archive Key</a></li>
-			<li><a href="/mini_buildd/download/dput.cf">Download Dput Config</a></li>
-			<li><a href="/log/daemon.log">View daemon log</a></li>
+		  <li class="first"><a href="/mini_buildd/">Home</a></li>
+		  <li><a href="/admin/">Configure</a></li>
+		  <li><a href="/manual/index.html">Documentation</a></li>
+		  <li><a href="/mini_buildd/download/archive.key">Download Archive Key</a></li>
+		  <li><a href="/mini_buildd/download/dput.cf">Download Dput Config</a></li>
+		  <li><a href="/log/daemon.log">View daemon log</a></li>
 		</ul>
+	  </div>
 	</div>
-</div>
-<!-- END Header -->
-<!-- Status -->
-<div id="mb_status">
-	{% mbd_status %}
-</div>
-<!-- END Status -->
-<!-- Content -->
-<div id="mb_content">
-	{% block content %}{% endblock %}
-</div>
-<!-- END Content -->
-<!-- Footer -->
-<div id="mb_footer">
-	<p class="version">mini-buildd {% mbd_version %}</p>
-</div>
-<!-- END Footer -->
-	</body>
+	<!-- END Header -->
+	<!-- Content -->
+	<div id="mb_content">
+	  {% block content %}{% endblock %}
+	</div>
+	<!-- END Content -->
+	<!-- Footer -->
+	<div id="mb_footer">
+	  <p class="version">mini-buildd {% mbd_version %}</p>
+	</div>
+	<!-- END Footer -->
+  </body>
 </html>

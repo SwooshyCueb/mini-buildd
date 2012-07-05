@@ -400,18 +400,16 @@ class _Daemon():
             return packages
 
         return u"""
-<hr/>
-<h3>{s}: {id}</h3>
+<h1>{s}: {id}</h1>
+<ul>
+  <li>{c} changes files pending in incoming.</li>
+  <li>{b} build requests pending in queue.</li>
+</ul>
 
-{c} changes files pending in incoming.
-<br/>
-{b} build requests pending in queue.
-
-<h4>{p} active packages</h4>
+<h2>{p} active packages</h2>
 {packages}
 
 {builder_status}
-<hr/>
 """.format(s="Running" if self.is_running() else "Stopped", id=self.model,
            c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
            p=len(self.model._packages), packages=packages(),

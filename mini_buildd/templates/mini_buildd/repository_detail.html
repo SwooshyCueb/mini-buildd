@@ -1,13 +1,20 @@
-{% extends "mini_buildd/base.html" %}
+{% extends "mini_buildd/index.html" %}
 {% load repository %}
 
 {% block title %}mini-buildd repository {{ object.identity }}{% endblock %}
 
 {% block content %}
 
+<!-- Index -->
+<div id="mb_index_status">
+  <div class="box">
+	<h1 class="box-caption">To be continued...</h1>
+
+<!------------------------------------------------>
+
 <h1>mini-buildd repository {{ object.identity }}</h1>
 
-Architectures: {% repository_architectures object %} <br/>
+<!-- Architectures:  repository_architectures object  <br/> -->
 
 <h2>Distributions</h2>
 
@@ -46,5 +53,10 @@ Sources:
 </li>
 
 </ul>
+
+<!------------------------------------------------>
+
+  </div>
+<div>
 
 {% endblock %}

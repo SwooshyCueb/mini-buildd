@@ -34,8 +34,8 @@ class BaseGnuPG(object):
             t.seek(0)
             misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
-    def verify(self, file):
-        misc.call(self.gpg_cmd + ["--verify", file])
+    def verify(self, signed_file, file=None):
+        misc.call(self.gpg_cmd + ["--verify", signed_file] + [file] if file else [])
 
     def sign(self, file, id):
         signed_file = file + ".signed"

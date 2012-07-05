@@ -53,6 +53,7 @@ Optional, maybe 1.2:
  - [FEAT] Auto-generated keyring packages.
  - [DEB ] 0.8.x upgradability (not migration).
  - [FEAT] DB schema upgrade support.
+ - [IDEA] Custom hooks (prebuild.d source.changes, preinstall.d/arch.changes, postinstall.d/arch.changes)
 
 
 In-code TODOS

@@ -40,6 +40,7 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
         handle_incoming_file(self._mini_buildd_queue, f)
 
 def run(bind, queue):
+    ".. todo:: ftpd load options"
     log_init()
 
     ba = misc.BindArgs(bind)

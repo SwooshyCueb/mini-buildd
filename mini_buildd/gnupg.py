@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 import os, tempfile, shutil, socket, logging
 
+import django.db.models, django.contrib.admin, django.contrib.messages
+
 from mini_buildd import setup, misc
-from mini_buildd.models import msg_info
+from mini_buildd.models import Model, StatusModel, msg_info, msg_warn, msg_error
 
 log = logging.getLogger(__name__)
 
@@ -22,8 +24,12 @@ class BaseGnuPG(object):
     def get_pub_key(self, id):
         return misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=id)])
 
-    def get_fingerprint(self, id):
-        return misc.call(self.gpg_cmd + ["--armor", "--fingerprint={i}".format(i=id)])
+    def pub_keys_info(self):
+        res = []
+        for l in misc.call(self.gpg_cmd + ["--list-public-keys", "--with-fingerprint", "--with-colons"]).splitlines():
+            log.info(l)
+            res.append(l.split(":"))
+        return res
 
     def recv_key(self, keyserver, id):
         return misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", id])
@@ -35,11 +41,13 @@ class BaseGnuPG(object):
             misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
     def verify(self, signed_file, file=None):
-        misc.call(self.gpg_cmd + ["--verify", signed_file] + [file] if file else [])
+        xtra_opts = [file] if file else []
+        misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
 
-    def sign(self, file, id):
+    def sign(self, file, id=None):
+        xtra_opts = ["--local-user={i}".format(i=id)] if id else []
         signed_file = file + ".signed"
-        misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--local-user={i}".format(i=id), "--output={f}".format(f=signed_file), file])
+        misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
         os.rename(signed_file, file)
 
 class GnuPG(BaseGnuPG):
@@ -89,6 +97,58 @@ class TmpGnuPG(BaseGnuPG):
     def __del__(self):
         import shutil
         shutil.rmtree(self.home)
+
+
+class GnuPGPublicKey(StatusModel):
+    key_id = django.db.models.CharField(max_length=100, blank=True, default="",
+                                        help_text="Give a key id here to retrieve the actual key automatically per configured keyserver.")
+    key = django.db.models.TextField(blank=True, default="",
+                                     help_text="ASCII-armored Gnu PG public key. Leave the key id blank if you fill this manually.")
+
+    key_long_id     = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_created     = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_expires     = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_name        = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_fingerprint = django.db.models.CharField(max_length=254, blank=True, default="")
+
+    class Meta(StatusModel.Meta):
+        abstract = True
+        app_label = "mini_buildd"
+
+    class Admin(StatusModel.Admin):
+        search_fields = StatusModel.Admin.search_fields + ["key_id", "key_long_id", "key_name", "key_fingerprint"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
+
+    def __unicode__(self):
+        return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
+
+    def mbd_prepare(self, r):
+        from mini_buildd import daemon
+        gpg = TmpGnuPG()
+        if self.key_id:
+            # Receive key from keyserver
+            gpg.recv_key(daemon.get().model.gnupg_keyserver, self.key_id)
+            self.key = gpg.get_pub_key(self.key_id)
+        elif self.key:
+            gpg.add_key(self.key)
+
+        for key in gpg.pub_keys_info():
+            if key[0] == "pub":
+                self.key_long_id = key[4]
+                self.key_created = key[5]
+                self.key_expires = key[6]
+                self.key_name = key[9]
+            if key[0] == "fpr":
+                self.key_fingerprint = key[9]
+
+    def mbd_unprepare(self, request):
+        self.key_long_id = ""
+        self.key_created = ""
+        self.key_expires = ""
+        self.key_name = ""
+        self.key_fingerprint = ""
+        if self.key_id:
+            self.key = ""
 
 if __name__ == "__main__":
     misc.setup_test_logging()

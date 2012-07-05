@@ -171,6 +171,15 @@ this would mean losing all packages!
     def mbd_deactivate(self, request):
         pass
 
+from mini_buildd import gnupg
+class AptKey(gnupg.GnuPGPublicKey):
+    pass
+django.contrib.admin.site.register(AptKey, AptKey.Admin)
+
+class UserKey(gnupg.GnuPGPublicKey):
+    pass
+django.contrib.admin.site.register(UserKey, UserKey.Admin)
+
 from mini_buildd import source
 class Mirror(source.Mirror):
     pass

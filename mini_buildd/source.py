@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, datetime, socket, urllib, logging
+import os, datetime, socket, tempfile, urllib, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages
 
@@ -7,7 +7,7 @@ import debian.deb822
 
 from mini_buildd import gnupg
 
-from mini_buildd.models import Model, StatusModel, msg_info, msg_warn, msg_error
+from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn, msg_error
 
 log = logging.getLogger(__name__)
 
@@ -25,8 +25,20 @@ class Mirror(Model):
     def __unicode__(self):
         return self.url
 
-    def mbd_download_release(self, dist):
-        return debian.deb822.Release(urllib.urlopen(self.url + "/dists/" + dist + "/Release"))
+    def mbd_download_release(self, dist, gnupg):
+        url = self.url + "/dists/" + dist + "/Release"
+        with tempfile.NamedTemporaryFile(delete=False) as release:
+            log.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
+            release.write(urllib.urlopen(url).read())
+            release.flush()
+            if gnupg:
+                with tempfile.NamedTemporaryFile(delete=False) as signature:
+                    log.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
+                    signature.write(urllib.urlopen(url + ".gpg").read())
+                    signature.flush()
+                    gnupg.verify(signature.name, release.name)
+            release.seek(0)
+            return debian.deb822.Release(release)
 
 django.contrib.admin.site.register(Mirror, Mirror.Admin)
 
@@ -51,11 +63,7 @@ class Source(StatusModel):
                                           help_text="The exact string of the 'Codename' field of the resp. Release file.")
 
     # Apt Secure
-    apt_key_id = django.db.models.CharField(max_length=100, blank=True, default="",
-                                            help_text="Give a key id here to retrieve the actual apt key automatically per configured keyserver.")
-    apt_key = django.db.models.TextField(blank=True, default="",
-                                         help_text="ASCII-armored apt key. Leave the key id blank if you fill this manually.")
-    apt_key_fingerprint = django.db.models.TextField(blank=True, default="")
+    apt_keys = django.db.models.ManyToManyField(AptKey, blank=True)
 
     # Extra
     description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
@@ -73,13 +81,10 @@ class Source(StatusModel):
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "mirrors", "components", "architectures", "description", "apt_key_fingerprint"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "mirrors", "components", "architectures", "description"]
         fieldsets = (
             ("Identity", {
-                    "fields": ("origin", "codename")
-                    }),
-            ("Apt Secure", {
-                    "fields": ("apt_key_id", "apt_key", "apt_key_fingerprint")
+                    "fields": ("origin", "codename", "apt_keys")
                     }),
             ("Extra", {
                     "classes": ("collapse",),
@@ -94,16 +99,14 @@ class Source(StatusModel):
 
     def mbd_prepare(self, request):
         self.mirrors = []
-        if self.apt_key_id:
-            from mini_buildd import daemon
-            tg = gnupg.TmpGnuPG()
-            tg.recv_key(daemon.get().model.gnupg_keyserver, self.apt_key_id)
-            self.apt_key_fingerprint = tg.get_fingerprint(self.apt_key_id)
-            self.apt_key = tg.get_pub_key(self.apt_key_id)
+        gpg = gnupg.TmpGnuPG() if self.apt_keys.all() else None
+        for k in self.apt_keys.all():
+            gpg.add_pub_key(k.key)
+
         for m in Mirror.objects.all():
             try:
                 msg_info(request, "Scanning mirror: {m}".format(m=m))
-                release = m.mbd_download_release(self.codename)
+                release = m.mbd_download_release(self.codename, gpg)
                 origin = release["Origin"]
                 codename = release["Codename"]
 
@@ -145,8 +148,6 @@ class Source(StatusModel):
         self.components = []
         self.architectures = []
         self.description = ""
-        self.apt_key = ""
-        self.apt_key_fingerprint = ""
 
     def mbd_get_mirror(self):
         ".. todo:: Returning first mirror only. Should return preferred one from mirror list, and fail if no mirrors found."

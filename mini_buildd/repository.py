@@ -322,7 +322,8 @@ class Repository(StatusModel):
         from mini_buildd import daemon
         result = daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
-            result += e.source.apt_key
+            for k in e.source.apt_keys.all():
+                result += k.key
         return result
 
     def mbd_get_chroot_setup_script(self, dist):

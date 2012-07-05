@@ -103,8 +103,8 @@ def build(breq, jobs, status):
     build_dir = breq.get_spool_dir()
 
     bres = changes.Changes(os.path.join(build_dir,
-                                       "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                       format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
+                                        "{s}_{v}_mini-buildd-buildresult_{a}.changes".
+                                        format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
 
     if bres.is_new():
         try:

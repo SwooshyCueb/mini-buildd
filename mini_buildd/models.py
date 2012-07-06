@@ -244,10 +244,24 @@ def create_user_profile(sender, instance, created, **kwargs):
 django.db.models.signals.post_save.connect(create_user_profile, sender=django.contrib.auth.models.User)
 
 
-class Remote(Model):
-    host = django.db.models.CharField(primary_key=True, max_length=255, default=socket.getfqdn())
+class Remote(gnupg.GnuPGPublicKey):
+    http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+
+    class Admin(gnupg.GnuPGPublicKey.Admin):
+        search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["http"]
+        readonly_fields = gnupg.GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
 
     def __unicode__(self):
-        return self.host
+        return self.http
 
-django.contrib.admin.site.register(Remote)
+    def mbd_prepare(self, r):
+        url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
+        msg_info(r, "Downloading '{u}'...".format(u=url))
+        self.key = urllib.urlopen(url).read()
+        if self.key:
+            msg_info(r, "Remote key integrated -- please check key manually before activation!")
+        else:
+            raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
+        super(Remote, self).mbd_prepare(r)
+
+django.contrib.admin.site.register(Remote, Remote.Admin)

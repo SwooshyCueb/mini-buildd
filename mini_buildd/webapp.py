@@ -39,6 +39,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             SECRET_KEY = self.get_django_secret_key(setup.HOME_DIR),
             ROOT_URLCONF = 'mini_buildd.root_urls',
             STATIC_URL = "/static/",
+            AUTH_PROFILE_MODULE = 'mini_buildd.UserProfile',
             INSTALLED_APPS = (
                 'django.contrib.auth',
                 'django.contrib.contenttypes',

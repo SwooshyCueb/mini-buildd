@@ -43,7 +43,7 @@ still keeps the logic where it belongs.
 
 import os, datetime, socket, urllib, logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages, django.core.exceptions, django.template.response
+import django.db.models, django.contrib.admin, django.contrib.auth.models, django.db.models.signals, django.contrib.messages, django.core.exceptions, django.template.response
 
 import debian.deb822
 
@@ -220,6 +220,28 @@ class LoopLVMChroot(chroot.LoopLVMChroot):
 from mini_buildd import daemon
 class Daemon(daemon.Daemon):
     pass
+
+
+class UserProfile(gnupg.GnuPGPublicKey):
+    user = django.db.models.OneToOneField(django.contrib.auth.models.User)
+
+    class Admin(gnupg.GnuPGPublicKey.Admin):
+        search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["user"]
+        readonly_fields = gnupg.GnuPGPublicKey.Admin.readonly_fields + ["user"]
+
+    def __unicode__(self):
+        return "User profile for '{u}'".format(u=self.user)
+
+    # mini_buildd extra fields
+    may_upload_to = django.db.models.ManyToManyField(Repository)
+
+django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
+
+# Automatically create a user profile with every user that is created
+def create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+django.db.models.signals.post_save.connect(create_user_profile, sender=django.contrib.auth.models.User)
 
 
 class Remote(Model):

@@ -181,7 +181,7 @@ class UserKey(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(UserKey, UserKey.Admin)
 
 from mini_buildd import source
-class Mirror(source.Mirror):
+class Archive(source.Archive):
     pass
 class Architecture(source.Architecture):
     pass

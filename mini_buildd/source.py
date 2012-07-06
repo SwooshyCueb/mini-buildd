@@ -11,10 +11,10 @@ from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn, m
 
 log = logging.getLogger(__name__)
 
-class Mirror(Model):
+class Archive(Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
                                     default="http://ftp.debian.org/debian",
-                                    help_text="The URL of an apt mirror/repository")
+                                    help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
 
     class Meta:
         ordering = ["url"]
@@ -40,7 +40,7 @@ class Mirror(Model):
             release.seek(0)
             return debian.deb822.Release(release)
 
-django.contrib.admin.site.register(Mirror, Mirror.Admin)
+django.contrib.admin.site.register(Archive, Archive.Admin)
 
 class Architecture(Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
@@ -71,7 +71,7 @@ class Source(StatusModel):
     codeversion_override = django.db.models.CharField(
         max_length=50, blank=True, default="",
         help_text="Leave empty unless the automated way (via the Release file's 'Version' field) is broken. The codeversion is only used for base sources.")
-    mirrors = django.db.models.ManyToManyField(Mirror, null=True)
+    archives = django.db.models.ManyToManyField(Archive, null=True)
     components = django.db.models.ManyToManyField(Component, null=True)
     architectures = django.db.models.ManyToManyField(Architecture, null=True)
 
@@ -81,38 +81,38 @@ class Source(StatusModel):
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "mirrors", "components", "architectures", "description"]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
             ("Identity", {
                     "fields": ("origin", "codename", "apt_keys")
                     }),
             ("Extra", {
                     "classes": ("collapse",),
-                    "fields": ("description", "codeversion", "codeversion_override", "mirrors", "components", "architectures")
+                    "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")
                     }),)
 
     def __unicode__(self):
-        return u"{i}: {d} ({m} mirrors)".format(i=self.mbd_id(), d=self.description, m=len(self.mirrors.all()))
+        return u"{i}: {d} ({m} archives)".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()))
 
     def mbd_id(self):
         return "{o} '{c}'".format(o=self.origin, c=self.codename)
 
     def mbd_prepare(self, request):
-        self.mirrors = []
+        self.archives = []
         gpg = gnupg.TmpGnuPG() if self.apt_keys.all() else None
         for k in self.apt_keys.all():
             gpg.add_pub_key(k.key)
 
-        for m in Mirror.objects.all():
+        for m in Archive.objects.all():
             try:
-                msg_info(request, "Scanning mirror: {m}".format(m=m))
+                msg_info(request, "Scanning archive: {m}".format(m=m))
                 release = m.mbd_download_release(self.codename, gpg)
                 origin = release["Origin"]
                 codename = release["Codename"]
 
                 if self.origin == origin and self.codename == codename:
-                    msg_info(request, "Mirror found: {m}".format(m=m))
-                    self.mirrors.add(m)
+                    msg_info(request, "Archive found: {m}".format(m=m))
+                    self.archives.add(m)
                     self.description = release["Description"]
 
                     # Set codeversion
@@ -138,25 +138,25 @@ class Source(StatusModel):
                             msg_info(request, "Auto-adding new component: {c}".format(c=c))
                         self.components.add(newComponent)
             except Exception as e:
-                msg_warn(request, "Mirror '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
+                msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
 
-        if not len(self.mirrors.all()):
-            raise Exception("{s}: No mirrors found (please add at least one)".format(s=self))
+        if not len(self.archives.all()):
+            raise Exception("{s}: No archives found (please add at least one)".format(s=self))
 
     def mbd_unprepare(self, request):
-        self.mirrors = []
+        self.archives = []
         self.components = []
         self.architectures = []
         self.description = ""
 
-    def mbd_get_mirror(self):
-        ".. todo:: Returning first mirror only. Should return preferred one from mirror list, and fail if no mirrors found."
-        for m in self.mirrors.all():
+    def mbd_get_archive(self):
+        ".. todo:: Returning first archive only. Should return preferred one from archive list, and fail if no archives found."
+        for m in self.archives.all():
             return m
 
     def mbd_get_apt_line(self):
         ".. todo:: Merge components as configured per repo."
-        m = self.mbd_get_mirror()
+        m = self.mbd_get_archive()
         components=""
         for c in self.components.all():
             components += c.name + " "

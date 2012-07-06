@@ -43,7 +43,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                 if sources:
                     for value in sources.split(","):
                         # Parsing source line
-                        mirror = value.split(" ")[0]
+                        archive = value.split(" ")[0]
 
                         codename = value.split(" ")[1]
 
@@ -63,16 +63,16 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             # codename from apt line seems to be dist-backports; assuming Debian Backports
                             origin="Debian Backports"
 
-                        # "Mirror"
-                        def Mirror():
-                            return models.Mirror(url=mirror)
-                        tryImport(Mirror)
+                        # "Archive"
+                        def Archive():
+                            return models.Archive(url=archive)
+                        tryImport(Archive)
 
                         # "Source"
                         def Source():
                             no = models.Source(codename=codename, origin=origin)
                             no.save()
-                            no.mirrors = models.Mirror.objects.filter(url=mirror)
+                            no.archives = models.Archive.objects.filter(url=archive)
                             return no
                         tryImport(Source)
 

@@ -74,7 +74,7 @@ go to the default mapping.
     def mbd_get_sequence(self):
         return self.mbd_get_backend().mbd_get_pre_sequence() + [
             (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
-              self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_mirror().url],
+              self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_archive().url],
              ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
 
             (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],

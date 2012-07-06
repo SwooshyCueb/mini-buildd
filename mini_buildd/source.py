@@ -27,12 +27,12 @@ class Mirror(Model):
 
     def mbd_download_release(self, dist, gnupg):
         url = self.url + "/dists/" + dist + "/Release"
-        with tempfile.NamedTemporaryFile(delete=False) as release:
+        with tempfile.NamedTemporaryFile() as release:
             log.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
             release.flush()
             if gnupg:
-                with tempfile.NamedTemporaryFile(delete=False) as signature:
+                with tempfile.NamedTemporaryFile() as signature:
                     log.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
                     signature.write(urllib.urlopen(url + ".gpg").read())
                     signature.flush()

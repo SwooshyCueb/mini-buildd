@@ -53,7 +53,7 @@
                         <tr>
             {% for model in app.models %}{% if model.name == "Daemon" %}
                 {% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-                {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
+                <!-- {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %} -->
                 {% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
             {% endif %}{% endfor %}
                         </tr>

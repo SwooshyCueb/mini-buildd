@@ -130,7 +130,7 @@ class GnuPGPublicKey(StatusModel):
             gpg.recv_key(daemon.get().model.gnupg_keyserver, self.key_id)
             self.key = gpg.get_pub_key(self.key_id)
         elif self.key:
-            gpg.add_key(self.key)
+            gpg.add_pub_key(self.key)
 
         for key in gpg.pub_keys_info():
             if key[0] == "pub":

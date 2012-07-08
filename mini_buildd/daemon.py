@@ -220,6 +220,7 @@ class Package(object):
         self.pid = changes.get_pkg_id()
         try:
             self.repository, self.dist, self.suite = changes.get_repository()
+            self.changes.authenticate_against_users(self.repository)
             self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
             self.success = {}
             self.failed = {}

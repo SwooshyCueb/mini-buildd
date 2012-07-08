@@ -3,7 +3,7 @@ import os, stat, logging, tarfile, ftplib, re, contextlib
 
 import debian.deb822
 
-from mini_buildd import setup, misc
+from mini_buildd import setup, misc, gnupg
 
 log = logging.getLogger(__name__)
 
@@ -98,8 +98,36 @@ class Changes(debian.deb822.Changes):
                               "name": os.path.basename(fn)})
 
     def save(self):
-        log.info("Saving changes: {f}".format(f=self._file_path))
-        self.dump(fd=open(self._file_path, "w+"))
+        try:
+            log.info("Saving changes: {f}".format(f=self._file_path))
+            self.dump(fd=open(self._file_path, "w+"))
+            log.info("Signing changes: {f}".format(f=self._file_path))
+            from mini_buildd import daemon
+            daemon.get().model._gnupg.sign(self._file_path)
+        except:
+            # Existence of the file name is used as flag
+            if os.path.exists(self._file_path):
+                os.remove(self._file_path)
+            raise
+
+    def authenticate_against_remotes(self):
+        ".. todo:: Actually authenticate against remotes"
+        from mini_buildd import daemon
+        daemon.get().model._gnupg.verify(self._file_path)
+
+    def authenticate_against_users(self, repository):
+        if repository.allow_unauthenticated_uploads:
+            log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self._file_name))
+        else:
+            import django.contrib.auth.models
+            gpg = gnupg.TmpGnuPG()
+            for u in django.contrib.auth.models.User.objects.all():
+                p = u.get_profile()
+                for r in p.may_upload_to.all():
+                    if r.identity == repository.identity:
+                        gpg.add_pub_key(p.key)
+                        log.info(u"Uploader key added for '{r}': {k}: {n}".format(r=repository, k=p.key_long_id, n=p.key_name))
+            gpg.verify(self._file_path)
 
     def upload(self, host="localhost", port=8067):
         upload = os.path.splitext(self._file_path)[0] + ".upload"

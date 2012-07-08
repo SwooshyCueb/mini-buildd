@@ -226,8 +226,11 @@ class Repository(StatusModel):
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)
 
+    allow_unauthenticated_uploads = django.db.models.BooleanField(default=False,
+                                                                  help_text="Allow unauthenticated user uploads.")
+
     notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
-                                              help_text="Arbitary list of email addresses to notify.")
+                                              help_text="Arbitrary list of email addresses to notify.")
     notify_changed_by = django.db.models.BooleanField(default=False,
                                                       help_text="Notify the address in the 'Changed-By' field of the uploaded changes file.")
     notify_maintainer = django.db.models.BooleanField(default=False,
@@ -241,7 +244,7 @@ class Repository(StatusModel):
     class Admin(StatusModel.Admin):
         fieldsets = (
             ("Basics", {
-                    "fields": ("identity", "layout", "distributions")
+                    "fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads")
                     }),
             ("Notify and extra options", {
                     "fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")

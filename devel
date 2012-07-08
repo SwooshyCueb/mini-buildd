@@ -17,6 +17,29 @@ _head()
 	printf "\n=> ${*}\n"
 }
 
+export PYTHONPATH="$(dirname $0)"
+
+mbd_pychecker()
+{
+	pychecker mini-buildd $(find mini_buildd/ -name "*.py")
+}
+
+mbd_pyflakes()
+{
+	pyflakes mini-buildd mini_buildd/
+}
+
+mbd_pylint()
+{
+	pylint mini-buildd mini_buildd/
+}
+
+mbd_pychecks()
+{
+	for t in pychecker pyflakes pylint; do
+		mbd_${t}
+	done
+}
 
 mbd_purge()
 {

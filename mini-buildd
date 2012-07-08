@@ -13,55 +13,56 @@ import logging.handlers
 import mini_buildd
 import mini_buildd.misc
 import mini_buildd.setup
+import mini_buildd.httpd
 
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
 
-class Main():
-    def parse_args(self):
-        parser = argparse.ArgumentParser(prog="mini-buildd",
-                                         description="mini build daemon.",
-                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+def parse_args():
+    parser = argparse.ArgumentParser(prog="mini-buildd",
+                                     description="mini build daemon.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
+    parser.add_argument('--version', action='version', version=mini_buildd.__version__)
 
-        parser.add_argument("-f", "--foreground", action='store_true',
-                            help="Don't daemonize, log to console.")
-        parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
-                            help="Web Server IP/Hostname and port to bind to.")
+    parser.add_argument("-f", "--foreground", action='store_true',
+                        help="Don't daemonize, log to console.")
+    parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
+                        help="Web Server IP/Hostname and port to bind to.")
 
-        group_log = parser.add_argument_group("Logging")
-        group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
-                               help="Lower log level. Give twice for max logs.")
-        group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
-                               help="Tighten log level. Give twice for min logs.")
-        group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
-                               help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
+    group_log = parser.add_argument_group("Logging")
+    group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
+                           help="Lower log level. Give twice for max logs.")
+    group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
+                           help="Tighten log level. Give twice for min logs.")
+    group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
+                           help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
 main,django,ftpd,build,sbuild")
-        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
-                               help="Comma-separated list of loggers (file,syslog,console) to use.")
+    group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
+                           help="Comma-separated list of loggers (file,syslog,console) to use.")
 
-        group_conf = parser.add_argument_group("Daemon configuration")
-        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
-                                help="Run with this home dir. The only use case to change this for debugging, really.")
+    group_conf = parser.add_argument_group("Daemon configuration")
+    group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
+                            help="Run with this home dir. The only use case to change this for debugging, really.")
 
-        group_db = parser.add_argument_group("Database")
-        group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
-                              help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-        group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
-                              help="Import FILE to django database and exit; must be an absolute path name.') \
+    group_db = parser.add_argument_group("Database")
+    group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
+                          help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
+    group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
+                          help="Import FILE to django database and exit; must be an absolute path name.') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
-        group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
-                              help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
+    group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
+                          help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 
-        p=parser.parse_args()
+    args = parser.parse_args()
 
-        # Arguments that imply foreground mode
-        if p.set_admin_password or p.loaddata or p.dumpdata:
-            p.foreground = True
+    # Arguments that imply foreground mode
+    if args.set_admin_password or args.loaddata or args.dumpdata:
+        args.foreground = True
 
-        return p
+    return args
 
+class Main():
     def _setup(self):
         # Set global variables that really make no sense to
         # propagate through
@@ -77,8 +78,6 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
         mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
         mini_buildd.setup.SPOOL_DIR   = os.path.join(vardir, "spool")
-
-        self.LOG_FILE = os.path.join(mini_buildd.setup.LOG_DIR, "mini_buildd.daemon.log")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
@@ -96,26 +95,26 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         if self._args.foreground:
             loggers.append("console")
 
-        log_format="%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
+        log_format = "%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
 
         # Clear all loggers now; this will remove the
         # preliminary console logger
         log.handlers = []
 
         if "file" in loggers:
-            h  = logging.FileHandler(self.LOG_FILE)
-            h.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(h)
+            fh = logging.FileHandler(os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log"))
+            fh.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(fh)
 
         if "syslog" in loggers:
-            h = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
-            h.setFormatter(logging.Formatter(log_format))
-            log.addHandler(h)
+            sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+            sh.setFormatter(logging.Formatter(log_format))
+            log.addHandler(sh)
 
         if "console" in loggers:
-            h = logging.StreamHandler()
-            h.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(h)
+            ch = logging.StreamHandler()
+            ch.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(ch)
 
         # Finally, set log level
         loglevel = logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
@@ -132,16 +131,17 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             os.environ[k] = pwd.getpwuid(os.getuid())[0]
 
     def __init__(self):
-        self._args = self.parse_args()
+        self._args = parse_args()
         # Daemonize early
         if not self._args.foreground:
             daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()
         self._setup()
         self._setup_logging()
         self._setup_environment()
+        self._status = "RESTART"
 
     def on_signal(self, signum=-1, frame=-1):
-        log.info("Got signal: %s" % signum)
+        log.info("Got signal: {s} ({f})".format(s=signum, f=frame))
         if signum == signal.SIGTERM or signum == signal.SIGINT:
             self._status = "SHUTDOWN"
         elif signum == signal.SIGHUP:
@@ -159,38 +159,37 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
-            from mini_buildd import daemon, httpd
-
             # Shutdown on SIGTERM or SIGINT
-            self._status = "RESTART"
             signal.signal(signal.SIGTERM, self.on_signal)
             signal.signal(signal.SIGINT, self.on_signal)
             signal.signal(signal.SIGHUP, self.on_signal)
 
+            import mini_buildd.daemon
+
             # Get one global daemon instance
-            daemon = daemon._Daemon()
+            d = mini_buildd.daemon._Daemon()
 
             # Start httpd webapp
-            mini_buildd.misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
+            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    daemon.restart()
+                    d.restart()
                 else:
                     break
 
-            daemon.stop()
-            httpd.exit()
+            d.stop()
+            mini_buildd.httpd.exit()
 
 # Main
 try:
     Main().run()
 except Exception as e:
-    s="mini-buildd FAILED: {e}".format(e=str(e))
+    S = "mini-buildd FAILED: {e}".format(e=str(e))
     if "main" in mini_buildd.setup.DEBUG:
-        log.exception(s)
+        log.exception(S)
     else:
-        sys.exit(s)
+        sys.exit(S)
 except SystemExit as e:
     sys.exit(e.code)

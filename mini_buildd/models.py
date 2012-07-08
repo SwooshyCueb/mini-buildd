@@ -45,10 +45,10 @@ import urllib
 import logging
 
 import django.db.models
+import django.contrib.messages
 import django.contrib.admin
 import django.contrib.auth.models
 import django.db.models.signals
-import django.contrib.messages
 import django.core.exceptions
 import django.template.response
 
@@ -229,6 +229,7 @@ class Daemon(daemon.Daemon):
 
 class UserProfile(gnupg.GnuPGPublicKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
+    may_upload_to = django.db.models.ManyToManyField(repository.Repository)
 
     class Admin(gnupg.GnuPGPublicKey.Admin):
         search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["user"]
@@ -236,9 +237,6 @@ class UserProfile(gnupg.GnuPGPublicKey):
 
     def __unicode__(self):
         return "User profile for '{u}'".format(u=self.user)
-
-    # mini_buildd extra fields
-    may_upload_to = django.db.models.ManyToManyField(Repository)
 
 django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
 

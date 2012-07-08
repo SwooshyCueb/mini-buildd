@@ -26,16 +26,23 @@ pyenv()
 	export DJANGO_SETTINGS_MODULE="${DJSETTINGS}"
 }
 
-mbd_pychecker()
+mbd_pydoctests()
 {
 	pyenv
-	pychecker mini-buildd $(find mini_buildd/ -name "*.py")
+	python -m doctest -v mini_buildd/misc.py
+	python -m doctest -v mini_buildd/gnupg.py
 }
 
 mbd_pyflakes()
 {
 	pyenv
 	pyflakes mini-buildd mini_buildd/
+}
+
+mbd_pychecker()
+{
+	pyenv
+	pychecker mini-buildd $(find mini_buildd/ -name "*.py")
 }
 
 mbd_pylint()
@@ -46,9 +53,11 @@ mbd_pylint()
 
 mbd_pychecks()
 {
-	for t in pychecker pyflakes pylint; do
+	local tests="pyflakes pydoctests"
+	for t in ${tests}; do
 		mbd_${t}
 	done
+	printf "\nOK. Tests passed: %s\n" "${tests}"
 }
 
 mbd_purge()

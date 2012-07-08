@@ -17,20 +17,30 @@ _head()
 	printf "\n=> ${*}\n"
 }
 
-export PYTHONPATH="$(dirname $0)"
+PYPATH="$(readlink -f $(dirname $0))"
+DJSETTINGS="doc.django_settings"
+
+pyenv()
+{
+	export PYTHONPATH="${PYPATH}"
+	export DJANGO_SETTINGS_MODULE="${DJSETTINGS}"
+}
 
 mbd_pychecker()
 {
+	pyenv
 	pychecker mini-buildd $(find mini_buildd/ -name "*.py")
 }
 
 mbd_pyflakes()
 {
+	pyenv
 	pyflakes mini-buildd mini_buildd/
 }
 
 mbd_pylint()
 {
+	pyenv
 	pylint mini-buildd mini_buildd/
 }
 

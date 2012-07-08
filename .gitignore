@@ -10,3 +10,4 @@
 /debian/mini-buildd.debhelper.log
 /debian/mini-buildd.substvars
 /debian/files
+/mini_buildd/fixtures/local.*.json

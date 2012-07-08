@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import sys, os, shutil, errno, subprocess, threading, multiprocessing, tempfile, hashlib, logging
+import os, shutil, errno, subprocess, threading, multiprocessing, tempfile, hashlib, logging
 
 log = logging.getLogger(__name__)
 

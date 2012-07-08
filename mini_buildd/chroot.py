@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, shutil, re, glob, tempfile, logging
+import os, shutil, glob, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages
 
@@ -7,7 +7,7 @@ from mini_buildd import setup, misc
 
 log = logging.getLogger(__name__)
 
-from mini_buildd.models import StatusModel, msg_info, msg_warn, msg_error
+from mini_buildd.models import StatusModel, msg_info
 
 class Chroot(StatusModel):
     PERSONALITIES = { 'i386': 'linux32' }
@@ -91,7 +91,6 @@ go to the default mapping.
           - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
         """
-        from mini_buildd.models import msg_info
         if self.status >= self.STATUS_PREPARED:
             msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
@@ -130,7 +129,6 @@ personality={p}
             msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
     def mbd_unprepare(self, request):
-        from mini_buildd.models import msg_info
         misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Chroot {c}: Removed from system".format(c=self))

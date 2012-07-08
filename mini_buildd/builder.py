@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import os, time, datetime, shutil, re, subprocess, logging
 
-import django.db, django.core.exceptions
-
 from mini_buildd import setup, changes, misc
 
 log = logging.getLogger(__name__)

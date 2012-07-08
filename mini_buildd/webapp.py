@@ -3,7 +3,7 @@ import os, logging, random
 
 import django.conf, django.core.handlers.wsgi, django.core.management
 
-from mini_buildd import setup, misc, compat08x
+from mini_buildd import setup, compat08x
 
 log = logging.getLogger(__name__)
 

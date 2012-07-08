@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import StringIO, os, shutil, re, datetime, socket, logging
+import StringIO, os, shutil, re, socket, logging
 
 import django.db, django.core.exceptions
 
 from mini_buildd import setup, misc, reprepro
 
-from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info
 
 log = logging.getLogger(__name__)
 
@@ -380,8 +380,6 @@ ButAutomaticUpgrades: {bau}
         return reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
-        from mini_buildd.models import msg_info
-
         # Reprepro config
         misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
         misc.mkdirs(self.mbd_get_incoming_path())

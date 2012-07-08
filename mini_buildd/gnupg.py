@@ -4,7 +4,7 @@ import os, tempfile, shutil, socket, logging
 import django.db.models, django.contrib.admin, django.contrib.messages
 
 from mini_buildd import setup, misc
-from mini_buildd.models import Model, StatusModel, msg_info, msg_warn, msg_error
+from mini_buildd.models import StatusModel, msg_info
 
 log = logging.getLogger(__name__)
 

@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import imp, time, os, logging
+import imp, os, logging
 
 log = logging.getLogger(__name__)
 
@@ -26,9 +26,6 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
             archs = conf08x.mbd_archs.split(", ")
 
             for a in archs:
-                v="mbd_bldhost_" + a
-                host = getattr(conf08x, v)
-
                 # "Architecture"
                 def Architecture():
                     return models.Architecture(arch=a)

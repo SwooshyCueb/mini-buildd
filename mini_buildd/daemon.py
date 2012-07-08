@@ -30,7 +30,7 @@
   }
 """
 
-import os, shutil, re, Queue, contextlib, socket, smtplib, logging
+import os, shutil, re, Queue, socket, smtplib, logging
 
 from email.mime.text import MIMEText
 import email.utils
@@ -39,7 +39,7 @@ import django.db, django.core.exceptions, django.contrib.auth.models
 
 from mini_buildd import misc, changes, gnupg, ftpd, builder
 
-from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info, msg_warn, msg_error
+from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
 
 log = logging.getLogger(__name__)
 
@@ -418,6 +418,7 @@ class _Daemon():
            p=len(self.model._packages), packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
+_INSTANCE = None
 def get():
     global _INSTANCE
     assert(_INSTANCE)

@@ -1,6 +1,6 @@
 from django import template
 
-from mini_buildd import __version__, daemon
+from mini_buildd import __version__
 
 register = template.Library()
 

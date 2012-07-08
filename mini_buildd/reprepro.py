@@ -3,9 +3,9 @@
 Run reprepro commands.
 """
 
-import os, logging
+import logging
 
-from mini_buildd import misc, setup
+from mini_buildd import misc
 
 log = logging.getLogger(__name__)
 

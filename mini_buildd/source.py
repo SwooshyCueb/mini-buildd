@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, datetime, socket, tempfile, urllib, logging
+import tempfile, urllib, logging
 
 import django.db.models, django.contrib.admin, django.contrib.messages
 
@@ -7,7 +7,7 @@ import debian.deb822
 
 from mini_buildd import gnupg
 
-from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn, msg_error
+from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
 
 log = logging.getLogger(__name__)
 

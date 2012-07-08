@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 DEBUG = None
 
 # Global directory paths

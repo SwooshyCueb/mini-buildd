@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import django.views.static
 import django.views.generic
 import django.views.generic.list_detail

@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import django
 
 register = django.template.Library()

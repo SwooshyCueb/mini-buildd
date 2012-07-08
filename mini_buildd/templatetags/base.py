@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import django
 
 from mini_buildd import __version__

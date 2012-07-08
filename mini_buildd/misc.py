@@ -46,15 +46,15 @@ def fromdos(s):
 
 def run_as_thread(call=None, daemon=False, **kwargs):
     def run(**kwargs):
-        id = call.__module__ + "." + call.__name__
+        tid = call.__module__ + "." + call.__name__
         try:
-            log.info("{i}: Starting...".format(i=id))
+            log.info("{i}: Starting...".format(i=tid))
             call(**kwargs)
-            log.info("{i}: Finished.".format(i=id))
+            log.info("{i}: Finished.".format(i=tid))
         except Exception as e:
-            log.exception("{i}: Exception: {e}".format(i=id, e=str(e)))
+            log.exception("{i}: Exception: {e}".format(i=tid, e=str(e)))
         except:
-            log.exception("{i}: Non-standard exception".format(i=id))
+            log.exception("{i}: Non-standard exception".format(i=tid))
 
     thread = threading.Thread(target=run, kwargs=kwargs)
     thread.setDaemon(daemon)

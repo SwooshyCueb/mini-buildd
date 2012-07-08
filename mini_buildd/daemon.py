@@ -30,12 +30,19 @@
   }
 """
 
-import os, shutil, re, Queue, socket, smtplib, logging
-
-from email.mime.text import MIMEText
+import os
+import shutil
+import re
+import Queue
+import socket
+import smtplib
+import email.mime.text
 import email.utils
+import logging
 
-import django.db, django.core.exceptions, django.contrib.auth.models
+import django.db
+import django.core.exceptions
+import django.contrib.auth.models
 
 from mini_buildd import misc, changes, gnupg, ftpd, builder
 
@@ -229,7 +236,7 @@ class Package(object):
         except Exception as e:
             subject = u"DISCARD: {p}: {e}".format(p=self.pid, e=str(e))
             log.warn(subject)
-            body = MIMEText(self.changes.dump(), _charset="UTF-8")
+            body = email.mime.text.MIMEText(self.changes.dump(), _charset="UTF-8")
             get().model.mbd_notify(subject, body)
             raise
 
@@ -251,7 +258,7 @@ class Package(object):
                                                          os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, f))
 
         results += u"\n"
-        body = MIMEText(results + self.changes.dump(), _charset="UTF-8")
+        body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
 
         get().model.mbd_notify(
             "{s}: {p} ({f}/{r} failed)".format(

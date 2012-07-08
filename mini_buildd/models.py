@@ -41,9 +41,16 @@ conflicts with method names form the django model's class, but
 still keeps the logic where it belongs.
 """
 
-import urllib, logging
+import urllib
+import logging
 
-import django.db.models, django.contrib.admin, django.contrib.auth.models, django.db.models.signals, django.contrib.messages, django.core.exceptions, django.template.response
+import django.db.models
+import django.contrib.admin
+import django.contrib.auth.models
+import django.db.models.signals
+import django.contrib.messages
+import django.core.exceptions
+import django.template.response
 
 log = logging.getLogger(__name__)
 

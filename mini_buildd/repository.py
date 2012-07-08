@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-import StringIO, os, shutil, re, socket, logging
+import StringIO
+import os
+import shutil
+import re
+import socket
+import logging
 
-import django.db, django.core.exceptions
+import django.db
+import django.core.exceptions
 
 from mini_buildd import setup, misc, reprepro
 

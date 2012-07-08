@@ -1,5 +1,11 @@
 # -*- coding: utf-8 -*-
-import os, time, datetime, shutil, re, subprocess, logging
+import os
+import time
+import datetime
+import shutil
+import re
+import subprocess
+import logging
 
 from mini_buildd import setup, changes, misc
 

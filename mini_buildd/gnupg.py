@@ -1,7 +1,13 @@
 # -*- coding: utf-8 -*-
-import os, tempfile, shutil, socket, logging
+import os
+import tempfile
+import shutil
+import socket
+import logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages
+import django.db.models
+import django.contrib.admin
+import django.contrib.messages
 
 from mini_buildd import setup, misc
 from mini_buildd.models import StatusModel, msg_info

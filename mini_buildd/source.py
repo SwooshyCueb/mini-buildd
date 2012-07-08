@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
-import tempfile, urllib, logging
+import tempfile
+import urllib
+import logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages
+import django.db.models
+import django.contrib.admin
+import django.contrib.messages
 
 import debian.deb822
 

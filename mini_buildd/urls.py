@@ -1,4 +1,7 @@
-import django.views.static, django.views.generic, django.views.generic.list_detail, django.conf.urls.defaults
+import django.views.static
+import django.views.generic
+import django.views.generic.list_detail
+import django.conf.urls.defaults
 
 from mini_buildd import views, models
 

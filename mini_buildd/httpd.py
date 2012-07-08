@@ -1,7 +1,9 @@
 # coding: utf-8
 import logging
+
 import cherrypy
 import django
+
 from mini_buildd import misc, setup
 
 log = logging.getLogger(__name__)

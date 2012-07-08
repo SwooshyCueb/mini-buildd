@@ -1,8 +1,8 @@
-from django import template
+import django
 
 from mini_buildd import __version__
 
-register = template.Library()
+register = django.template.Library()
 
 @register.simple_tag
 def mbd_version():

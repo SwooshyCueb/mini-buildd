@@ -1,8 +1,8 @@
-from django import template
+import django
 
 from mini_buildd import daemon, models
 
-register = template.Library()
+register = django.template.Library()
 
 @register.simple_tag
 def mbd_status():

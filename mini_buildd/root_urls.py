@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-import django.conf.urls.defaults, django.views.generic.simple, django.contrib, django.contrib.staticfiles.urls
+import django.conf.urls.defaults
+import django.views.generic.simple
+import django.contrib
+import django.contrib.staticfiles.urls
 
 django.contrib.admin.autodiscover()
 

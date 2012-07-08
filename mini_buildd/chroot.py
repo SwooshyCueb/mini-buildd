@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
-import os, shutil, glob, logging
+import os
+import shutil
+import glob
+import logging
 
-import django.db.models, django.contrib.admin, django.contrib.messages
+import django.db.models
+import django.contrib.admin
+import django.contrib.messages
 
 from mini_buildd import setup, misc
 

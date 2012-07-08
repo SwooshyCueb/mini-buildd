@@ -216,6 +216,7 @@ class Package(object):
     INCOMPLETE = 1
 
     def __init__(self, changes):
+        """.. todo:: Remove discarded from incoming. """
         self.changes = changes
         self.pid = changes.get_pkg_id()
         try:
@@ -226,9 +227,10 @@ class Package(object):
             self.failed = {}
             self.request_missing_builds()
         except Exception as e:
-            log.warn("Initial QA failed in changes: {e}: ".format(e=str(e)))
+            subject = u"DISCARD: {p}: {e}".format(p=self.pid, e=str(e))
+            log.warn(subject)
             body = MIMEText(self.changes.dump(), _charset="UTF-8")
-            get().model.mbd_notify("DISCARD: {p}: {e}".format(p=self.pid, e=str(e)), body)
+            get().model.mbd_notify(subject, body)
             raise
 
     def request_missing_builds(self):

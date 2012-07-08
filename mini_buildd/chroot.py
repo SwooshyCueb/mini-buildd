@@ -8,7 +8,8 @@ import django.db.models
 import django.contrib.admin
 import django.contrib.messages
 
-from mini_buildd import setup, misc
+import mini_buildd.setup
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
@@ -57,14 +58,14 @@ go to the default mapping.
                     raise Exception("No chroot backend found")
 
     def mbd_get_path(self):
-        return os.path.join(setup.CHROOTS_DIR, self.source.codename, self.architecture.name)
+        return os.path.join(mini_buildd.setup.CHROOTS_DIR, self.source.codename, self.architecture.name)
 
     def mbd_get_name(self):
         return "mini-buildd-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)
 
     def mbd_get_tmp_dir(self):
         d = os.path.join(self.mbd_get_path(), "tmp")
-        misc.mkdirs(d)
+        mini_buildd.misc.mkdirs(d)
         return d
 
     def mbd_get_schroot_conf_file(self):
@@ -99,7 +100,7 @@ go to the default mapping.
         if self.status >= self.STATUS_PREPARED:
             msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
-            misc.mkdirs(os.path.join(self.mbd_get_path(), setup.CHROOT_LIBDIR))
+            mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))
 
             # Set personality
             self.personality = ""
@@ -130,11 +131,11 @@ personality={p}
 {b}
 """.format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
-            misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
+            mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
             msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
     def mbd_unprepare(self, request):
-        misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
+        mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
@@ -259,7 +260,7 @@ class LoopLVMChroot(LVMChroot):
             if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.mbd_get_backing_file()):
                 return "/dev/" + f.split("/")[3]
         log.debug("No existing loop device for {b}, searching for free device".format(b=self.mbd_get_backing_file()))
-        return misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()
+        return mini_buildd.misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()
 
     def mbd_get_pre_sequence(self):
         # todo get_loop_device() must not be dynamic

@@ -9,7 +9,9 @@ import logging
 import django.db
 import django.core.exceptions
 
-from mini_buildd import setup, misc, reprepro
+import mini_buildd.setup
+import mini_buildd.misc
+import mini_buildd.reprepro
 
 from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info
 
@@ -48,7 +50,7 @@ class Suite(Model):
         return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
     def mbd_get_mandatory_version(self, repository, dist):
-        return misc.subst_placeholders(self.mandatory_version,
+        return mini_buildd.misc.subst_placeholders(self.mandatory_version,
                                        { "IDENTITY": repository.identity,
                                          "CODEVERSION": dist.base_source.codeversion })
 
@@ -273,7 +275,7 @@ class Repository(StatusModel):
         return self.identity
 
     def mbd_get_path(self):
-        return os.path.join(setup.REPOSITORIES_DIR, self.identity)
+        return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
     def mbd_get_incoming_path(self):
         return os.path.join(self.mbd_get_path(), "incoming")
@@ -291,14 +293,14 @@ class Repository(StatusModel):
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
-        from mini_buildd import daemon
+        import mini_buildd.daemon
         return "deb {u}/{r}/{i}/ {d} {c}".format(
-            u=daemon.get().model.mbd_get_ftp_url(),
-            r=os.path.basename(setup.REPOSITORIES_DIR),
+            u=mini_buildd.daemon.get().model.mbd_get_ftp_url(),
+            r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
             i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 
     def mbd_find_dist(self, dist):
-        base, identity, suite = misc.parse_distribution(dist)
+        base, identity, suite = mini_buildd.misc.parse_distribution(dist)
         log.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         if identity == self.identity:
@@ -328,8 +330,8 @@ class Repository(StatusModel):
 
     def mbd_get_apt_keys(self, dist):
         d,s = self.mbd_find_dist(dist)
-        from mini_buildd import daemon
-        result = daemon.get().model.mbd_get_pub_key()
+        import mini_buildd.daemon
+        result = mini_buildd.daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             for k in e.source.apt_keys.all():
                 result += k.key
@@ -338,14 +340,14 @@ class Repository(StatusModel):
     def mbd_get_chroot_setup_script(self, dist):
         d,s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return misc.fromdos(d.chroot_setup_script)
+        return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
         d,s = self.mbd_find_dist(dist)
-        libdir = os.path.join(setup.CHROOTS_DIR, d.base_source.codename, arch, setup.CHROOT_LIBDIR)
+        libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return misc.fromdos(misc.subst_placeholders(d.sbuildrc_snippet, { "LIBDIR": libdir }))
+        return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, { "LIBDIR": libdir }))
 
     def mbd_get_sources(self, dist, suite):
         result = ""
@@ -383,12 +385,12 @@ ButAutomaticUpgrades: {bau}
         return result.getvalue()
 
     def mbd_reprepro(self):
-        return reprepro.Reprepro(self.mbd_get_path())
+        return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
         # Reprepro config
-        misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
-        misc.mkdirs(self.mbd_get_incoming_path())
+        mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
+        mini_buildd.misc.mkdirs(self.mbd_get_incoming_path())
         open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
         open(os.path.join(self.mbd_get_path(), "conf", "incoming"), 'w').write("""\
 Name: INCOMING
@@ -399,7 +401,7 @@ Allow: {allow}
 
         open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
-""".format(h=os.path.join(setup.HOME_DIR, ".gnupg")))
+""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg")))
 
         # Update all indices (or create on initial install) via reprepro
         repo = self.mbd_reprepro()

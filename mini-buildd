@@ -10,7 +10,9 @@ import daemon
 import logging
 import logging.handlers
 
-from mini_buildd import __version__, misc, setup
+import mini_buildd
+import mini_buildd.misc
+import mini_buildd.setup
 
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
@@ -21,7 +23,7 @@ class Main():
                                          description="mini build daemon.",
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--version', action='version', version=__version__)
+        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
 
         parser.add_argument("-f", "--foreground", action='store_true',
                             help="Don't daemonize, log to console.")
@@ -63,31 +65,31 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
     def _setup(self):
         # Set global variables that really make no sense to
         # propagate through
-        setup.DEBUG = self._args.debug.split(",")
+        mini_buildd.setup.DEBUG = self._args.debug.split(",")
 
-        setup.HOME_DIR = self._args.home
+        mini_buildd.setup.HOME_DIR = self._args.home
 
-        setup.INCOMING_DIR = os.path.join(self._args.home, "incoming")
-        setup.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
+        mini_buildd.setup.INCOMING_DIR = os.path.join(self._args.home, "incoming")
+        mini_buildd.setup.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
 
         vardir = os.path.join(self._args.home, "var")
-        setup.LOG_DIR     = os.path.join(vardir, "log")
-        setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
-        setup.CHROOT_LIBDIR = os.path.join("libdir")
-        setup.SPOOL_DIR   = os.path.join(vardir, "spool")
+        mini_buildd.setup.LOG_DIR     = os.path.join(vardir, "log")
+        mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
+        mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
+        mini_buildd.setup.SPOOL_DIR   = os.path.join(vardir, "spool")
 
-        self.LOG_FILE = os.path.join(setup.LOG_DIR, "daemon.log")
+        self.LOG_FILE = os.path.join(mini_buildd.setup.LOG_DIR, "mini_buildd.daemon.log")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
-            setup.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
+            mini_buildd.setup.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
         else:
-            setup.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
+            mini_buildd.setup.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
 
         # Create base directories
-        misc.mkdirs(setup.INCOMING_DIR)
-        misc.mkdirs(setup.REPOSITORIES_DIR)
-        misc.mkdirs(setup.LOG_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.setup.INCOMING_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.setup.REPOSITORIES_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.setup.LOG_DIR)
 
     def _setup_logging(self):
         loggers = self._args.loggers.split(",")
@@ -169,7 +171,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             daemon = daemon._Daemon()
 
             # Start httpd webapp
-            misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
+            mini_buildd.misc.run_as_thread(httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             while True:
                 signal.pause()
@@ -186,7 +188,7 @@ try:
     Main().run()
 except Exception as e:
     s="mini-buildd FAILED: {e}".format(e=str(e))
-    if "main" in setup.DEBUG:
+    if "main" in mini_buildd.setup.DEBUG:
         log.exception(s)
     else:
         sys.exit(s)

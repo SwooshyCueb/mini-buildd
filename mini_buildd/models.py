@@ -75,8 +75,8 @@ class Model(django.db.models.Model):
         abstract = True
 
     def clean(self):
-        import daemon
-        if daemon.get().is_running():
+        import mini_buildd.daemon
+        if mini_buildd.daemon.get().is_running():
             raise django.core.exceptions.ValidationError(u"""Please deactivate the Daemon instance to change any configuration!""")
         super(Model, self).clean()
 

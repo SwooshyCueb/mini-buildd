@@ -9,7 +9,7 @@ import django.contrib.messages
 
 import debian.deb822
 
-from mini_buildd import gnupg
+import mini_buildd.gnupg
 
 from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
 
@@ -103,7 +103,7 @@ class Source(StatusModel):
 
     def mbd_prepare(self, request):
         self.archives = []
-        gpg = gnupg.TmpGnuPG() if self.apt_keys.all() else None
+        gpg = mini_buildd.gnupg.TmpGnuPG() if self.apt_keys.all() else None
         for k in self.apt_keys.all():
             gpg.add_pub_key(k.key)
 

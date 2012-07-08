@@ -4,7 +4,8 @@ import logging
 import cherrypy
 import django
 
-from mini_buildd import misc, setup
+import mini_buildd.misc
+import mini_buildd.setup
 
 log = logging.getLogger(__name__)
 
@@ -47,8 +48,8 @@ def run(bind, wsgi_app):
 
     log_init()
 
-    cherrypy.config.update({'server.socket_host': misc.BindArgs(bind).host,
-                            'server.socket_port': misc.BindArgs(bind).port})
+    cherrypy.config.update({'server.socket_host': mini_buildd.misc.BindArgs(bind).host,
+                            'server.socket_port': mini_buildd.misc.BindArgs(bind).port})
 
     # static files base dir: mini-buildd
     static_base_dir = "/usr/share/pyshared/mini_buildd/static"
@@ -86,7 +87,7 @@ def run(bind, wsgi_app):
     cherrypy.tree.mount(static_handler, '/static')
 
     # access mini-buildd's log dir
-    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = setup.LOG_DIR,
+    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = mini_buildd.setup.LOG_DIR,
                                                           content_types={"log": "text/plain", "buildlog": "text/plain"})
     cherrypy.tree.mount(static_handler_log, '/log')
 

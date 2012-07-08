@@ -44,7 +44,11 @@ import django.db
 import django.core.exceptions
 import django.contrib.auth.models
 
-from mini_buildd import misc, changes, gnupg, ftpd, builder
+import mini_buildd.misc
+import mini_buildd.changes
+import mini_buildd.gnupg
+import mini_buildd.ftpd
+import mini_buildd.builder
 
 from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
 
@@ -76,11 +80,11 @@ Expire-Date: 0
 
     # Load options
     incoming_queue_size = django.db.models.SmallIntegerField(
-        default=2*misc.get_cpus(),
+        default=2*mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel packages to process.")
 
     build_queue_size = django.db.models.SmallIntegerField(
-        default=misc.get_cpus(),
+        default=mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel builds.")
 
     sbuild_jobs = django.db.models.SmallIntegerField(
@@ -124,11 +128,11 @@ prevent original package maintainers to be spammed.
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
         super(Daemon, self).__init__(*args, **kwargs)
-        self._gnupg = gnupg.GnuPG(self.gnupg_template)
+        self._gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template)
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
-        self._builder_status = builder.Status()
+        self._builder_status = mini_buildd.builder.Status()
         self._stray_buildresults = []
 
     def __unicode__(self):
@@ -158,12 +162,12 @@ prevent original package maintainers to be spammed.
         get().stop(r)
 
     def mbd_get_ftp_url(self):
-        ba = misc.BindArgs(self.ftpd_bind)
+        ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
         return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
 
     def mbd_get_http_url(self):
         ".. todo:: Port should be the one given with args, not hardcoded."
-        #ba = misc.BindArgs(self.ftpd_bind)
+        #ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
         return u"http://{h}:{p}".format(h=self.hostname, p=8066)
 
     def mbd_get_pub_key(self):
@@ -206,7 +210,7 @@ incoming = /incoming
                 body['From'] = m_from
                 body['To'] = ", ".join(m_to)
 
-                ba = misc.BindArgs(self.smtp_server)
+                ba = mini_buildd.misc.BindArgs(self.smtp_server)
                 s = smtplib.SMTP(ba.host, ba.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
@@ -313,9 +317,9 @@ def run():
     # Get/Create daemon model instance (singleton-like)
     dm = get().model
 
-    # Start ftpd and builder
-    ftpd_thread = misc.run_as_thread(ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = misc.run_as_thread(builder.run, queue=dm._build_queue,
+    # Start mini_buildd.ftpd and mini_buildd.builder
+    ftpd_thread = mini_buildd.misc.run_as_thread(mini_buildd.ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
+    builder_thread = mini_buildd.misc.run_as_thread(mini_buildd.builder.run, queue=dm._build_queue,
                                         status=dm._builder_status,
                                         build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
 
@@ -336,7 +340,7 @@ def run():
                     return True
                 return False
 
-            c = changes.Changes(event)
+            c = mini_buildd.changes.Changes(event)
             if c.is_buildrequest():
                 dm._build_queue.put(event)
             elif c.is_buildresult():
@@ -354,7 +358,7 @@ def run():
             dm._incoming_queue.task_done()
 
     dm._build_queue.put("SHUTDOWN")
-    ftpd.shutdown()
+    mini_buildd.ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
 
@@ -378,7 +382,7 @@ class _Daemon():
     def start(self, r=None):
         if not self.thread:
             self.update_model()
-            self.thread = misc.run_as_thread(run)
+            self.thread = mini_buildd.misc.run_as_thread(run)
             msg_info(r, "Daemon started")
         else:
             msg_info(r, "Daemon already started")

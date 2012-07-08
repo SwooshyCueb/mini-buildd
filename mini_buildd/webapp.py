@@ -7,7 +7,8 @@ import django.conf
 import django.core.handlers.wsgi
 import django.core.management
 
-from mini_buildd import setup, compat08x
+import mini_buildd.setup
+import mini_buildd.compat08x
 
 log = logging.getLogger(__name__)
 
@@ -21,8 +22,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         super(WebApp, self).__init__()
 
         django.conf.settings.configure(
-            DEBUG = "django" in setup.DEBUG,
-            TEMPLATE_DEBUG = "django" in setup.DEBUG,
+            DEBUG = "django" in mini_buildd.setup.DEBUG,
+            TEMPLATE_DEBUG = "django" in mini_buildd.setup.DEBUG,
 
             TEMPLATE_DIRS = ['/usr/share/pyshared/mini_buildd/templates'],
             TEMPLATE_LOADERS = (
@@ -35,12 +36,12 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'default':
                     {
                     'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': os.path.join(setup.HOME_DIR, "config.sqlite"),
+                    'NAME': os.path.join(mini_buildd.setup.HOME_DIR, "config.sqlite"),
                     }
                 },
             TIME_ZONE = None,
             USE_L10N = True,
-            SECRET_KEY = self.get_django_secret_key(setup.HOME_DIR),
+            SECRET_KEY = self.get_django_secret_key(mini_buildd.setup.HOME_DIR),
             ROOT_URLCONF = 'mini_buildd.root_urls',
             STATIC_URL = "/static/",
             AUTH_PROFILE_MODULE = 'mini_buildd.UserProfile',
@@ -60,10 +61,10 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         from mini_buildd import models
         l, created = models.Layout.objects.get_or_create(name="Default")
         if created:
-            e, created = models.Suite.objects.get_or_create(name="experimental", mandatory_version="~%IDENTITY%%CODEVERSION%\+0")
-            u, created = models.Suite.objects.get_or_create(name="unstable")
-            t, created = models.Suite.objects.get_or_create(name="testing", migrates_from=u)
-            s, created = models.Suite.objects.get_or_create(name="stable", migrates_from=t)
+            e, created = mini_buildd.models.Suite.objects.get_or_create(name="experimental", mandatory_version="~%IDENTITY%%CODEVERSION%\+0")
+            u, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable")
+            t, created = mini_buildd.models.Suite.objects.get_or_create(name="testing", migrates_from=u)
+            s, created = mini_buildd.models.Suite.objects.get_or_create(name="stable", migrates_from=t)
             l.suites.add(e)
             l.suites.add(u)
             l.suites.add(t)
@@ -95,14 +96,14 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def loaddata(self, f):
         if os.path.splitext(f)[1] == ".conf":
             log.info("Try loading ad 08x.conf: {f}".format(f=f))
-            compat08x.importConf(f)
+            mini_buildd.compat08x.importConf(f)
         else:
             django.core.management.call_command('loaddata', f)
 
     def dumpdata(self, a):
         log.info("Dumping data for: {a}".format(a=a))
         if a == "08x":
-            compat08x.exportConf("/dev/stdout")
+            mini_buildd.compat08x.exportConf("/dev/stdout")
         else:
             django.core.management.call_command('dumpdata', a, indent=2, format='json')
 

@@ -5,7 +5,7 @@ Run reprepro commands.
 
 import logging
 
-from mini_buildd import misc
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
@@ -14,10 +14,10 @@ class Reprepro():
         self._cmd = ["reprepro",  "--verbose", "--basedir={b}".format(b=basedir)]
 
     def clearvanished(self):
-        misc.call(self._cmd + ["clearvanished"])
+        mini_buildd.misc.call(self._cmd + ["clearvanished"])
 
     def export(self):
-        misc.call(self._cmd + ["export"])
+        mini_buildd.misc.call(self._cmd + ["export"])
 
     def processincoming(self):
-        return misc.call(self._cmd + ["processincoming", "INCOMING"])
+        return mini_buildd.misc.call(self._cmd + ["processincoming", "INCOMING"])

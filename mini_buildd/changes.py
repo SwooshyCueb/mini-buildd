@@ -9,7 +9,9 @@ import contextlib
 
 import debian.deb822
 
-from mini_buildd import setup, misc, gnupg
+import mini_buildd.setup
+import mini_buildd.misc
+import mini_buildd.gnupg
 
 log = logging.getLogger(__name__)
 
@@ -21,10 +23,10 @@ class Changes(debian.deb822.Changes):
         self._file_path = file_path
         self._file_name = os.path.basename(file_path)
         self._new = not os.path.exists(file_path)
-        self._sha1 = None if self._new else misc.sha1_of_file(file_path)
+        self._sha1 = None if self._new else mini_buildd.misc.sha1_of_file(file_path)
         super(Changes, self).__init__([] if self._new else file(file_path))
         # Be sure base dir is always available
-        misc.mkdirs(os.path.dirname(file_path))
+        mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
     def is_new(self):
         return self._new
@@ -42,7 +44,7 @@ class Changes(debian.deb822.Changes):
             return ""
 
     def get_repository(self):
-        from models import Repository
+        from mini_buildd.models import Repository
 
         # Check and parse distribution
         dist = self["Distribution"]
@@ -83,10 +85,10 @@ class Changes(debian.deb822.Changes):
         return r, d, s
 
     def get_spool_dir(self):
-        return os.path.join(setup.SPOOL_DIR, self._sha1)
+        return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
 
     def get_log_dir(self):
-        return os.path.join(setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+        return os.path.join(mini_buildd.setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
     def get_pkg_id(self):
         return "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -97,7 +99,7 @@ class Changes(debian.deb822.Changes):
     def add_file(self, fn):
         if not "Files" in self:
             self["Files"] = []
-        self["Files"].append({"md5sum": misc.md5_of_file(fn),
+        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(fn),
                               "size": os.path.getsize(fn),
                               "section": "mini-buildd",
                               "priority": "extra",
@@ -108,8 +110,8 @@ class Changes(debian.deb822.Changes):
             log.info("Saving changes: {f}".format(f=self._file_path))
             self.dump(fd=open(self._file_path, "w+"))
             log.info("Signing changes: {f}".format(f=self._file_path))
-            from mini_buildd import daemon
-            daemon.get().model._gnupg.sign(self._file_path)
+            import mini_buildd.daemon
+            mini_buildd.daemon.get().model._gnupg.sign(self._file_path)
         except:
             # Existence of the file name is used as flag
             if os.path.exists(self._file_path):
@@ -118,15 +120,15 @@ class Changes(debian.deb822.Changes):
 
     def authenticate_against_remotes(self):
         ".. todo:: Actually authenticate against remotes"
-        from mini_buildd import daemon
-        daemon.get().model._gnupg.verify(self._file_path)
+        import mini_buildd.daemon
+        mini_buildd.daemon.get().model._gnupg.verify(self._file_path)
 
     def authenticate_against_users(self, repository):
         if repository.allow_unauthenticated_uploads:
             log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self._file_name))
         else:
             import django.contrib.auth.models
-            gpg = gnupg.TmpGnuPG()
+            gpg = mini_buildd.gnupg.TmpGnuPG()
             for u in django.contrib.auth.models.User.objects.all():
                 p = u.get_profile()
                 for r in p.may_upload_to.all():

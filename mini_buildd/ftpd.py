@@ -7,7 +7,9 @@ import logging
 
 import pyftpdlib.ftpserver
 
-from mini_buildd import __version__, setup, misc
+import mini_buildd
+import mini_buildd.setup
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
@@ -24,7 +26,7 @@ def log_init():
      enabled in debug mode.
     """
     pyftpdlib.ftpserver.log = lambda msg: log.debug(msg)
-    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if "ftpd" in setup.DEBUG else misc.nop
+    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
     pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
 
 
@@ -47,20 +49,20 @@ def run(bind, queue):
     ".. todo:: ftpd load options"
     log_init()
 
-    ba = misc.BindArgs(bind)
+    ba = mini_buildd.misc.BindArgs(bind)
 
     handler = FtpDHandler
     handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
-    handler.authorizer.add_anonymous(homedir=setup.HOME_DIR, perm='')
-    handler.authorizer.override_perm(username="anonymous", directory=setup.INCOMING_DIR, perm='elrw')
-    handler.authorizer.override_perm(username="anonymous", directory=setup.REPOSITORIES_DIR, perm='elr', recursive=True)
-    handler.authorizer.override_perm(username="anonymous", directory=setup.LOG_DIR, perm='elr', recursive=True)
+    handler.authorizer.add_anonymous(homedir=mini_buildd.setup.HOME_DIR, perm='')
+    handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.INCOMING_DIR, perm='elrw')
+    handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.REPOSITORIES_DIR, perm='elr', recursive=True)
+    handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.LOG_DIR, perm='elr', recursive=True)
 
-    handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=__version__, V=pyftpdlib.ftpserver.__ver__)
+    handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
     handler._mini_buildd_queue = queue
 
     # Re-push all existing files in incoming
-    for f in glob.glob(setup.INCOMING_DIR + "/*"):
+    for f in glob.glob(mini_buildd.setup.INCOMING_DIR + "/*"):
         handle_incoming_file(queue, f)
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)

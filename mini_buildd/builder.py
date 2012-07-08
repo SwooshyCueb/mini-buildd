@@ -7,7 +7,9 @@ import re
 import subprocess
 import logging
 
-from mini_buildd import setup, changes, misc
+import mini_buildd.setup
+import mini_buildd.changes
+import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
@@ -62,7 +64,7 @@ def buildlog_to_buildresult(fn, bres):
                 bres["Sbuild-" + s[0]] = s[1].strip()
 
 def build_clean(breq):
-    if "build" in setup.DEBUG:
+    if "build" in mini_buildd.setup.DEBUG:
         log.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=breq.get_spool_dir()))
     else:
         shutil.rmtree(breq.get_spool_dir())
@@ -101,14 +103,14 @@ def build(breq, jobs, status):
        - schroot bug: chroot-setup-command: uses sudo workaround
        - sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
     """
-    misc.sbuild_keys_workaround()
+    mini_buildd.misc.sbuild_keys_workaround()
 
     pkg_info = "{s}-{v}:{a}".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])
     status.start(pkg_info)
 
     build_dir = breq.get_spool_dir()
 
-    bres = changes.Changes(os.path.join(build_dir,
+    bres = mini_buildd.changes.Changes(os.path.join(build_dir,
                                         "{s}_{v}_mini-buildd-buildresult_{a}.changes".
                                         format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
 
@@ -141,7 +143,7 @@ def build(breq, jobs, status):
                 sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
                 sbuild_cmd.append("--lintian-opts={o}".format(o=breq["Run-Lintian"]))
 
-            if "sbuild" in setup.DEBUG:
+            if "sbuild" in mini_buildd.setup.DEBUG:
                 sbuild_cmd.append("--verbose")
                 sbuild_cmd.append("--debug")
 
@@ -152,7 +154,7 @@ def build(breq, jobs, status):
             with open(buildlog, "w") as l:
                 retval = subprocess.call(sbuild_cmd,
                                          cwd=build_dir,
-                                         env=misc.taint_env({"HOME": build_dir}),
+                                         env=mini_buildd.misc.taint_env({"HOME": build_dir}),
                                          stdout=l, stderr=subprocess.STDOUT)
 
             for v in ["Distribution", "Source", "Version", "Architecture"]:
@@ -168,7 +170,7 @@ def build(breq, jobs, status):
                                               "{s}_{v}_{a}.changes".
                                               format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
             if os.path.exists(build_changes_file):
-                build_changes = changes.Changes(build_changes_file)
+                build_changes = mini_buildd.changes.Changes(build_changes_file)
                 build_changes.tar(tar_path=bres._file_path + ".tar")
                 bres.add_file(bres._file_path + ".tar")
 
@@ -215,7 +217,7 @@ def run(queue, status, build_queue_size, sbuild_jobs):
             log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
             time.sleep(15)
 
-        threads.append(misc.run_as_thread(build, breq=changes.Changes(event), jobs=sbuild_jobs, status=status))
+        threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
         queue.task_done()
 
         threads_cleanup()

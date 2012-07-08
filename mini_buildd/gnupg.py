@@ -9,7 +9,9 @@ import django.db.models
 import django.contrib.admin
 import django.contrib.messages
 
-from mini_buildd import setup, misc
+import mini_buildd.setup
+import mini_buildd.misc
+
 from mini_buildd.models import StatusModel, msg_info
 
 log = logging.getLogger(__name__)
@@ -25,40 +27,40 @@ class BaseGnuPG(object):
         with tempfile.TemporaryFile() as t:
             t.write(template)
             t.seek(0)
-            misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
+            mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
 
     def get_pub_key(self, id):
-        return misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=id)])
+        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=id)])
 
     def pub_keys_info(self):
         res = []
-        for l in misc.call(self.gpg_cmd + ["--list-public-keys", "--with-fingerprint", "--with-colons"]).splitlines():
+        for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-public-keys", "--with-fingerprint", "--with-colons"]).splitlines():
             log.info(l)
             res.append(l.split(":"))
         return res
 
     def recv_key(self, keyserver, id):
-        return misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", id])
+        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", id])
 
     def add_pub_key(self, key):
         with tempfile.TemporaryFile() as t:
             t.write(key)
             t.seek(0)
-            misc.call(self.gpg_cmd + ["--import"], stdin=t)
+            mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
     def verify(self, signed_file, file=None):
         xtra_opts = [file] if file else []
-        misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
+        mini_buildd.misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
 
     def sign(self, file, id=None):
         xtra_opts = ["--local-user={i}".format(i=id)] if id else []
         signed_file = file + ".signed"
-        misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
+        mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
         os.rename(signed_file, file)
 
 class GnuPG(BaseGnuPG):
     def __init__(self, template):
-        super(GnuPG, self).__init__(home=os.path.join(setup.HOME_DIR, ".gnupg"))
+        super(GnuPG, self).__init__(home=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"))
         self.template = """\
 {t}
 Name-Real: Mini Buildd Archive Key
@@ -129,11 +131,11 @@ class GnuPGPublicKey(StatusModel):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
 
     def mbd_prepare(self, r):
-        from mini_buildd import daemon
+        import mini_buildd.daemon
         gpg = TmpGnuPG()
         if self.key_id:
             # Receive key from keyserver
-            gpg.recv_key(daemon.get().model.gnupg_keyserver, self.key_id)
+            gpg.recv_key(mini_buildd.daemon.get().model.gnupg_keyserver, self.key_id)
             self.key = gpg.get_pub_key(self.key_id)
         elif self.key:
             gpg.add_pub_key(self.key)
@@ -157,7 +159,7 @@ class GnuPGPublicKey(StatusModel):
             self.key = ""
 
 if __name__ == "__main__":
-    misc.setup_test_logging()
+    mini_buildd.misc.setup_test_logging()
 
     import doctest
     doctest.testmod()

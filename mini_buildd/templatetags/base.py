@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 import django
 
-from mini_buildd import __version__
+import mini_buildd
 
 register = django.template.Library()
 
 @register.simple_tag
 def mbd_version():
-    return __version__
+    return mini_buildd.__version__

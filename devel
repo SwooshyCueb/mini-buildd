@@ -43,6 +43,16 @@ mbd_pyflakes()
 	)
 }
 
+mbd_pylint()
+{
+	# C0111: Missing docstring
+	# C0301: Line too long
+	(
+		pyenv
+		pylint --disable=C0111,C0301 --variable-rgx='[a-z_][a-z0-9_]{0,30}$' mini-buildd mini_buildd/
+	)
+}
+
 mbd_pychecker()
 {
 	(
@@ -51,11 +61,11 @@ mbd_pychecker()
 	)
 }
 
-mbd_pylint()
+mbd_pydjangolint()
 {
 	(
 		pyenv
-		pylint mini-buildd mini_buildd/
+		django-lint --reports mini_buildd/
 	)
 }
 

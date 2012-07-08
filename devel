@@ -28,27 +28,35 @@ pyenv()
 
 mbd_pydoctests()
 {
-	pyenv
-	python -m doctest -v mini_buildd/misc.py
-	python -m doctest -v mini_buildd/gnupg.py
+	(
+		pyenv
+		python -m doctest -v mini_buildd/misc.py
+		python -m doctest -v mini_buildd/gnupg.py
+	)
 }
 
 mbd_pyflakes()
 {
-	pyenv
-	pyflakes mini-buildd mini_buildd/
+	(
+		pyenv
+		pyflakes mini-buildd mini_buildd/
+	)
 }
 
 mbd_pychecker()
 {
-	pyenv
-	pychecker mini-buildd $(find mini_buildd/ -name "*.py")
+	(
+		pyenv
+		pychecker mini-buildd $(find mini_buildd/ -name "*.py")
+	)
 }
 
 mbd_pylint()
 {
-	pyenv
-	pylint mini-buildd mini_buildd/
+	(
+		pyenv
+		pylint mini-buildd mini_buildd/
+	)
 }
 
 mbd_pychecks()
@@ -74,6 +82,7 @@ mbd_purge()
 
 mbd_build()
 {
+	mbd_pychecks
 	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc

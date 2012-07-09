@@ -10,10 +10,10 @@ import daemon
 import logging
 import logging.handlers
 
-import mini_buildd
 import mini_buildd.misc
 import mini_buildd.setup
 import mini_buildd.httpd
+import mini_buildd.webapp
 
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
@@ -104,19 +104,19 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         log.handlers = []
 
         if "file" in loggers:
-            fh = logging.FileHandler(os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log"))
-            fh.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(fh)
+            handler = logging.FileHandler(os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log"))
+            handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(handler)
 
         if "syslog" in loggers:
-            sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
-            sh.setFormatter(logging.Formatter(log_format))
-            log.addHandler(sh)
+            handler = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+            handler.setFormatter(logging.Formatter(log_format))
+            log.addHandler(handler)
 
         if "console" in loggers:
-            ch = logging.StreamHandler()
-            ch.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(ch)
+            handler = logging.StreamHandler()
+            handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
+            log.addHandler(handler)
 
         # Finally, set log level
         loglevel = logging.WARNING - (10 * (min(2, self._args.verbosity) - min(2, self._args.terseness)))
@@ -140,7 +140,12 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         self._setup()
         self._setup_logging()
         self._setup_environment()
+
+        # Shutdown on SIGTERM or SIGINT
         self._status = "RESTART"
+        signal.signal(signal.SIGTERM, self.on_signal)
+        signal.signal(signal.SIGINT, self.on_signal)
+        signal.signal(signal.SIGHUP, self.on_signal)
 
     def on_signal(self, signum=-1, frame=-1):
         log.info("Got signal: {s} ({f})".format(s=signum, f=frame))
@@ -150,8 +155,8 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             self._status = "RESTART"
 
     def run(self):
-        from mini_buildd import webapp
-        webapp = webapp.WebApp()
+        # Get the django project instance
+        webapp = mini_buildd.webapp.WebApp()
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:
@@ -161,15 +166,9 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         elif self._args.dumpdata:
             webapp.dumpdata(a=self._args.dumpdata)
         else:
-            # Shutdown on SIGTERM or SIGINT
-            signal.signal(signal.SIGTERM, self.on_signal)
-            signal.signal(signal.SIGINT, self.on_signal)
-            signal.signal(signal.SIGHUP, self.on_signal)
-
-            import mini_buildd.daemon
-
-            # Get one global daemon instance
-            dm = mini_buildd.daemon.Manager()
+            # Get the daemon manager instance (due to django, import must be here)
+            from mini_buildd.daemon import Manager
+            manager = Manager()
 
             # Start httpd webapp
             mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
@@ -177,21 +176,21 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    dm.restart()
+                    manager.restart()
                 else:
                     break
 
-            dm.stop()
+            manager.stop()
             mini_buildd.httpd.exit()
 
-# Main
+
 try:
     Main().run()
 except Exception as e:
-    S = "mini-buildd FAILED: {e}".format(e=str(e))
-    if "main" in mini_buildd.setup.DEBUG:
-        log.exception(S)
+    ERR_STRING = "mini-buildd FAILED: {e}".format(e=str(e))
+    if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+        log.exception(ERR_STRING)
     else:
-        sys.exit(S)
+        sys.exit(ERR_STRING)
 except SystemExit as e:
     sys.exit(e.code)

@@ -43,6 +43,14 @@ mbd_pyflakes()
 	)
 }
 
+mbd_pep8()
+{
+	(
+		pyenv
+		pep8 --ignore=E501 mini-buildd mini_buildd/
+	)
+}
+
 mbd_pylint()
 {
 	# C0111: Missing docstring

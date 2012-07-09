@@ -16,6 +16,7 @@ from mini_buildd.models import StatusModel, msg_info
 
 log = logging.getLogger(__name__)
 
+
 class BaseGnuPG(object):
     def __init__(self, home):
         self.home = home
@@ -58,6 +59,7 @@ class BaseGnuPG(object):
         mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
         os.rename(signed_file, file)
 
+
 class GnuPG(BaseGnuPG):
     def __init__(self, template):
         super(GnuPG, self).__init__(home=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"))
@@ -86,6 +88,7 @@ Name-Email: mini-buildd@{h}
     def get_fingerprint(self):
         return super(GnuPG, self).get_fingerprint("mini-buildd")
 
+
 class TmpGnuPG(BaseGnuPG):
     """
     >>> gnupg = TmpGnuPG()
@@ -113,10 +116,10 @@ class GnuPGPublicKey(StatusModel):
     key = django.db.models.TextField(blank=True, default="",
                                      help_text="ASCII-armored Gnu PG public key. Leave the key id blank if you fill this manually.")
 
-    key_long_id     = django.db.models.CharField(max_length=254, blank=True, default="")
-    key_created     = django.db.models.CharField(max_length=254, blank=True, default="")
-    key_expires     = django.db.models.CharField(max_length=254, blank=True, default="")
-    key_name        = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_long_id = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_created = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_expires = django.db.models.CharField(max_length=254, blank=True, default="")
+    key_name = django.db.models.CharField(max_length=254, blank=True, default="")
     key_fingerprint = django.db.models.CharField(max_length=254, blank=True, default="")
 
     class Meta(StatusModel.Meta):

@@ -12,6 +12,7 @@ import mini_buildd.compat08x
 
 log = logging.getLogger(__name__)
 
+
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
     This class represents mini-buildd's web application.
@@ -22,38 +23,32 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         super(WebApp, self).__init__()
 
         django.conf.settings.configure(
-            DEBUG = "django" in mini_buildd.setup.DEBUG,
-            TEMPLATE_DEBUG = "django" in mini_buildd.setup.DEBUG,
+            DEBUG="django" in mini_buildd.setup.DEBUG,
+            TEMPLATE_DEBUG="django" in mini_buildd.setup.DEBUG,
 
-            TEMPLATE_DIRS = ['/usr/share/pyshared/mini_buildd/templates'],
-            TEMPLATE_LOADERS = (
+            TEMPLATE_DIRS=['/usr/share/pyshared/mini_buildd/templates'],
+            TEMPLATE_LOADERS=(
                 'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader',
-                 ),
+                'django.template.loaders.app_directories.Loader'),
 
-            DATABASES =
-            {
-                'default':
-                    {
-                    'ENGINE': 'django.db.backends.sqlite3',
-                    'NAME': os.path.join(mini_buildd.setup.HOME_DIR, "config.sqlite"),
-                    }
-                },
-            TIME_ZONE = None,
-            USE_L10N = True,
-            SECRET_KEY = self.get_django_secret_key(mini_buildd.setup.HOME_DIR),
-            ROOT_URLCONF = 'mini_buildd.root_urls',
-            STATIC_URL = "/static/",
-            AUTH_PROFILE_MODULE = 'mini_buildd.UserProfile',
-            INSTALLED_APPS = (
+            DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3',
+                                   'NAME': os.path.join(mini_buildd.setup.HOME_DIR, "config.sqlite")}},
+
+            TIME_ZONE=None,
+            USE_L10N=True,
+            SECRET_KEY=self.get_django_secret_key(mini_buildd.setup.HOME_DIR),
+            ROOT_URLCONF='mini_buildd.root_urls',
+            STATIC_URL="/static/",
+            AUTH_PROFILE_MODULE='mini_buildd.UserProfile',
+            INSTALLED_APPS=(
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
                 'django.contrib.admin',
                 'django.contrib.sessions',
                 'django.contrib.admindocs',
                 'django_extensions',
-                'mini_buildd'
-                ))
+                'mini_buildd'))
+
         self.syncdb()
         self.setup_default_models()
 

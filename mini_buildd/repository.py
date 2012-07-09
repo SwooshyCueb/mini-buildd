@@ -17,6 +17,7 @@ from mini_buildd.models import Model, StatusModel, Architecture, Source, Priorit
 
 log = logging.getLogger(__name__)
 
+
 class EmailAddress(Model):
     address = django.db.models.EmailField(primary_key=True, max_length=255)
     name = django.db.models.CharField(blank=True, max_length=255)
@@ -28,6 +29,7 @@ class EmailAddress(Model):
         return u"{n} <{a}>".format(n=self.name, a=self.address)
 
 django.contrib.admin.site.register(EmailAddress)
+
 
 class Suite(Model):
     name = django.db.models.CharField(
@@ -51,8 +53,8 @@ class Suite(Model):
 
     def mbd_get_mandatory_version(self, repository, dist):
         return mini_buildd.misc.subst_placeholders(self.mandatory_version,
-                                       { "IDENTITY": repository.identity,
-                                         "CODEVERSION": dist.base_source.codeversion })
+                                                   {"IDENTITY": repository.identity,
+                                                    "CODEVERSION": dist.base_source.codeversion})
 
     def mbd_check_version(self, repository, dist, version):
         m = self.mbd_get_mandatory_version(repository, dist)
@@ -65,7 +67,7 @@ django.contrib.admin.site.register(Suite)
 
 class Layout(Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
-                            help_text="Name for the layout.")
+                                      help_text="Name for the layout.")
     suites = django.db.models.ManyToManyField(Suite)
 
     def __unicode__(self):
@@ -99,9 +101,9 @@ class Distribution(Model):
     LINTIAN_FAIL_ON_ERROR = 2
     LINTIAN_FAIL_ON_WARNING = 3
     LINTIAN_CHOICES = (
-        (LINTIAN_DISABLED,        "Don't run lintian"),
-        (LINTIAN_RUN_ONLY,        "Run lintian"),
-        (LINTIAN_FAIL_ON_ERROR,   "Run lintian and fail on errors"),
+        (LINTIAN_DISABLED, "Don't run lintian"),
+        (LINTIAN_RUN_ONLY, "Run lintian"),
+        (LINTIAN_FAIL_ON_ERROR, "Run lintian and fail on errors"),
         (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
     lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
@@ -112,9 +114,9 @@ class Distribution(Model):
     PIUPARTS_FAIL_ON_ERROR = 2
     PIUPARTS_FAIL_ON_WARNING = 3
     PIUPARTS_CHOICES = (
-        (PIUPARTS_DISABLED,        "Don't run piuparts"),
-        (PIUPARTS_RUN_ONLY,        "Run piuparts"),
-        (PIUPARTS_FAIL_ON_ERROR,   "Run piuparts and fail on errors"),
+        (PIUPARTS_DISABLED, "Don't run piuparts"),
+        (PIUPARTS_RUN_ONLY, "Run piuparts"),
+        (PIUPARTS_FAIL_ON_ERROR, "Run piuparts and fail on errors"),
         (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
     piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
     piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
@@ -159,19 +161,10 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
-            ("Basics", {
-                    "fields": ("base_source", "extra_sources", "components")
-                    }),
-            ("Architectures", {
-                    "fields": ("mandatory_architectures", "optional_architectures", "architecture_all")
-                    }),
-            ("Build options", {
-                    "fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")
-                    }),
-            ("Extra", {
-                    "classes": ("collapse",),
-                    "fields": ("chroot_setup_script", "sbuildrc_snippet")
-                    }),)
+            ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
+            ("Architectures", {"fields": ("mandatory_architectures", "optional_architectures", "architecture_all")}),
+            ("Build options", {"fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")}),
+            ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
 
     def __unicode__(self):
         def xtra():
@@ -228,6 +221,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
 django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
+
 class Repository(StatusModel):
     identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
 
@@ -251,12 +245,8 @@ class Repository(StatusModel):
 
     class Admin(StatusModel.Admin):
         fieldsets = (
-            ("Basics", {
-                    "fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads")
-                    }),
-            ("Notify and extra options", {
-                    "fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")
-                    }),)
+            ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads")}),
+            ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
@@ -265,11 +255,11 @@ class Repository(StatusModel):
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
             for s in self.layout.suites.all():
-                if s.migrates_from == None:
-                    self.mbd_uploadable_distributions.append("{d}-{identity}-{s}".format(
-                            identity=self.identity,
-                            d=d.base_source.codename,
-                            s=s.name))
+                if s.migrates_from is None:
+                    self.mbd_uploadable_distributions.append(
+                        "{d}-{identity}-{s}".format(identity=self.identity,
+                                                    d=d.base_source.codename,
+                                                    s=s.name))
 
     def __unicode__(self):
         return self.identity
@@ -347,7 +337,7 @@ class Repository(StatusModel):
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, { "LIBDIR": libdir }))
+        return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
     def mbd_get_sources(self, dist, suite):
         result = ""

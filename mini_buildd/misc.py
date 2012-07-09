@@ -12,6 +12,7 @@ import logging.handlers
 
 log = logging.getLogger(__name__)
 
+
 class BindArgs(object):
     """ Convenience class to parse bind string "hostname:port" """
     def __init__(self, bind):
@@ -24,8 +25,10 @@ class BindArgs(object):
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
 
+
 def nop(*args, **kwargs):
     pass
+
 
 def parse_distribution(dist):
     """Parse a mini-buildd distribution of the form BASE-ID-SUITE into a triple in that order.
@@ -50,8 +53,10 @@ def subst_placeholders(s, p):
         s = s.replace("%{p}%".format(p=key), value)
     return s
 
+
 def fromdos(s):
     return s.replace('\r\n', '\n').replace('\r', '')
+
 
 def run_as_thread(call=None, daemon=False, **kwargs):
     def run(**kwargs):
@@ -70,6 +75,7 @@ def run_as_thread(call=None, daemon=False, **kwargs):
     thread.start()
     return thread
 
+
 def hash_of_file(fn, hash_type=hashlib.md5):
     md5 = hash_type()
     with open(fn) as f:
@@ -80,11 +86,14 @@ def hash_of_file(fn, hash_type=hashlib.md5):
             md5.update(data)
     return md5.hexdigest()
 
+
 def md5_of_file(fn):
     return hash_of_file(fn, hash_type=hashlib.md5)
 
+
 def sha1_of_file(fn):
     return hash_of_file(fn, hash_type=hashlib.sha1)
+
 
 def taint_env(taint):
     env = os.environ.copy()
@@ -92,11 +101,13 @@ def taint_env(taint):
         env[e] = taint[e]
     return env
 
+
 def get_cpus():
     try:
         return multiprocessing.cpu_count()
     except:
         return 1
+
 
 def mkdirs(path):
     try:
@@ -107,6 +118,7 @@ def mkdirs(path):
             raise
         else:
             log.debug("Directory already exists, ignoring; {d}".format(d=path))
+
 
 def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
     """Wrapper around subprocess.call().
@@ -141,13 +153,14 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
                     olog("Call stderr: {l}".format(l=line.rstrip('\n')))
     except:
         log.error("Call failed: {a}".format(a=args))
-        if value_on_error != None:
+        if value_on_error is not None:
             return value_on_error
         else:
             raise
     log.info("Call successful: {a}".format(a=args))
     stdout.seek(0)
     return stdout.read()
+
 
 def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, rollback_only=False, **kwargs):
     """Run sequences of calls with rolbback support.
@@ -164,7 +177,7 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
                 log.debug("Skipping empty rollback call sequent {i}".format(i=i))
 
     if rollback_only:
-        rollback(len(calls)-1)
+        rollback(len(calls) - 1)
     else:
         i = 0
         try:
@@ -180,6 +193,7 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             raise
 
 sbuild_keys_workaround_lock = threading.Lock()
+
 
 def sbuild_keys_workaround():
     "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
@@ -204,6 +218,7 @@ def setup_test_logging(syslog=True):
     ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
     log.addHandler(ch)
     log.setLevel(logging.DEBUG)
+
 
 if __name__ == "__main__":
     setup_test_logging()

@@ -5,6 +5,7 @@ import logging
 
 log = logging.getLogger(__name__)
 
+
 def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
     """ """
     import mini_buildd.models
@@ -28,9 +29,10 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
             archs = conf08x.mbd_archs.split(", ")
 
             for a in archs:
-                # "Architecture"
+
                 def Architecture():
                     return mini_buildd.models.Architecture(arch=a)
+
                 try_import(Architecture)
 
             archs.append("any")
@@ -76,29 +78,31 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                         try_import(Source)
 
                         if (t == "extra"):
-                            # "PrioritySource"
+
                             def PrioritySource():
-                                ps = mini_buildd.models.PrioritySource(source=mini_buildd.models.Source.objects.get(codename=codename, origin=origin), priority=priority)
+                                ps = mini_buildd.models.PrioritySource(
+                                    source=mini_buildd.models.Source.objects.get(codename=codename, origin=origin), priority=priority)
                                 ps.save()
                                 # Add it to dist
-                                dist = mini_buildd.models.Distribution.objects.get(base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
+                                dist = mini_buildd.models.Distribution.objects.get(
+                                    base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
                             try_import(PrioritySource)
 
                         if (t == "base"):
-                            # "Distribution"
+
                             def Distribution():
                                 return mini_buildd.models.Distribution(base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
                             try_import(Distribution)
 
     def Repository():
         r = mini_buildd.models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
-                              layout=mini_buildd.models.Layout.objects.get(name="Default"),
-                              apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
-                              mail=conf08x.mbd_mail,
-                              external_home_url=conf08x.mbd_extdocurl)
+                                          layout=mini_buildd.models.Layout.objects.get(name="Default"),
+                                          apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
+                                          mail=conf08x.mbd_mail,
+                                          external_home_url=conf08x.mbd_extdocurl)
 
         for d in mini_buildd.models.Distribution.objects.all():
             r.distributions.add(d)

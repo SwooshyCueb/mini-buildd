@@ -15,6 +15,7 @@ from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
 
 log = logging.getLogger(__name__)
 
+
 class Archive(Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
                                     default="http://ftp.debian.org/debian",
@@ -46,6 +47,7 @@ class Archive(Model):
 
 django.contrib.admin.site.register(Archive, Archive.Admin)
 
+
 class Architecture(Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
@@ -58,6 +60,7 @@ class Component(Model):
 
     def __unicode__(self):
         return self.name
+
 
 class Source(StatusModel):
     # Identity
@@ -87,13 +90,8 @@ class Source(StatusModel):
         search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
         readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
-            ("Identity", {
-                    "fields": ("origin", "codename", "apt_keys")
-                    }),
-            ("Extra", {
-                    "classes": ("collapse",),
-                    "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")
-                    }),)
+            ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
+            ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
 
     def __unicode__(self):
         return u"{i}: {d} ({m} archives)".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()))
@@ -161,7 +159,7 @@ class Source(StatusModel):
     def mbd_get_apt_line(self):
         ".. todo:: Merge components as configured per repo."
         m = self.mbd_get_archive()
-        components=""
+        components = ""
         for c in self.components.all():
             components += c.name + " "
         return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)

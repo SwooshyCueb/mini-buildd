@@ -15,6 +15,7 @@ import mini_buildd.gnupg
 
 log = logging.getLogger(__name__)
 
+
 class Changes(debian.deb822.Changes):
     BUILDREQUEST_RE = re.compile("^.+_mini-buildd-buildrequest_[^_]+.changes$")
     BUILDRESULT_RE = re.compile("^.+_mini-buildd-buildresult_[^_]+.changes$")
@@ -146,7 +147,7 @@ class Changes(debian.deb822.Changes):
             ftp.connect(host, port)
             ftp.login()
             ftp.cwd("/incoming")
-            for fd in self.get_files() + [ {"name": self._file_name} ]:
+            for fd in self.get_files() + [{"name": self._file_name}]:
                 f = fd["name"]
                 log.debug("FTP: Uploading file: '{f}'".format(f=f))
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
@@ -175,14 +176,14 @@ class Changes(debian.deb822.Changes):
         if not os.path.exists(logdir):
             os.makedirs(logdir)
         log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
-        for fd in [ {"name": self._file_name} ] + self.get_files():
+        for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
             log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
             os.rename(f, os.path.join(logdir, fd["name"]))
 
     def remove(self):
         log.info("Removing changes: '{f}'".format(f=self._file_path))
-        for fd in [ {"name": self._file_name} ] + self.get_files():
+        for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
             log.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
@@ -208,12 +209,12 @@ class Changes(debian.deb822.Changes):
                 open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
                 # Generate tar from original changes
-                self.tar(tar_path=breq._file_path + ".tar", add_files=[
-                        os.path.join(path, "apt_sources.list"),
-                        os.path.join(path, "apt_preferences"),
-                        os.path.join(path, "apt_keys"),
-                        chroot_setup_script,
-                        os.path.join(path, "sbuildrc_snippet")])
+                self.tar(tar_path=breq._file_path + ".tar",
+                         add_files=[os.path.join(path, "apt_sources.list"),
+                                    os.path.join(path, "apt_preferences"),
+                                    os.path.join(path, "apt_keys"),
+                                    chroot_setup_script,
+                                    os.path.join(path, "sbuildrc_snippet")])
                 breq.add_file(breq._file_path + ".tar")
 
                 breq["Base-Distribution"] = dist.base_source.codename
@@ -225,9 +226,9 @@ class Changes(debian.deb822.Changes):
                 if dist.lintian_mode != dist.LINTIAN_DISABLED:
                     # Generate lintian options
                     modeargs = {
-                        dist.LINTIAN_DISABLED:        "",
-                        dist.LINTIAN_RUN_ONLY:        "",
-                        dist.LINTIAN_FAIL_ON_ERROR:   "",
+                        dist.LINTIAN_DISABLED: "",
+                        dist.LINTIAN_RUN_ONLY: "",
+                        dist.LINTIAN_FAIL_ON_ERROR: "",
                         dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
                     breq["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
 

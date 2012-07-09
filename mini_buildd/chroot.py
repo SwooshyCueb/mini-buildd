@@ -15,8 +15,9 @@ log = logging.getLogger(__name__)
 
 from mini_buildd.models import StatusModel, msg_info
 
+
 class Chroot(StatusModel):
-    PERSONALITIES = { 'i386': 'linux32' }
+    PERSONALITIES = {'i386': 'linux32'}
 
     from mini_buildd.models import Source, Architecture
     source = django.db.models.ForeignKey(Source)
@@ -40,7 +41,7 @@ go to the default mapping.
 
     class Admin(StatusModel.Admin):
         search_fields = StatusModel.Admin.search_fields + ["source", "architecture"]
-        readonly_fields = StatusModel.Admin.readonly_fields + [ "personality" ]
+        readonly_fields = StatusModel.Admin.readonly_fields + ["personality"]
 
     def __unicode__(self):
         return "{c}/{a}".format(c=self.source.codename, a=self.architecture.name)
@@ -148,23 +149,23 @@ class FileChroot(Chroot):
     COMPRESSION_BZIP2 = 2
     COMPRESSION_XZ = 3
     COMPRESSION_CHOICES = (
-        (COMPRESSION_NONE,  "no compression"),
-        (COMPRESSION_GZIP,  "gzip"),
+        (COMPRESSION_NONE, "no compression"),
+        (COMPRESSION_GZIP, "gzip"),
         (COMPRESSION_BZIP2, "bzip2"),
-        (COMPRESSION_XZ,    "xz"))
+        (COMPRESSION_XZ, "xz"))
 
     compression = django.db.models.SmallIntegerField(choices=COMPRESSION_CHOICES, default=COMPRESSION_NONE)
 
     TAR_ARGS = {
-        COMPRESSION_NONE:  [],
-        COMPRESSION_GZIP:  ["--gzip"],
+        COMPRESSION_NONE: [],
+        COMPRESSION_GZIP: ["--gzip"],
         COMPRESSION_BZIP2: ["--bzip2"],
-        COMPRESSION_XZ:    ["--xz"]}
+        COMPRESSION_XZ: ["--xz"]}
     TAR_SUFFIX = {
-        COMPRESSION_NONE:  "tar",
-        COMPRESSION_GZIP:  "tar.gz",
+        COMPRESSION_NONE: "tar",
+        COMPRESSION_GZIP: "tar.gz",
         COMPRESSION_BZIP2: "tar.bz2",
-        COMPRESSION_XZ:    "tar.xz"}
+        COMPRESSION_XZ: "tar.xz"}
 
     class Meta(Chroot.Meta):
         pass
@@ -186,7 +187,7 @@ file={t}
             (["/bin/tar",
               "--create",
               "--directory={d}".format(d=self.mbd_get_tmp_dir()),
-              "--file={f}".format(f=self.mbd_get_tar_file()) ] +
+              "--file={f}".format(f=self.mbd_get_tar_file())] +
              self.TAR_ARGS[self.compression] +
              ["."],
              []),

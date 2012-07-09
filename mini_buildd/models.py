@@ -54,20 +54,24 @@ import django.template.response
 
 log = logging.getLogger(__name__)
 
+
 def msg_info(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
     log.info(msg)
+
 
 def msg_error(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
     log.error(msg)
 
+
 def msg_warn(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
+
 
 class Model(django.db.models.Model):
     """Abstract father model for all mini-buildd models.
@@ -82,6 +86,7 @@ class Model(django.db.models.Model):
         if mini_buildd.daemon.get().is_running():
             raise django.core.exceptions.ValidationError(u"""Please deactivate the Daemon instance to change any configuration!""")
         super(Model, self).clean()
+
 
 class StatusModel(Model):
     """
@@ -106,8 +111,8 @@ class StatusModel(Model):
     status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
     STATUS_COLORS = {
         STATUS_UNPREPARED: "yellow",
-        STATUS_PREPARED:"blue",
-        STATUS_ACTIVE: "green" }
+        STATUS_PREPARED: "blue",
+        STATUS_ACTIVE: "green"}
 
     class Meta:
         abstract = True
@@ -160,7 +165,7 @@ Unpreparing means all the data associated by preparation will be
 removed from the system. Especially for repositories,
 this would mean losing all packages!
 """,
-                        "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME },
+                        "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
                     current_app=self.admin_site.name)
         action_unprepare.short_description = "mini-buildd: 4 Unprepare selected objects"
 
@@ -179,53 +184,88 @@ this would mean losing all packages!
     def mbd_deactivate(self, request):
         pass
 
+
 from mini_buildd import gnupg
+
+
 class AptKey(gnupg.GnuPGPublicKey):
     pass
 django.contrib.admin.site.register(AptKey, AptKey.Admin)
+
 
 class UserKey(gnupg.GnuPGPublicKey):
     pass
 django.contrib.admin.site.register(UserKey, UserKey.Admin)
 
+
 from mini_buildd import source
+
+
 class Archive(source.Archive):
     pass
+
+
 class Architecture(source.Architecture):
     pass
+
+
 class Component(source.Component):
     pass
+
+
 class Source(source.Source):
     pass
+
+
 class PrioritySource(source.PrioritySource):
     pass
 
 
 from mini_buildd import repository
+
+
 class EmailAddress(repository.EmailAddress):
     pass
+
+
 class Suite(repository.Suite):
     pass
+
+
 class Layout(repository.Layout):
     pass
+
+
 class Distribution(repository.Distribution):
     pass
+
+
 class Repository(repository.Repository):
     pass
 
 
 from mini_buildd import chroot
+
+
 class Chroot(chroot.Chroot):
     pass
+
+
 class FileChroot(chroot.FileChroot):
     pass
+
+
 class LVMChroot(chroot.LVMChroot):
     pass
+
+
 class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
 
 
 from mini_buildd import daemon
+
+
 class Daemon(daemon.Daemon):
     pass
 
@@ -243,8 +283,9 @@ class UserProfile(gnupg.GnuPGPublicKey):
 
 django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
 
-# Automatically create a user profile with every user that is created
+
 def create_user_profile(sender, instance, created, **kwargs):
+    "Automatically create a user profile with every user that is created"
     if created:
         UserProfile.objects.create(user=instance)
 django.db.models.signals.post_save.connect(create_user_profile, sender=django.contrib.auth.models.User)

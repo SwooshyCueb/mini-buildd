@@ -54,6 +54,7 @@ from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, ms
 
 log = logging.getLogger(__name__)
 
+
 class Daemon(StatusModel):
     # Basics
     hostname = django.db.models.CharField(
@@ -80,7 +81,7 @@ Expire-Date: 0
 
     # Load options
     incoming_queue_size = django.db.models.SmallIntegerField(
-        default=2*mini_buildd.misc.get_cpus(),
+        default=2 * mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel packages to process.")
 
     build_queue_size = django.db.models.SmallIntegerField(
@@ -115,15 +116,9 @@ prevent original package maintainers to be spammed.
 
     class Admin(StatusModel.Admin):
         fieldsets = (
-            ("Basics", {
-                    "fields": ("hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")
-                    }),
-            ("Load Options", {
-                    "fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")
-                    }),
-            ("E-Mail Options", {
-                    "fields": ("smtp_server", "notify", "allow_emails_to")
-                    }))
+            ("Basics", {"fields": ("hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")}),
+            ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
+            ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}))
 
     def __init__(self, *args, **kwargs):
         ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
@@ -185,6 +180,7 @@ incoming = /incoming
     def mbd_notify(self, subject, body, repository=None, changes=None):
         m_to = []
         m_to_allow = re.compile(self.allow_emails_to)
+
         def add_to(address):
             if address and m_to_allow.search(address):
                 m_to.append(address)
@@ -221,6 +217,7 @@ incoming = /incoming
             log.warn("No email addresses found, skipping: {s}".format(s=subject))
 
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
+
 
 class Package(object):
     DONE = 0
@@ -312,6 +309,7 @@ class Package(object):
             self.notify()
         return self.DONE
 
+
 def run():
     """.. todo:: Own GnuPG model """
     # Get/Create daemon model instance (singleton-like)
@@ -320,8 +318,8 @@ def run():
     # Start mini_buildd.ftpd and mini_buildd.builder
     ftpd_thread = mini_buildd.misc.run_as_thread(mini_buildd.ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
     builder_thread = mini_buildd.misc.run_as_thread(mini_buildd.builder.run, queue=dm._build_queue,
-                                        status=dm._builder_status,
-                                        build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
+                                                    status=dm._builder_status,
+                                                    build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
 
     while True:
         event = dm._incoming_queue.get()
@@ -332,6 +330,7 @@ def run():
                  format(len(dm._packages), dm._incoming_queue.qsize()))
 
         try:
+
             def update_packages(build_result):
                 pid = build_result.get_pkg_id()
                 if pid in dm._packages:
@@ -361,6 +360,7 @@ def run():
     mini_buildd.ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
+
 
 class Manager():
     def __init__(self):
@@ -402,7 +402,7 @@ class Manager():
         self.start(r)
 
     def is_running(self):
-        return self.thread != None
+        return self.thread is not None
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
@@ -429,7 +429,10 @@ class Manager():
            p=len(self.model._packages), packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
+
 _INSTANCE = None
+
+
 def get():
     global _INSTANCE
     assert(_INSTANCE)

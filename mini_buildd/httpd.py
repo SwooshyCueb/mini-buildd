@@ -9,6 +9,7 @@ import mini_buildd.setup
 
 log = logging.getLogger(__name__)
 
+
 def log_init():
     """
     Setup CherryPy to use mini-buildd's logging mechanisms.
@@ -29,11 +30,13 @@ def log_init():
     http_error = cherrypy._cperror.HTTPError
     http_error.set_response = lambda msg: log.log(logging.ERROR, msg)
 
+
 def exit():
     """
     Stop the CherryPy engine.
     """
     cherrypy.engine.exit()
+
 
 def run(bind, wsgi_app):
     """
@@ -65,29 +68,29 @@ def run(bind, wsgi_app):
     else:
         static_sub_dir_admin = "media"
 
-    static_handler_admin = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_admin, root = static_base_dir_admin)
+    static_handler_admin = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_admin, root=static_base_dir_admin)
     cherrypy.tree.mount(static_handler_admin, '/static/admin')
 
     # static files: css
     static_sub_dir_css = "css"
-    static_handler_css = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_css, root = static_base_dir)
+    static_handler_css = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_css, root=static_base_dir)
     cherrypy.tree.mount(static_handler_css, '/static/css')
 
     # static files: images
     static_sub_dir_images = "images"
-    static_handler_images = cherrypy.tools.staticdir.handler(section = "/", dir = static_sub_dir_images, root = static_base_dir)
+    static_handler_images = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_images, root=static_base_dir)
     cherrypy.tree.mount(static_handler_images, '/static/images')
 
     # static files: manual
-    static_handler_manual = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir_manual)
+    static_handler_manual = cherrypy.tools.staticdir.handler(section="/", dir=".", root=static_base_dir_manual)
     cherrypy.tree.mount(static_handler_manual, '/manual')
 
     # static files: .
-    static_handler = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = static_base_dir)
+    static_handler = cherrypy.tools.staticdir.handler(section="/", dir=".", root=static_base_dir)
     cherrypy.tree.mount(static_handler, '/static')
 
     # access mini-buildd's log dir
-    static_handler_log = cherrypy.tools.staticdir.handler(section = "/", dir = ".", root = mini_buildd.setup.LOG_DIR,
+    static_handler_log = cherrypy.tools.staticdir.handler(section="/", dir=".", root=mini_buildd.setup.LOG_DIR,
                                                           content_types={"log": "text/plain", "buildlog": "text/plain"})
     cherrypy.tree.mount(static_handler_log, '/log')
 

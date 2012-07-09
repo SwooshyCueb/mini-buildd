@@ -13,5 +13,4 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^mini_buildd/", django.conf.urls.defaults.include('mini_buildd.urls')),
     # admin
     django.conf.urls.defaults.url(r"^admin/doc/", django.conf.urls.defaults.include('django.contrib.admindocs.urls')),
-    django.conf.urls.defaults.url(r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
-    )
+    django.conf.urls.defaults.url(r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),)

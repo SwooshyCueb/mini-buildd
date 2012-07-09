@@ -18,6 +18,7 @@ import mini_buildd.httpd
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
 
+
 class Main():
     @classmethod
     def _parse_args(cls):
@@ -75,10 +76,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         mini_buildd.setup.REPOSITORIES_DIR = os.path.join(self._args.home, "repositories")
 
         vardir = os.path.join(self._args.home, "var")
-        mini_buildd.setup.LOG_DIR     = os.path.join(vardir, "log")
+        mini_buildd.setup.LOG_DIR = os.path.join(vardir, "log")
         mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
         mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
-        mini_buildd.setup.SPOOL_DIR   = os.path.join(vardir, "spool")
+        mini_buildd.setup.SPOOL_DIR = os.path.join(vardir, "spool")
 
         if os.path.exists("./build/sphinx/html"):
             # A bit clumsy, but should work: Seems to be a development run
@@ -118,7 +119,7 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             log.addHandler(ch)
 
         # Finally, set log level
-        loglevel = logging.WARNING-(10*(min(2, self._args.verbosity)-min(2, self._args.terseness)))
+        loglevel = logging.WARNING - (10 * (min(2, self._args.verbosity) - min(2, self._args.terseness)))
         log.setLevel(loglevel)
 
         # Global: Don't propagate exceptions that happen while logging

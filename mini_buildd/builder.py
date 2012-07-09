@@ -13,6 +13,7 @@ import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
+
 class Status(object):
     "... todo:: Some of these methods require locking(?)"
 
@@ -37,7 +38,7 @@ class Status(object):
     def get_html(self):
         def html_li(d):
             html = ""
-            for key,value in d.items():
+            for key, value in d.items():
                 start, done = value
                 html += "<li>{k} ({d})</li>".format(k=key, d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
             return html
@@ -50,9 +51,10 @@ class Status(object):
 
 <h3>{np} pending:</h3>
 <ul>{p}</ul>
-""".format(n=len(self._building)+len(self._pending),
+""".format(n=len(self._building) + len(self._pending),
            nb=len(self._building), b=html_li(self._building),
            np=len(self._pending), p=html_li(self._pending))
+
 
 def buildlog_to_buildresult(fn, bres):
     regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
@@ -63,12 +65,14 @@ def buildlog_to_buildresult(fn, bres):
                 s = l.split(":")
                 bres["Sbuild-" + s[0]] = s[1].strip()
 
+
 def build_clean(breq):
     if "build" in mini_buildd.setup.DEBUG:
         log.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=breq.get_spool_dir()))
     else:
         shutil.rmtree(breq.get_spool_dir())
     breq.remove()
+
 
 def generate_sbuildrc(path, breq):
     " Generate .sbuildrc for a build request (not all is configurable via switches, unfortunately)."
@@ -93,6 +97,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 1;
 """)
 
+
 def build(breq, jobs, status):
     """
     .. todo:: Builder
@@ -110,9 +115,10 @@ def build(breq, jobs, status):
 
     build_dir = breq.get_spool_dir()
 
-    bres = mini_buildd.changes.Changes(os.path.join(build_dir,
-                                        "{s}_{v}_mini-buildd-buildresult_{a}.changes".
-                                        format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
+    bres = mini_buildd.changes.Changes(
+        os.path.join(build_dir,
+                     "{s}_{v}_mini-buildd-buildresult_{a}.changes".
+                     format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
 
     if bres.is_new():
         try:
@@ -196,8 +202,10 @@ def build(breq, jobs, status):
     except Exception as e:
         log.error("Upload failed (trying later): {e}".format(e=str(e)))
 
+
 def run(queue, status, build_queue_size, sbuild_jobs):
     threads = []
+
     def threads_cleanup():
         rm = []
         for t in threads:

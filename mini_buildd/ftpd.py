@@ -13,6 +13,7 @@ import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
+
 def log_init():
     """
     Force pyftpdlib log callbacks to the mini_buildd log.
@@ -31,6 +32,8 @@ def log_init():
 
 
 _CHANGES_RE = re.compile("^.*\.changes$")
+
+
 def handle_incoming_file(queue, f):
     global _CHANGES_RE
     if _CHANGES_RE.match(f):
@@ -39,11 +42,13 @@ def handle_incoming_file(queue, f):
     else:
         log.debug("Ignoring incoming file: {f}".format(f=f))
 
+
 class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, f):
         # Make any incoming file read-only as soon as it arrives; avoids multiple user uploads of the same file
         os.chmod(f, stat.S_IRUSR | stat.S_IRGRP)
         handle_incoming_file(self._mini_buildd_queue, f)
+
 
 def run(bind, queue):
     ".. todo:: ftpd load options"
@@ -73,6 +78,7 @@ def run(bind, queue):
     while _RUN:
         ftpd.serve_forever(count=1)
     ftpd.close()
+
 
 def shutdown():
     global _RUN

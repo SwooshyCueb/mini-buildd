@@ -9,9 +9,10 @@ import mini_buildd.misc
 
 log = logging.getLogger(__name__)
 
+
 class Reprepro():
     def __init__(self, basedir):
-        self._cmd = ["reprepro",  "--verbose", "--basedir={b}".format(b=basedir)]
+        self._cmd = ["reprepro", "--verbose", "--basedir={b}".format(b=basedir)]
 
     def clearvanished(self):
         mini_buildd.misc.call(self._cmd + ["clearvanished"])

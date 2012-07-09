@@ -57,12 +57,13 @@ a:hover
 	font-size: 15px;
 	color: #ffffff;
 	background-color: #afc1c4;
-	border-left: 1px solid #57859a; /*417690;*/
-	border-right: 1px solid #57859a; /*417690; #635543;*/
+	border-left: 1px solid #57859a;
+	border-right: 1px solid #57859a;
 	margin: 0;
 	padding: 35px 8px 16px 8px;
 	text-decoration: underline;
 }
+
 
 /* BRANDING */
 
@@ -112,6 +113,10 @@ a:hover
 	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
 	background-color: #57859a;
 	color: white;
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0;
+	padding: 3px 0px 3px 5px;
 	font-size: 14px;
 	font-weight: bold;
 	margin: 0;
@@ -120,12 +125,27 @@ a:hover
 	border-right: 2px solid #57859a;
 }
 
+#mb_content .inner-box
+{
+	border: 1px solid #57859a;
+	margin: 15px 15px 15px 15px;
+}
+
+#mb_content h1.inner-box-caption
+{
+	background-color: #81a2ae;
+	color: white;
+	font-size: 13px;
+	font-weight: bold;
+	margin: 0;
+	padding: 3px 0px 3px 5px;
+}
 
 #mb_content h1, #mb_content h2, #mb_content h3, #mb_content h4, #mb_content h5
 {
 	color: #417690;
 	font-weight: bold;
-	padding: 0px 10px 0px 10px;
+	margin: 15px 15px 10px 15px;
 }
 
 #mb_content h1 {
@@ -150,37 +170,75 @@ a:hover
 
 #mb_content p, #mb_content ul
 {
-	margin: 5px 10px 5px 10px;
+	margin: 10px 15px 15px 15px;
+}
+
+#mb_content ul
+{
+	list-style-image: url("/static/images/mb_list_style_image.png");
 }
 
 #mb_content li
 {
-	margin: 2px 0px 2px 0px;
+	margin: 5px 0px 5px 0px;
 }
 
-
-/* todo: do we need this some time? */
-#mb_content caption.box
+#mb_content span.status
 {
-	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
-	background-color: #417690;
-	font-size: 11px;
-	padding: 5px 0px 4px 4px;
+	padding: 1px 3px 0px 3px;
+	background: url("/static/images/mb_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
 }
 
+#mb_content span.status.running
+{
+	color: green;
+}
+
+#mb_content span.status.stopped
+{
+	color: red;
+}
+
+#mb_content hr
+{
+	border-top: 1px dashed #aec1c3;
+	border-right: 0;
+	border-bottom: 0;
+	border-left: 0;
+	margin: 0px 15px 0px 15px;
+}
+
+#mb_content pre
+{
+	display: inline;
+	background-color: #f0f0f0;
+	border: 1px solid #aec1c3;
+	padding: 1px 2px 1px 2px;
+}
+
+#mb_content span.emphasize-headline
+{
+	font-style: italic;
+}
+
+#mb_content span.emphasize-migrates-from
+{
+	font-family: monospace;
+	font-style: italic;
+}
 
 
 /* FOOTER */
 
 #mb_footer
 {
-	width: 100%;
 	border-top: 1px solid #57859a;;
 	padding-left: 15px;
+	margin-bottom: 2px;
 }
 
-#mb_footer p.version
+#mb_footer p
 {
-	margin: 3px 15px 0 0;
-	color: #888888
+	margin: 4px 15px 0 0;
+	color: #888888;
 }

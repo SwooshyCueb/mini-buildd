@@ -71,7 +71,7 @@ Administration
 Enter the web application's `configuration section </admin/mini_buildd/>`_.
 
 1. **Configure** and **prepare** the daemon instance.
-2. **Add** mirror(s).
+2. **Add** archive(s).
 3. **Add** source(s) and **activate**.
 4. **Add** distribution(s).
 5. **Add** at least one repository and **activate**.

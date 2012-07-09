@@ -416,23 +416,24 @@ class Manager():
             packages += "</ul>"
             return packages
 
-        return u"""
-<h1>{s}: {id}</h1>
+        return u'''
+<h1 class="box-caption">Status: <span class="status {style}">{s}</span></h1>
+
+<h2>{id}</h2>
+
 <ul>
   <li>{c} changes files pending in incoming.</li>
   <li>{b} build requests pending in queue.</li>
 </ul>
 
-<h2>{p} active packages</h2>
+<h3>{p} active packages</h3>
 {packages}
 
 {builder_status}
-""".format(s="Running" if self.is_running() else "Stopped",
-           id=self.model,
-           c=self.model._incoming_queue.qsize(),
-           b=self.model._build_queue.qsize(),
-           p=len(self.model._packages),
-           packages=packages(),
+'''.format(style="running" if self.is_running() else "stopped",
+           s="Running" if self.is_running() else "Stopped", id=self.model,
+           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
+           p=len(self.model._packages), packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
 

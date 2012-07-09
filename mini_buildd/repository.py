@@ -347,7 +347,7 @@ class Repository(StatusModel):
         return result
 
     def mbd_get_mandatory_version(self, dist, suite):
-        return suite.get_mandatory_version(self, dist)
+        return suite.mbd_get_mandatory_version(self, dist)
 
     def mbd_reprepro_config(self):
         result = StringIO.StringIO()

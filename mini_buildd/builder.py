@@ -44,12 +44,12 @@ class Status(object):
             return html
 
         return u"""\
-<h2>{n} active builds</h2>
+<h3>{n} active builds</h3>
 
-<h3>{nb} building:</h3>
+<h4>{nb} building:</h4>
 <ul>{b}</ul>
 
-<h3>{np} pending:</h3>
+<h4>{np} pending:</h4>
 <ul>{p}</ul>
 """.format(n=len(self._building) + len(self._pending),
            nb=len(self._building), b=html_li(self._building),

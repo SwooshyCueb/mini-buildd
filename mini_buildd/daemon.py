@@ -362,7 +362,7 @@ def run():
     builder_thread.join()
     ftpd_thread.join()
 
-class _Daemon():
+class Manager():
     def __init__(self):
         self.update_model()
         self.thread = None

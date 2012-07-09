@@ -167,7 +167,7 @@ class Main():
             import mini_buildd.daemon
 
             # Get one global daemon instance
-            d = mini_buildd.daemon._Daemon()
+            dm = mini_buildd.daemon.Manager()
 
             # Start httpd webapp
             mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
@@ -175,11 +175,11 @@ class Main():
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    d.restart()
+                    dm.restart()
                 else:
                     break
 
-            d.stop()
+            dm.stop()
             mini_buildd.httpd.exit()
 
 # Main

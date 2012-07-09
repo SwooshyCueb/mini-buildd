@@ -311,52 +311,55 @@ class Package(object):
 
 
 def run():
-    """.. todo:: Own GnuPG model """
-    # Get/Create daemon model instance (singleton-like)
-    dm = get().model
+    """ mini-buildd 'daemon engine' run.
+    """
 
-    # Start mini_buildd.ftpd and mini_buildd.builder
-    ftpd_thread = mini_buildd.misc.run_as_thread(mini_buildd.ftpd.run, bind=dm.ftpd_bind, queue=dm._incoming_queue)
-    builder_thread = mini_buildd.misc.run_as_thread(mini_buildd.builder.run, queue=dm._build_queue,
-                                                    status=dm._builder_status,
-                                                    build_queue_size=dm.build_queue_size, sbuild_jobs=dm.sbuild_jobs)
+    ftpd_thread = mini_buildd.misc.run_as_thread(
+        mini_buildd.ftpd.run,
+        bind=get().model.ftpd_bind,
+        queue=get().model._incoming_queue)
+
+    builder_thread = mini_buildd.misc.run_as_thread(
+        mini_buildd.builder.run, queue=get().model._build_queue,
+        status=get().model._builder_status,
+        build_queue_size=get().model.build_queue_size, sbuild_jobs=get().model.sbuild_jobs)
 
     while True:
-        event = dm._incoming_queue.get()
+        event = get().model._incoming_queue.get()
         if event == "SHUTDOWN":
             break
 
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                 format(len(dm._packages), dm._incoming_queue.qsize()))
+                 format(len(get().model._packages), get().model._incoming_queue.qsize()))
 
         try:
 
             def update_packages(build_result):
                 pid = build_result.get_pkg_id()
-                if pid in dm._packages:
-                    if dm._packages[pid].update(build_result) == Package.DONE:
-                        del dm._packages[pid]
+                if pid in get().model._packages:
+                    if get().model._packages[pid].update(build_result) == Package.DONE:
+                        del get().model._packages[pid]
                     return True
                 return False
 
             c = mini_buildd.changes.Changes(event)
             if c.is_buildrequest():
-                dm._build_queue.put(event)
+                get().model._build_queue.put(event)
             elif c.is_buildresult():
                 if not update_packages(c):
-                    dm._stray_buildresults.append(c)
+                    get().model._stray_buildresults.append(c)
             else:
                 pid = c.get_pkg_id()
-                dm._packages[pid] = Package(c)
-                for br in dm._stray_buildresults:
+                get().model._packages[pid] = Package(c)
+                for br in get().model._stray_buildresults:
                     update_packages(br)
 
         except Exception as e:
             log.exception("Exception in daemon loop: {e}".format(e=str(e)))
         finally:
-            dm._incoming_queue.task_done()
+            get().model._incoming_queue.task_done()
 
-    dm._build_queue.put("SHUTDOWN")
+    get().model._build_queue.put("SHUTDOWN")
     mini_buildd.ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
@@ -424,9 +427,12 @@ class Manager():
 {packages}
 
 {builder_status}
-""".format(s="Running" if self.is_running() else "Stopped", id=self.model,
-           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
-           p=len(self.model._packages), packages=packages(),
+""".format(s="Running" if self.is_running() else "Stopped",
+           id=self.model,
+           c=self.model._incoming_queue.qsize(),
+           b=self.model._build_queue.qsize(),
+           p=len(self.model._packages),
+           packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
 

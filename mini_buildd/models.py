@@ -193,11 +193,6 @@ class AptKey(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(AptKey, AptKey.Admin)
 
 
-class UserKey(gnupg.GnuPGPublicKey):
-    pass
-django.contrib.admin.site.register(UserKey, UserKey.Admin)
-
-
 from mini_buildd import source
 
 

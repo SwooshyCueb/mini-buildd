@@ -8,9 +8,11 @@ import logging
 
 import django.db
 import django.core.exceptions
+import django.contrib.auth.models
 
 import mini_buildd.setup
 import mini_buildd.misc
+import mini_buildd.gnupg
 import mini_buildd.reprepro
 
 from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info
@@ -263,6 +265,16 @@ class Repository(StatusModel):
 
     def __unicode__(self):
         return self.identity
+
+    def mbd_get_uploader_keyring(self):
+        gpg = mini_buildd.gnupg.TmpGnuPG()
+        for u in django.contrib.auth.models.User.objects.all():
+            p = u.get_profile()
+            for r in p.may_upload_to.all():
+                if r.identity == self.identity:
+                    gpg.add_pub_key(p.key)
+                    log.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+        return gpg
 
     def mbd_get_path(self):
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)

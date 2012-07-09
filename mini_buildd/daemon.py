@@ -223,13 +223,18 @@ class Package(object):
     DONE = 0
     INCOMPLETE = 1
 
-    def __init__(self, changes):
+    def __init__(self, changes, keyrings):
         """.. todo:: Remove discarded from incoming. """
         self.changes = changes
         self.pid = changes.get_pkg_id()
         try:
             self.repository, self.dist, self.suite = changes.get_repository()
-            self.changes.authenticate_against_users(self.repository)
+
+            if self.repository.allow_unauthenticated_uploads:
+                log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self.changes._file_name))
+            else:
+                keyrings[self.repository.identity].verify(self.changes._file_path)
+
             self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
             self.success = {}
             self.failed = {}
@@ -314,6 +319,10 @@ def run():
     """ mini-buildd 'daemon engine' run.
     """
 
+    uploader_keyrings = {}
+    for r in Repository.objects.all():
+        uploader_keyrings[r.identity] = r.mbd_get_uploader_keyring()
+
     ftpd_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.ftpd.run,
         bind=get().model.ftpd_bind,
@@ -350,7 +359,7 @@ def run():
                     get().model._stray_buildresults.append(c)
             else:
                 pid = c.get_pkg_id()
-                get().model._packages[pid] = Package(c)
+                get().model._packages[pid] = Package(c, uploader_keyrings)
                 for br in get().model._stray_buildresults:
                     update_packages(br)
 

@@ -124,20 +124,6 @@ class Changes(debian.deb822.Changes):
         import mini_buildd.daemon
         mini_buildd.daemon.get().model._gnupg.verify(self._file_path)
 
-    def authenticate_against_users(self, repository):
-        if repository.allow_unauthenticated_uploads:
-            log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self._file_name))
-        else:
-            import django.contrib.auth.models
-            gpg = mini_buildd.gnupg.TmpGnuPG()
-            for u in django.contrib.auth.models.User.objects.all():
-                p = u.get_profile()
-                for r in p.may_upload_to.all():
-                    if r.identity == repository.identity:
-                        gpg.add_pub_key(p.key)
-                        log.info(u"Uploader key added for '{r}': {k}: {n}".format(r=repository, k=p.key_long_id, n=p.key_name))
-            gpg.verify(self._file_path)
-
     def upload(self, host="localhost", port=8067):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):

@@ -171,7 +171,7 @@ class Changes(debian.deb822.Changes):
             log.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
-        logdir=self.get_log_dir()
+        logdir = self.get_log_dir()
         if not os.path.exists(logdir):
             os.makedirs(logdir)
         log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))

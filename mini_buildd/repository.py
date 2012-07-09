@@ -308,7 +308,7 @@ class Repository(StatusModel):
                 if d.base_source.codename == base:
                     for s in self.layout.suites.all():
                         if s.name == suite:
-                            return d,s
+                            return d, s
         raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=dist))
 
     def mbd_get_apt_sources_list(self, dist):
@@ -317,7 +317,7 @@ class Repository(StatusModel):
 
         - get_apt_sources_list(): decide what other mini-buildd suites are to be included automatically
         """
-        d,s = self.mbd_find_dist(dist)
+        d, s = self.mbd_find_dist(dist)
         res = d.mbd_get_apt_sources_list()
         res += "\n"
         res += "# Mini-Buildd: {d}\n".format(d=dist)
@@ -329,7 +329,7 @@ class Repository(StatusModel):
         return ""
 
     def mbd_get_apt_keys(self, dist):
-        d,s = self.mbd_find_dist(dist)
+        d, s = self.mbd_find_dist(dist)
         import mini_buildd.daemon
         result = mini_buildd.daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
@@ -338,12 +338,12 @@ class Repository(StatusModel):
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
-        d,s = self.mbd_find_dist(dist)
+        d, s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d,s = self.mbd_find_dist(dist)
+        d, s = self.mbd_find_dist(dist)
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.

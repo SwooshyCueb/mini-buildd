@@ -12,7 +12,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
     log.info("Importing 0.8.x config from: {f}".format(f=f))
     conf08x = imp.load_source('mini_buildd.shconf', f)
 
-    def tryImport(f):
+    def try_import(f):
         try:
             o = f()
             o.save()
@@ -20,7 +20,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
         except Exception as e:
             log.warn("{f}: import failed: {e}".format(f=f.__name__, e=str(e)))
 
-    tryImport(mini_buildd.models.create_default_layout);
+    try_import(mini_buildd.models.create_default_layout)
 
     # Wander all dists...
     for d in conf08x.mbd_dists.split(", "):
@@ -31,11 +31,11 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                 # "Architecture"
                 def Architecture():
                     return mini_buildd.models.Architecture(arch=a)
-                tryImport(Architecture)
+                try_import(Architecture)
 
             archs.append("any")
             for a in archs:
-                v="mbd_src_" + d + "_" + t + "_" + a
+                v = "mbd_src_" + d + "_" + t + "_" + a
                 sources = getattr(conf08x, v)
                 log.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
 
@@ -51,7 +51,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                         priority = slist[2] if len(slist) > 2 else "1"
 
                         # Do some magic to find "origin", not configured explicitly in 0.8.x config
-                        origin="FIXME: No known origin (0.8.x 'extra source' import)"
+                        origin = "FIXME: No known origin (0.8.x 'extra source' import)"
                         if (t == "base"):
                             # Base: We assume that 0.8.x used Debian base sources only
                             origin = "Debian"
@@ -60,12 +60,12 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             origin = pin.split("o=")[1]
                         elif codename == d + "-backports":
                             # codename from apt line seems to be dist-backports; assuming Debian Backports
-                            origin="Debian Backports"
+                            origin = "Debian Backports"
 
                         # "Archive"
                         def Archive():
                             return mini_buildd.models.Archive(url=archive)
-                        tryImport(Archive)
+                        try_import(Archive)
 
                         # "Source"
                         def Source():
@@ -73,7 +73,7 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             no.save()
                             no.archives = mini_buildd.models.Archive.objects.filter(url=archive)
                             return no
-                        tryImport(Source)
+                        try_import(Source)
 
                         if (t == "extra"):
                             # "PrioritySource"
@@ -85,13 +85,13 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
-                            tryImport(PrioritySource)
+                            try_import(PrioritySource)
 
                         if (t == "base"):
                             # "Distribution"
                             def Distribution():
                                 return mini_buildd.models.Distribution(base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
-                            tryImport(Distribution)
+                            try_import(Distribution)
 
     def Repository():
         r = mini_buildd.models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
@@ -106,4 +106,4 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
         for a in mini_buildd.models.Architecture.objects.all():
             r.mandatory_architectures.add(a)
         return r
-    tryImport(Repository);
+    try_import(Repository)

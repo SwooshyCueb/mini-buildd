@@ -55,15 +55,18 @@ import django.template.response
 log = logging.getLogger(__name__)
 
 def msg_info(request, msg):
-    if request: django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
+    if request:
+        django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
     log.info(msg)
 
 def msg_error(request, msg):
-    if request: django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
+    if request:
+        django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
     log.error(msg)
 
 def msg_warn(request, msg):
-    if request: django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
+    if request:
+        django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
     log.warn(msg)
 
 class Model(django.db.models.Model):

@@ -8,6 +8,7 @@ import multiprocessing
 import tempfile
 import hashlib
 import logging
+import logging.handlers
 
 log = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
         try:
             subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
         except:
-            olog=log.error
+            olog = log.error
             raise
         finally:
             if log_output:
@@ -195,7 +196,6 @@ def sbuild_keys_workaround():
 
 def setup_test_logging(syslog=True):
     if syslog:
-        import logging.handlers
         sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
         sh.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
         log.addHandler(sh)

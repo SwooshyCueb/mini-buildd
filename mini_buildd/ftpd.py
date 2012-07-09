@@ -25,9 +25,9 @@ def log_init():
      As pyftpd "logline" really spews lot of lines, this is only
      enabled in debug mode.
     """
-    pyftpdlib.ftpserver.log = lambda msg: log.debug(msg)
-    pyftpdlib.ftpserver.logline = lambda msg: log.debug(msg) if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
-    pyftpdlib.ftpserver.logerror = lambda msg: log.error(msg)
+    pyftpdlib.ftpserver.log = log.debug
+    pyftpdlib.ftpserver.logline = log.debug if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
+    pyftpdlib.ftpserver.logerror = log.error
 
 
 _CHANGES_RE = re.compile("^.*\.changes$")

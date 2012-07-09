@@ -18,51 +18,52 @@ import mini_buildd.httpd
 log = logging.getLogger("mini_buildd")
 log.addHandler(logging.StreamHandler())
 
-def parse_args():
-    parser = argparse.ArgumentParser(prog="mini-buildd",
-                                     description="mini build daemon.",
-                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-
-    parser.add_argument('--version', action='version', version=mini_buildd.__version__)
-
-    parser.add_argument("-f", "--foreground", action='store_true',
-                        help="Don't daemonize, log to console.")
-    parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
-                        help="Web Server IP/Hostname and port to bind to.")
-
-    group_log = parser.add_argument_group("Logging")
-    group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
-                           help="Lower log level. Give twice for max logs.")
-    group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
-                           help="Tighten log level. Give twice for min logs.")
-    group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
-                           help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
-main,django,ftpd,build,sbuild")
-    group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
-                           help="Comma-separated list of loggers (file,syslog,console) to use.")
-
-    group_conf = parser.add_argument_group("Daemon configuration")
-    group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
-                            help="Run with this home dir. The only use case to change this for debugging, really.")
-
-    group_db = parser.add_argument_group("Database")
-    group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
-                          help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-    group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
-                          help="Import FILE to django database and exit; must be an absolute path name.') \
-django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
-    group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
-                          help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
-
-    args = parser.parse_args()
-
-    # Arguments that imply foreground mode
-    if args.set_admin_password or args.loaddata or args.dumpdata:
-        args.foreground = True
-
-    return args
-
 class Main():
+    @classmethod
+    def _parse_args(cls):
+        parser = argparse.ArgumentParser(prog="mini-buildd",
+                                         description="mini build daemon.",
+                                         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
+
+        parser.add_argument("-f", "--foreground", action='store_true',
+                            help="Don't daemonize, log to console.")
+        parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
+                            help="Web Server IP/Hostname and port to bind to.")
+
+        group_log = parser.add_argument_group("Logging")
+        group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
+                               help="Lower log level. Give twice for max logs.")
+        group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
+                               help="Tighten log level. Give twice for min logs.")
+        group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
+                               help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
+main,django,ftpd,build,sbuild")
+        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
+                               help="Comma-separated list of loggers (file,syslog,console) to use.")
+
+        group_conf = parser.add_argument_group("Daemon configuration")
+        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
+                                help="Run with this home dir. The only use case to change this for debugging, really.")
+
+        group_db = parser.add_argument_group("Database")
+        group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
+                              help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
+        group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
+                              help="Import FILE to django database and exit; must be an absolute path name.') \
+django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
+        group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
+                              help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
+
+        args = parser.parse_args()
+
+        # Arguments that imply foreground mode
+        if args.set_admin_password or args.loaddata or args.dumpdata:
+            args.foreground = True
+
+        return args
+
     def _setup(self):
         # Set global variables that really make no sense to
         # propagate through
@@ -131,7 +132,7 @@ class Main():
             os.environ[k] = pwd.getpwuid(os.getuid())[0]
 
     def __init__(self):
-        self._args = parse_args()
+        self._args = self._parse_args()
         # Daemonize early
         if not self._args.foreground:
             daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()

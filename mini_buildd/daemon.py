@@ -303,6 +303,8 @@ def gen_uploader_keyrings():
     keyrings = {}
     for r in Repository.objects.all():
         keyrings[r.identity] = r.mbd_get_uploader_keyring()
+        # Always add our key too for internal builds
+        keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
     return keyrings
 
 def gen_remotes_keyring():

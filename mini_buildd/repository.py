@@ -233,6 +233,19 @@ class Repository(StatusModel):
     allow_unauthenticated_uploads = django.db.models.BooleanField(default=False,
                                                                   help_text="Allow unauthenticated user uploads.")
 
+    extra_uploader_keyrings = django.db.models.TextField(blank=True,
+                                                     help_text="""\
+Extra keyrings, line by line, to be allowed as uploaders (in addition to configured django users).
+<br/>
+Example:
+<pre>
+# Allow Debian maintainers (must install the 'debian-keyring' package)
+/usr/share/keyrings/debian-keyring.gpg
+# Allow from some local keyring file
+/etc/my-schlingels.gpg
+</pre>
+""")
+
     notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
                                               help_text="Arbitrary list of email addresses to notify.")
     notify_changed_by = django.db.models.BooleanField(default=False,
@@ -247,7 +260,7 @@ class Repository(StatusModel):
 
     class Admin(StatusModel.Admin):
         fieldsets = (
-            ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads")}),
+            ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
     def __init__(self, *args, **kwargs):

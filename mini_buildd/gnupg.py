@@ -36,7 +36,6 @@ class BaseGnuPG(object):
     def pub_keys_info(self):
         res = []
         for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-public-keys", "--with-fingerprint", "--with-colons"]).splitlines():
-            log.info(l)
             res.append(l.split(":"))
         return res
 
@@ -48,6 +47,9 @@ class BaseGnuPG(object):
             t.write(key)
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
+
+    def add_keyring(self, keyring):
+        self.gpg_cmd.append("--keyring={k}".format(k=keyring))
 
     def verify(self, signed_file, file=None):
         try:

@@ -307,6 +307,7 @@ def gen_uploader_keyrings():
         keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
     return keyrings
 
+
 def gen_remotes_keyring():
     "Generate the remote keyring to authorize buildrequests and buildresults"
     from mini_buildd.models import Remote
@@ -317,6 +318,7 @@ def gen_remotes_keyring():
         keyring.add_pub_key(r.key)
         log.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring
+
 
 def run():
     """ mini-buildd 'daemon engine' run.

@@ -234,7 +234,7 @@ class Repository(StatusModel):
                                                                   help_text="Allow unauthenticated user uploads.")
 
     extra_uploader_keyrings = django.db.models.TextField(blank=True,
-                                                     help_text="""\
+                                                         help_text="""\
 Extra keyrings, line by line, to be allowed as uploaders (in addition to configured django users).
 <br/>
 Example:

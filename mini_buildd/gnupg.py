@@ -50,8 +50,11 @@ class BaseGnuPG(object):
             mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
     def verify(self, signed_file, file=None):
-        xtra_opts = [file] if file else []
-        mini_buildd.misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
+        try:
+            xtra_opts = [file] if file else []
+            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
+        except:
+            raise Exception("GnuPG authorization failed on '{c}'".format(c=signed_file))
 
     def sign(self, file, id=None):
         xtra_opts = ["--local-user={i}".format(i=id)] if id else []

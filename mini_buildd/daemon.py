@@ -223,18 +223,13 @@ class Package(object):
     DONE = 0
     INCOMPLETE = 1
 
-    def __init__(self, changes, keyrings):
+    def __init__(self, changes, repository, dist, suite):
         """.. todo:: Remove discarded from incoming. """
         self.changes = changes
+        self.repository, self.dist, self.suite = repository, dist, suite
+
         self.pid = changes.get_pkg_id()
         try:
-            self.repository, self.dist, self.suite = changes.get_repository()
-
-            if self.repository.allow_unauthenticated_uploads:
-                log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self.changes._file_name))
-            else:
-                keyrings[self.repository.identity].verify(self.changes._file_path)
-
             self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
             self.success = {}
             self.failed = {}
@@ -319,9 +314,19 @@ def run():
     """ mini-buildd 'daemon engine' run.
     """
 
+    # Generate all upload keyrings for each repository
     uploader_keyrings = {}
     for r in Repository.objects.all():
         uploader_keyrings[r.identity] = r.mbd_get_uploader_keyring()
+
+    # Generate the remote keyring to authorize buildrequests and buildresults
+    from mini_buildd.models import Remote
+    remotes_keyring = mini_buildd.gnupg.TmpGnuPG()
+    # Always add our own key
+    remotes_keyring.add_pub_key(get().model.mbd_get_pub_key())
+    for r in Remote.objects.all():
+        remotes_keyring.add_pub_key(r.key)
+        log.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
 
     ftpd_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.ftpd.run,
@@ -329,9 +334,11 @@ def run():
         queue=get().model._incoming_queue)
 
     builder_thread = mini_buildd.misc.run_as_thread(
-        mini_buildd.builder.run, queue=get().model._build_queue,
+        mini_buildd.builder.run,
+        queue=get().model._build_queue,
         status=get().model._builder_status,
-        build_queue_size=get().model.build_queue_size, sbuild_jobs=get().model.sbuild_jobs)
+        build_queue_size=get().model.build_queue_size,
+        sbuild_jobs=get().model.sbuild_jobs)
 
     while True:
         event = get().model._incoming_queue.get()
@@ -341,25 +348,32 @@ def run():
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
                  format(len(get().model._packages), get().model._incoming_queue.qsize()))
 
+        def update_packages(build_result):
+            pid = build_result.get_pkg_id()
+            if pid in get().model._packages:
+                if get().model._packages[pid].update(build_result) == Package.DONE:
+                    del get().model._packages[pid]
+                return True
+            return False
+
         try:
-
-            def update_packages(build_result):
-                pid = build_result.get_pkg_id()
-                if pid in get().model._packages:
-                    if get().model._packages[pid].update(build_result) == Package.DONE:
-                        del get().model._packages[pid]
-                    return True
-                return False
-
             c = mini_buildd.changes.Changes(event)
             if c.is_buildrequest():
+                remotes_keyring.verify(c._file_path)
                 get().model._build_queue.put(event)
             elif c.is_buildresult():
+                remotes_keyring.verify(c._file_path)
                 if not update_packages(c):
                     get().model._stray_buildresults.append(c)
             else:
-                pid = c.get_pkg_id()
-                get().model._packages[pid] = Package(c, uploader_keyrings)
+                repository, dist, suite = c.get_repository()
+                if repository.allow_unauthenticated_uploads:
+                    log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=c._file_name))
+                else:
+                    uploader_keyrings[repository.identity].verify(c._file_path)
+
+                get().model._packages[c.get_pkg_id()] = Package(c, repository, dist, suite)
+
                 for br in get().model._stray_buildresults:
                     update_packages(br)
 

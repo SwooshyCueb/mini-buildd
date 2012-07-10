@@ -224,28 +224,16 @@ class Package(object):
     INCOMPLETE = 1
 
     def __init__(self, changes, repository, dist, suite):
-        """.. todo:: Remove discarded from incoming. """
         self.changes = changes
         self.repository, self.dist, self.suite = repository, dist, suite
-
         self.pid = changes.get_pkg_id()
-        try:
-            self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
-            self.success = {}
-            self.failed = {}
-            self.request_missing_builds()
-        except Exception as e:
-            subject = u"DISCARD: {p}: {e}".format(p=self.pid, e=str(e))
-            log.warn(subject)
-            body = email.mime.text.MIMEText(self.changes.dump(), _charset="UTF-8")
-            get().model.mbd_notify(subject, body)
-            raise
+        self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
+        self.success = {}
+        self.failed = {}
+        self.request_missing_builds()
 
     def request_missing_builds(self):
-        log.info(self.requests)
         for key, r in self.requests.items():
-            log.info(str(key))
-            log.info(repr(r))
             if key not in self.success:
                 r.upload()
 
@@ -289,7 +277,7 @@ class Package(object):
         log.info("{p}: All build results received".format(p=self.pid))
         try:
             if self.failed:
-                raise Exception("{p}: {n} Mandatory architectures failed".format(p=self.pid, n=len(self.failed)))
+                raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
 
             for arch, c in self.success.items():
                 c.untar(path=self.repository.mbd_get_incoming_path())
@@ -310,23 +298,38 @@ class Package(object):
         return self.DONE
 
 
+def gen_uploader_keyrings():
+    "Generate all upload keyrings for each repository."
+    keyrings = {}
+    for r in Repository.objects.all():
+        keyrings[r.identity] = r.mbd_get_uploader_keyring()
+    return keyrings
+
+def gen_remotes_keyring():
+    "Generate the remote keyring to authorize buildrequests and buildresults"
+    from mini_buildd.models import Remote
+    keyring = mini_buildd.gnupg.TmpGnuPG()
+    # Always add our own key
+    keyring.add_pub_key(get().model.mbd_get_pub_key())
+    for r in Remote.objects.all():
+        keyring.add_pub_key(r.key)
+        log.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
+    return keyring
+
 def run():
     """ mini-buildd 'daemon engine' run.
     """
 
-    # Generate all upload keyrings for each repository
-    uploader_keyrings = {}
-    for r in Repository.objects.all():
-        uploader_keyrings[r.identity] = r.mbd_get_uploader_keyring()
+    def handle_buildresult(bres):
+        pid = bres.get_pkg_id()
+        if pid in get().model._packages:
+            if get().model._packages[pid].update(bres) == Package.DONE:
+                del get().model._packages[pid]
+            return True
+        return False
 
-    # Generate the remote keyring to authorize buildrequests and buildresults
-    from mini_buildd.models import Remote
-    remotes_keyring = mini_buildd.gnupg.TmpGnuPG()
-    # Always add our own key
-    remotes_keyring.add_pub_key(get().model.mbd_get_pub_key())
-    for r in Remote.objects.all():
-        remotes_keyring.add_pub_key(r.key)
-        log.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
+    uploader_keyrings = gen_uploader_keyrings()
+    remotes_keyring = gen_remotes_keyring()
 
     ftpd_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.ftpd.run,
@@ -348,37 +351,41 @@ def run():
         log.info("Status: {0} active packages, {0} changes waiting in incoming.".
                  format(len(get().model._packages), get().model._incoming_queue.qsize()))
 
-        def update_packages(build_result):
-            pid = build_result.get_pkg_id()
-            if pid in get().model._packages:
-                if get().model._packages[pid].update(build_result) == Package.DONE:
-                    del get().model._packages[pid]
-                return True
-            return False
-
         try:
-            c = mini_buildd.changes.Changes(event)
-            if c.is_buildrequest():
-                remotes_keyring.verify(c._file_path)
+            changes, changes_pid = None, None
+            changes = mini_buildd.changes.Changes(event)
+            changes_pid = changes.get_pkg_id()
+
+            if changes.is_buildrequest():
+                remotes_keyring.verify(changes._file_path)
                 get().model._build_queue.put(event)
-            elif c.is_buildresult():
-                remotes_keyring.verify(c._file_path)
-                if not update_packages(c):
-                    get().model._stray_buildresults.append(c)
+            elif changes.is_buildresult():
+                remotes_keyring.verify(changes._file_path)
+                if not handle_buildresult(changes):
+                    get().model._stray_buildresults.append(changes)
             else:
-                repository, dist, suite = c.get_repository()
+                repository, dist, suite = changes.get_repository()
                 if repository.allow_unauthenticated_uploads:
-                    log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=c._file_name))
+                    log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=changes._file_name))
                 else:
-                    uploader_keyrings[repository.identity].verify(c._file_path)
+                    uploader_keyrings[repository.identity].verify(changes._file_path)
 
-                get().model._packages[c.get_pkg_id()] = Package(c, repository, dist, suite)
+                get().model._packages[changes_pid] = Package(changes, repository, dist, suite)
 
-                for br in get().model._stray_buildresults:
-                    update_packages(br)
+                for bres in get().model._stray_buildresults:
+                    handle_buildresult(bres)
 
         except Exception as e:
-            log.exception("Exception in daemon loop: {e}".format(e=str(e)))
+            if changes and changes_pid:
+                subject = u"DISCARD: {p}: {e}".format(p=changes_pid, e=str(e))
+                body = email.mime.text.MIMEText(changes.dump(), _charset="UTF-8")
+                changes.remove()
+            else:
+                subject = u"INVALID CHANGES: {c}: {e}".format(c=event, e=str(e))
+                body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
+                os.remove(event)
+            log.warn(subject)
+            get().model.mbd_notify(subject, body)
         finally:
             get().model._incoming_queue.task_done()
 

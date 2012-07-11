@@ -4,6 +4,7 @@ import mini_buildd.models
 
 register = django.template.Library()
 
+
 @register.simple_tag
 def repository_list_all():
     ret = ""

@@ -57,6 +57,8 @@ log = logging.getLogger(__name__)
 
 class Daemon(StatusModel):
     # Basics
+    identity = django.db.models.CharField(max_length=50, default=socket.gethostname())
+
     hostname = django.db.models.CharField(
         max_length=200,
         default=socket.getfqdn(),
@@ -116,7 +118,7 @@ prevent original package maintainers to be spammed.
 
     class Admin(StatusModel.Admin):
         fieldsets = (
-            ("Basics", {"fields": ("hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")}),
+            ("Basics", {"fields": ("identity", "hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")}),
             ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}))
 

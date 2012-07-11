@@ -2,6 +2,7 @@
 import os
 import tempfile
 import shutil
+import subprocess
 import socket
 import logging
 
@@ -29,6 +30,10 @@ class BaseGnuPG(object):
             t.write(template)
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
+
+    def export(self, dest_file):
+        with open(dest_file, "w") as f:
+            subprocess.check_call(self.gpg_cmd + ["--export"], stdout=f)
 
     def get_pub_key(self, id):
         return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=id)])

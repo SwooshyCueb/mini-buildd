@@ -2,13 +2,50 @@
 {% load repository %}
 
 {% block mbd_page_title %} - repository {{ object.identity }}{% endblock %}
-{% block mbd_page_footer %} &raquo; repository {{ object.identity }}{% endblock %}
+{% block mbd_page_footer %} &raquo; <a href="/mini_buildd/repositories/">repositories</a> &raquo; {{ object.identity }}{% endblock %}
 
 {% block content %}
 
-<div id="mb_index_repository">
+<div id="mb_repository">
   <div class="box">
     <h1 class="box-caption">Repository: {{ object.identity }}</h1>
+
+{% if object.external_home_url %}
+    <div id="mb_repository_misc">
+      <ul>
+        <li>External documentation: <a href="{{ object.external_home_url }}">{{ object.external_home_url }}</a></li>
+      </ul>
+    </div>
+{% endif %}
+
+    <div id="mb_repository_search">
+      <div class="inner-box">
+        <h1 class="inner-box-caption">Search</h1>
+
+        <form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
+          <table>
+            <tr>
+              <th>Package Name</th>
+              <th>Distribution</th>
+              <th />
+            </tr>
+            <tr>
+              <td><input type="text" name="package" size="80" title="Please enter the exact package name to search for!" class="package-input" /></td>
+              <td><select name="dist" size="1">
+{% for d in object.distributions.all %}
+  {% for s in object.layout.suites.all %}
+                <option value="{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}">{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}</option>
+  {% endfor %}
+{% endfor %}
+                <option selected="selected" value="">any</option>
+                </select></td>
+              <td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
+            </tr>
+          </table>
+        </form>
+
+      </div>
+    </div>
 
 {% for d in object.distributions.all %}
     <div class="inner-box">
@@ -33,29 +70,21 @@
   {% for s in object.layout.suites.all %}
       <h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}: <span class="emphasize-headline">{% repository_desc object d s %}</span></h2>
       <ul>
-        <li>Mandatory version part: <pre>{% repository_mandatory_version object d s %}</pre></li>
-        <li>Apt source line: <pre style="display: inline">{% repository_apt_line object d s %}</pre></li>
+        <li>Mandatory version part: <pre class="pre-inline">{% repository_mandatory_version object d s %}</pre></li>
+        <li>Apt source line: <pre class="pre-inline">{% repository_apt_line object d s %}</pre></li>
     {% if s.migrates_from %}
         <li>Migrates from: <span class="emphasize-migrates-from">{{ s.migrates_from.name }}</span></li>
     {% else %}
         <li>Uploadable.</li>
-        <li>Sources: <pre style="display: inline">{% repository_sources object d s %}</pre></li>
+        <li>Sources:<div class="pre-block"><pre>{% repository_sources object d s %}</pre></div></li>
     {% endif %}
       </ul>
   {% endfor %}
     </div>
 {% endfor %}
 
-{% if object.external_home_url %}
-    <div class="inner-box">
-      <h1 class="inner-box-caption">Misc</h1>
-      <ul>
-        <li>External documentation: <a href="{{ object.external_home_url }}">{{ object.external_home_url }}</a></li>
-      </ul>
-    </div>
-{% endif %}
-
   </div>
 </div>
+
 
 {% endblock %}

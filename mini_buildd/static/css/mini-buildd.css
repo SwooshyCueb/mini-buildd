@@ -168,7 +168,7 @@ a:hover
 	font-size: 11px;
 }
 
-#mb_content p, #mb_content ul
+#mb_content p, #mb_content ul, #mb_content table
 {
 	margin: 10px 15px 15px 15px;
 }
@@ -210,11 +210,24 @@ a:hover
 
 #mb_content pre
 {
-	display: inline;
-	background-color: #f0f0f0;
-	border: 1px solid #aec1c3;
-	padding: 1px 2px 1px 2px;
+	background-color: #f7f7f7;
+	margin: 0px 0px 0px 0px;
 }
+
+#mb_content pre.pre-inline
+{
+	display: inline;
+	border: 1px solid #e7e7e7;
+	padding: 1px 1px 1px 1px;
+}
+
+
+#mb_content div.pre-block
+{
+	border: 1px solid #e7e7e7;
+	padding: 1px 1px 1px 1px;
+}
+
 
 #mb_content span.emphasize-headline
 {
@@ -227,12 +240,31 @@ a:hover
 	font-style: italic;
 }
 
+#mb_repository_misc ul
+{
+	list-style: none;
+	margin: 15px 15px 15px 15px;
+	padding: 0;
+}
+
+#mb_repository_search_form th
+{
+	color: #417690;
+	font-size: 12px;
+	font-weight: bold;
+	text-align: left;
+}
+
+#mb_repository_search_form input.package-input
+{
+	width: 300px;
+}
 
 /* FOOTER */
 
 #mb_footer
 {
-	border-top: 1px solid #57859a;;
+	border-top: 1px solid #57859a;
 	padding-left: 15px;
 	margin-bottom: 2px;
 }
@@ -240,5 +272,20 @@ a:hover
 #mb_footer p
 {
 	margin: 4px 15px 0 0;
-	color: #888888;
+}
+
+#mb_footer span.page-footer
+{
+	font-size: 11px;
+	font-weight: bold;
+	color: #81a2ae;
+}
+
+#mb_footer a.homelink:link, #mb_footer a.homelink:visited, #mb_footer a.homelink:hover
+{
+	color: #878787;
+	margin: 0px 0px 0px 0px;
+	padding: 0px 0px 0px 0px;
+	border: 0;
+	text-decoration: none;
 }

@@ -1,5 +1,6 @@
 {% extends "mini_buildd/base.html" %}
 {% load index %}
+{% load repository %}
 
 {% block title %}mini-buildd{% endblock %}
 
@@ -7,13 +8,13 @@
 
 <div id="mb_index_status">
   <div class="box">
-	{% mbd_status %}
+{% mbd_status %}
   </div>
 </div>
 <div id="mb_index_repositories">
   <div class="box">
-	<h1 class="box-caption">Repositories</h1>
-	{% mbd_repository_list %}
+    <h1 class="box-caption">Repositories</h1>
+{% repository_list_all %}
   </div>
 </div>
 

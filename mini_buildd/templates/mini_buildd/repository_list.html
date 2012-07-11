@@ -1,13 +1,17 @@
 {% extends "mini_buildd/base.html" %}
+{% load repository %}
 
-{% block title %}mini-buildd repository index{% endblock %}
+{% block mbd_page_title %} - repositories{% endblock %}
+{% block mbd_page_footer %} &raquo; repositories{% endblock %}
+
 
 {% block content %}
 
-<h1>Repositories</h1>
-
-{% for r in object_list %}
-<a href="{{ r.identity }}/">{{ r.identity }}</a><br/>
-{% endfor %}
+<div id="mb_index_repositories">
+  <div class="box">
+    <h1 class="box-caption">Repositories</h1>
+{% repository_list_all %}
+  </div>
+</div>
 
 {% endblock %}

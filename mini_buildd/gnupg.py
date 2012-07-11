@@ -3,7 +3,6 @@ import os
 import tempfile
 import shutil
 import subprocess
-import socket
 import logging
 
 import django.db.models
@@ -71,13 +70,13 @@ class BaseGnuPG(object):
 
 
 class GnuPG(BaseGnuPG):
-    def __init__(self, template):
+    def __init__(self, template, fullname, email):
         super(GnuPG, self).__init__(home=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"))
         self.template = """\
 {t}
-Name-Real: Mini Buildd Archive Key
-Name-Email: mini-buildd@{h}
-""".format(t=template, h=socket.getfqdn())
+Name-Real: {n}
+Name-Email: {e}
+""".format(t=template, n=fullname, e=email)
 
     def prepare(self, r):
         if not self.get_pub_key():

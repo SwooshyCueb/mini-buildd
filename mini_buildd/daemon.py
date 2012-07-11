@@ -32,6 +32,9 @@
 
 import os
 import shutil
+import glob
+import tempfile
+import time
 import re
 import Queue
 import socket
@@ -50,7 +53,7 @@ import mini_buildd.gnupg
 import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
+from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info, msg_error
 
 log = logging.getLogger(__name__)
 
@@ -64,10 +67,7 @@ class Daemon(StatusModel):
         default=socket.getfqdn(),
         help_text="Fully qualified hostname.")
 
-    ftpd_bind = django.db.models.CharField(
-        max_length=200,
-        default="0.0.0.0:8067",
-        help_text="FTP Server IP/Hostname and port to bind to.")
+    email_address = django.db.models.EmailField(max_length=255, default="mini-buildd@{h}".format(h=socket.getfqdn()))
 
     # GnuPG options
     gnupg_template = django.db.models.TextField(default="""
@@ -79,7 +79,12 @@ Expire-Date: 0
     gnupg_keyserver = django.db.models.CharField(
         max_length=200,
         default="subkeys.pgp.net",
-        help_text="GnuPG keyserver to use.")
+        help_text="GnuPG keyserver to use (as fill-in helper).")
+
+    ftpd_bind = django.db.models.CharField(
+        max_length=200,
+        default="0.0.0.0:8067",
+        help_text="FTP Server IP/Hostname and port to bind to.")
 
     # Load options
     incoming_queue_size = django.db.models.SmallIntegerField(
@@ -118,14 +123,25 @@ prevent original package maintainers to be spammed.
 
     class Admin(StatusModel.Admin):
         fieldsets = (
-            ("Basics", {"fields": ("identity", "hostname", "ftpd_bind", "gnupg_template", "gnupg_keyserver")}),
+            ("Archive identity", {"fields": ("identity", "hostname", "email_address", "gnupg_template")}),
+            ("FTP (incoming) Options", {"fields": ("ftpd_bind",)}),
             ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
-            ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}))
+            ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
+            ("Other Options", {"fields": ("gnupg_keyserver",)}))
+
+        def action_generate_keyring_packages(self, request, queryset):
+            for s in queryset:
+                # Prepare implicitely if neccessary
+                if s.status >= s.STATUS_ACTIVE:
+                    s.mbd_generate_keyring_packages(request)
+        action_generate_keyring_packages.short_description = "mini-buildd: 99 Generate keyring packages"
+
+        actions = StatusModel.Admin.actions + [action_generate_keyring_packages]
 
     def __init__(self, *args, **kwargs):
-        ".. todo:: GPG: to be replaced in template; Only as long as we don't know better"
         super(Daemon, self).__init__(*args, **kwargs)
-        self._gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template)
+        self._fullname = "mini-buildd archive {i}".format(i=self.identity)
+        self._gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template, self._fullname, self.email_address)
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
@@ -145,6 +161,63 @@ prevent original package maintainers to be spammed.
         super(Daemon, self).clean()
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
+
+    def mbd_generate_keyring_packages(self, request):
+        t = tempfile.mkdtemp()
+        try:
+            p = os.path.join(t, "package")
+            shutil.copytree("/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template", p)
+
+            for root, dirs, files in os.walk(p):
+                for f in files:
+                    old_file = os.path.join(root, f)
+                    new_file = old_file + ".new"
+                    open(new_file, "w").write(
+                        mini_buildd.misc.subst_placeholders(
+                            open(old_file, "r").read(),
+                            {"ID": get().model.identity,
+                             "MAINT": "{n} <{e}>".format(n=self._fullname, e=self.email_address)}))
+                    os.rename(new_file, old_file)
+
+            package_name = "{i}-archive-keyring".format(i=get().model.identity)
+            get().model._gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
+
+            env = mini_buildd.misc.taint_env({"DEBEMAIL": self.email_address, "DEBFULLNAME": self._fullname})
+
+            version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+            mini_buildd.misc.call(["debchange",
+                                   "--create",
+                                   "--package={p}".format(p=package_name),
+                                   "--newversion={v}".format(v=version),
+                                   "Archive key automated build"],
+                                  cwd=p,
+                                  env=env)
+
+            for r in Repository.objects.all():
+                for d in r.distributions.all():
+                    for s in r.layout.suites.all():
+                        if s.build_keyring_package:
+                            mini_buildd.misc.call(["debchange",
+                                                   "--newversion={v}~{i}{c}+1".format(v=version, i=r.identity, c=d.base_source.codeversion),
+                                                   "--force-distribution",
+                                                   "--allow-lower-version",
+                                                   "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=r.identity, s=s.name),
+                                                   "Automated build via mini-buildd."],
+                                                  cwd=p,
+                                                  env=env)
+                            mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
+                                                  cwd=p,
+                                                  env=env)
+
+            for c in glob.glob(os.path.join(t, "*.changes")):
+                mini_buildd.changes.Changes(c).upload()
+                msg_info(request, "Keyring package uploaded: {c}".format(c=c))
+
+        except Exception as e:
+            msg_error(request, "Some package failed: {e}".format(e=str(e)))
+            pass
+        finally:
+            shutil.rmtree(t)
 
     def mbd_prepare(self, r):
         self._gnupg.prepare(r)

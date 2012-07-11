@@ -47,6 +47,7 @@ class Suite(Model):
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
         help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+    build_keyring_package = django.db.models.BooleanField(default=False)
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 

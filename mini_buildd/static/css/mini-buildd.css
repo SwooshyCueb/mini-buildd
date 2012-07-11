@@ -255,6 +255,10 @@ a:hover
 	text-align: left;
 }
 
+#mb_repository_search_form input.package-input
+{
+	width: 300px;
+}
 
 /* FOOTER */
 

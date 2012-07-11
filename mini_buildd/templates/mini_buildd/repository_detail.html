@@ -22,15 +22,15 @@
       <div class="inner-box">
         <h1 class="inner-box-caption">Search</h1>
 
-		<form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
-        <table>
-          <tr>
-            <th>Package Name</th>
+        <form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
+          <table>
+            <tr>
+              <th>Package Name</th>
               <th>Distribution</th>
               <th />
             </tr>
             <tr>
-              <td><input type="text" name="package" size="60" title="Please enter the exact package name to search for!" /></td>
+              <td><input type="text" name="package" size="80" title="Please enter the exact package name to search for!" class="package-input" /></td>
               <td><select name="dist" size="1">
 {% for d in object.distributions.all %}
   {% for s in object.layout.suites.all %}
@@ -39,7 +39,7 @@
 {% endfor %}
                 <option selected="selected" value="">any</option>
                 </select></td>
-              <td class="form-submit"><input class="input-submit" title="Search for package!" type="submit" value="Search" /></td>
+              <td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
             </tr>
           </table>
         </form>

@@ -1,0 +1,9 @@
+#!/bin/sh
+
+set -e
+
+APT_KEY="/usr/bin/apt-key"
+
+if [ -x "${APT_KEY}" ]; then
+	${APT_KEY} add /usr/share/keyrings/%ID%-archive-keyring.gpg
+fi

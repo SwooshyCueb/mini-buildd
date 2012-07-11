@@ -1,0 +1,49 @@
+#!/usr/bin/make -f
+
+# Originally based on the debian-edu keyring package.
+
+# Keep the rules file simple and avoid any external dependencies
+# (like debhelper) so we are more likely to build under any
+# Debian (based) release.
+
+instdir=install -d -m 755
+instfile=install -m 644
+instscript=install -m 755
+
+build:
+
+clean:
+	$(checkdir)
+	rm -f *.bak *~ */*~ debian/files* debian/*substvars
+	rm -rf debian/tmp
+
+binary-indep: checkroot
+	test -f keyrings/%ID%-archive-keyring.gpg
+
+	rm -rf debian/tmp
+	$(instdir) debian/tmp/DEBIAN/
+	$(instscript) debian/postinst debian/tmp/DEBIAN/
+
+	$(instdir) debian/tmp/usr/share/keyrings/
+	$(instfile) keyrings/%ID%-archive-keyring.gpg debian/tmp/usr/share/keyrings/
+
+	$(instdir) debian/tmp/usr/share/doc/%ID%-archive-keyring/
+	$(instfile) README debian/tmp/usr/share/doc/%ID%-archive-keyring/
+	$(instfile) debian/changelog debian/tmp/usr/share/doc/%ID%-archive-keyring/changelog
+	gzip -9 -v debian/tmp/usr/share/doc/%ID%-archive-keyring/*
+	$(instfile) debian/copyright debian/tmp/usr/share/doc/%ID%-archive-keyring/
+
+	dpkg-gencontrol -p%ID%-archive-keyring -isp
+	chown -R root.root debian/tmp
+	chmod -R go=rX debian/tmp
+	dpkg --build debian/tmp ..
+
+binary-arch:
+
+binary: binary-indep binary-arch
+
+checkroot:
+	$(checkdir)
+	test root = "`whoami`"
+
+.PHONY: binary binary-arch binary-indep clean checkroot

@@ -60,8 +60,6 @@ def run(bind, queue):
     handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
     handler.authorizer.add_anonymous(homedir=mini_buildd.setup.HOME_DIR, perm='')
     handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.INCOMING_DIR, perm='elrw')
-    handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.REPOSITORIES_DIR, perm='elr', recursive=True)
-    handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.LOG_DIR, perm='elr', recursive=True)
 
     handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
     handler._mini_buildd_queue = queue

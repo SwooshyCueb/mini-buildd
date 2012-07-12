@@ -318,7 +318,7 @@ Example:
     def mbd_get_apt_line(self, dist, suite):
         import mini_buildd.daemon
         return "deb {u}/{r}/{i}/ {d} {c}".format(
-            u=mini_buildd.daemon.get().model.mbd_get_ftp_url(),
+            u=mini_buildd.daemon.get().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
             i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
 

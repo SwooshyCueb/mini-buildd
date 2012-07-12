@@ -236,9 +236,8 @@ prevent original package maintainers to be spammed.
         return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
 
     def mbd_get_http_url(self):
-        ".. todo:: Port should be the one given with args, not hardcoded."
-        #ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
-        return u"http://{h}:{p}".format(h=self.hostname, p=8066)
+        ba = mini_buildd.misc.BindArgs(mini_buildd.setup.HTTPD_BIND)
+        return u"http://{h}:{p}".format(h=self.hostname, p=ba.port)
 
     def mbd_get_pub_key(self):
         return self._gnupg.get_pub_key()

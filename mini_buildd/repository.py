@@ -397,6 +397,8 @@ Description: {desc}
 SignWith: default
 NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
+DebIndices: Packages Release . .gz .bz2
+DscIndices: Sources Release . .gz .bz2
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
            components=self.mbd_get_components(),

@@ -63,22 +63,22 @@ def run(bind, wsgi_app):
     cherrypy.config.update({'server.socket_host': mini_buildd.misc.BindArgs(bind).host,
                             'server.socket_port': mini_buildd.misc.BindArgs(bind).port})
 
-    # static files base dir: mini-buildd
-    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
+    # Django: Add our own static directory
+    add_static_handler(dir=".",
+                       root="/usr/share/pyshared/mini_buildd/static",
+                       path="/static")
 
-    # static files base dir: django admin
-    static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
+    # Django: Add static support for the admin app
+    # Note: Meek workaround to support django < 1.4 (should be removed along with a resp. deb-dep eventually).
+    add_static_handler(dir="static/admin" if int(django.VERSION[1]) >= 4 else "media",
+                       root="/usr/share/pyshared/django/contrib/admin",
+                       path="/static/admin")
 
-    if int(django.VERSION[1]) >= 4:
-        static_sub_dir_admin = "static/admin"
-    else:
-        static_sub_dir_admin = "media"
-
-    add_static_handler(dir=static_sub_dir_admin, root=static_base_dir_admin, path="/static/admin")
-    add_static_handler(dir="css", root=static_base_dir, path="/static/css")
-    add_static_handler(dir="images", root=static_base_dir, path="/static/images")
+    # Serve our Debian-installed html manual directly
     add_static_handler(dir=".", root="/usr/share/doc/mini-buildd/html", path="/manual")
-    add_static_handler(dir=".", root=static_base_dir, path="/static")
+
+    # Serve repositories and log directories
+    add_static_handler(dir=".", root=mini_buildd.setup.REPOSITORIES_DIR, path="/repositories")
     add_static_handler(dir=".", root=mini_buildd.setup.LOG_DIR, path="/log")
 
     # register wsgi app (django)

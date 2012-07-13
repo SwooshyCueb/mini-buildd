@@ -119,11 +119,6 @@ class Changes(debian.deb822.Changes):
                 os.remove(self._file_path)
             raise
 
-    def authenticate_against_remotes(self):
-        ".. todo:: Actually authenticate against remotes"
-        import mini_buildd.daemon
-        mini_buildd.daemon.get().model._gnupg.verify(self._file_path)
-
     def upload(self, hopo):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):

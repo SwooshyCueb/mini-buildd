@@ -130,8 +130,6 @@ def build(breq, jobs, status):
 
     if bres.is_new():
         try:
-            #breq.authenticate_against_remotes()
-
             breq.untar(path=build_dir)
 
             generate_sbuildrc(build_dir, breq)

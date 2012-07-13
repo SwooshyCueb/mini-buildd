@@ -464,6 +464,10 @@ def run():
                 os.remove(event)
             log.warn(subject)
             get().model.mbd_notify(subject, body)
+
+            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+                log.exception("Daemon loop exception")
+
         finally:
             get().model._incoming_queue.task_done()
 

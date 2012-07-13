@@ -21,6 +21,7 @@ def get_dput_conf(request):
 def get_builder_state(request):
     return django.http.HttpResponse(mini_buildd.daemon.get().get_builder_state().dump(), mimetype="text/plain")
 
+
 def get_repository_results(request):
     ret = {}
     if request.GET:

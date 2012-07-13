@@ -210,7 +210,7 @@ prevent original package maintainers to be spammed.
                                                   env=env)
 
             for c in glob.glob(os.path.join(t, "*.changes")):
-                mini_buildd.changes.Changes(c).upload()
+                mini_buildd.changes.Changes(c).upload(self.mbd_get_ftp_hopo())
                 msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
@@ -231,13 +231,17 @@ prevent original package maintainers to be spammed.
     def mbd_deactivate(self, r):
         get().stop(r)
 
+    def mbd_get_ftp_hopo(self):
+        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))
+
     def mbd_get_ftp_url(self):
-        ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
-        return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
+        return u"ftp://{h}".format(h=self.mbd_get_ftp_hopo().string)
+
+    def mbd_get_http_hopo(self):
+        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(mini_buildd.setup.HTTPD_BIND).port))
 
     def mbd_get_http_url(self):
-        ba = mini_buildd.misc.BindArgs(mini_buildd.setup.HTTPD_BIND)
-        return u"http://{h}:{p}".format(h=self.hostname, p=ba.port)
+        return u"http://{h}".format(h=self.mbd_get_http_hopo().string)
 
     def mbd_get_pub_key(self):
         return self._gnupg.get_pub_key()
@@ -280,8 +284,8 @@ incoming = /incoming
                 body['From'] = m_from
                 body['To'] = ", ".join(m_to)
 
-                ba = mini_buildd.misc.BindArgs(self.smtp_server)
-                s = smtplib.SMTP(ba.host, ba.port)
+                hopo = mini_buildd.misc.HoPo(self.smtp_server)
+                s = smtplib.SMTP(hopo.host, hopo.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
                 log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
@@ -304,12 +308,8 @@ class Package(object):
         self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
         self.success = {}
         self.failed = {}
-        self.request_missing_builds()
-
-    def request_missing_builds(self):
-        for key, r in self.requests.items():
-            if key not in self.success:
-                r.upload()
+        for key, breq in self.requests.items():
+            breq.upload_buildrequest()
 
     def notify(self):
         results = u""

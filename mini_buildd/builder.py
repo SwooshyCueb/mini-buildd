@@ -176,6 +176,8 @@ def build(breq, jobs, status):
             for v in ["Distribution", "Source", "Version", "Architecture"]:
                 bres[v] = breq[v]
 
+            bres["Build-Host"] = u"{h}".format(h=mini_buildd.daemon.get().model.hostname)
+
             # Add build results to build request object
             bres["Sbuildretval"] = str(retval)
             buildlog_to_buildresult(buildlog, bres)
@@ -204,7 +206,7 @@ def build(breq, jobs, status):
     # Finally, try to upload to requesting mini-buildd; if the
     # upload fails, we keep all data and try later.
     try:
-        bres.upload()
+        bres.upload(mini_buildd.misc.HoPo(breq["Upload-Result-To"]))
         build_clean(breq)
         status.done(pkg_info)
     except Exception as e:

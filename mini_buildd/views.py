@@ -25,9 +25,9 @@ def get_repository_results(request):
         dist = request.GET.get("dist", None)
 
         # DUMMY SEARCH: to be replaced later on!
-        dict = tmp_dummy_package_search(package, dist)
+        result = tmp_dummy_package_search(package, dist)
 
-        ret = render_to_response("mini_buildd/package_search_results.html", {'dict': dict})
+        ret = render_to_response("mini_buildd/package_search_results.html", {'result': result})
     else:
         ret = render_to_response("mini_buildd/repository_list.html")
 
@@ -37,35 +37,29 @@ def get_repository_results(request):
 # DUMMY SEARCH: to be removed later on!
 # => search for "mbd-test-cpp", "testibus" or "*"!
 def tmp_dummy_package_search(package, dist):
-    dict = {}
+    result = {}
     if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-experimental" or not dist)):
-        dict['mbd-test-cpp_0.1.2~testSID+0'] = {}
-        dict['mbd-test-cpp_0.1.2~testSID+0']['name'] = "mbd-test-cpp"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['version'] = "0.1.2"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['maintainer'] = "Stephan Sürken"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['maint_email'] = "absurd@debian.org"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['arch'] = "any"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['repository'] = "test"
-        dict['mbd-test-cpp_0.1.2~testSID+0']['dist'] = "sid-test-experimental"
+        result["mbd-test-cpp"] = {}
+        result["mbd-test-cpp"]["0.1.2~testSID+0"] = []
+        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer", "Stephan Sürken"))
+        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer_email", "absurd@debian.org"))
+        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("repository", "test"))
+        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("dist", "sid-test-experimental"))
 
     if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-unstable" or not dist)):
-        dict['mbd-test-cpp_0.1.0~testSID+3'] = {}
-        dict['mbd-test-cpp_0.1.0~testSID+3']['name'] = "mbd-test-cpp"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['version'] = "0.1.0"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['maintainer'] = "Stephan Sürken"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['maint_email'] = "absurd@debian.org"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['arch'] = "any"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['repository'] = "test"
-        dict['mbd-test-cpp_0.1.0~testSID+3']['dist'] = "sid-test-unstable"
+        result["mbd-test-cpp"]["0.1.2~testSID+3"] = []
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer", "Stephan Sürken"))
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer_email", "absurd@debian.org"))
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("repository", "test"))
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("dist", "sid-test-experimental"))
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("can_propagate_to", "sid-test-testing"))
 
     if ((package == "testibus" or package == "*") and (dist == "sid-test-stable" or not dist)):
-        dict['testibus_1.0.0~testSID+8'] = {}
-        dict['testibus_1.0.0~testSID+8']['name'] = "testibus"
-        dict['testibus_1.0.0~testSID+8']['version'] = "1.0.0"
-        dict['testibus_1.0.0~testSID+8']['maintainer'] = "Gerhard A. Dittes"
-        dict['testibus_1.0.0~testSID+8']['maint_email'] = "Gerhard.Dittes@1und1.de"
-        dict['testibus_1.0.0~testSID+8']['arch'] = "any"
-        dict['testibus_1.0.0~testSID+8']['repository'] = "test"
-        dict['testibus_1.0.0~testSID+8']['dist'] = "sid-test-stable"
+        result["testibus"] = {}
+        result["testibus"]["1.0.0~testSID+8"] = []
+        result["testibus"]["1.0.0~testSID+8"].append(("maintainer", "Gerhard A. Dittes"))
+        result["testibus"]["1.0.0~testSID+8"].append(("maintainer_email", "Gerhard.Dittes@1und1.de"))
+        result["testibus"]["1.0.0~testSID+8"].append(("repository", "test"))
+        result["testibus"]["1.0.0~testSID+8"].append(("dist", "sid-test-stable"))
 
-    return dict
+    return result

@@ -4,12 +4,43 @@
 {% block mbd_page_title %} - search results{% endblock %}
 {% block mbd_page_footer %} &raquo; <a href="/mini_buildd/repositories/">repositories</a> &raquo; search results{% endblock %}
 
+
 {% block content %}
 
 <div id="mb_package_search_results">
   <div class="box">
     <h1 class="box-caption">Search results</h1>
-{% get_package_search_results dict %}
+
+{% if result %}
+  {% for key1, val1 in result.items %}
+    <div class="inner-box">
+      <h1 class="inner-box-caption">Pakckage: {{ key1 }}</h1>
+      <table>
+        <tr>
+          <th>Version</th>
+          <th>Maintainer</th>
+          <th>Repository</th>
+          <th>Distribution</th>
+          <th>Propagate</th>
+        </tr>
+    {% for key2, val2 in val1.items %}
+        <tr>
+           <td><a href="link_to_nowhere" title="Details">{{ key2 }}</a></td>
+           <td><a href="mailto:{{ val2.1.1 }}">{{ val2.0.1 }}</a></td>
+           <td><a href="/mini_buildd/repositories/{{ val2.2.1 }}/">{{ val2.2.1 }}</a></td>
+           <td>{{ val2.3.1 }}</td>
+           <td>{% if val2.4 %}{{ val2.4.1 }}{% else %}<span class="search-result-cannot-propagate">not possible</span>{% endif %}</td>
+        </tr>
+    {% endfor %}
+      </table>
+    </div>
+  {% endfor %}
+{% else %}
+    <ul>
+      <li><span class="alert">No packages found!</span></li>
+      <li>Back to <a href="javascript: history.back()">search</a>.</li>
+    </ul>
+{% endif %}
   </div>
 </div>
 

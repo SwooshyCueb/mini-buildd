@@ -21,7 +21,7 @@ mbdBasedist2Version()
 }
 
 # Be sure the "Changed-By" E-Mail in changes is set reasonably
-# so we don't accidentiually spam someone while testing ;)
+# so we don't accidentally spam someone while testing ;)
 export DEBEMAIL="$(id -n -u)@$(hostname -f)"
 
 mbdPrevStable()
@@ -65,28 +65,41 @@ printf "Acting on: %s\n" "${PACKAGES}"
 builddir="$(mktemp -d)"
 cd "${builddir}"
 
+# Check if there us a secret key available
+GPG_KEY=$(gpg --with-colons --list-secret-key | head -1 | cut -d: -f5)
+if [ -n "${GPG_KEY}" ]; then
+	SIGN_OPTS="-k${GPG_KEY}"
+	printf "I: Using signing key ${GPG_KEY}.\n" >&2
+else
+	SIGN_OPTS="-us -uc"
+	printf "W: Disabling signing.\n" >&2
+fi
+
 for P in ${PACKAGES}; do
-	(
-		version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
-		if cp -a "${PKG_DIR}/${P}" "${P}"; then
-			cd "${P}"
-			autoreconf --force --install
-		else
-			apt-get source "${P}"
-			DIR=$(find . -maxdepth 1 -mindepth 1 -type d -name "${P}*")
-			[ -n "${DIR}" ]
-			version="$(echo ${DIR} | rev | cut -d- -f1 | rev)-${version}"
-			cd "${DIR}"
-		fi
-		if [ "${dest}" = "experimental" ]; then
-			version+="0"
-		else
-			version+="1"
-		fi
-		debchange -b --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
-		[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
-		dpkg-buildpackage -d -us -uc -S -sa
-	)
+	if ! echo "${P}" | grep -q "template"; then
+		(
+			version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
+			if cp -a "${PKG_DIR}/${P}" "${P}"; then
+				cd "${P}"
+				autoreconf --force --install
+			else
+				apt-get source "${P}"
+				DIR=$(find . -maxdepth 1 -mindepth 1 -type d -name "${P}*")
+				[ -n "${DIR}" ]
+				version="$(echo ${DIR} | rev | cut -d- -f1 | rev)-${version}"
+				cd "${DIR}"
+			fi
+			if [ "${dest}" = "experimental" ]; then
+				version+="0"
+			else
+				version+="1"
+			fi
+			debchange -b --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
+			[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
+
+			dpkg-buildpackage ${SIGN_OPTS} -d -S -sa
+		)
+	fi
 done
 
 action=u

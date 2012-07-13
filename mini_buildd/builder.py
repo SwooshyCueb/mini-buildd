@@ -228,17 +228,23 @@ def run(queue, status, build_queue_size, sbuild_jobs):
         if event == "SHUTDOWN":
             break
 
-        log.info("Builder status: {0} active builds, {0} waiting in queue.".
-                 format(0, queue.qsize()))
+        try:
+            log.info("Builder status: {0} active builds, {0} waiting in queue.".
+                     format(0, queue.qsize()))
 
-        while status.building() >= build_queue_size:
-            log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
-            time.sleep(15)
+            while status.building() >= build_queue_size:
+                log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
+                time.sleep(15)
 
-        threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
-        queue.task_done()
+            threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
+            threads_cleanup()
 
-        threads_cleanup()
+        except Exception as e:
+            log.error("Unexpected error in builder loop: {e}".format(e=str(e)))
+            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+                log.exception("DEBUG: Builder loop exception")
+        finally:
+            queue.task_done()
 
     for t in threads:
         t.join()

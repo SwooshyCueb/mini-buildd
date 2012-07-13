@@ -426,10 +426,10 @@ def run():
         if event == "SHUTDOWN":
             break
 
-        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                 format(len(get().model._packages), get().model._incoming_queue.qsize()))
-
         try:
+            log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                     format(len(get().model._packages), get().model._incoming_queue.qsize()))
+
             changes, changes_pid = None, None
             changes = mini_buildd.changes.Changes(event)
             changes_pid = changes.get_pkg_id()
@@ -466,7 +466,7 @@ def run():
             get().model.mbd_notify(subject, body)
 
             if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-                log.exception("Daemon loop exception")
+                log.exception("DEBUG: Daemon loop exception")
 
         finally:
             get().model._incoming_queue.task_done()

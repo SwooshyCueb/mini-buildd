@@ -527,7 +527,7 @@ class Manager():
                 chroots[c.architecture.name].append(c.source.codename)
             return chroots
 
-        return mini_buildd.misc.BuilderState(state=[u"up" if self.is_running() else u"down",
+        return mini_buildd.misc.BuilderState(state=[self.is_running(),
                                                     self.model.mbd_get_ftp_hopo().string,
                                                     self.model._builder_status.load(),
                                                     get_chroots()])

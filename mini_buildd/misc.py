@@ -30,7 +30,7 @@ class HoPo(object):
 class BuilderState(object):
     """ Builder status (de)serializer.
 
-    >>> s = BuilderState(state=["up", u"host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
+    >>> s = BuilderState(state=[True, u"host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
     >>> s.is_up(), s.get_hopo().port, s.get_load(), s.has_chroot("amd64", "squeeze"), s.has_chroot("i386", "squeeze")
     (True, 324, 66, False, True)
     """
@@ -45,7 +45,7 @@ class BuilderState(object):
         return pickle.dumps(self._state)
 
     def is_up(self):
-        return self._state[0] == "up"
+        return self._state[0]
 
     def get_hopo(self):
         return HoPo(self._state[1])

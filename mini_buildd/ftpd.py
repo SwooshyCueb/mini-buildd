@@ -54,7 +54,7 @@ def run(bind, queue):
     ".. todo:: ftpd load options"
     log_init()
 
-    ba = mini_buildd.misc.BindArgs(bind)
+    ba = mini_buildd.misc.HoPo(bind)
 
     handler = FtpDHandler
     handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()

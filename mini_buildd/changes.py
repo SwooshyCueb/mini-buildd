@@ -126,6 +126,7 @@ class Changes(debian.deb822.Changes):
 
     def upload(self, host="localhost", port=8067):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
+        remote_args = mini_buildd.misc.HoPo(remote)
         if os.path.exists(upload):
             log.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
         else:

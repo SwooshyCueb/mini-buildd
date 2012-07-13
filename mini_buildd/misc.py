@@ -13,7 +13,7 @@ import logging.handlers
 log = logging.getLogger(__name__)
 
 
-class BindArgs(object):
+class HoPo(object):
     """ Convenience class to parse bind string "hostname:port" """
     def __init__(self, bind):
         try:

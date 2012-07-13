@@ -145,7 +145,7 @@ prevent original package maintainers to be spammed.
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
-        self._builder_status = mini_buildd.builder.Status()
+        self._builder_status = mini_buildd.builder.Status(self.build_queue_size)
         self._stray_buildresults = []
 
     def __unicode__(self):
@@ -527,21 +527,28 @@ class Manager():
         return u'''
 <h1 class="box-caption">Status: <span class="status {style}">{s}</span></h1>
 
-<h2>{id}</h2>
+<h2>Daemon: {id}</h2>
 
 <ul>
   <li>{c} changes files pending in incoming.</li>
   <li>{b} build requests pending in queue.</li>
 </ul>
 
-<h3>{p} active packages</h3>
+<hr/>
+
+<h3>Packager: {p} active packages</h3>
 {packages}
+
+<hr/>
 
 {builder_status}
 '''.format(style="running" if self.is_running() else "stopped",
-           s="Running" if self.is_running() else "Stopped", id=self.model,
-           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
-           p=len(self.model._packages), packages=packages(),
+           s="Running" if self.is_running() else "Stopped",
+           id=self.model,
+           c=self.model._incoming_queue.qsize(),
+           b=self.model._build_queue.qsize(),
+           p=len(self.model._packages),
+           packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
 

@@ -17,12 +17,16 @@ log = logging.getLogger(__name__)
 class Status(object):
     "... todo:: Some of these methods require locking(?)"
 
-    def __init__(self):
+    def __init__(self, max_builds):
         self._building = {}
         self._pending = {}
+        self._max_builds = max_builds
 
     def building(self):
         return len(self._building)
+
+    def load(self):
+        return float(len(self._building)) / self._max_builds
 
     def start(self, key):
         self._building[key] = (time.time(), 0)
@@ -44,7 +48,7 @@ class Status(object):
             return html
 
         return u"""\
-<h3>{n} active builds</h3>
+<h3>Builder: {n}/{m} active builds (load {l})</h3>
 
 <h4>{nb} building:</h4>
 <ul>{b}</ul>
@@ -52,8 +56,12 @@ class Status(object):
 <h4>{np} pending:</h4>
 <ul>{p}</ul>
 """.format(n=len(self._building) + len(self._pending),
-           nb=len(self._building), b=html_li(self._building),
-           np=len(self._pending), p=html_li(self._pending))
+           m=self._max_builds,
+           l=self.load(),
+           nb=len(self._building),
+           b=html_li(self._building),
+           np=len(self._pending),
+           p=html_li(self._pending))
 
 
 def buildlog_to_buildresult(fn, bres):

@@ -17,12 +17,16 @@ log = logging.getLogger(__name__)
 class Status(object):
     "... todo:: Some of these methods require locking(?)"
 
-    def __init__(self):
+    def __init__(self, max_builds):
         self._building = {}
         self._pending = {}
+        self._max_builds = max_builds
 
     def building(self):
         return len(self._building)
+
+    def load(self):
+        return float(len(self._building)) / self._max_builds
 
     def start(self, key):
         self._building[key] = (time.time(), 0)
@@ -44,7 +48,7 @@ class Status(object):
             return html
 
         return u"""\
-<h3>{n} active builds</h3>
+<h3>Builder: {n}/{m} active builds (load {l})</h3>
 
 <h4>{nb} building:</h4>
 <ul>{b}</ul>
@@ -52,8 +56,12 @@ class Status(object):
 <h4>{np} pending:</h4>
 <ul>{p}</ul>
 """.format(n=len(self._building) + len(self._pending),
-           nb=len(self._building), b=html_li(self._building),
-           np=len(self._pending), p=html_li(self._pending))
+           m=self._max_builds,
+           l=self.load(),
+           nb=len(self._building),
+           b=html_li(self._building),
+           np=len(self._pending),
+           p=html_li(self._pending))
 
 
 def buildlog_to_buildresult(fn, bres):
@@ -168,6 +176,8 @@ def build(breq, jobs, status):
             for v in ["Distribution", "Source", "Version", "Architecture"]:
                 bres[v] = breq[v]
 
+            bres["Build-Host"] = u"{h}".format(h=mini_buildd.daemon.get().model.hostname)
+
             # Add build results to build request object
             bres["Sbuildretval"] = str(retval)
             buildlog_to_buildresult(buildlog, bres)
@@ -196,7 +206,7 @@ def build(breq, jobs, status):
     # Finally, try to upload to requesting mini-buildd; if the
     # upload fails, we keep all data and try later.
     try:
-        bres.upload()
+        bres.upload(mini_buildd.misc.HoPo(breq["Upload-Result-To"]))
         build_clean(breq)
         status.done(pkg_info)
     except Exception as e:
@@ -220,17 +230,23 @@ def run(queue, status, build_queue_size, sbuild_jobs):
         if event == "SHUTDOWN":
             break
 
-        log.info("Builder status: {0} active builds, {0} waiting in queue.".
-                 format(0, queue.qsize()))
+        try:
+            log.info("Builder status: {0} active builds, {0} waiting in queue.".
+                     format(0, queue.qsize()))
 
-        while status.building() >= build_queue_size:
-            log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
-            time.sleep(15)
+            while status.building() >= build_queue_size:
+                log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
+                time.sleep(15)
 
-        threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
-        queue.task_done()
+            threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
+            threads_cleanup()
 
-        threads_cleanup()
+        except Exception as e:
+            log.error("Unexpected error in builder loop: {e}".format(e=str(e)))
+            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+                log.exception("DEBUG: Builder loop exception")
+        finally:
+            queue.task_done()
 
     for t in threads:
         t.join()

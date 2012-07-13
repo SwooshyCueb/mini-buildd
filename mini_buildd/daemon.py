@@ -145,7 +145,7 @@ prevent original package maintainers to be spammed.
         self._incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
         self._build_queue = Queue.Queue(maxsize=self.build_queue_size)
         self._packages = {}
-        self._builder_status = mini_buildd.builder.Status()
+        self._builder_status = mini_buildd.builder.Status(self.build_queue_size)
         self._stray_buildresults = []
 
     def __unicode__(self):
@@ -210,7 +210,7 @@ prevent original package maintainers to be spammed.
                                                   env=env)
 
             for c in glob.glob(os.path.join(t, "*.changes")):
-                mini_buildd.changes.Changes(c).upload()
+                mini_buildd.changes.Changes(c).upload(self.mbd_get_ftp_hopo())
                 msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
@@ -231,14 +231,17 @@ prevent original package maintainers to be spammed.
     def mbd_deactivate(self, r):
         get().stop(r)
 
+    def mbd_get_ftp_hopo(self):
+        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))
+
     def mbd_get_ftp_url(self):
-        ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
-        return u"ftp://{h}:{p}".format(h=self.hostname, p=ba.port)
+        return u"ftp://{h}".format(h=self.mbd_get_ftp_hopo().string)
+
+    def mbd_get_http_hopo(self):
+        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(mini_buildd.setup.HTTPD_BIND).port))
 
     def mbd_get_http_url(self):
-        ".. todo:: Port should be the one given with args, not hardcoded."
-        #ba = mini_buildd.misc.BindArgs(self.ftpd_bind)
-        return u"http://{h}:{p}".format(h=self.hostname, p=8066)
+        return u"http://{h}".format(h=self.mbd_get_http_hopo().string)
 
     def mbd_get_pub_key(self):
         return self._gnupg.get_pub_key()
@@ -281,8 +284,8 @@ incoming = /incoming
                 body['From'] = m_from
                 body['To'] = ", ".join(m_to)
 
-                ba = mini_buildd.misc.BindArgs(self.smtp_server)
-                s = smtplib.SMTP(ba.host, ba.port)
+                hopo = mini_buildd.misc.HoPo(self.smtp_server)
+                s = smtplib.SMTP(hopo.host, hopo.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
                 log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
@@ -305,12 +308,8 @@ class Package(object):
         self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
         self.success = {}
         self.failed = {}
-        self.request_missing_builds()
-
-    def request_missing_builds(self):
-        for key, r in self.requests.items():
-            if key not in self.success:
-                r.upload()
+        for key, breq in self.requests.items():
+            breq.upload_buildrequest()
 
     def notify(self):
         results = u""
@@ -427,10 +426,10 @@ def run():
         if event == "SHUTDOWN":
             break
 
-        log.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                 format(len(get().model._packages), get().model._incoming_queue.qsize()))
-
         try:
+            log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                     format(len(get().model._packages), get().model._incoming_queue.qsize()))
+
             changes, changes_pid = None, None
             changes = mini_buildd.changes.Changes(event)
             changes_pid = changes.get_pkg_id()
@@ -465,6 +464,10 @@ def run():
                 os.remove(event)
             log.warn(subject)
             get().model.mbd_notify(subject, body)
+
+            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+                log.exception("DEBUG: Daemon loop exception")
+
         finally:
             get().model._incoming_queue.task_done()
 
@@ -516,6 +519,19 @@ class Manager():
     def is_running(self):
         return self.thread is not None
 
+    def get_builder_state(self):
+        def get_chroots():
+            chroots = {}
+            for c in Chroot.objects.filter(status=mini_buildd.models.StatusModel.STATUS_ACTIVE):
+                chroots.setdefault(c.architecture.name, [])
+                chroots[c.architecture.name].append(c.source.codename)
+            return chroots
+
+        return mini_buildd.misc.BuilderState(state=[self.is_running(),
+                                                    self.model.mbd_get_ftp_hopo().string,
+                                                    self.model._builder_status.load(),
+                                                    get_chroots()])
+
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
         def packages():
@@ -528,21 +544,28 @@ class Manager():
         return u'''
 <h1 class="box-caption">Status: <span class="status {style}">{s}</span></h1>
 
-<h2>{id}</h2>
+<h2>Daemon: {id}</h2>
 
 <ul>
   <li>{c} changes files pending in incoming.</li>
   <li>{b} build requests pending in queue.</li>
 </ul>
 
-<h3>{p} active packages</h3>
+<hr/>
+
+<h3>Packager: {p} active packages</h3>
 {packages}
+
+<hr/>
 
 {builder_status}
 '''.format(style="running" if self.is_running() else "stopped",
-           s="Running" if self.is_running() else "Stopped", id=self.model,
-           c=self.model._incoming_queue.qsize(), b=self.model._build_queue.qsize(),
-           p=len(self.model._packages), packages=packages(),
+           s="Running" if self.is_running() else "Stopped",
+           id=self.model,
+           c=self.model._incoming_queue.qsize(),
+           b=self.model._build_queue.qsize(),
+           p=len(self.model._packages),
+           packages=packages(),
            builder_status=self.model._builder_status.get_html())
 
 

@@ -7,13 +7,14 @@ import threading
 import multiprocessing
 import tempfile
 import hashlib
+import pickle
 import logging
 import logging.handlers
 
 log = logging.getLogger(__name__)
 
 
-class BindArgs(object):
+class HoPo(object):
     """ Convenience class to parse bind string "hostname:port" """
     def __init__(self, bind):
         try:
@@ -24,6 +25,39 @@ class BindArgs(object):
             self.port = self.tuple[1]
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
+
+
+class BuilderState(object):
+    """ Builder status (de)serializer.
+
+    >>> s = BuilderState(state=[True, u"host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
+    >>> s.is_up(), s.get_hopo().port, s.get_load(), s.has_chroot("amd64", "squeeze"), s.has_chroot("i386", "squeeze")
+    (True, 324, 66, False, True)
+    """
+
+    def __init__(self, state=None, file=None):
+        if state:
+            self._state = state
+        elif file:
+            self._state = pickle.load(file)
+
+    def dump(self):
+        return pickle.dumps(self._state)
+
+    def is_up(self):
+        return self._state[0]
+
+    def get_hopo(self):
+        return HoPo(self._state[1])
+
+    def get_load(self):
+        return self._state[2]
+
+    def has_chroot(self, arch, codename):
+        try:
+            return codename in self._state[3][arch]
+        except:
+            return False
 
 
 def nop(*args, **kwargs):

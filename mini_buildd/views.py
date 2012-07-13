@@ -18,6 +18,10 @@ def get_dput_conf(request):
     return django.http.HttpResponse(mini_buildd.daemon.get().model.mbd_get_dput_conf(), mimetype="text/plain")
 
 
+def get_builder_state(request):
+    return django.http.HttpResponse(mini_buildd.daemon.get().get_builder_state().dump(), mimetype="text/plain")
+
+
 def get_repository_results(request):
     ret = {}
     if request.GET:

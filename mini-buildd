@@ -66,9 +66,13 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
         return args
 
     def _setup(self):
-        # Set global variables that really make no sense to
-        # propagate through
+        """
+        Set global variables that really make no sense to
+        propagate through.
+        """
         mini_buildd.setup.DEBUG = self._args.debug.split(",")
+
+        mini_buildd.setup.HTTPD_BIND = self._args.httpd_bind
 
         mini_buildd.setup.HOME_DIR = self._args.home
 

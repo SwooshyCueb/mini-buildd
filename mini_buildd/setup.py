@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 DEBUG = None
 
+HTTPD_BIND = None
+
 # Global directory paths
 HOME_DIR = None
 

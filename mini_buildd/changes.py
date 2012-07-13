@@ -124,21 +124,52 @@ class Changes(debian.deb822.Changes):
         import mini_buildd.daemon
         mini_buildd.daemon.get().model._gnupg.verify(self._file_path)
 
-    def upload(self, host="localhost", port=8067):
+    def upload(self, hopo):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):
             log.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
         else:
             ftp = ftplib.FTP()
-            ftp.connect(host, port)
+            ftp.connect(hopo.host, hopo.port)
             ftp.login()
             ftp.cwd("/incoming")
             for fd in self.get_files() + [{"name": self._file_name}]:
                 f = fd["name"]
                 log.debug("FTP: Uploading file: '{f}'".format(f=f))
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
-            open(upload, "w").write("{h}:{p}".format(h=host, p=port))
-            log.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=host))
+            open(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
+            log.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
+
+    def upload_buildrequest(self):
+        arch = self["Architecture"]
+        codename = self["Base-Distribution"]
+        from mini_buildd.models import Remote
+
+        remotes = {}
+
+        def check_remote(remote):
+            state = remote.mbd_download_builder_state()
+            if state.has_chroot(arch, codename):
+                remotes[state.get_load()] = state.get_hopo()
+
+        # Always checkout our own instance as pseudo remote
+        check_remote(Remote(http=mini_buildd.daemon.get().model.mbd_get_http_hopo().string))
+
+        # Checkout all active remotes
+        for r in Remote.objects.filter(status=mini_buildd.models.StatusModel.STATUS_ACTIVE):
+            check_remote(r)
+
+        if not remotes:
+            raise Exception("No builder found for {a}/{c}".format(a=arch, c=codename))
+
+        for load, hopo in sorted(remotes.items()):
+            try:
+                self.upload(hopo)
+                return load, hopo
+            except Exception as e:
+                log.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
+
+        raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 
     def tar(self, tar_path, add_files=[]):
         with contextlib.closing(tarfile.open(tar_path, "w")) as tar:
@@ -203,6 +234,7 @@ class Changes(debian.deb822.Changes):
                                     os.path.join(path, "sbuildrc_snippet")])
                 breq.add_file(breq._file_path + ".tar")
 
+                breq["Upload-Result-To"] = mini_buildd.daemon.get().model.mbd_get_ftp_hopo().string
                 breq["Base-Distribution"] = dist.base_source.codename
                 breq["Architecture"] = a
                 if a == dist.architecture_all.name:

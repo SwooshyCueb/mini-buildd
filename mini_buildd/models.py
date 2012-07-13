@@ -52,6 +52,8 @@ import django.db.models.signals
 import django.core.exceptions
 import django.template.response
 
+import mini_buildd.misc
+
 log = logging.getLogger(__name__)
 
 
@@ -305,5 +307,13 @@ class Remote(gnupg.GnuPGPublicKey):
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(r)
+
+        s = self.mbd_download_builder_state()
+        msg_info(r, "Builder state: {s}".format(s=vars(s)))
+
+    def mbd_download_builder_state(self):
+        url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
+        status = urllib.urlopen(url)
+        return mini_buildd.misc.BuilderState(file=status)
 
 django.contrib.admin.site.register(Remote, Remote.Admin)

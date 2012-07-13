@@ -48,51 +48,38 @@ def run(bind, wsgi_app):
     :type wsgi_app: WSGI-application
 
     """
+    def add_static_handler(dir, root, path):
+        "Shortcut to add a static handler."
+        cherrypy.tree.mount(
+            cherrypy.tools.staticdir.handler(
+                section="/",
+                dir=dir,
+                root=root,
+                content_types={"log": "text/plain", "buildlog": "text/plain"}),
+            path)
 
     log_init()
 
-    cherrypy.config.update({'server.socket_host': mini_buildd.misc.BindArgs(bind).host,
-                            'server.socket_port': mini_buildd.misc.BindArgs(bind).port})
+    cherrypy.config.update({'server.socket_host': mini_buildd.misc.HoPo(bind).host,
+                            'server.socket_port': mini_buildd.misc.HoPo(bind).port})
 
-    # static files base dir: mini-buildd
-    static_base_dir = "/usr/share/pyshared/mini_buildd/static"
+    # Django: Add our own static directory
+    add_static_handler(dir=".",
+                       root="/usr/share/pyshared/mini_buildd/static",
+                       path="/static")
 
-    # static files base dir: manual
-    static_base_dir_manual = "/usr/share/doc/mini-buildd/html"
+    # Django: Add static support for the admin app
+    # Note: Meek workaround to support django < 1.4 (should be removed along with a resp. deb-dep eventually).
+    add_static_handler(dir="static/admin" if int(django.VERSION[1]) >= 4 else "media",
+                       root="/usr/share/pyshared/django/contrib/admin",
+                       path="/static/admin")
 
-    # static files base dir: django admin
-    static_base_dir_admin = "/usr/share/pyshared/django/contrib/admin"
+    # Serve our Debian-installed html manual directly
+    add_static_handler(dir=".", root="/usr/share/doc/mini-buildd/html", path="/manual")
 
-    if int(django.VERSION[1]) >= 4:
-        static_sub_dir_admin = "static/admin"
-    else:
-        static_sub_dir_admin = "media"
-
-    static_handler_admin = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_admin, root=static_base_dir_admin)
-    cherrypy.tree.mount(static_handler_admin, '/static/admin')
-
-    # static files: css
-    static_sub_dir_css = "css"
-    static_handler_css = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_css, root=static_base_dir)
-    cherrypy.tree.mount(static_handler_css, '/static/css')
-
-    # static files: images
-    static_sub_dir_images = "images"
-    static_handler_images = cherrypy.tools.staticdir.handler(section="/", dir=static_sub_dir_images, root=static_base_dir)
-    cherrypy.tree.mount(static_handler_images, '/static/images')
-
-    # static files: manual
-    static_handler_manual = cherrypy.tools.staticdir.handler(section="/", dir=".", root=static_base_dir_manual)
-    cherrypy.tree.mount(static_handler_manual, '/manual')
-
-    # static files: .
-    static_handler = cherrypy.tools.staticdir.handler(section="/", dir=".", root=static_base_dir)
-    cherrypy.tree.mount(static_handler, '/static')
-
-    # access mini-buildd's log dir
-    static_handler_log = cherrypy.tools.staticdir.handler(section="/", dir=".", root=mini_buildd.setup.LOG_DIR,
-                                                          content_types={"log": "text/plain", "buildlog": "text/plain"})
-    cherrypy.tree.mount(static_handler_log, '/log')
+    # Serve repositories and log directories
+    add_static_handler(dir=".", root=mini_buildd.setup.REPOSITORIES_DIR, path="/repositories")
+    add_static_handler(dir=".", root=mini_buildd.setup.LOG_DIR, path="/log")
 
     # register wsgi app (django)
     cherrypy.tree.graft(wsgi_app)

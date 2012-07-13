@@ -515,6 +515,19 @@ class Manager():
     def is_running(self):
         return self.thread is not None
 
+    def get_builder_state(self):
+        def get_chroots():
+            chroots = {}
+            for c in Chroot.objects.filter(status=mini_buildd.models.StatusModel.STATUS_ACTIVE):
+                chroots.setdefault(c.architecture.name, [])
+                chroots[c.architecture.name].append(c.source.codename)
+            return chroots
+
+        return mini_buildd.misc.BuilderState(state=[u"up" if self.is_running() else u"down",
+                                                    self.model.mbd_get_ftp_hopo().string,
+                                                    self.model._builder_status.load(),
+                                                    get_chroots()])
+
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
         def packages():

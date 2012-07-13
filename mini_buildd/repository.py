@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import StringIO
 import os
+import tempfile
+import time
 import shutil
+import glob
 import re
 import socket
 import logging
@@ -15,7 +18,7 @@ import mini_buildd.misc
 import mini_buildd.gnupg
 import mini_buildd.reprepro
 
-from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info
+from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
 
 log = logging.getLogger(__name__)
 
@@ -264,6 +267,16 @@ Example:
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
+        def action_generate_keyring_packages(self, request, queryset):
+            for s in queryset:
+                if s.status >= s.STATUS_ACTIVE:
+                    s.mbd_generate_keyring_packages(request)
+                else:
+                    msg_warn(request, "Repository not activated: {r}".format(r=s))
+        action_generate_keyring_packages.short_description = "mini-buildd: 99 Generate keyring packages"
+
+        actions = StatusModel.Admin.actions + [action_generate_keyring_packages]
+
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
         log.debug("Initializing repository '{identity}'".format(identity=self.identity))
@@ -279,6 +292,67 @@ Example:
 
     def __unicode__(self):
         return self.identity
+
+    def mbd_generate_keyring_packages(self, request):
+        t = tempfile.mkdtemp()
+        try:
+            p = os.path.join(t, "package")
+            shutil.copytree("/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template", p)
+
+            identity = mini_buildd.daemon.get().model.identity
+            debemail = mini_buildd.daemon.get().model.email_address
+            debfullname = mini_buildd.daemon.get().model._fullname
+            hopo = mini_buildd.daemon.get().model.mbd_get_ftp_hopo()
+
+            for root, dirs, files in os.walk(p):
+                for f in files:
+                    old_file = os.path.join(root, f)
+                    new_file = old_file + ".new"
+                    open(new_file, "w").write(
+                        mini_buildd.misc.subst_placeholders(
+                            open(old_file, "r").read(),
+                            {"ID": identity,
+                             "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
+                    os.rename(new_file, old_file)
+
+            package_name = "{i}-archive-keyring".format(i=identity)
+            mini_buildd.daemon.get().model._gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
+
+            env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
+
+            version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+            mini_buildd.misc.call(["debchange",
+                                   "--create",
+                                   "--package={p}".format(p=package_name),
+                                   "--newversion={v}".format(v=version),
+                                   "Archive key automated build"],
+                                  cwd=p,
+                                  env=env)
+
+            for d in self.distributions.all():
+                for s in self.layout.suites.all():
+                    if s.build_keyring_package:
+                        mini_buildd.misc.call(["debchange",
+                                               "--newversion={v}~{i}{c}+1".format(v=version, i=self.identity, c=d.base_source.codeversion),
+                                               "--force-distribution",
+                                               "--allow-lower-version",
+                                               "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
+                                               "Automated build via mini-buildd."],
+                                              cwd=p,
+                                              env=env)
+                        mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
+                                              cwd=p,
+                                              env=env)
+
+            for c in glob.glob(os.path.join(t, "*.changes")):
+                mini_buildd.changes.Changes(c).upload(hopo)
+                msg_info(request, "Keyring package uploaded: {c}".format(c=c))
+
+        except Exception as e:
+            msg_error(request, "Some package failed: {e}".format(e=str(e)))
+            pass
+        finally:
+            shutil.rmtree(t)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

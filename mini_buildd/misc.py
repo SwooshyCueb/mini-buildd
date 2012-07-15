@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import pprint
 import os
 import shutil
 import errno
@@ -41,6 +42,13 @@ class BuilderState(object):
         elif file:
             self._state = pickle.load(file)
 
+    def __unicode__(self):
+        return u"{s}: {h}: {c} ({l})".format(
+            s=u"Running" if self.is_up() else u"Stopped",
+            h=self.get_hopo().string,
+            c=pprint.pformat(self.get_chroots()),
+            l=self.get_load())
+
     def dump(self):
         return pickle.dumps(self._state)
 
@@ -53,9 +61,12 @@ class BuilderState(object):
     def get_load(self):
         return self._state[2]
 
+    def get_chroots(self):
+        return self._state[3]
+
     def has_chroot(self, arch, codename):
         try:
-            return codename in self._state[3][arch]
+            return codename in self.get_chroots()[arch]
         except:
             return False
 

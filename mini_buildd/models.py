@@ -296,7 +296,10 @@ class Remote(gnupg.GnuPGPublicKey):
         readonly_fields = gnupg.GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
 
     def __unicode__(self):
-        return self.http
+        try:
+            return unicode(self.mbd_download_builder_state())
+        except Exception as e:
+            return "{h}: {e}".format(h=self.http, e=unicode(e))
 
     def mbd_prepare(self, r):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
@@ -307,9 +310,6 @@ class Remote(gnupg.GnuPGPublicKey):
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(r)
-
-        s = self.mbd_download_builder_state()
-        msg_info(r, "Builder state: {s}".format(s=vars(s)))
 
     def mbd_download_builder_state(self):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)

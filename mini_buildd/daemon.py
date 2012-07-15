@@ -482,12 +482,12 @@ class Manager():
   <li>{b} build requests pending in queue.</li>
 </ul>
 
-<hr/>
+<hr />
 
 <h3>Packager: {p} active packages</h3>
 {packages}
 
-<hr/>
+<hr />
 
 {builder_status}
 '''.format(style="running" if self.is_running() else "stopped",

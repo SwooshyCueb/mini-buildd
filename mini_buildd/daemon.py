@@ -465,12 +465,21 @@ class Manager():
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
+        from mini_buildd.models import Remote
+
         def packages():
             packages = "<ul>"
             for p in self.model._packages:
                 packages += "<li>{p}</li>".format(p=p)
             packages += "</ul>"
             return packages
+
+        def remotes():
+            remotes = "<ul>"
+            for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
+                remotes += "<li>{r}</li>".format(r=r)
+            remotes += "</ul>"
+            return remotes
 
         return u'''
 <h1 class="box-caption">Status: <span class="status {style}">{s}</span></h1>
@@ -490,6 +499,13 @@ class Manager():
 <hr />
 
 {builder_status}
+
+<hr />
+
+<h4>Remotes: {r} active</h3>
+
+{remote_status}
+
 '''.format(style="running" if self.is_running() else "stopped",
            s="Running" if self.is_running() else "Stopped",
            id=self.model,
@@ -497,8 +513,9 @@ class Manager():
            b=self.model._build_queue.qsize(),
            p=len(self.model._packages),
            packages=packages(),
-           builder_status=self.model._builder_status.get_html())
-
+           builder_status=self.model._builder_status.get_html(),
+           r=len(Remote.objects.filter(status=Remote.STATUS_ACTIVE)),
+           remote_status=remotes())
 
 _INSTANCE = None
 

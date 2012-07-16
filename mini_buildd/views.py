@@ -25,13 +25,26 @@ def get_builder_state(request):
 def get_repository_results(request):
     ret = {}
     if request.GET:
-        package = request.GET.get("package", None)
-        dist = request.GET.get("dist", None)
+        action = request.GET.get("action", None)
+        if action == "search":
+            package = request.GET.get("package", None)
+            dist = request.GET.get("dist", None)
 
-        # DUMMY SEARCH: to be replaced later on!
-        result = tmp_dummy_package_search(package, dist)
+            # DUMMY SEARCH: to be replaced later on!
+            result = tmp_dummy_package_search(package, dist)
 
-        ret = render_to_response("mini_buildd/package_search_results.html", {'result': result})
+            ret = render_to_response("mini_buildd/package_search_results.html", {'result': result})
+        elif action == "propagate":
+            package = request.GET.get("package", None)
+            version = request.GET.get("version", None)
+            repository = request.GET.get("repository", None)
+            from_dist = request.GET.get("from_dist", None)
+            to_dist = request.GET.get("to_dist", None)
+
+            # DUMMY PROPAGATION: to be replaced later on!
+            result = tmp_dummy_propagate_package(package, version, repository, from_dist, to_dist)
+
+            ret = render_to_response("mini_buildd/package_propagation_results.html", {'result': result})
     else:
         ret = render_to_response("mini_buildd/repository_list.html")
 
@@ -55,7 +68,7 @@ def tmp_dummy_package_search(package, dist):
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer", "Stephan Sürken"))
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer_email", "absurd@debian.org"))
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("repository", "test"))
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("dist", "sid-test-experimental"))
+        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("dist", "sid-test-unstable"))
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("can_propagate_to", "sid-test-testing"))
 
     if ((package == "testibus" or package == "*") and (dist == "sid-test-stable" or not dist)):
@@ -67,3 +80,9 @@ def tmp_dummy_package_search(package, dist):
         result["testibus"]["1.0.0~testSID+8"].append(("dist", "sid-test-stable"))
 
     return result
+
+
+# DUMMY PROPAGATION: to be removed later on!
+# Todo: think about a useful "result-structure"
+def tmp_dummy_propagate_package(package, version, repository, from_dist, to_dist):
+    return "Repository " + repository + ": Successfully propagated " + package + " (" + version + ") from " + from_dist + " to " + to_dist + "."

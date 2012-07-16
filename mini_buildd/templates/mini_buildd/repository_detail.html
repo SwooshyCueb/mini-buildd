@@ -23,6 +23,7 @@
         <h1 class="inner-box-caption">Search</h1>
 
         <form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
+		  <input type="hidden" name="action" value="search" />
           <table>
             <tr>
               <th>Package Name</th>
@@ -34,7 +35,7 @@
               <td><select name="dist" size="1">
 {% for d in object.distributions.all %}
   {% for s in object.layout.suites.all %}
-                <option value="{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}">{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}</option>
+                <option value="{{ d.base_source.codename|urlencode }}-{{ object.identity|urlencode }}-{{ s.name|urlencode }}">{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}</option>
   {% endfor %}
 {% endfor %}
                 <option selected="selected" value="">any</option>

@@ -1,0 +1,17 @@
+{% extends "mini_buildd/base.html" %}
+{% load repository %}
+
+{% block mbd_page_title %} - propagation results{% endblock %}
+{% block mbd_page_footer %} &raquo; <a href="/mini_buildd/repositories/">repositories</a> &raquo; propagation results{% endblock %}
+
+
+{% block content %}
+
+<div id="mb_package_search_results">
+  <div class="box">
+    <h1 class="box-caption">Propagation results</h1>
+    <p>{{ result }}</p>
+  </div>
+</div>
+
+{% endblock %}

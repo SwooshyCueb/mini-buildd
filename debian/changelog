@@ -1,3 +1,9 @@
+mini-buildd (1.0.0~0prealpha.1) UNRELEASED; urgency=low
+
+  * 1.0.0 pre-alpha release.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 16 Jul 2012 12:01:36 +0200
+
 mini-buildd (0.9.6) experimental; urgency=low
 
   This release fixes quite a number of glitches due to the reprepro change

@@ -38,8 +38,8 @@ django.contrib.admin.site.register(EmailAddress)
 
 class Suite(Model):
     name = django.db.models.CharField(
-        primary_key=True, max_length=50,
-        help_text="A suite to support, usually s.th. like 'unstable','testing' or 'stable'.")
+        max_length=100,
+        help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
     mandatory_version = django.db.models.CharField(
         max_length=50, default="~%IDENTITY%%CODEVERSION%\+[1-9]",
         help_text="""Mandatory version regex; you may use these placeholders:<br/>

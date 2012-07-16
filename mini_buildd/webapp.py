@@ -57,13 +57,14 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         l, created = models.Layout.objects.get_or_create(name="Default")
         if created:
             e, created = mini_buildd.models.Suite.objects.get_or_create(name="experimental", mandatory_version="~%IDENTITY%%CODEVERSION%\+0")
-            u, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable", build_keyring_package=True)
+            u, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable")
             t, created = mini_buildd.models.Suite.objects.get_or_create(name="testing", migrates_from=u)
             s, created = mini_buildd.models.Suite.objects.get_or_create(name="stable", migrates_from=t)
             l.suites.add(e)
             l.suites.add(u)
             l.suites.add(t)
             l.suites.add(s)
+            l.build_keyring_package_for.add(u)
             l.save()
 
     def set_admin_password(self, password):

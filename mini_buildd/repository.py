@@ -50,7 +50,6 @@ class Suite(Model):
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
         help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
-    build_keyring_package = django.db.models.BooleanField(default=False)
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
@@ -75,6 +74,7 @@ class Layout(Model):
     name = django.db.models.CharField(primary_key=True, max_length=128,
                                       help_text="Name for the layout.")
     suites = django.db.models.ManyToManyField(Suite)
+    build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
 
     def __unicode__(self):
         return self.name
@@ -330,19 +330,18 @@ Example:
                                   env=env)
 
             for d in self.distributions.all():
-                for s in self.layout.suites.all():
-                    if s.build_keyring_package:
-                        mini_buildd.misc.call(["debchange",
-                                               "--newversion={v}~{i}{c}+1".format(v=version, i=self.identity, c=d.base_source.codeversion),
-                                               "--force-distribution",
-                                               "--allow-lower-version",
-                                               "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
-                                               "Automated build via mini-buildd."],
-                                              cwd=p,
-                                              env=env)
-                        mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
-                                              cwd=p,
-                                              env=env)
+                for s in self.layout.build_keyring_package_for.all():
+                    mini_buildd.misc.call(["debchange",
+                                           "--newversion={v}~{i}{c}+1".format(v=version, i=self.identity, c=d.base_source.codeversion),
+                                           "--force-distribution",
+                                           "--allow-lower-version",
+                                           "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
+                                           "Automated build via mini-buildd."],
+                                          cwd=p,
+                                          env=env)
+                    mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
+                                          cwd=p,
+                                          env=env)
 
             for c in glob.glob(os.path.join(t, "*.changes")):
                 mini_buildd.changes.Changes(c).upload(hopo)

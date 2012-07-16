@@ -47,6 +47,12 @@ class Suite(Model):
 %IDENTITY%: Repository identity<br/>
 %CODEVERSION%: Numerical base distribution version (see Source Model).""")
 
+    auto_version = django.db.models.CharField(
+        max_length=50, default="~%IDENTITY%%CODEVERSION%+1",
+        help_text="""Auto version template.
+This will be used for automated package builds (like keyring packages or auto-backports).
+You may use the same placeholders like for 'mandatory version'.""")
+
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
         help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
@@ -56,10 +62,17 @@ class Suite(Model):
     def __unicode__(self):
         return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
 
-    def mbd_get_mandatory_version(self, repository, dist):
-        return mini_buildd.misc.subst_placeholders(self.mandatory_version,
+    @classmethod
+    def _mbd_subst_placeholders(cls, value, repository, dist):
+        return mini_buildd.misc.subst_placeholders(value,
                                                    {"IDENTITY": repository.identity,
                                                     "CODEVERSION": dist.base_source.codeversion})
+
+    def mbd_get_mandatory_version(self, repository, dist):
+        return self._mbd_subst_placeholders(self.mandatory_version, repository, dist)
+
+    def mbd_get_auto_version(self, repository, dist):
+        return self._mbd_subst_placeholders(self.auto_version, repository, dist)
 
     def mbd_check_version(self, repository, dist, version):
         m = self.mbd_get_mandatory_version(repository, dist)

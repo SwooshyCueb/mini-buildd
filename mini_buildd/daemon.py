@@ -137,13 +137,11 @@ prevent original package maintainers to be spammed.
         self._stray_buildresults = []
 
     def __unicode__(self):
-        reps = []
-        for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
-            reps.append(r.__unicode__())
-        chroots = []
-        for c in Chroot.objects.filter(status=Chroot.STATUS_ACTIVE):
-            chroots.append(c.__unicode__())
-        return u"Repositories: {r} | Chroots: {c}".format(r=",".join(reps), c=",".join(chroots))
+        return u"{i}: Serving {r} repositories, {c} chroots ({s})".format(
+            i=self.identity,
+            r=len(Repository.objects.filter(status=Repository.STATUS_ACTIVE)),
+            c=len(Chroot.objects.filter(status=Chroot.STATUS_ACTIVE)),
+            s=self.get_status_display())
 
     def clean(self):
         super(Daemon, self).clean()

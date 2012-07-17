@@ -138,10 +138,10 @@ prevent original package maintainers to be spammed.
 
     def __unicode__(self):
         reps = []
-        for r in Repository.objects.all():
+        for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
             reps.append(r.__unicode__())
         chroots = []
-        for c in Chroot.objects.all():
+        for c in Chroot.objects.filter(status=Chroot.STATUS_ACTIVE):
             chroots.append(c.__unicode__())
         return u"Repositories: {r} | Chroots: {c}".format(r=",".join(reps), c=",".join(chroots))
 
@@ -453,7 +453,7 @@ class Manager():
     def get_builder_state(self):
         def get_chroots():
             chroots = {}
-            for c in Chroot.objects.filter(status=mini_buildd.models.StatusModel.STATUS_ACTIVE):
+            for c in Chroot.objects.filter(status=Chroot.STATUS_ACTIVE):
                 chroots.setdefault(c.architecture.name, [])
                 chroots[c.architecture.name].append(c.source.codename)
             return chroots

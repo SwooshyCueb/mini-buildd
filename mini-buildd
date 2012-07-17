@@ -180,7 +180,10 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    manager.restart()
+                    if manager.is_running():
+                        manager.restart()
+                    else:
+                        log.warn("Daemon not active (not restarted).")
                 else:
                     break
 

@@ -137,10 +137,12 @@ prevent original package maintainers to be spammed.
         self._stray_buildresults = []
 
     def __unicode__(self):
-        return u"{i}: Serving {r} repositories, {c} chroots ({s})".format(
+        from mini_buildd.models import Remote
+        return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
             i=self.identity,
             r=len(Repository.objects.filter(status=Repository.STATUS_ACTIVE)),
             c=len(Chroot.objects.filter(status=Chroot.STATUS_ACTIVE)),
+            R=len(Remote.objects.filter(status=Remote.STATUS_ACTIVE)),
             s=self.get_status_display())
 
     def clean(self):

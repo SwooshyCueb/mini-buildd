@@ -322,7 +322,7 @@ Example:
                                                     s=s.name))
 
     def __unicode__(self):
-        return self.identity
+        return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.get_status_display())
 
     def mbd_check_version(self, version, dist, suite):
         mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, dist, suite)

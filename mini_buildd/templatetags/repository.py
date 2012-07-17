@@ -20,6 +20,20 @@ def repository_list_all():
 
 
 @register.simple_tag
+def chroot_list_all():
+    ret = ""
+    if mini_buildd.models.Chroot.objects.all().count() > 0:
+        ret += "<ul>"
+        for repo in mini_buildd.models.Chroot.objects.all():
+            ret += '<li>{d}</li>'.format(d=repo)
+        ret += "</ul>"
+    else:
+        ret += "<p>No chroots configured.</p>"
+
+    return ret
+
+
+@register.simple_tag
 def repository_dist(repository, dist, suite):
     return repository.mbd_get_dist(dist, suite)
 

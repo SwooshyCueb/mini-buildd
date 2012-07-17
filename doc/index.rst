@@ -29,9 +29,9 @@ Status Desc                                                           Effort Est
                                                                                         mini-buildd. Initial replacement of current static html page.
 95%    Replace debconf config with django config                      4/6/8             This will allow to migrate most of the scripting to mini-buildd daemon
                                                                                         eventually.
-90%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
+95%    Embed shell code to mini-buildd/python                         3/6/12            After this step, the new infrastructure should basically work (POC),
                                                                                         i.e., one can build packages.
-30%    Django (non-config) web app                                    3/4/7             Minimalistic. Show mini-buildd's status plus package migration.
+40%    Django (non-config) web app                                    3/4/7             Minimalistic. Show mini-buildd's status plus package migration.
 30%    Integrate and test new infrastructure                          6/9/14            Integrate features, bug fixing and fine tuning.
 ====== ============================================================== ================= ======================================================================
 
@@ -41,16 +41,15 @@ Known missing features
 
 For 1.0:
 
- - [FEAT] [50%] Auth via gnupg (user uploads, buildrequests, buildresults).
- - [FEAT] [60%] Support for Remotes.
+ - [FEAT] [100%] Auth via gnupg (user uploads, buildrequests, buildresults).
+ - [FEAT] [100%] Support for Remotes.
  - [REGR] [50%] 0.8.x pre-build qa-checks: NEW, ORIG (via reprepro).
- - [FEAT] [20%] WebApp: Add package search and propagation feature.
+ - [FEAT] [30%] WebApp: Add package search and propagation feature.
 
 Optional, maybe 1.2:
 
  - [REGR] Auto-backports.
  - [REGR] Chroot maintentance (apt-update, fs checks).
- - [FEAT] Auto-generated keyring packages.
  - [DEB ] 0.8.x upgradability (not migration).
  - [FEAT] DB schema upgrade support.
  - [IDEA] Custom hooks (prebuild.d source.changes, preinstall.d/arch.changes, postinstall.d/arch.changes)

@@ -38,15 +38,16 @@ django.contrib.admin.site.register(EmailAddress)
 
 class Suite(Model):
     name = django.db.models.CharField(
-        max_length=100,
+        primary_key=True, max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
     experimental = django.db.models.BooleanField(default=False)
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
         help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+
     not_automatic = django.db.models.BooleanField(default=True)
-    but_automatic_upgrades = django.db.models.BooleanField(default=False)
+    but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
     def __unicode__(self):
         return u"{e}{n}{e} <= {m}".format(n=self.name,

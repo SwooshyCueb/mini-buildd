@@ -81,6 +81,9 @@ class Changes(debian.deb822.Changes):
         if s.migrates_from:
             raise Exception("Migrating distribution '{d}': You can't upload here".format(d=dist, s=suite))
 
+        if r.status < Repository.STATUS_ACTIVE:
+            raise Exception("Repository '{r}' is not active".format(r=r))
+
         r.mbd_check_version(self["Version"], d, s)
 
         return r, d, s

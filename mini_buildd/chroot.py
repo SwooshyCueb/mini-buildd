@@ -44,7 +44,7 @@ go to the default mapping.
         readonly_fields = StatusModel.Admin.readonly_fields + ["personality"]
 
     def __unicode__(self):
-        return "{c}/{a}".format(c=self.source.codename, a=self.architecture.name)
+        return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.get_status_display())
 
     def mbd_get_backend(self):
         try:

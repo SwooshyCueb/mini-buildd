@@ -74,6 +74,7 @@ def tmp_dummy_package_search(package, dist):
         result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("dist", "sid-test-experimental"))
 
     if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-unstable" or not dist)):
+        result["mbd-test-cpp"] = {}
         result["mbd-test-cpp"]["0.1.2~testSID+3"] = []
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer", "Stephan Sürken"))
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer_email", "absurd@debian.org"))

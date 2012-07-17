@@ -140,6 +140,9 @@ personality={p}
         shutil.rmtree(self.mbd_get_path())
         msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
+    def mbd_get_status_dependencies(self):
+        return [self.source]
+
 
 class FileChroot(Chroot):
     """ File chroot backend. """

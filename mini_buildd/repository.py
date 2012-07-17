@@ -518,6 +518,10 @@ DscIndices: Sources Release . .gz .bz2
         return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
+        import mini_buildd.daemon
+        if mini_buildd.daemon.get().model.status < StatusModel.STATUS_PREPARED:
+            raise Exception("Please prepare daemon first (for the gnupg key).")
+
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
         mini_buildd.misc.mkdirs(self.mbd_get_incoming_path())

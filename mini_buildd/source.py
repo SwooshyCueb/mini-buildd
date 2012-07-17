@@ -151,6 +151,12 @@ class Source(StatusModel):
         self.architectures = []
         self.description = ""
 
+    def mbd_get_status_dependencies(self):
+        dependencies = []
+        for k in self.apt_keys.all():
+            dependencies.append(k)
+        return dependencies
+
     def mbd_get_archive(self):
         ".. todo:: Returning first archive only. Should return preferred one from archive list, and fail if no archives found."
         for m in self.archives.all():

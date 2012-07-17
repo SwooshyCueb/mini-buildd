@@ -123,6 +123,10 @@ class StatusModel(Model):
         def action(self, request, queryset, action, success_status):
             for s in queryset:
                 try:
+                    for d in s.mbd_get_status_dependencies():
+                        if d.status < success_status:
+                            raise Exception("Please {a} this dependent instance first: {d}".format(a=action, d=d))
+
                     getattr(s, "mbd_" + action)(request)
                     s.status = success_status
                     s.save()
@@ -186,6 +190,8 @@ this would mean losing all packages!
     def mbd_deactivate(self, request):
         pass
 
+    def mbd_get_status_dependencies(self):
+        return []
 
 from mini_buildd import gnupg
 

@@ -11,7 +11,7 @@ def repository_list_all():
     if mini_buildd.models.Repository.objects.all().count() > 0:
         ret += "<ul>"
         for repo in mini_buildd.models.Repository.objects.all():
-            ret += '<li><a href="/mini_buildd/repositories/' + repo.identity + '">' + repo.identity + '</a></li>'
+            ret += '<li><a href="/mini_buildd/repositories/{i}">{d}</a></li>'.format(i=repo.identity, d=repo)
         ret += "</ul>"
     else:
         ret += "<p>No repositories configured.</p>"

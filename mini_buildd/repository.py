@@ -369,7 +369,7 @@ Example:
                     mini_buildd.misc.call(["debchange",
                                            "--newversion={v}{m}".format(v=version, m=self.layout.mbd_get_default_version(self, d, s)),
                                            "--force-distribution",
-                                           "--allow-lower-version",
+                                           "--force-bad-version",
                                            "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
                                            "Automated build for via mini-buildd."],
                                           cwd=p,

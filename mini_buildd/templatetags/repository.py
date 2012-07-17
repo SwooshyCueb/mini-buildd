@@ -56,4 +56,4 @@ def repository_sources(repository, dist, suite):
 
 @register.simple_tag
 def repository_mandatory_version(repository, dist, suite):
-    return repository.mbd_get_mandatory_version(dist, suite)
+    return repository.layout.mbd_get_mandatory_version_regex(repository, dist, suite)

@@ -40,18 +40,7 @@ class Suite(Model):
     name = django.db.models.CharField(
         max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
-    mandatory_version = django.db.models.CharField(
-        max_length=50, default="~%IDENTITY%%CODEVERSION%\+[1-9]",
-        help_text="""Mandatory version regex; you may use these placeholders:<br/>
-
-%IDENTITY%: Repository identity<br/>
-%CODEVERSION%: Numerical base distribution version (see Source Model).""")
-
-    auto_version = django.db.models.CharField(
-        max_length=50, default="~%IDENTITY%%CODEVERSION%+1",
-        help_text="""Auto version template.
-This will be used for automated package builds (like keyring packages or auto-backports).
-You may use the same placeholders like for 'mandatory version'.""")
+    experimental = django.db.models.BooleanField(default=False)
 
     migrates_from = django.db.models.ForeignKey(
         'self', blank=True, null=True,
@@ -60,39 +49,67 @@ You may use the same placeholders like for 'mandatory version'.""")
     but_automatic_upgrades = django.db.models.BooleanField(default=False)
 
     def __unicode__(self):
-        return u"{n} ({m})".format(n=self.name, m=u"<= " + self.migrates_from.name if self.migrates_from else "uploadable")
-
-    @classmethod
-    def _mbd_subst_placeholders(cls, value, repository, dist):
-        return mini_buildd.misc.subst_placeholders(value,
-                                                   {"IDENTITY": repository.identity,
-                                                    "CODEVERSION": dist.base_source.codeversion})
-
-    def mbd_get_mandatory_version(self, repository, dist):
-        return self._mbd_subst_placeholders(self.mandatory_version, repository, dist)
-
-    def mbd_get_auto_version(self, repository, dist):
-        return self._mbd_subst_placeholders(self.auto_version, repository, dist)
-
-    def mbd_check_version(self, repository, dist, version):
-        m = self.mbd_get_mandatory_version(repository, dist)
-        regex = re.compile(m)
-        if not regex.search(version):
-            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=self.name, m=m, v=version))
+        return u"{e}{n}{e} <= {m}".format(n=self.name,
+                                          e=u"*" if self.experimental else u"",
+                                          m=self.migrates_from.name if self.migrates_from else "User uploads")
 
 django.contrib.admin.site.register(Suite)
 
 
 class Layout(Model):
-    name = django.db.models.CharField(primary_key=True, max_length=128,
-                                      help_text="Name for the layout.")
+    name = django.db.models.CharField(primary_key=True, max_length=100)
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
+
+    # Version magic
+    default_version = django.db.models.CharField(
+        max_length=100, default="~%IDENTITY%%CODEVERSION%+1",
+        help_text="""This will be used for automated builds; you may use these placeholders:<br/>
+
+%IDENTITY%: Repository identity (see 'Repository').<br/>
+%CODEVERSION%: Numerical base distribution version (see 'Source').
+""")
+    mandatory_version_regex = django.db.models.CharField(
+        max_length=100, default="~%IDENTITY%%CODEVERSION%\+[1-9]",
+        help_text="Mandatory version regex; you may use the same placeholders as for 'default version'.")
+
+    # Version magic (experimental)
+    experimental_default_version = django.db.models.CharField(
+        max_length=30, default="~%IDENTITY%%CODEVERSION%+0",
+        help_text="Like 'default version', but for suites flagged 'experimental'.")
+
+    experimental_mandatory_version_regex = django.db.models.CharField(
+        max_length=100, default="~%IDENTITY%%CODEVERSION%\+0",
+        help_text="Like 'mandatory version', but for suites flagged 'experimental'.")
 
     def __unicode__(self):
         return self.name
 
-django.contrib.admin.site.register(Layout)
+    @classmethod
+    def _mbd_subst_placeholders(cls, value, repository, dist):
+        return mini_buildd.misc.subst_placeholders(
+            value,
+            {"IDENTITY": repository.identity,
+             "CODEVERSION": dist.base_source.codeversion})
+
+    def mbd_get_mandatory_version_regex(self, repository, dist, suite):
+        return self._mbd_subst_placeholders(
+            self.experimental_mandatory_version_regex if suite.experimental else self.mandatory_version_regex,
+            repository, dist)
+
+    def mbd_get_default_version(self, repository, dist, suite):
+        return self._mbd_subst_placeholders(
+            self.experimental_default_version if suite.experimental else self.default_version,
+            repository, dist)
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        fieldsets = (
+            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
+            ("Extra", {"classes": ("collapse",), "fields":
+                           ("default_version", "mandatory_version_regex",
+                            "experimental_default_version", "experimental_mandatory_version_regex")}),)
+
+django.contrib.admin.site.register(Layout, Layout.Admin)
 
 
 class Distribution(Model):
@@ -306,6 +323,11 @@ Example:
     def __unicode__(self):
         return self.identity
 
+    def mbd_check_version(self, version, dist, suite):
+        mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, dist, suite)
+        if not re.compile(mandatory_regex).search(version):
+            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite.name, m=mandatory_regex, v=version))
+
     def mbd_generate_keyring_packages(self, request):
         t = tempfile.mkdtemp()
         try:
@@ -345,11 +367,11 @@ Example:
             for d in self.distributions.all():
                 for s in self.layout.build_keyring_package_for.all():
                     mini_buildd.misc.call(["debchange",
-                                           "--newversion={v}~{i}{c}+1".format(v=version, i=self.identity, c=d.base_source.codeversion),
+                                           "--newversion={v}{m}".format(v=version, m=self.layout.mbd_get_default_version(self, d, s)),
                                            "--force-distribution",
                                            "--allow-lower-version",
                                            "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
-                                           "Automated build via mini-buildd."],
+                                           "Automated build for via mini-buildd."],
                                           cwd=p,
                                           env=env)
                     mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
@@ -464,9 +486,6 @@ Example:
         for e in dist.extra_sources.all():
             result += "Extra: " + str(e) + "\n"
         return result
-
-    def mbd_get_mandatory_version(self, dist, suite):
-        return suite.mbd_get_mandatory_version(self, dist)
 
     def mbd_reprepro_config(self):
         result = StringIO.StringIO()

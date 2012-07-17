@@ -54,18 +54,20 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     def setup_default_models(self):
         from mini_buildd import models
-        l, created = models.Layout.objects.get_or_create(name="Default")
+        default_layout, created = models.Layout.objects.get_or_create(name="Default")
         if created:
-            e, created = mini_buildd.models.Suite.objects.get_or_create(name="experimental", mandatory_version="~%IDENTITY%%CODEVERSION%\+0")
-            u, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable")
-            t, created = mini_buildd.models.Suite.objects.get_or_create(name="testing", migrates_from=u)
-            s, created = mini_buildd.models.Suite.objects.get_or_create(name="stable", migrates_from=t)
-            l.suites.add(e)
-            l.suites.add(u)
-            l.suites.add(t)
-            l.suites.add(s)
-            l.build_keyring_package_for.add(u)
-            l.save()
+            experimental, created = mini_buildd.models.Suite.objects.get_or_create(name="experimental", experimental=True)
+            unstable, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable")
+            testing, created = mini_buildd.models.Suite.objects.get_or_create(name="testing", migrates_from=unstable)
+            stable, created = mini_buildd.models.Suite.objects.get_or_create(name="stable", migrates_from=testing)
+
+            default_layout.suites.add(experimental)
+            default_layout.suites.add(unstable)
+            default_layout.suites.add(testing)
+            default_layout.suites.add(stable)
+
+            default_layout.build_keyring_package_for.add(unstable)
+            default_layout.save()
 
     def set_admin_password(self, password):
         """

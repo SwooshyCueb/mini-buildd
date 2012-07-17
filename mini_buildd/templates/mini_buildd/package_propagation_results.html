@@ -10,7 +10,11 @@
 <div id="mb_package_search_results">
   <div class="box">
     <h1 class="box-caption">Propagation results</h1>
+  {% if authenticated %}
     <p>{{ result }}</p>
+  {% else %}
+    <p>Before you can propagate you have to <a href="/admin/">login</a> as superuser!
+  {% endif %}
   </div>
 </div>
 

@@ -30,9 +30,13 @@
            <td><a href="/mini_buildd/repositories/{{ val2.2.1 }}/">{{ val2.2.1 }}</a></td>
            <td>{{ val2.3.1 }}</td>
       {% if val2.4 %}
+        {% if authenticated %}
            <td><a class="propagate" title="to: {{ val2.4.1 }}"
              href="/mini_buildd/repositories/?action=propagate&amp;package={{ key1|urlencode }}&amp;version={{ key2|urlencode }}&amp;repository={{ val2.2.1|urlencode }}&amp;from_dist={{ val2.3.1|urlencode }}&amp;to_dist={{ val2.4.1|urlencode }}"
              >propagate</a></td>
+        {% else %}
+           <td><a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a></td>
+        {% endif %}
       {% else %}
            <td class="search-result-cannot-propagate">not possible</td>
       {% endif %}

@@ -88,7 +88,7 @@ def action_delete_selected(model, request, queryset):
             o.delete()
         except Exception as e:
             msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
-action_delete_selected.short_description = "mini-buildd: 0 Delete selected objects"
+action_delete_selected.short_description = "[0] Delete selected objects"
 
 django.contrib.admin.site.disable_action("delete_selected")
 django.contrib.admin.site.add_action(action_delete_selected, "mbd_delete_selected")
@@ -163,24 +163,7 @@ class StatusModel(Model):
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED)
-        action_prepare.short_description = "mini-buildd: 1 Prepare selected objects"
-
-        def action_activate(self, request, queryset):
-            for s in queryset:
-                # Prepare implicitely if neccessary
-                if s.status < s.STATUS_PREPARED:
-                    self.action_prepare(request, (s,))
-                if s.status >= s.STATUS_PREPARED:
-                    self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE)
-        action_activate.short_description = "mini-buildd: 2 Activate selected objects"
-
-        def action_deactivate(self, request, queryset):
-            for s in queryset:
-                if s.status >= s.STATUS_ACTIVE:
-                    self.action(request, (s,), "deactivate", StatusModel.STATUS_PREPARED)
-                else:
-                    msg_info(request, "{s}: Already deactivated".format(s=s))
-        action_deactivate.short_description = "mini-buildd: 3 Deactivate selected objects"
+        action_prepare.short_description = "[1] Prepare selected objects"
 
         def action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
@@ -200,7 +183,24 @@ this would mean losing all packages!
 """,
                         "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
                     current_app=self.admin_site.name)
-        action_unprepare.short_description = "mini-buildd: 4 Unprepare selected objects"
+        action_unprepare.short_description = "[2] Unprepare selected objects"
+
+        def action_activate(self, request, queryset):
+            for s in queryset:
+                # Prepare implicitely if neccessary
+                if s.status < s.STATUS_PREPARED:
+                    self.action_prepare(request, (s,))
+                if s.status >= s.STATUS_PREPARED:
+                    self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE)
+        action_activate.short_description = "[3] Activate selected objects"
+
+        def action_deactivate(self, request, queryset):
+            for s in queryset:
+                if s.status >= s.STATUS_ACTIVE:
+                    self.action(request, (s,), "deactivate", StatusModel.STATUS_PREPARED)
+                else:
+                    msg_info(request, "{s}: Already deactivated".format(s=s))
+        action_deactivate.short_description = "[4] Deactivate selected objects"
 
         def colored_status(self, o):
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=o.get_status_display(), c=o.STATUS_COLORS[o.status])

@@ -75,18 +75,45 @@ def msg_warn(request, msg):
     log.warn(msg)
 
 
+def action_delete_selected(model, request, queryset):
+    """Custom delete action.
+
+    This workaround ensures that the model's delete() method is
+    called (where we do important checks).
+    Default actions do not call that ;(.
+    See: https://docs.djangoproject.com/en/dev/ref/contrib/admin/actions/
+    """
+    for o in queryset:
+        try:
+            o.delete()
+        except Exception as e:
+            msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
+action_delete_selected.short_description = "mini-buildd: 0 Delete selected objects"
+
+django.contrib.admin.site.disable_action("delete_selected")
+django.contrib.admin.site.add_action(action_delete_selected, "mbd_delete_selected")
+
+
 class Model(django.db.models.Model):
     """Abstract father model for all mini-buildd models.
 
-    - Make sure no config is saved while the daemon is running.
+    This just makes sure no config is changed or deleted while
+    the daemon is running.
     """
     class Meta:
         abstract = True
 
-    def clean(self):
+    def check_daemon_stopped(self):
         import mini_buildd.daemon
         if mini_buildd.daemon.get().is_running():
-            raise django.core.exceptions.ValidationError(u"""Please deactivate the Daemon instance to change any configuration!""")
+            raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
+
+    def delete(self):
+        self.check_daemon_stopped()
+        super(Model, self).delete()
+
+    def clean(self):
+        self.check_daemon_stopped()
         super(Model, self).clean()
 
 

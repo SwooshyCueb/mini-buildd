@@ -14,7 +14,15 @@
 <div id="mb_index_repositories">
   <div class="box">
     <h1 class="box-caption">Repositories</h1>
-{% repository_list_all %}
+{% if repositories.count > 0 %}
+    <ul>
+  {% for r in repositories %}
+      <li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+  {% endfor %}
+    </ul>
+{% else %}
+    <p>No repositories configured.</p>
+{% endif %}
   </div>
 </div>
 <div id="mb_index_chroots">

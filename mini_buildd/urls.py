@@ -13,7 +13,7 @@ info_dict = {
 
 urlpatterns = django.conf.urls.defaults.patterns(
     '',
-    (r"^$", django.views.generic.simple.direct_to_template, {'template': 'mini_buildd/index.html'}),
+    (r"^$", mini_buildd.views.show_index),
     (r"^download/archive.key$", mini_buildd.views.get_archive_key),
     (r"^download/dput.cf$", mini_buildd.views.get_dput_conf),
     (r"^download/builder_state$", mini_buildd.views.get_builder_state),

@@ -75,7 +75,7 @@ def msg_warn(request, msg):
     log.warn(msg)
 
 
-def action_delete_selected(model, request, queryset):
+def action_delete(model, request, queryset):
     """Custom delete action.
 
     This workaround ensures that the model's delete() method is
@@ -85,13 +85,16 @@ def action_delete_selected(model, request, queryset):
     """
     for o in queryset:
         try:
-            o.delete()
+            if getattr(o, "status", None) and o.status > o.STATUS_UNPREPARED:
+                raise Exception(u"Unprepare first.")
+            else:
+                o.delete()
         except Exception as e:
             msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
-action_delete_selected.short_description = "[0] Delete selected objects"
+action_delete.short_description = "[0] Delete selected objects"
 
 django.contrib.admin.site.disable_action("delete_selected")
-django.contrib.admin.site.add_action(action_delete_selected, "mbd_delete_selected")
+django.contrib.admin.site.add_action(action_delete, "mini_buildd_delete")
 
 
 class Model(django.db.models.Model):

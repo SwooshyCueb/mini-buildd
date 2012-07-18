@@ -7,7 +7,17 @@ from django.shortcuts import render_to_response
 
 import mini_buildd.daemon
 
+import mini_buildd.models
+
+
 log = logging.getLogger(__name__)
+
+
+def show_index(request):
+    return render_to_response("mini_buildd/index.html",
+                              {"repositories": mini_buildd.models.Repository.objects.all(),
+                               "chroots": mini_buildd.models.Chroot.objects.all(),
+                               "remotes": mini_buildd.models.Remote.objects.all()})
 
 
 def get_archive_key(request):
@@ -20,11 +30,6 @@ def get_dput_conf(request):
 
 def get_builder_state(request):
     return django.http.HttpResponse(mini_buildd.daemon.get().get_builder_state().dump(), mimetype="text/plain")
-
-
-def handle_login(request):
-    ret = render_to_response("mini_buildd/login.html", {'next': request.GET.get("next", None)})
-    return ret
 
 
 def get_repository_results(request):
@@ -56,7 +61,8 @@ def get_repository_results(request):
             ret = render_to_response("mini_buildd/package_propagation_results.html",
                                      {'authenticated': authenticated, 'result': result})
     else:
-        ret = render_to_response("mini_buildd/repository_list.html")
+        ret = render_to_response("mini_buildd/repository_list.html",
+                                 {'repositories': mini_buildd.models.Repository.objects.all()})
 
     return ret
 
@@ -65,8 +71,11 @@ def get_repository_results(request):
 # => search for "mbd-test-cpp", "testibus" or "*"!
 def tmp_dummy_package_search(package, dist):
     result = {}
+    result["mbd-test-cpp"] = {}
+    package_found = False
+
     if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-experimental" or not dist)):
-        result["mbd-test-cpp"] = {}
+        package_found = True
         result["mbd-test-cpp"]["0.1.2~testSID+0"] = []
         result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer", "Stephan Sürken"))
         result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer_email", "absurd@debian.org"))
@@ -74,7 +83,7 @@ def tmp_dummy_package_search(package, dist):
         result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("dist", "sid-test-experimental"))
 
     if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-unstable" or not dist)):
-        result["mbd-test-cpp"] = {}
+        package_found = True
         result["mbd-test-cpp"]["0.1.2~testSID+3"] = []
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer", "Stephan Sürken"))
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer_email", "absurd@debian.org"))
@@ -83,12 +92,16 @@ def tmp_dummy_package_search(package, dist):
         result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("can_propagate_to", "sid-test-testing"))
 
     if ((package == "testibus" or package == "*") and (dist == "sid-test-stable" or not dist)):
+        package_found = True
         result["testibus"] = {}
         result["testibus"]["1.0.0~testSID+8"] = []
         result["testibus"]["1.0.0~testSID+8"].append(("maintainer", "Gerhard A. Dittes"))
         result["testibus"]["1.0.0~testSID+8"].append(("maintainer_email", "Gerhard.Dittes@1und1.de"))
         result["testibus"]["1.0.0~testSID+8"].append(("repository", "test"))
         result["testibus"]["1.0.0~testSID+8"].append(("dist", "sid-test-stable"))
+
+    if not package_found:
+        result = {}
 
     return result
 

@@ -10,7 +10,11 @@
 <div id="mb_index_repositories">
   <div class="box">
     <h1 class="box-caption">Repositories</h1>
-{% repository_list_all %}
+    <ul>
+{% for r in repositories %}
+      <li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+{% endfor %}
+    </ul>
   </div>
 </div>
 

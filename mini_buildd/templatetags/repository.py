@@ -1,50 +1,7 @@
 # -*- coding: utf-8 -*-
 import django
-import mini_buildd.models
 
 register = django.template.Library()
-
-
-@register.simple_tag
-def repository_list_all():
-    ret = ""
-    if mini_buildd.models.Repository.objects.all().count() > 0:
-        ret += "<ul>"
-        for r in mini_buildd.models.Repository.objects.all():
-            ret += '<li><a href="/mini_buildd/repositories/{i}">{d}</a></li>'.format(i=r.identity, d=r)
-        ret += "</ul>"
-    else:
-        ret += "<p>No repositories configured.</p>"
-
-    return ret
-
-
-@register.simple_tag
-def chroot_list_all():
-    ret = ""
-    if mini_buildd.models.Chroot.objects.all().count() > 0:
-        ret += "<ul>"
-        for c in mini_buildd.models.Chroot.objects.all():
-            ret += '<li>{d}</li>'.format(d=c)
-        ret += "</ul>"
-    else:
-        ret += "<p>No chroots configured.</p>"
-
-    return ret
-
-
-@register.simple_tag
-def remote_list_all():
-    ret = ""
-    if mini_buildd.models.Remote.objects.all().count() > 0:
-        ret += "<ul>"
-        for r in mini_buildd.models.Remote.objects.all():
-            ret += '<li>{d}</li>'.format(d=r)
-        ret += "</ul>"
-    else:
-        ret += "<p>No remotes configured.</p>"
-
-    return ret
 
 
 @register.simple_tag

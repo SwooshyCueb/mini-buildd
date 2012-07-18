@@ -312,7 +312,7 @@ class Remote(gnupg.GnuPGPublicKey):
         msg_info(r, "Downloading '{u}'...".format(u=url))
         self.key = urllib.urlopen(url).read()
         if self.key:
-            msg_info(r, "Remote key integrated -- please check key manually before activation!")
+            msg_warn(r, "Downloaded remote key integrated: Please check key manually before activation!")
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(r)

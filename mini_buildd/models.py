@@ -153,10 +153,7 @@ class StatusModel(Model):
         def action(self, request, queryset, action, success_status):
             for s in queryset:
                 try:
-                    for d in s.mbd_get_status_dependencies():
-                        if d.status < success_status:
-                            raise Exception("Please {a} this dependent instance first: {d}".format(a=action, d=d))
-
+                    s.mbd_check_status_dependencies(lower_status=1)
                     getattr(s, "mbd_" + action)(request)
                     s.status = success_status
                     s.save()
@@ -222,6 +219,14 @@ this would mean losing all packages!
 
     def mbd_get_status_dependencies(self):
         return []
+
+    def mbd_check_status_dependencies(self, request=None, lower_status=0):
+        msg_info(request, "Checking status deps for: {M} {S}".format(M=self.__class__.__name__, S=self))
+        for d in self.mbd_get_status_dependencies():
+            msg_info(request, "Checking dependency: {d}".format(d=d))
+            if d.status < (self.status - lower_status):
+                raise Exception("'{S}' has dependent instance '{d}' with insufficent status '{s}'".format(S=self, d=d, s=d.get_status_display()))
+            d.mbd_check_status_dependencies(request, lower_status)
 
 from mini_buildd import gnupg
 

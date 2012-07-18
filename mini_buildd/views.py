@@ -15,7 +15,9 @@ log = logging.getLogger(__name__)
 
 def show_index(request):
     return render_to_response("mini_buildd/index.html",
-                             {'repositories': mini_buildd.models.Repository.objects.all()})
+                              {"repositories": mini_buildd.models.Repository.objects.all(),
+                               "chroots": mini_buildd.models.Chroot.objects.all(),
+                               "remotes": mini_buildd.models.Remote.objects.all()})
 
 
 def get_archive_key(request):

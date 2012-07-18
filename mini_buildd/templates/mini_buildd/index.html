@@ -28,13 +28,29 @@
 <div id="mb_index_chroots">
   <div class="box">
     <h1 class="box-caption">Chroots</h1>
-{% chroot_list_all %}
+{% if chroots.count > 0 %}
+    <ul>
+  {% for c in chroots %}
+      <li>{{ c }}</li>
+  {% endfor %}
+    </ul>
+{% else %}
+    <p>No chroots configured.</p>
+{% endif %}
   </div>
 </div>
 <div id="mb_index_remotes">
   <div class="box">
     <h1 class="box-caption">Remotes</h1>
-{% remote_list_all %}
+{% if remotes.count > 0 %}
+    <ul>
+  {% for r in remotes %}
+      <li>{{ r }}</li>
+  {% endfor %}
+    </ul>
+{% else %}
+    <p>No remotes configured.</p>
+{% endif %}
   </div>
 </div>
 

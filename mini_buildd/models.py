@@ -150,12 +150,13 @@ class StatusModel(Model):
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
-        def action(self, request, queryset, action, success_status, status_calc):
+        @classmethod
+        def action(cls, request, queryset, action, success_status, status_calc):
             for s in queryset:
                 try:
                     # For prepare, activate, also run for all status dependencies
                     if status_calc == max:
-                        self.action(request, s.mbd_get_status_dependencies(), action, success_status, status_calc)
+                        cls.action(request, s.mbd_get_status_dependencies(), action, success_status, status_calc)
 
                     getattr(s, "mbd_" + action)(request)
                     s.status = status_calc(s.status, success_status)

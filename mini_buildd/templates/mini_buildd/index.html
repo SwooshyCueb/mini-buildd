@@ -7,51 +7,51 @@
 {% block content %}
 
 <div id="mb_index_status">
-  <div class="box">
-{% mbd_status %}
-  </div>
+	<div class="box">
+		{% mbd_status %}
+	</div>
 </div>
 <div id="mb_index_repositories">
-  <div class="box">
-    <h1 class="box-caption">Repositories</h1>
-{% if repositories.count > 0 %}
-    <ul>
-  {% for r in repositories %}
-      <li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
-  {% endfor %}
-    </ul>
-{% else %}
-    <p>No repositories configured.</p>
-{% endif %}
-  </div>
+	<div class="box">
+		<h1 class="box-caption">Repositories</h1>
+		{% if repositories.count > 0 %}
+		<ul>
+			{% for r in repositories %}
+			<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+			{% endfor %}
+		</ul>
+		{% else %}
+		<p>No repositories configured.</p>
+		{% endif %}
+	</div>
 </div>
 <div id="mb_index_chroots">
-  <div class="box">
-    <h1 class="box-caption">Chroots</h1>
-{% if chroots.count > 0 %}
-    <ul>
-  {% for c in chroots %}
-      <li>{{ c }}</li>
-  {% endfor %}
-    </ul>
-{% else %}
-    <p>No chroots configured.</p>
-{% endif %}
-  </div>
+	<div class="box">
+		<h1 class="box-caption">Chroots</h1>
+		{% if chroots.count > 0 %}
+		<ul>
+			{% for c in chroots %}
+			<li>{{ c }}</li>
+			{% endfor %}
+		</ul>
+		{% else %}
+		<p>No chroots configured.</p>
+		{% endif %}
+	</div>
 </div>
 <div id="mb_index_remotes">
-  <div class="box">
-    <h1 class="box-caption">Remotes</h1>
-{% if remotes.count > 0 %}
-    <ul>
-  {% for r in remotes %}
-      <li>{{ r }}</li>
-  {% endfor %}
-    </ul>
-{% else %}
-    <p>No remotes configured.</p>
-{% endif %}
-  </div>
+	<div class="box">
+		<h1 class="box-caption">Remotes</h1>
+		{% if remotes.count > 0 %}
+		<ul>
+			{% for r in remotes %}
+			<li>{{ r }}</li>
+			{% endfor %}
+		</ul>
+		{% else %}
+		<p>No remotes configured.</p>
+		{% endif %}
+	</div>
 </div>
 
 {% endblock %}

@@ -150,24 +150,24 @@ class StatusModel(Model):
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
-        def action(self, request, queryset, action, success_status):
+        def action(self, request, queryset, action, success_status, status_calc):
             for s in queryset:
                 try:
                     s.mbd_check_status_dependencies(lower_status=1)
                     getattr(s, "mbd_" + action)(request)
-                    s.status = success_status
+                    s.status = status_calc(s.status, success_status)
                     s.save()
                     msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
                 except Exception as e:
                     msg_error(request, "{s}: '{a}' FAILED: {e}".format(s=s, a=action, e=str(e)))
 
         def action_prepare(self, request, queryset):
-            self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED)
+            self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)
         action_prepare.short_description = "[1] Prepare selected objects"
 
         def action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
-                self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED)
+                self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED, min)
             else:
                 return django.template.response.TemplateResponse(
                     request,
@@ -190,16 +190,11 @@ this would mean losing all packages!
                 # Prepare implicitely if neccessary
                 if s.status < s.STATUS_PREPARED:
                     self.action_prepare(request, (s,))
-                if s.status >= s.STATUS_PREPARED:
-                    self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE)
+                self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE, status_calc=max)
         action_activate.short_description = "[3] Activate selected objects"
 
         def action_deactivate(self, request, queryset):
-            for s in queryset:
-                if s.status >= s.STATUS_ACTIVE:
-                    self.action(request, (s,), "deactivate", StatusModel.STATUS_PREPARED)
-                else:
-                    msg_info(request, "{s}: Already deactivated".format(s=s))
+            self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
         action_deactivate.short_description = "[4] Deactivate selected objects"
 
         def colored_status(self, o):

@@ -527,9 +527,17 @@ DscIndices: Sources Release . .gz .bz2
         return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
+        # Check that the daemon model is prepared
         from mini_buildd.models import Daemon
         if Daemon.objects.get(id=1).status < StatusModel.STATUS_PREPARED:
             raise Exception("Please prepare daemon first (for the gnupg key).")
+
+        # Check that the codenames of the distributiosn are unique
+        codenames = []
+        for d in self.distributions.all():
+            if d.base_source.codename in codenames:
+                raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
+            codenames.append(d.base_source.codename)
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))

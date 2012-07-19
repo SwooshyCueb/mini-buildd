@@ -153,7 +153,10 @@ class StatusModel(Model):
         def action(self, request, queryset, action, success_status, status_calc):
             for s in queryset:
                 try:
-                    s.mbd_check_status_dependencies(lower_status=1)
+                    # For prepare, activate, also run for all status dependencies
+                    if status_calc == max:
+                        self.action(request, s.mbd_get_status_dependencies(), action, success_status, status_calc)
+
                     getattr(s, "mbd_" + action)(request)
                     s.status = status_calc(s.status, success_status)
                     s.save()
@@ -163,7 +166,7 @@ class StatusModel(Model):
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)
-        action_prepare.short_description = "[1] Prepare selected objects"
+        action_prepare.short_description = "[1] Prepare selected objects (and dependencies)"
 
         def action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
@@ -195,7 +198,7 @@ this would mean losing all packages!
 
         def action_deactivate(self, request, queryset):
             self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
-        action_deactivate.short_description = "[4] Deactivate selected objects"
+        action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
 
         def colored_status(self, o):
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=o.get_status_display(), c=o.STATUS_COLORS[o.status])

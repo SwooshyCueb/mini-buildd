@@ -1,10 +1,11 @@
 #!/bin/sh -e
 
 if [ "${1}" = "remove" ]; then
-	# Remove chroots ### 0.8.x deprecated
-	/usr/share/mini-buildd/mbd-setup-chroots -d || true
-	# Remove auto-lvm setup (if we have it) ### 0.8.x deprecated
-	/usr/share/mini-buildd/mbd-setup-lvm -d || true
+	# Prepared Chroot models may have made extra changes to the
+	# system. We need to properly run 'unprepare' to all of them
+	# to not leave artefacts (i.e., /etc/schroot/chroot.d/*.conf
+	# plus backend-related cruft like LVM setups).
+	su mini-buildd -c "/usr/bin/mini-buildd --foreground --verbose --unprepare=Chroot"
 fi
 
 #DEBHELPER#

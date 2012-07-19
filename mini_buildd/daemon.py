@@ -50,7 +50,7 @@ import mini_buildd.gnupg
 import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
+from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info, msg_error
 
 log = logging.getLogger(__name__)
 
@@ -425,13 +425,21 @@ class Manager():
             log.info("New default Daemon model instance created")
         log.info("Daemon model instance updated...")
 
+    def check(self, request=None):
+        for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
+            r.mbd_check_status_dependencies(request)
+
     def start(self, r=None):
         if not self.thread:
-            self.update_model()
-            self.thread = mini_buildd.misc.run_as_thread(run)
-            msg_info(r, "Daemon started")
+            try:
+                self.update_model()
+                self.check(r)
+                self.thread = mini_buildd.misc.run_as_thread(run)
+                msg_info(r, "Daemon running")
+            except Exception as e:
+                msg_error(r, "Could not start daemon: {e}".format(e=e))
         else:
-            msg_info(r, "Daemon already started")
+            msg_info(r, "Daemon already running")
 
     def stop(self, r=None):
         if self.thread:

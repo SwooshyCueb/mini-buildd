@@ -87,6 +87,16 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             log.info("Creating initial 'admin' user...")
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
+    def unprepare(self, models):
+        """
+        Unprepare all given (status) models.
+        """
+        import mini_buildd.models
+        for m in models:
+            M = getattr(mini_buildd.models, m)
+            for o in M.objects.all():
+                M.Admin.action(None, (o,), "unprepare", M.STATUS_UNPREPARED, min)
+
     def syncdb(self):
         log.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)

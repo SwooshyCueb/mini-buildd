@@ -324,6 +324,14 @@ Example:
     def __unicode__(self):
         return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.get_status_display())
 
+    def mbd_get_status_dependencies(self):
+        result = []
+        for d in self.distributions.all():
+            result.append(d.base_source)
+            for e in d.extra_sources.all():
+                result.append(e.source)
+        return result
+
     def mbd_check_version(self, version, dist, suite):
         mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, dist, suite)
         if not re.compile(mandatory_regex).search(version):

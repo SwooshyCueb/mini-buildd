@@ -51,6 +51,8 @@ main,django,ftpd,build,sbuild")
         group_db = parser.add_argument_group("Database")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
+        group_db.add_argument("-U", "--unprepare", action='store', metavar="MODELCLASS,MODELCLASS,..",
+                              help="Internal use only, use with care! Bulk-unprepare all objects of the given (status) model classes.")
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
                               help="Import FILE to django database and exit; must be an absolute path name.') \
 django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
@@ -164,11 +166,13 @@ django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.c
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:
-            webapp.set_admin_password(password=self._args.set_admin_password)
+            webapp.set_admin_password(self._args.set_admin_password)
+        elif self._args.unprepare:
+            webapp.unprepare(self._args.unprepare.split(","))
         elif self._args.loaddata:
-            webapp.loaddata(f=self._args.loaddata)
+            webapp.loaddata(self._args.loaddata)
         elif self._args.dumpdata:
-            webapp.dumpdata(a=self._args.dumpdata)
+            webapp.dumpdata(self._args.dumpdata)
         else:
             # Get the daemon manager instance (due to django, import must be here)
             from mini_buildd.daemon import Manager

@@ -31,3 +31,7 @@ class Reprepro():
              "listmatched",
              dist,
              pattern])
+
+    def copysrc(self, dest_distribution, source_distribution, package, version):
+        return mini_buildd.misc.call(
+            self._cmd + ["copysrc", dest_distribution, source_distribution, package, version])

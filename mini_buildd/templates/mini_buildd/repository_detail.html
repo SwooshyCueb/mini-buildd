@@ -31,12 +31,12 @@
 							<th />
 						</tr>
 						<tr>
-							<td><input type="text" name="package" size="80" title="Please enter the exact package name to search for!" class="package-input" /></td>
-							<td><select name="dist" size="1">
+							<input type="hidden" name="repository" value="{{ object.identity|urlencode }}" />
+							<td><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
+
+							<td><select name="codename" size="1">
 									{% for d in object.distributions.all %}
-									{% for s in object.layout.suites.all %}
-									<option value="{{ d.base_source.codename|urlencode }}-{{ object.identity|urlencode }}-{{ s.name|urlencode }}">{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}</option>
-									{% endfor %}
+									<option value="{{ d.base_source.codename|urlencode }}">{{ d }}</option>
 									{% endfor %}
 									<option selected="selected" value="">any</option>
 							</select></td>
@@ -73,9 +73,10 @@
 			<ul>
 				<li>Mandatory version part: <pre class="pre-inline">{% repository_mandatory_version object d s %}</pre></li>
 				<li>Apt source line: <pre class="pre-inline">{% repository_apt_line object d s %}</pre></li>
-				{% if s.migrates_from %}
-				<li>Migrates from: <span class="emphasize-migrates-from">{{ s.migrates_from.name }}</span></li>
-				{% else %}
+				{% if s.migrates_to %}
+				<li>Migrates to: <span class="emphasize-migrates-from">{{ s.migrates_to.name }}</span></li>
+				{% endif %}
+				{% if s.uploadable %}
 				<li>Uploadable.</li>
 				<li>Sources:<div class="pre-block"><pre>{% repository_sources object d s %}</pre></div></li>
 				{% endif %}

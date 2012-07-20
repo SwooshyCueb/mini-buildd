@@ -76,16 +76,15 @@ def nop(*args, **kwargs):
 
 
 def parse_distribution(dist):
-    """Parse a mini-buildd distribution of the form BASE-ID-SUITE into a triple in that order.
+    """Parse a mini-buildd distribution of the form CODENAME-ID-SUITE into a triple in that order.
 
     >>> parse_distribution("squeeze-test-unstable")
     ('squeeze', 'test', 'unstable')
     """
-    dist_split = dist.split("-")
-    base = dist_split[0]
-    identity = dist_split[1]
-    suite = dist_split[2]
-    return base, identity, suite
+    dsplit = dist.split("-")
+    if len(dsplit) != 3 or not dsplit[0] or not dsplit[1] or not dsplit[2]:
+        raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
+    return dsplit[0], dsplit[1], dsplit[2]
 
 
 def subst_placeholders(s, p):

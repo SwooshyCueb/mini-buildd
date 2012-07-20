@@ -39,10 +39,13 @@ def get_repository_results(request):
 
         if action == "search":
             package = request.GET.get("package", None)
-            dist = request.GET.get("dist", None)
+            repository = request.GET.get("repository", None)
+            codename = request.GET.get("codename", None)
 
-            # DUMMY SEARCH: to be replaced later on!
-            result = tmp_dummy_package_search(package, dist)
+            from mini_buildd.models import Repository
+            result = {}
+            for r in [Repository.objects.get(identity=repository)] if repository else Repository.objects.all():
+                result[r.identity] = r.mbd_package_search(package, codename)
 
             ret = render_to_response("mini_buildd/package_search_results.html",
                                      {'authenticated': authenticated, 'result': result})
@@ -52,11 +55,11 @@ def get_repository_results(request):
                 package = request.GET.get("package", None)
                 version = request.GET.get("version", None)
                 repository = request.GET.get("repository", None)
-                from_dist = request.GET.get("from_dist", None)
-                to_dist = request.GET.get("to_dist", None)
+                from_distribution = request.GET.get("from_distribution", None)
+                to_distribution = request.GET.get("to_distribution", None)
 
                 # DUMMY PROPAGATION: to be replaced later on!
-                result = tmp_dummy_propagate_package(package, version, repository, from_dist, to_dist)
+                result = tmp_dummy_propagate_package(package, version, repository, from_distribution, to_distribution)
 
             ret = render_to_response("mini_buildd/package_propagation_results.html",
                                      {'authenticated': authenticated, 'result': result})
@@ -67,46 +70,7 @@ def get_repository_results(request):
     return ret
 
 
-# DUMMY SEARCH: to be removed later on!
-# => search for "mbd-test-cpp", "testibus" or "*"!
-def tmp_dummy_package_search(package, dist):
-    result = {}
-    result["mbd-test-cpp"] = {}
-    package_found = False
-
-    if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-experimental" or not dist)):
-        package_found = True
-        result["mbd-test-cpp"]["0.1.2~testSID+0"] = []
-        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer", "Stephan Sürken"))
-        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("maintainer_email", "absurd@debian.org"))
-        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("repository", "test"))
-        result["mbd-test-cpp"]["0.1.2~testSID+0"].append(("dist", "sid-test-experimental"))
-
-    if ((package == "mbd-test-cpp" or package == "*") and (dist == "sid-test-unstable" or not dist)):
-        package_found = True
-        result["mbd-test-cpp"]["0.1.2~testSID+3"] = []
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer", "Stephan Sürken"))
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("maintainer_email", "absurd@debian.org"))
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("repository", "test"))
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("dist", "sid-test-unstable"))
-        result["mbd-test-cpp"]["0.1.2~testSID+3"].append(("can_propagate_to", "sid-test-testing"))
-
-    if ((package == "testibus" or package == "*") and (dist == "sid-test-stable" or not dist)):
-        package_found = True
-        result["testibus"] = {}
-        result["testibus"]["1.0.0~testSID+8"] = []
-        result["testibus"]["1.0.0~testSID+8"].append(("maintainer", "Gerhard A. Dittes"))
-        result["testibus"]["1.0.0~testSID+8"].append(("maintainer_email", "Gerhard.Dittes@1und1.de"))
-        result["testibus"]["1.0.0~testSID+8"].append(("repository", "test"))
-        result["testibus"]["1.0.0~testSID+8"].append(("dist", "sid-test-stable"))
-
-    if not package_found:
-        result = {}
-
-    return result
-
-
 # DUMMY PROPAGATION: to be removed later on!
 # Todo: think about a useful "result-structure"
-def tmp_dummy_propagate_package(package, version, repository, from_dist, to_dist):
-    return "Repository " + repository + ": Successfully propagated " + package + " (" + version + ") from " + from_dist + " to " + to_dist + "."
+def tmp_dummy_propagate_package(package, version, repository, from_distribution, to_distribution):
+    return "Repository " + repository + ": Successfully propagated " + package + " (" + version + ") from " + from_distribution + " to " + to_distribution + "."

@@ -44,15 +44,12 @@ class Changes(debian.deb822.Changes):
         except:
             return ""
 
-    def get_repository(self):
+    @classmethod
+    def find_repository(cls, dist):
         from mini_buildd.models import Repository
 
         # Check and parse distribution
-        dist = self["Distribution"]
-        dist_s = self["Distribution"].split(u"-")
-        if len(dist_s) != 3:
-            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
-        codename, identity, suite = dist_s[0], dist_s[1], dist_s[2]
+        codename, identity, suite = mini_buildd.misc.parse_distribution(dist)
 
         # Get repository for identity
         try:
@@ -63,7 +60,7 @@ class Changes(debian.deb822.Changes):
         # Get distribution for codename
         found = False
         for d in r.distributions.all():
-            if d.base_source.codename == dist_s[0]:
+            if d.base_source.codename == codename:
                 found = True
                 break
         if not found:
@@ -78,8 +75,15 @@ class Changes(debian.deb822.Changes):
         if not found:
             raise Exception("Unsupported distribution '{d}': No such suite '{s}'".format(d=dist, s=suite))
 
-        if s.migrates_from:
-            raise Exception("Migrating distribution '{d}': You can't upload here".format(d=dist, s=suite))
+        return r, d, s
+
+    def get_repository(self):
+        from mini_buildd.models import Repository
+
+        r, d, s = self.find_repository(self["Distribution"])
+
+        if not s.uploadable:
+            raise Exception("Suite '{s}' is not uploadable".format(s=s))
 
         if r.status < Repository.STATUS_ACTIVE:
             raise Exception("Repository '{r}' is not active".format(r=r))

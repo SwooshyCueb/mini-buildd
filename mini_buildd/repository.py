@@ -40,19 +40,28 @@ class Suite(Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
+    uploadable = django.db.models.BooleanField(default=True)
     experimental = django.db.models.BooleanField(default=False)
 
-    migrates_from = django.db.models.ForeignKey(
+    migrates_to = django.db.models.ForeignKey(
         'self', blank=True, null=True,
-        help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+        help_text="Give another suite where packages may migrate to.")
 
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
     def __unicode__(self):
-        return u"{e}{n}{e} <= {m}".format(n=self.name,
-                                          e=u"*" if self.experimental else u"",
-                                          m=self.migrates_from.name if self.migrates_from else "User uploads")
+        return u"{e}{n}{e} [{u}]{m}".format(
+            n=self.name,
+            e=u"*" if self.experimental else u"",
+            u=u"uploadable" if self.uploadable else u"managed",
+            m=u" => {m}".format(m=self.migrates_to.name) if self.migrates_to else u"")
+
+    def mbd_get_distribution(self, repository, dist):
+        return u"{c}-{i}-{s}".format(
+            c=dist.base_source.codename,
+            i=repository.identity,
+            s=self.name)
 
 django.contrib.admin.site.register(Suite)
 
@@ -315,7 +324,7 @@ Example:
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
             for s in self.layout.suites.all():
-                if s.migrates_from is None:
+                if s.uploadable:
                     self.mbd_uploadable_distributions.append(
                         "{d}-{identity}-{s}".format(identity=self.identity,
                                                     d=d.base_source.codename,
@@ -421,7 +430,7 @@ Example:
         return os.path.join(self.mbd_get_path(), "incoming")
 
     def mbd_get_dist(self, dist, suite):
-        return dist.base_source.codename + "-" + self.identity + "-" + suite.name
+        return suite.mbd_get_distribution(self, dist)
 
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity
@@ -527,9 +536,17 @@ DscIndices: Sources Release . .gz .bz2
         return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
+        # Check that the daemon model is prepared
         from mini_buildd.models import Daemon
         if Daemon.objects.get(id=1).status < StatusModel.STATUS_PREPARED:
             raise Exception("Please prepare daemon first (for the gnupg key).")
+
+        # Check that the codenames of the distributiosn are unique
+        codenames = []
+        for d in self.distributions.all():
+            if d.base_source.codename in codenames:
+                raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
+            codenames.append(d.base_source.codename)
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
@@ -557,5 +574,26 @@ gnupghome {h}
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
             msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
+
+    def mbd_package_search(self, package, codename):
+        distributions = []
+        for d in self.distributions.all():
+            if not codename or codename == d.base_source.codename:
+                distributions.append(d)
+
+        result = {}
+        for d in distributions:
+            for s in self.layout.suites.all():
+                for item in self.mbd_reprepro().listmatched(package, s.mbd_get_distribution(self, d)).split(";"):
+                    try:
+                        name, version, distribution = item.split("|")
+                        pck = result.setdefault(name, {})
+                        ver = pck.setdefault(version, {})
+                        ver["distribution"] = distribution
+                        if s.migrates_to:
+                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
+                    except:
+                        log.error("Item failed: {l}".format(l=item))
+        return result
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

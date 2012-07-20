@@ -12,43 +12,50 @@
 		<h1 class="box-caption">Search results</h1>
 
 		{% if result %}
-		{% for key1, val1 in result.items %}
-		<div class="inner-box">
-			<h1 class="inner-box-caption">Pakckage: {{ key1 }}</h1>
-			<table>
-				<tr>
-					<th>Version</th>
-					<th>Maintainer</th>
-					<th>Repository</th>
-					<th>Distribution</th>
-					<th>Propagation</th>
-				</tr>
-				{% for key2, val2 in val1.items %}
-				<tr>
-					<td><a href="link_to_nowhere" title="Details">{{ key2 }}</a></td>
-					<td><a href="mailto:{{ val2.1.1 }}">{{ val2.0.1 }}</a></td>
-					<td><a href="/mini_buildd/repositories/{{ val2.2.1 }}/">{{ val2.2.1 }}</a></td>
-					<td>{{ val2.3.1 }}</td>
-					{% if val2.4 %}
-					{% if authenticated %}
-					<td><a class="propagate" title="to: {{ val2.4.1 }}" href="/mini_buildd/repositories/?action=propagate&amp;package={{ key1|urlencode }}&amp;version={{ key2|urlencode }}&amp;repository={{ val2.2.1|urlencode }}&amp;from_dist={{ val2.3.1|urlencode }}&amp;to_dist={{ val2.4.1|urlencode }}">propagate</a></td>
-					{% else %}
-					<td><a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a></td>
-					{% endif %}
-					{% else %}
-					<td class="search-result-cannot-propagate">not possible</td>
-					{% endif %}
-				</tr>
-				{% endfor %}
-			</table>
+		{% for repository, packages in result.items %}
+		<div class="box">
+			<h1 class="box-caption"><a href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
+
+			{% for package, versions in packages.items %}
+
+			<div class="inner-box">
+				<h1 class="inner-box-caption">Source package: {{ package }}</h1>
+
+				<table>
+					<tr>
+						<th>Version</th>
+						<th>Distribution</th>
+						<th>Propagation</th>
+					</tr>
+
+					{% for version, properties in versions.items %}
+
+					<tr>
+						<td>{{ version }}</td>
+						<td>{{ properties.distribution }}</td>
+						{% if properties.migrates_to %}
+						{% if authenticated %}
+						<td><a class="propagate" title="to: {{ properties.migrates_to }}"
+									 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ properties.distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a></td>
+						{% else %}
+						<td><a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a></td>
+						{% endif %}
+						{% else %}
+						<td class="search-result-cannot-propagate">not possible</td>
+						{% endif %}
+					</tr>
+					{% endfor %}
+				</table>
+			</div>
+			{% endfor %}
+			{% endfor %}
+			{% else %}
+			<ul>
+				<li><span class="alert">No packages found!</span></li>
+				<li>Back to <a href="javascript: history.back()">search</a>.</li>
+			</ul>
+			{% endif %}
 		</div>
-		{% endfor %}
-		{% else %}
-		<ul>
-			<li><span class="alert">No packages found!</span></li>
-			<li>Back to <a href="javascript: history.back()">search</a>.</li>
-		</ul>
-		{% endif %}
 	</div>
 </div>
 

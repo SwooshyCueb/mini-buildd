@@ -11,7 +11,7 @@
 	<div class="box">
 		<h1 class="box-caption">Propagation results</h1>
 		{% if authenticated %}
-		<p>{{ result }}</p>
+		<p><pre>{{ result }}</pre></p>
 		{% else %}
 		<p>Before you can propagate you have to <a href="/admin/">login</a> as superuser!</p>
 		{% endif %}

@@ -19,7 +19,7 @@
 			{% for package, versions in packages.items %}
 
 			<div class="inner-box">
-				<h1 class="inner-box-caption">Source package: {{ package }}</h1>
+				<h1 class="inner-box-caption">{{ package }}</h1>
 
 				<table>
 					<tr>
@@ -47,8 +47,8 @@
 							{% else %}
 							<a class="propagate" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
 							{% endif %}
-							|
 							{% endfor %}
+							|
 						</td>
 					</tr>
 

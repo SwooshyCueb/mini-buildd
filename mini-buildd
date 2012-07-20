@@ -53,9 +53,10 @@ main,django,ftpd,build,sbuild")
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
         group_db.add_argument("-U", "--unprepare", action='store', metavar="MODELCLASS,MODELCLASS,..",
                               help="Internal use only, use with care! Bulk-unprepare all objects of the given (status) model classes.")
+
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
-                              help="Import FILE to django database and exit; must be an absolute path name.') \
-django fixture path (see 'django-admin dumpdata'), or an absolute path /PATH/*.conf for an old 0.8.x-style config.")
+                              help="JSON fixture path (see 'django-admin dumpdata'), or an \
+absolute path /PATH/*.conf for an old 0.8.x-style config.")
         group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                               help="Dump app[.MODEL] from django database and exit (see 'django-admin loaddata').")
 

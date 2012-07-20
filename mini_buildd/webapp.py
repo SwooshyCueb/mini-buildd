@@ -110,10 +110,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     def dumpdata(self, a):
         log.info("Dumping data for: {a}".format(a=a))
-        if a == "08x":
-            mini_buildd.compat08x.exportConf("/dev/stdout")
-        else:
-            django.core.management.call_command('dumpdata', a, indent=2, format='json')
+        django.core.management.call_command('dumpdata', a, indent=2, format='json')
 
     def get_django_secret_key(self, home):
         """

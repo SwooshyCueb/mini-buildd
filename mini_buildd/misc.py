@@ -120,8 +120,11 @@ def run_as_thread(call=None, daemon=False, **kwargs):
     return thread
 
 
-def hash_of_file(fn, hash_type=hashlib.md5):
-    md5 = hash_type()
+def hash_of_file(fn, hash_type="md5"):
+    """
+    Helper to get any hash from file contents.
+    """
+    md5 = hashlib.new(hash_type)
     with open(fn) as f:
         while True:
             data = f.read(128)
@@ -132,11 +135,11 @@ def hash_of_file(fn, hash_type=hashlib.md5):
 
 
 def md5_of_file(fn):
-    return hash_of_file(fn, hash_type=hashlib.md5)
+    return hash_of_file(fn, hash_type="md5")
 
 
 def sha1_of_file(fn):
-    return hash_of_file(fn, hash_type=hashlib.sha1)
+    return hash_of_file(fn, hash_type="sha1")
 
 
 def taint_env(taint):

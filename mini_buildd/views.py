@@ -33,6 +33,8 @@ def get_builder_state(request):
 
 
 def get_repository_results(request):
+    from mini_buildd.models import Repository
+
     if request.GET:
         authenticated = (request.user.is_authenticated() and request.user.is_superuser)
         action = request.GET.get("action", None)
@@ -42,7 +44,6 @@ def get_repository_results(request):
             repository = request.GET.get("repository", None)
             codename = request.GET.get("codename", None)
 
-            from mini_buildd.models import Repository
             result = {}
             for r in [Repository.objects.get(identity=repository)] if repository else Repository.objects.all():
                 result[r.identity] = r.mbd_package_search(package, codename)
@@ -58,8 +59,8 @@ def get_repository_results(request):
                 from_distribution = request.GET.get("from_distribution", None)
                 to_distribution = request.GET.get("to_distribution", None)
 
-                # DUMMY PROPAGATION: to be replaced later on!
-                result = tmp_dummy_propagate_package(package, version, repository, from_distribution, to_distribution)
+                r = Repository.objects.get(identity=repository)
+                result = r.mbd_reprepro().copysrc(to_distribution, from_distribution, package, version)
 
             ret = render_to_response("mini_buildd/package_propagation_results.html",
                                      {'authenticated': authenticated, 'result': result})
@@ -68,9 +69,3 @@ def get_repository_results(request):
                                  {'repositories': mini_buildd.models.Repository.objects.all()})
 
     return ret
-
-
-# DUMMY PROPAGATION: to be removed later on!
-# Todo: think about a useful "result-structure"
-def tmp_dummy_propagate_package(package, version, repository, from_distribution, to_distribution):
-    return "Repository " + repository + ": Successfully propagated " + package + " (" + version + ") from " + from_distribution + " to " + to_distribution + "."

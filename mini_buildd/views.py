@@ -64,6 +64,21 @@ def get_repository_results(request):
 
             ret = render_to_response("mini_buildd/package_propagation_results.html",
                                      {'authenticated': authenticated, 'result': result})
+
+        elif action == "remove":
+            result = {}
+            if authenticated:
+                package = request.GET.get("package", None)
+                version = request.GET.get("version", None)
+                repository = request.GET.get("repository", None)
+                distribution = request.GET.get("distribution", None)
+
+                r = Repository.objects.get(identity=repository)
+                result = r.mbd_reprepro().removesrc(distribution, package, version)
+
+            ret = render_to_response("mini_buildd/package_propagation_results.html",
+                                     {'authenticated': authenticated, 'result': result})
+
     else:
         ret = render_to_response("mini_buildd/repository_list.html",
                                  {'repositories': mini_buildd.models.Repository.objects.all()})

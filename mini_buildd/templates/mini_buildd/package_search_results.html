@@ -36,13 +36,16 @@
 							|
 							{{ distribution }}
 
-							{% if properties.migrates_to %}
 							{% if authenticated %}
+							<a class="remove" title="Remove package from: {{ distribution }}"
+								 href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">remove</a>
+							{% if properties.migrates_to %}
 							<a class="propagate" title="to: {{ properties.migrates_to }}"
 								 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
-							{% else %}
-							<a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a>
 							{% endif %}
+
+							{% else %}
+							<a class="propagate" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
 							{% endif %}
 							|
 							{% endfor %}

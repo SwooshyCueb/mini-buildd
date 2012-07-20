@@ -575,4 +575,25 @@ gnupghome {h}
             shutil.rmtree(self.mbd_get_path())
             msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
 
+    def mbd_package_search(self, package, codename):
+        distributions = []
+        for d in self.distributions.all():
+            if not codename or codename == d.base_source.codename:
+                distributions.append(d)
+
+        result = {}
+        for d in distributions:
+            for s in self.layout.suites.all():
+                for item in self.mbd_reprepro().listmatched(package, s.mbd_get_distribution(self, d)).split(";"):
+                    try:
+                        name, version, distribution = item.split("|")
+                        pck = result.setdefault(name, {})
+                        ver = pck.setdefault(version, {})
+                        ver["distribution"] = distribution
+                        if s.migrates_to:
+                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
+                    except:
+                        log.error("Item failed: {l}".format(l=item))
+        return result
+
 django.contrib.admin.site.register(Repository, Repository.Admin)

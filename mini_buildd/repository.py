@@ -589,11 +589,12 @@ gnupghome {h}
                         name, version, distribution = item.split("|")
                         pck = result.setdefault(name, {})
                         ver = pck.setdefault(version, {})
-                        ver["distribution"] = distribution
+                        dis = ver.setdefault(distribution, {})
                         if s.migrates_to:
-                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
+                            dis["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
                     except:
                         log.error("Item failed: {l}".format(l=item))
+
         return result
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

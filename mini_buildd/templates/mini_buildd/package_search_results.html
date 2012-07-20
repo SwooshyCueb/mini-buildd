@@ -24,26 +24,31 @@
 				<table>
 					<tr>
 						<th>Version</th>
-						<th>Distribution</th>
-						<th>Propagation</th>
+						<th>Distributions</th>
 					</tr>
 
-					{% for version, properties in versions.items %}
+					{% for version, distributions in versions.items %}
 
 					<tr>
 						<td>{{ version }}</td>
-						<td>{{ properties.distribution }}</td>
-						{% if properties.migrates_to %}
-						{% if authenticated %}
-						<td><a class="propagate" title="to: {{ properties.migrates_to }}"
-									 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ properties.distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a></td>
-						{% else %}
-						<td><a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a></td>
-						{% endif %}
-						{% else %}
-						<td class="search-result-cannot-propagate">not possible</td>
-						{% endif %}
+						<td>
+							{% for distribution, properties in distributions.items %}
+							|
+							{{ distribution }}
+
+							{% if properties.migrates_to %}
+							{% if authenticated %}
+							<a class="propagate" title="to: {{ properties.migrates_to }}"
+								 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
+							{% else %}
+							<a class="propagate" title="You need superuser rights!" href="/admin/">log in to propagate</a>
+							{% endif %}
+							{% endif %}
+							|
+							{% endfor %}
+						</td>
 					</tr>
+
 					{% endfor %}
 				</table>
 			</div>

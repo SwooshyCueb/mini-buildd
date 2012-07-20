@@ -22,3 +22,12 @@ class Reprepro():
 
     def processincoming(self):
         return mini_buildd.misc.call(self._cmd + ["processincoming", "INCOMING"])
+
+    def listmatched(self, pattern, dist):
+        return mini_buildd.misc.call(
+            self._cmd +
+            ["--type=dsc",
+             "--list-format=${$source}|${$sourceversion}|${$codename};",
+             "listmatched",
+             dist,
+             pattern])

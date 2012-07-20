@@ -40,19 +40,22 @@ class Suite(Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
+    uploadable = django.db.models.BooleanField(default=True)
     experimental = django.db.models.BooleanField(default=False)
 
-    migrates_from = django.db.models.ForeignKey(
+    migrates_to = django.db.models.ForeignKey(
         'self', blank=True, null=True,
-        help_text="Leave this blank to make this suite uploadable, or chose a suite where this migrates from.")
+        help_text="Give another suite where packages may migrate to.")
 
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
     def __unicode__(self):
-        return u"{e}{n}{e} <= {m}".format(n=self.name,
-                                          e=u"*" if self.experimental else u"",
-                                          m=self.migrates_from.name if self.migrates_from else "User uploads")
+        return u"{e}{n}{e} [{u}]{m}".format(
+            n=self.name,
+            e=u"*" if self.experimental else u"",
+            u=u"uploadable" if self.uploadable else u"managed",
+            m=u" => {m}".format(m=self.migrates_to.name) if self.migrates_to else u"")
 
 django.contrib.admin.site.register(Suite)
 
@@ -315,7 +318,7 @@ Example:
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
             for s in self.layout.suites.all():
-                if s.migrates_from is None:
+                if s.uploadable:
                     self.mbd_uploadable_distributions.append(
                         "{d}-{identity}-{s}".format(identity=self.identity,
                                                     d=d.base_source.codename,

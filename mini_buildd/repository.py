@@ -57,6 +57,12 @@ class Suite(Model):
             u=u"uploadable" if self.uploadable else u"managed",
             m=u" => {m}".format(m=self.migrates_to.name) if self.migrates_to else u"")
 
+    def mbd_get_distribution(self, repository, dist):
+        return u"{c}-{i}-{s}".format(
+            c=dist.base_source.codename,
+            i=repository.identity,
+            s=self.name)
+
 django.contrib.admin.site.register(Suite)
 
 
@@ -424,7 +430,7 @@ Example:
         return os.path.join(self.mbd_get_path(), "incoming")
 
     def mbd_get_dist(self, dist, suite):
-        return dist.base_source.codename + "-" + self.identity + "-" + suite.name
+        return suite.mbd_get_distribution(self, dist)
 
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity

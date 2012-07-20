@@ -330,6 +330,7 @@ django.db.models.signals.post_save.connect(create_user_profile, sender=django.co
 
 class Remote(gnupg.GnuPGPublicKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+    wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     class Admin(gnupg.GnuPGPublicKey.Admin):
         search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["http"]

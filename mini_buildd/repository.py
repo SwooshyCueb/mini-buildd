@@ -404,7 +404,6 @@ Example:
 
         except Exception as e:
             msg_error(request, "Some package failed: {e}".format(e=str(e)))
-            pass
         finally:
             shutil.rmtree(t)
 

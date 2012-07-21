@@ -173,14 +173,15 @@ class Changes(debian.deb822.Changes):
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 
-    def tar(self, tar_path, add_files=[]):
+    def tar(self, tar_path, add_files=None):
         with contextlib.closing(tarfile.open(tar_path, "w")) as tar:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
             tar_add(self._file_path)
             for f in self.get_files():
                 tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
-            for f in add_files:
-                tar_add(f)
+            if add_files:
+                for f in add_files:
+                    tar_add(f)
 
     def untar(self, path):
         tar_file = self._file_path + ".tar"

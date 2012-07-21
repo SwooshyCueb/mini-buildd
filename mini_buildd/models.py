@@ -106,7 +106,8 @@ class Model(django.db.models.Model):
     class Meta:
         abstract = True
 
-    def check_daemon_stopped(self):
+    @classmethod
+    def check_daemon_stopped(cls):
         import mini_buildd.daemon
         if mini_buildd.daemon.get().is_running():
             raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
@@ -202,6 +203,7 @@ this would mean losing all packages!
         action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
 
         def colored_status(self, obj):
+            LOG.debug(self)
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
@@ -217,6 +219,7 @@ this would mean losing all packages!
         pass
 
     def mbd_get_status_dependencies(self):
+        LOG.debug("No status dependencies for {o}".format(o=self))
         return []
 
     def mbd_check_status_dependencies(self, request=None, lower_status=0):

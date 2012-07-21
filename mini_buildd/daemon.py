@@ -425,7 +425,8 @@ class Manager():
             LOG.info("New default Daemon model instance created")
         LOG.info("Daemon model instance updated...")
 
-    def check(self, request=None):
+    @classmethod
+    def check(cls, request=None):
         for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
             r.mbd_check_status_dependencies(request)
 

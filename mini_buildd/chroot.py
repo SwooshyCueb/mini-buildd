@@ -183,6 +183,7 @@ file={t}
 """.format(t=self.mbd_get_tar_file())
 
     def mbd_get_pre_sequence(self):
+        LOG.debug("No pre-squence for chroot {c}".format(c=self))
         return []
 
     def mbd_get_post_sequence(self):

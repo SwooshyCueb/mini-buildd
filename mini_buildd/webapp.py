@@ -52,7 +52,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self.syncdb()
         self.setup_default_models()
 
-    def setup_default_models(self):
+    @classmethod
+    def setup_default_models(cls):
         from mini_buildd import models
         default_layout, created = models.Layout.objects.get_or_create(name="Default")
         if created:
@@ -69,7 +70,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             default_layout.build_keyring_package_for.add(unstable)
             default_layout.save()
 
-    def set_admin_password(self, password):
+    @classmethod
+    def set_admin_password(cls, password):
         """
         This method sets the password for the administrator.
 
@@ -87,7 +89,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             LOG.info("Creating initial 'admin' user...")
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
-    def unprepare(self, models):
+    @classmethod
+    def unprepare(cls, models):
         """
         Unprepare all given (status) models.
         """
@@ -97,22 +100,26 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             for o in model_class.objects.all():
                 model_class.Admin.action(None, (o,), "unprepare", model_class.STATUS_UNPREPARED, min)
 
-    def syncdb(self):
+    @classmethod
+    def syncdb(cls):
         LOG.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)
 
-    def loaddata(self, file_name):
+    @classmethod
+    def loaddata(cls, file_name):
         if os.path.splitext(file_name)[1] == ".conf":
             LOG.info("Try loading ad 08x.conf: {f}".format(f=file_name))
             mini_buildd.compat08x.import_conf(file_name)
         else:
             django.core.management.call_command('loaddata', file_name)
 
-    def dumpdata(self, app_path):
+    @classmethod
+    def dumpdata(cls, app_path):
         LOG.info("Dumping data for: {a}".format(a=app_path))
         django.core.management.call_command('dumpdata', app_path, indent=2, format='json')
 
-    def get_django_secret_key(self, home):
+    @classmethod
+    def get_django_secret_key(cls, home):
         """
         This method creates *once* django's SECRET_KEY and/or returns it.
 

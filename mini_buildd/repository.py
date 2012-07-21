@@ -219,13 +219,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                 result += "+ " + e.mbd_id()
             return result
 
-        def cmps():
-            result = u""
-            for c in self.components.all():
-                result += c.name + " "
-            return result
-
-        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
+        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=u" ".join(self.mbd_get_components()))
 
     def _mbd_clean_architectures(self):
         ".. todo:: Not enabled in clean() as code does not work there: ManyToMany fields keep old values until actually saved (??)."
@@ -240,7 +234,8 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         # self._mbd_clean_architectures()
         super(Distribution, self).clean()
 
-    def _mbd_get_architectures(self, m2m_objects):
+    @classmethod
+    def _mbd_get_architectures(cls, m2m_objects):
         architectures = []
         for o in m2m_objects:
             for a in o.all():
@@ -255,6 +250,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     def mbd_get_all_architectures(self):
         return self._mbd_get_architectures([self.mandatory_architectures, self.optional_architectures])
+
+    def mbd_get_components(self):
+        result = []
+        for c in self.components.all():
+            result.append(c.name)
+        return result
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
@@ -308,6 +309,7 @@ Example:
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
         def action_generate_keyring_packages(self, request, queryset):
+            LOG.debug(self)
             for s in queryset:
                 if s.status >= s.STATUS_ACTIVE:
                     s.mbd_generate_keyring_packages(request)
@@ -435,9 +437,6 @@ Example:
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity
 
-    def mbd_get_components(self):
-        return "main contrib non-free"
-
     def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
@@ -446,7 +445,7 @@ Example:
         return "deb {u}/{r}/{i}/ {d} {c}".format(
             u=mini_buildd.daemon.get().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
+            i=self.identity, d=self.mbd_get_dist(dist, suite), c=u" ".join(dist.mbd_get_components()))
 
     def mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
@@ -475,6 +474,7 @@ Example:
 
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
+        LOG.debug(self)
         return ""
 
     def mbd_get_apt_keys(self, dist):
@@ -499,6 +499,8 @@ Example:
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
     def mbd_get_sources(self, dist, suite):
+        ".. todo:: STUB/WTF"
+        LOG.debug(self)
         result = ""
         result += "Base: " + str(dist.base_source) + "\n"
         for e in dist.extra_sources.all():
@@ -524,7 +526,7 @@ DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
-           components=self.mbd_get_components(),
+           components=u" ".join(d.mbd_get_components()),
            architectures=" ".join(d.mbd_get_all_architectures()),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",

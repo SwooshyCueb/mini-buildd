@@ -69,10 +69,14 @@ mbd_pylintgeneratedmembers()
 
 mbd_pylint()
 {
-	(
-		pyenv
-		pylint --rcfile="$(pwd)/.pylintrc" --errors-only mini-buildd mini_buildd/
-	)
+	if [ "$(lsb_release -s -c)" = "squeeze" ]; then
+		printf "W: pylint/squeeze can't be set up to work for us (skipping)" >&2
+	else
+		(
+			pyenv
+			pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/
+		)
+	fi
 }
 
 mbd_pychecker()
@@ -93,7 +97,7 @@ mbd_pydjangolint()
 
 mbd_pychecks()
 {
-	local tests="pep8 pydoctests pyflakes"
+	local tests="pep8 pydoctests pyflakes pylint"
 	for t in ${tests}; do
 		echo "=> mbd_${t}"
 		mbd_${t}

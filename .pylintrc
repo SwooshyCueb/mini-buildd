@@ -4,8 +4,6 @@
 disable=C0111
 # Line too long
 disable=C0301
-# Used when a variable is accessed for a nonexistent member.
-disable=E1101
 # Used when a class has no __init__ method, and neither does its parent classes.
 disable=W0232
 # Too few public methods (%s/%s)

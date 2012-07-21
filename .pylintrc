@@ -14,4 +14,5 @@ disable=R0903
 disable=R0904
 
 [TYPECHECK]
-generated-members=objects
+# see ./devel pylintgeneratedmembers
+generated-members=add,all,build_keyring_package_for,codename,create_default_layout,DoesNotExist,filechroot,get_status_display,id,looplvmchroot,lvmchroot,mandatory_architectures,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_default_version,mbd_get_mandatory_version_regex,mbd_id,objects,split,splitlines,suites

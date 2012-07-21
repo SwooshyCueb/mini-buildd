@@ -56,6 +56,17 @@ mbd_pyflakes()
 	)
 }
 
+mbd_pylintgeneratedmembers()
+{
+	# Generate all identifiers with "has no xxx member"
+	# error. These are most likely false-positive due to django
+	# models.
+	for o in $(${0} pylint | grep "has no.*member" | cut -d"'" -f4 | sort | uniq); do
+		printf "${o},"
+	done
+	printf "\n"
+}
+
 mbd_pylint()
 {
 	(

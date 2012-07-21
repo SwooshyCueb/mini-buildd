@@ -115,9 +115,9 @@ class Layout(Model):
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
             ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
-            ("Extra", {"classes": ("collapse",), "fields":
-                           ("default_version", "mandatory_version_regex",
-                            "experimental_default_version", "experimental_mandatory_version_regex")}),)
+            ("Extra", {"classes": ("collapse",),
+                       "fields": ("default_version", "mandatory_version_regex",
+                                  "experimental_default_version", "experimental_mandatory_version_regex")}),)
 
 django.contrib.admin.site.register(Layout, Layout.Admin)
 

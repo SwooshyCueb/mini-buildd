@@ -186,7 +186,7 @@ class PrioritySource(Model):
         unique_together = ('source', 'priority')
 
     def __unicode__(self):
-        return u"{i}: Priority={p}".format(i=self.source.__unicode__(), p=self.priority)
+        return u"{i}: Priority={p}".format(i=self.source, p=self.priority)
 
     def mbd_id(self):
         return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)

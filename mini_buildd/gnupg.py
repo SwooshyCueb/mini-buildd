@@ -112,8 +112,8 @@ class TmpGnuPG(BaseGnuPG):
         super(TmpGnuPG, self).__init__(home=tempfile.mkdtemp())
 
     def __del__(self):
-        import shutil
-        shutil.rmtree(self.home)
+        from shutil import rmtree
+        rmtree(self.home)
 
 
 class GnuPGPublicKey(StatusModel):

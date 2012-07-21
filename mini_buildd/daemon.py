@@ -533,6 +533,5 @@ _INSTANCE = None
 
 
 def get():
-    global _INSTANCE
     assert(_INSTANCE)
     return _INSTANCE

@@ -52,7 +52,7 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
                         priority = slist[2] if len(slist) > 2 else "1"
 
                         # Do some magic to find "origin", not configured explicitly in 0.8.x config
-                        origin = "FIXME: No known origin (0.8.x 'extra source' import)"
+                        origin = "No known origin (0.8.x 'extra source' import)"
                         if (t == "base"):
                             # Base: We assume that 0.8.x used Debian base sources only
                             origin = "Debian"

@@ -325,17 +325,19 @@ def gen_remotes_keyring():
     return keyring
 
 
-def run():
-    """ mini-buildd 'daemon engine' run.
-    """
+def handle_buildresult(bres):
+    pid = bres.get_pkg_id()
+    if pid in get().model._packages:
+        if get().model._packages[pid].update(bres) == Package.DONE:
+            del get().model._packages[pid]
+        return True
+    return False
 
-    def handle_buildresult(bres):
-        pid = bres.get_pkg_id()
-        if pid in get().model._packages:
-            if get().model._packages[pid].update(bres) == Package.DONE:
-                del get().model._packages[pid]
-            return True
-        return False
+
+def run():
+    """
+    mini-buildd 'daemon engine' run.
+    """
 
     uploader_keyrings = gen_uploader_keyrings()
     remotes_keyring = gen_remotes_keyring()

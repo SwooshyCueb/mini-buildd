@@ -412,6 +412,7 @@ def run():
 
 class Manager():
     def __init__(self):
+        self.model = None
         self.update_model()
         self.thread = None
         global _INSTANCE

@@ -34,7 +34,7 @@ mbd_pep8()
 		# squeeze version does not set an error exit status
 		t=$(mktemp)
 		trap "rm ${t}" EXIT
-		pep8 --ignore=E501,E122 mini-buildd mini_buildd/ | tee "${t}"
+		pep8 --ignore=E501,E122 doc/conf.py doc/django_settings.py setup.py mini-buildd mini_buildd/ | tee "${t}"
 		[ ! -s "${t}" ]
 	)
 }

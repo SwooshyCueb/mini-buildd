@@ -11,7 +11,8 @@
 # All configuration values have a default; values that are commented out
 # serve to show the default.
 
-import sys, os
+import sys
+import os
 
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
@@ -20,7 +21,7 @@ sys.path.insert(0, os.path.abspath('..'))
 
 # Dummy; needed so django does not freak out on doc building
 import django.core.management
-os.environ["DJANGO_SETTINGS_MODULE"]="doc.django_settings"
+os.environ["DJANGO_SETTINGS_MODULE"] = "doc.django_settings"
 django.core.management.call_command('graph_models', 'mini_buildd', outputfile="_static/mini_buildd_models.png")
 
 # do not import mini-buildd's version before path insertion -- otherwise
@@ -187,9 +188,8 @@ htmlhelp_basename = 'mini-buildddoc'
 # Grouping the document tree into LaTeX files. List of tuples
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
-  ('index', 'mini-buildd.tex', u'mini-buildd Documentation',
-   u'Mini-buildd Maintainers', 'manual'),
-]
+    ('index', 'mini-buildd.tex', u'mini-buildd Documentation',
+     u'Mini-buildd Maintainers', 'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

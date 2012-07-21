@@ -1,15 +1,6 @@
 [MESSAGES CONTROL]
 
-# Missing docstring
-disable=C0111
-# Line too long
-disable=C0301
-# Used when a class has no __init__ method, and neither does its parent classes.
-disable=W0232
-# Too few public methods (%s/%s)
-disable=R0903
-# Too many public methods (%s/%s)
-disable=R0904
+disable=C0111,C0301,W0232,R0903,R0904
 
 [TYPECHECK]
 # see ./devel pylintgeneratedmembers

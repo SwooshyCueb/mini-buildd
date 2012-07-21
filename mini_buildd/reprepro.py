@@ -3,11 +3,7 @@
 Run reprepro commands.
 """
 
-import logging
-
 import mini_buildd.misc
-
-log = logging.getLogger(__name__)
 
 
 class Reprepro():

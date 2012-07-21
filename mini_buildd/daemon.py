@@ -52,7 +52,7 @@ import mini_buildd.builder
 
 from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info, msg_error
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Daemon(StatusModel):
@@ -150,17 +150,17 @@ prevent original package maintainers to be spammed.
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
-    def mbd_prepare(self, r):
-        self._gnupg.prepare(r)
+    def mbd_prepare(self, request):
+        self._gnupg.prepare(request)
 
-    def mbd_unprepare(self, r):
-        self._gnupg.unprepare(r)
+    def mbd_unprepare(self, request):
+        self._gnupg.unprepare(request)
 
-    def mbd_activate(self, r):
-        get().restart(r)
+    def mbd_activate(self, request):
+        get().restart(request)
 
-    def mbd_deactivate(self, r):
-        get().stop(r)
+    def mbd_deactivate(self, request):
+        get().stop(request)
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))
@@ -194,7 +194,7 @@ incoming = /incoming
             if address and m_to_allow.search(address):
                 m_to.append(address)
             else:
-                log.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
+                LOG.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
 
         m_from = "{u}@{h}".format(u="mini-buildd", h=self.hostname)
 
@@ -219,11 +219,11 @@ incoming = /incoming
                 s = smtplib.SMTP(hopo.host, hopo.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
-                log.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
+                LOG.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=str(m_to)))
             except Exception as e:
-                log.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=str(m_to), e=str(e)))
+                LOG.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=str(m_to), e=str(e)))
         else:
-            log.warn("No email addresses found, skipping: {s}".format(s=subject))
+            LOG.warn("No email addresses found, skipping: {s}".format(s=subject))
 
 django.contrib.admin.site.register(Daemon, Daemon.Admin)
 
@@ -266,7 +266,7 @@ class Package(object):
         arch = result["Architecture"]
         status = result["Sbuild-Status"]
         retval = int(result["Sbuildretval"])
-        log.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
+        LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
 
         if retval == 0:
             self.success[arch] = result
@@ -275,11 +275,11 @@ class Package(object):
 
         missing = len(self.requests) - len(self.success) - len(self.failed)
         if missing > 0:
-            log.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
+            LOG.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
             return self.INCOMPLETE
 
         # Finish up
-        log.info("{p}: All build results received".format(p=self.pid))
+        LOG.info("{p}: All build results received".format(p=self.pid))
         try:
             if self.failed:
                 raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
@@ -288,7 +288,7 @@ class Package(object):
                 c.untar(path=self.repository.mbd_get_incoming_path())
                 self.repository.mbd_reprepro().processincoming()
         except Exception as e:
-            log.error(str(e))
+            LOG.error(str(e))
             # todo Error!
         finally:
             # Archive build results and request
@@ -321,7 +321,7 @@ def gen_remotes_keyring():
     keyring.add_pub_key(get().model.mbd_get_pub_key())
     for r in Remote.objects.all():
         keyring.add_pub_key(r.key)
-        log.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
+        LOG.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring
 
 
@@ -358,7 +358,7 @@ def run():
             break
 
         try:
-            log.info("Status: {0} active packages, {0} changes waiting in incoming.".
+            LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
                      format(len(get().model._packages), get().model._incoming_queue.qsize()))
 
             changes, changes_pid = None, None
@@ -375,7 +375,7 @@ def run():
             else:
                 repository, dist, suite = changes.get_repository()
                 if repository.allow_unauthenticated_uploads:
-                    log.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=changes._file_name))
+                    LOG.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=changes._file_name))
                 else:
                     uploader_keyrings[repository.identity].verify(changes._file_path)
 
@@ -393,11 +393,11 @@ def run():
                 subject = u"INVALID CHANGES: {c}: {e}".format(c=event, e=str(e))
                 body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
                 os.remove(event)
-            log.warn(subject)
+            LOG.warn(subject)
             get().model.mbd_notify(subject, body)
 
             if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-                log.exception("DEBUG: Daemon loop exception")
+                LOG.exception("DEBUG: Daemon loop exception")
 
         finally:
             get().model._incoming_queue.task_done()
@@ -417,43 +417,43 @@ class Manager():
         if self.model.status == StatusModel.STATUS_ACTIVE:
             self.start()
         else:
-            log.info("Daemon NOT started (activate first)")
+            LOG.info("Daemon NOT started (activate first)")
 
     def update_model(self):
         self.model, created = Daemon.objects.get_or_create(id=1)
         if created:
-            log.info("New default Daemon model instance created")
-        log.info("Daemon model instance updated...")
+            LOG.info("New default Daemon model instance created")
+        LOG.info("Daemon model instance updated...")
 
     def check(self, request=None):
         for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
             r.mbd_check_status_dependencies(request)
 
-    def start(self, r=None):
+    def start(self, request=None):
         if not self.thread:
             try:
                 self.update_model()
-                self.check(r)
+                self.check(request)
                 self.thread = mini_buildd.misc.run_as_thread(run)
-                msg_info(r, "Daemon running")
+                msg_info(request, "Daemon running")
             except Exception as e:
-                msg_error(r, "Could not start daemon: {e}".format(e=e))
+                msg_error(request, "Could not start daemon: {e}".format(e=e))
         else:
-            msg_info(r, "Daemon already running")
+            msg_info(request, "Daemon already running")
 
-    def stop(self, r=None):
+    def stop(self, request=None):
         if self.thread:
             self.model._incoming_queue.put("SHUTDOWN")
             self.thread.join()
             self.thread = None
             self.update_model()
-            msg_info(r, "Daemon stopped")
+            msg_info(request, "Daemon stopped")
         else:
-            msg_info(r, "Daemon already stopped")
+            msg_info(request, "Daemon already stopped")
 
-    def restart(self, r=None):
-        self.stop(r)
-        self.start(r)
+    def restart(self, request=None):
+        self.stop(request)
+        self.start(request)
 
     def is_running(self):
         return self.thread is not None

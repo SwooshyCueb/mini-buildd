@@ -13,7 +13,7 @@ import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Changes(debian.deb822.Changes):
@@ -104,20 +104,20 @@ class Changes(debian.deb822.Changes):
     def get_files(self):
         return self["Files"] if "Files" in self else []
 
-    def add_file(self, fn):
+    def add_file(self, file_name):
         if not "Files" in self:
             self["Files"] = []
-        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(fn),
-                              "size": os.path.getsize(fn),
+        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(file_name),
+                              "size": os.path.getsize(file_name),
                               "section": "mini-buildd",
                               "priority": "extra",
-                              "name": os.path.basename(fn)})
+                              "name": os.path.basename(file_name)})
 
     def save(self):
         try:
-            log.info("Saving changes: {f}".format(f=self._file_path))
+            LOG.info("Saving changes: {f}".format(f=self._file_path))
             self.dump(fd=open(self._file_path, "w+"))
-            log.info("Signing changes: {f}".format(f=self._file_path))
+            LOG.info("Signing changes: {f}".format(f=self._file_path))
             import mini_buildd.daemon
             mini_buildd.daemon.get().model._gnupg.sign(self._file_path)
         except:
@@ -129,7 +129,7 @@ class Changes(debian.deb822.Changes):
     def upload(self, hopo):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):
-            log.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
+            LOG.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
         else:
             ftp = ftplib.FTP()
             ftp.connect(hopo.host, hopo.port)
@@ -137,10 +137,10 @@ class Changes(debian.deb822.Changes):
             ftp.cwd("/incoming")
             for fd in self.get_files() + [{"name": self._file_name}]:
                 f = fd["name"]
-                log.debug("FTP: Uploading file: '{f}'".format(f=f))
+                LOG.debug("FTP: Uploading file: '{f}'".format(f=f))
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
             open(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
-            log.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
+            LOG.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
 
     def upload_buildrequest(self):
         arch = self["Architecture"]
@@ -169,7 +169,7 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                log.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
+                LOG.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 
@@ -188,23 +188,23 @@ class Changes(debian.deb822.Changes):
             with contextlib.closing(tarfile.open(tar_file, "r")) as tar:
                 tar.extractall(path=path)
         else:
-            log.info("No tar file (skipping): {f}".format(f=tar_file))
+            LOG.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
         logdir = self.get_log_dir()
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
+        LOG.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
         for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
+            LOG.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
             os.rename(f, os.path.join(logdir, fd["name"]))
 
     def remove(self):
-        log.info("Removing changes: '{f}'".format(f=self._file_path))
+        LOG.info("Removing changes: '{f}'".format(f=self._file_path))
         for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Removing: '{f}'".format(f=fd["name"]))
+            LOG.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
 
     def gen_buildrequests(self, repository, dist):
@@ -254,7 +254,7 @@ class Changes(debian.deb822.Changes):
 
                 breq.save()
             else:
-                log.info("Re-using existing buildrequest: {b}".format(b=breq._file_name))
+                LOG.info("Re-using existing buildrequest: {b}".format(b=breq._file_name))
             breq_dict[a] = breq
 
         return breq_dict

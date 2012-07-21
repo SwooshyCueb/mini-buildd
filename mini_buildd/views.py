@@ -1,6 +1,4 @@
-# -*- coding: utf-8 -*-
-import logging
-
+## -*- coding: utf-8 -*-
 import django.http
 
 from django.shortcuts import render_to_response
@@ -8,9 +6,6 @@ from django.shortcuts import render_to_response
 import mini_buildd.daemon
 
 import mini_buildd.models
-
-
-log = logging.getLogger(__name__)
 
 
 def show_index(request):

@@ -7,18 +7,17 @@ import django
 import mini_buildd.misc
 import mini_buildd.setup
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def log_init():
     """
     Setup CherryPy to use mini-buildd's logging mechanisms.
-
     """
 
     # listener
     def cherry_log(msg, level):
-        log.log(level, msg)
+        LOG.log(level, msg)
 
     # subscribe to channel
     cherrypy.engine.subscribe('log', cherry_log)
@@ -28,7 +27,7 @@ def log_init():
 
     # HTTP errors (status codes: 4xx-5xx)
     http_error = cherrypy._cperror.HTTPError
-    http_error.set_response = lambda msg: log.log(logging.ERROR, msg)
+    http_error.set_response = lambda msg: LOG.log(logging.ERROR, msg)
 
 
 def exit():

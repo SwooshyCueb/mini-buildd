@@ -13,7 +13,7 @@ import mini_buildd.gnupg
 
 from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Archive(Model):
@@ -33,12 +33,12 @@ class Archive(Model):
     def mbd_download_release(self, dist, gnupg):
         url = self.url + "/dists/" + dist + "/Release"
         with tempfile.NamedTemporaryFile() as release:
-            log.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
+            LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
             release.flush()
             if gnupg:
                 with tempfile.NamedTemporaryFile() as signature:
-                    log.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
+                    LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
                     signature.write(urllib.urlopen(url + ".gpg").read())
                     signature.flush()
                     gnupg.verify(signature.name, release.name)
@@ -130,15 +130,15 @@ class Source(StatusModel):
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
-                        newArch, created = Architecture.objects.get_or_create(name=a)
+                        new_arch, created = Architecture.objects.get_or_create(name=a)
                         if created:
                             msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                        self.architectures.add(newArch)
+                        self.architectures.add(new_arch)
                     for c in release["Components"].split(" "):
-                        newComponent, created = Component.objects.get_or_create(name=c)
+                        new_component, created = Component.objects.get_or_create(name=c)
                         if created:
                             msg_info(request, "Auto-adding new component: {c}".format(c=c))
-                        self.components.add(newComponent)
+                        self.components.add(new_component)
             except Exception as e:
                 msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
 

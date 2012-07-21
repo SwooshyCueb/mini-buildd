@@ -12,7 +12,7 @@ import pickle
 import logging
 import logging.handlers
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class HoPo(object):
@@ -87,32 +87,32 @@ def parse_distribution(dist):
     return dsplit[0], dsplit[1], dsplit[2]
 
 
-def subst_placeholders(s, p):
+def subst_placeholders(template, placeholders):
     """Substitue placeholders in string from a dict.
 
     >>> subst_placeholders("Repoversionstring: %IDENTITY%%CODEVERSION%", { "IDENTITY": "test", "CODEVERSION": "60" })
     'Repoversionstring: test60'
     """
-    for key, value in p.items():
-        s = s.replace("%{p}%".format(p=key), value)
-    return s
+    for key, value in placeholders.items():
+        template = template.replace("%{p}%".format(p=key), value)
+    return template
 
 
-def fromdos(s):
-    return s.replace('\r\n', '\n').replace('\r', '')
+def fromdos(string):
+    return string.replace('\r\n', '\n').replace('\r', '')
 
 
 def run_as_thread(call=None, daemon=False, **kwargs):
     def run(**kwargs):
         tid = call.__module__ + "." + call.__name__
         try:
-            log.info("{i}: Starting...".format(i=tid))
+            LOG.info("{i}: Starting...".format(i=tid))
             call(**kwargs)
-            log.info("{i}: Finished.".format(i=tid))
+            LOG.info("{i}: Finished.".format(i=tid))
         except Exception as e:
-            log.exception("{i}: Exception: {e}".format(i=tid, e=str(e)))
+            LOG.exception("{i}: Exception: {e}".format(i=tid, e=str(e)))
         except:
-            log.exception("{i}: Non-standard exception".format(i=tid))
+            LOG.exception("{i}: Non-standard exception".format(i=tid))
 
     thread = threading.Thread(target=run, kwargs=kwargs)
     thread.setDaemon(daemon)
@@ -120,12 +120,12 @@ def run_as_thread(call=None, daemon=False, **kwargs):
     return thread
 
 
-def hash_of_file(fn, hash_type="md5"):
+def hash_of_file(file_name, hash_type="md5"):
     """
     Helper to get any hash from file contents.
     """
     md5 = hashlib.new(hash_type)
-    with open(fn) as f:
+    with open(file_name) as f:
         while True:
             data = f.read(128)
             if not data:
@@ -134,18 +134,18 @@ def hash_of_file(fn, hash_type="md5"):
     return md5.hexdigest()
 
 
-def md5_of_file(fn):
-    return hash_of_file(fn, hash_type="md5")
+def md5_of_file(file_name):
+    return hash_of_file(file_name, hash_type="md5")
 
 
-def sha1_of_file(fn):
-    return hash_of_file(fn, hash_type="sha1")
+def sha1_of_file(file_name):
+    return hash_of_file(file_name, hash_type="sha1")
 
 
 def taint_env(taint):
     env = os.environ.copy()
-    for e in taint:
-        env[e] = taint[e]
+    for name in taint:
+        env[name] = taint[name]
     return env
 
 
@@ -159,12 +159,12 @@ def get_cpus():
 def mkdirs(path):
     try:
         os.makedirs(path)
-        log.info("Directory created: {d}".format(d=path))
+        LOG.info("Directory created: {d}".format(d=path))
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
         else:
-            log.debug("Directory already exists, ignoring; {d}".format(d=path))
+            LOG.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 
 def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
@@ -182,13 +182,13 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
     stdout = tempfile.TemporaryFile()
     stderr = tempfile.TemporaryFile()
 
-    log.info("Calling: {a}".format(a=args))
+    LOG.info("Calling: {a}".format(a=args))
     try:
-        olog = log.debug
+        olog = LOG.debug
         try:
             subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
         except:
-            olog = log.error
+            olog = LOG.error
             raise
         finally:
             if log_output:
@@ -199,12 +199,12 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
                 for line in stderr:
                     olog("Call stderr: {l}".format(l=line.rstrip('\n')))
     except:
-        log.error("Call failed: {a}".format(a=args))
+        LOG.error("Call failed: {a}".format(a=args))
         if value_on_error is not None:
             return value_on_error
         else:
             raise
-    log.info("Call successful: {a}".format(a=args))
+    LOG.info("Call successful: {a}".format(a=args))
     stdout.seek(0)
     return stdout.read()
 
@@ -221,7 +221,7 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             if calls[i][1]:
                 call(calls[i][1], run_as_root=run_as_root, value_on_error="", log_output=log_output, **kwargs)
             else:
-                log.debug("Skipping empty rollback call sequent {i}".format(i=i))
+                LOG.debug("Skipping empty rollback call sequent {i}".format(i=i))
 
     if rollback_only:
         rollback(len(calls) - 1)
@@ -232,39 +232,39 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
                 if l[0]:
                     call(l[0], run_as_root=run_as_root, value_on_error=value_on_error, log_output=log_output, **kwargs)
                 else:
-                    log.debug("Skipping empty call sequent {i}".format(i=i))
+                    LOG.debug("Skipping empty call sequent {i}".format(i=i))
                 i += 1
         except:
-            log.error("Sequence failed at: {i} (rolling back)".format(i=i))
+            LOG.error("Sequence failed at: {i} (rolling back)".format(i=i))
             rollback(i)
             raise
 
-sbuild_keys_workaround_lock = threading.Lock()
+SBUILD_KEYS_WORKAROUND_LOCK = threading.Lock()
 
 
 def sbuild_keys_workaround():
     "Create sbuild's internal key if needed (sbuild needs this one-time call, but does not handle it itself)."
-    with sbuild_keys_workaround_lock:
+    with SBUILD_KEYS_WORKAROUND_LOCK:
         if os.path.exists("/var/lib/sbuild/apt-keys/sbuild-key.pub"):
-            log.debug("/var/lib/sbuild/apt-keys/sbuild-key.pub: Already exists, skipping")
+            LOG.debug("/var/lib/sbuild/apt-keys/sbuild-key.pub: Already exists, skipping")
         else:
             t = tempfile.mkdtemp()
-            log.warn("One-time generation of sbuild keys (may take some time)...")
+            LOG.warn("One-time generation of sbuild keys (may take some time)...")
             call(["sbuild-update", "--keygen"], env=taint_env({"HOME": t}))
             shutil.rmtree(t)
-            log.info("One-time generation of sbuild keys done")
+            LOG.info("One-time generation of sbuild keys done")
 
 
 def setup_test_logging(syslog=True):
     if syslog:
         sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
         sh.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-        log.addHandler(sh)
+        LOG.addHandler(sh)
 
     ch = logging.StreamHandler()
     ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-    log.addHandler(ch)
-    log.setLevel(logging.DEBUG)
+    LOG.addHandler(ch)
+    LOG.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":

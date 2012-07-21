@@ -3,23 +3,22 @@ import imp
 import os
 import logging
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
-def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
-    """ """
+def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
     import mini_buildd.models
 
-    log.info("Importing 0.8.x config from: {f}".format(f=f))
-    conf08x = imp.load_source('mini_buildd.shconf', f)
+    LOG.info("Importing 0.8.x config from: {f}".format(f=conf_file))
+    conf08x = imp.load_source('mini_buildd.shconf', conf_file)
 
-    def try_import(f):
+    def try_import(func):
         try:
-            o = f()
+            o = func()
             o.save()
-            log.info("IMPORTED '{f}': '{n}'".format(f=f.__name__, n=o.__unicode__()))
+            LOG.info("IMPORTED '{f}': '{n}'".format(f=func.__name__, n=o.__unicode__()))
         except Exception as e:
-            log.warn("{f}: import failed: {e}".format(f=f.__name__, e=str(e)))
+            LOG.warn("{f}: import failed: {e}".format(f=func.__name__, e=str(e)))
 
     try_import(mini_buildd.models.create_default_layout)
 
@@ -30,21 +29,21 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
 
             for a in archs:
 
-                def Architecture():
+                def architecture():
                     return mini_buildd.models.Architecture(arch=a)
 
-                try_import(Architecture)
+                try_import(architecture)
 
             archs.append("any")
             for a in archs:
                 v = "mbd_src_" + d + "_" + t + "_" + a
                 sources = getattr(conf08x, v)
-                log.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
+                LOG.debug("Pondering source line: {v}={sources}".format(v=v, sources=sources))
 
                 if sources:
                     for value in sources.split(","):
                         # Parsing source line
-                        archive = value.split(" ")[0]
+                        url = value.split(" ")[0]
 
                         codename = value.split(" ")[1]
 
@@ -65,21 +64,21 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                             origin = "Debian Backports"
 
                         # "Archive"
-                        def Archive():
-                            return mini_buildd.models.Archive(url=archive)
-                        try_import(Archive)
+                        def archive():
+                            return mini_buildd.models.Archive(url=url)
+                        try_import(archive)
 
                         # "Source"
-                        def Source():
+                        def source():
                             no = mini_buildd.models.Source(codename=codename, origin=origin)
                             no.save()
-                            no.archives = mini_buildd.models.Archive.objects.filter(url=archive)
+                            no.archives = mini_buildd.models.Archive.objects.filter(url=url)
                             return no
-                        try_import(Source)
+                        try_import(source)
 
                         if (t == "extra"):
 
-                            def PrioritySource():
+                            def prioritysource():
                                 ps = mini_buildd.models.PrioritySource(
                                     source=mini_buildd.models.Source.objects.get(codename=codename, origin=origin), priority=priority)
                                 ps.save()
@@ -89,15 +88,15 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
-                            try_import(PrioritySource)
+                            try_import(prioritysource)
 
                         if (t == "base"):
 
-                            def Distribution():
+                            def distribution():
                                 return mini_buildd.models.Distribution(base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
-                            try_import(Distribution)
+                            try_import(distribution)
 
-    def Repository():
+    def repository():
         r = mini_buildd.models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
                                           layout=mini_buildd.models.Layout.objects.get(name="Default"),
                                           apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
@@ -110,4 +109,4 @@ def importConf(f=os.getenv('HOME') + '/.mini-buildd.conf'):
         for a in mini_buildd.models.Architecture.objects.all():
             r.mandatory_architectures.add(a)
         return r
-    try_import(Repository)
+    try_import(repository)

@@ -20,7 +20,7 @@ import mini_buildd.reprepro
 
 from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class EmailAddress(Model):
@@ -319,7 +319,7 @@ Example:
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
-        log.debug("Initializing repository '{identity}'".format(identity=self.identity))
+        LOG.debug("Initializing repository '{identity}'".format(identity=self.identity))
 
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
@@ -414,13 +414,13 @@ Example:
             for r in p.may_upload_to.all():
                 if r.identity == self.identity:
                     gpg.add_pub_key(p.key)
-                    log.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+                    LOG.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()
             if l and l[0] != "#":
                 gpg.add_keyring(l)
-                log.info("Adding keyring: {k}".format(k=l))
+                LOG.info("Adding keyring: {k}".format(k=l))
         return gpg
 
     def mbd_get_path(self):
@@ -450,7 +450,7 @@ Example:
 
     def mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
-        log.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
+        LOG.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         if identity == self.identity:
             for d in self.distributions.all():
@@ -593,7 +593,7 @@ gnupghome {h}
                         if s.migrates_to:
                             dis["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
                     except:
-                        log.error("Item failed: {l}".format(l=item))
+                        LOG.error("Item failed: {l}".format(l=item))
 
         return result
 

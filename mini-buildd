@@ -15,8 +15,8 @@ import mini_buildd.setup
 import mini_buildd.httpd
 import mini_buildd.webapp
 
-log = logging.getLogger("mini_buildd")
-log.addHandler(logging.StreamHandler())
+LOG = logging.getLogger("mini_buildd")
+LOG.addHandler(logging.StreamHandler())
 
 
 class Main():
@@ -108,26 +108,26 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
 
         # Clear all loggers now; this will remove the
         # preliminary console logger
-        log.handlers = []
+        LOG.handlers = []
 
         if "file" in loggers:
             handler = logging.FileHandler(os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log"))
             handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(handler)
+            LOG.addHandler(handler)
 
         if "syslog" in loggers:
             handler = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
             handler.setFormatter(logging.Formatter(log_format))
-            log.addHandler(handler)
+            LOG.addHandler(handler)
 
         if "console" in loggers:
             handler = logging.StreamHandler()
             handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            log.addHandler(handler)
+            LOG.addHandler(handler)
 
         # Finally, set log level
         loglevel = logging.WARNING - (10 * (min(2, self._args.verbosity) - min(2, self._args.terseness)))
-        log.setLevel(loglevel)
+        LOG.setLevel(loglevel)
 
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
@@ -136,8 +136,8 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
         os.environ.clear()
         os.environ["HOME"] = self._args.home
         os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
-        for k in ("USER", "LOGNAME"):
-            os.environ[k] = pwd.getpwuid(os.getuid())[0]
+        for name in ["USER", "LOGNAME"]:
+            os.environ[name] = pwd.getpwuid(os.getuid())[0]
 
     def __init__(self):
         self._args = self._parse_args()
@@ -155,7 +155,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
         signal.signal(signal.SIGHUP, self.on_signal)
 
     def on_signal(self, signum=-1, frame=-1):
-        log.info("Got signal: {s} ({f})".format(s=signum, f=frame))
+        LOG.info("Got signal: {s} ({f})".format(s=signum, f=frame))
         if signum == signal.SIGTERM or signum == signal.SIGINT:
             self._status = "SHUTDOWN"
         elif signum == signal.SIGHUP:
@@ -188,7 +188,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                     if manager.is_running():
                         manager.restart()
                     else:
-                        log.warn("Daemon not active (not restarted).")
+                        LOG.warn("Daemon not active (not restarted).")
                 else:
                     break
 
@@ -199,9 +199,9 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
 try:
     Main().run()
 except Exception as e:
-    ERR_STRING = "mini-buildd FAILED: {e}".format(e=str(e))
+    ERR_STRING = u"mini-buildd FAILED: {e}".format(e=e)
     if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-        log.exception(ERR_STRING)
+        LOG.exception(ERR_STRING)
     else:
         sys.exit(ERR_STRING)
 except SystemExit as e:

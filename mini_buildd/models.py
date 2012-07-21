@@ -54,25 +54,25 @@ import django.template.response
 
 import mini_buildd.misc
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def msg_info(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
-    log.info(msg)
+    LOG.info(msg)
 
 
 def msg_error(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
-    log.error(msg)
+    LOG.error(msg)
 
 
 def msg_warn(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
-    log.warn(msg)
+    LOG.warn(msg)
 
 
 def action_delete(model, request, queryset):
@@ -201,8 +201,8 @@ this would mean losing all packages!
             self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
         action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
 
-        def colored_status(self, o):
-            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=o.get_status_display(), c=o.STATUS_COLORS[o.status])
+        def colored_status(self, obj):
+            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
         actions = [action_prepare, action_unprepare, action_activate, action_deactivate]
@@ -342,15 +342,15 @@ class Remote(gnupg.GnuPGPublicKey):
         except Exception as e:
             return "{h}: {e}".format(h=self.http, e=unicode(e))
 
-    def mbd_prepare(self, r):
+    def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
-        msg_info(r, "Downloading '{u}'...".format(u=url))
+        msg_info(request, "Downloading '{u}'...".format(u=url))
         self.key = urllib.urlopen(url).read()
         if self.key:
-            msg_warn(r, "Downloaded remote key integrated: Please check key manually before activation!")
+            msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
-        super(Remote, self).mbd_prepare(r)
+        super(Remote, self).mbd_prepare(request)
 
     def mbd_download_builder_state(self):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)

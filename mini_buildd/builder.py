@@ -11,7 +11,7 @@ import mini_buildd.setup
 import mini_buildd.changes
 import mini_buildd.misc
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Status(object):
@@ -40,9 +40,9 @@ class Status(object):
         del self._pending[key]
 
     def get_html(self):
-        def html_li(d):
+        def html_li(items):
             html = ""
-            for key, value in d.items():
+            for key, value in items.items():
                 start, done = value
                 html += "<li>{k} ({d})</li>".format(k=key, d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
             return html
@@ -64,19 +64,20 @@ class Status(object):
            p=html_li(self._pending))
 
 
-def buildlog_to_buildresult(fn, bres):
+def buildlog_to_buildresult(file_name, bres):
     regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
-    with open(fn) as f:
+    with open(file_name) as f:
         for l in f:
             if regex.match(l):
-                log.debug("Build log line detected as build status: {l}".format(l=l.strip()))
+                LOG.debug("Build log line detected as build status: {l}".format(l=l.strip()))
                 s = l.split(":")
                 bres["Sbuild-" + s[0]] = s[1].strip()
 
 
 def build_clean(breq):
+
     if "build" in mini_buildd.setup.DEBUG:
-        log.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=breq.get_spool_dir()))
+        LOG.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=breq.get_spool_dir()))
     else:
         shutil.rmtree(breq.get_spool_dir())
     breq.remove()
@@ -164,7 +165,7 @@ def build(breq, jobs, status):
             sbuild_cmd.append("{s}_{v}.dsc".format(s=breq["Source"], v=breq["Version"]))
 
             buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
-            log.info("{p}: Running sbuild: {c}".format(p=pkg_info, c=sbuild_cmd))
+            LOG.info("{p}: Running sbuild: {c}".format(p=pkg_info, c=sbuild_cmd))
             with open(buildlog, "w") as l:
                 retval = subprocess.call(sbuild_cmd,
                                          cwd=build_dir,
@@ -180,7 +181,7 @@ def build(breq, jobs, status):
             bres["Sbuildretval"] = str(retval)
             buildlog_to_buildresult(buildlog, bres)
 
-            log.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=bres["Sbuild-Status"]))
+            LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=bres["Sbuild-Status"]))
             bres.add_file(buildlog)
             build_changes_file = os.path.join(build_dir,
                                               "{s}_{v}_{a}.changes".
@@ -192,12 +193,12 @@ def build(breq, jobs, status):
 
             bres.save()
         except Exception as e:
-            log.exception("Build internal error: {e}".format(e=str(e)))
+            LOG.exception("Build internal error: {e}".format(e=str(e)))
             build_clean(breq)
             # todo: internal_error.upload(...)
             return
     else:
-        log.info("Re-using existing buildresult: {b}".format(b=breq._file_name))
+        LOG.info("Re-using existing buildresult: {b}".format(b=breq._file_name))
 
     status.build(pkg_info)
 
@@ -208,7 +209,7 @@ def build(breq, jobs, status):
         build_clean(breq)
         status.done(pkg_info)
     except Exception as e:
-        log.error("Upload failed (trying later): {e}".format(e=str(e)))
+        LOG.error("Upload failed (trying later): {e}".format(e=str(e)))
 
 
 def run(queue, status, build_queue_size, sbuild_jobs):
@@ -229,20 +230,20 @@ def run(queue, status, build_queue_size, sbuild_jobs):
             break
 
         try:
-            log.info("Builder status: {0} active builds, {0} waiting in queue.".
+            LOG.info("Builder status: {0} active builds, {0} waiting in queue.".
                      format(0, queue.qsize()))
 
             while status.building() >= build_queue_size:
-                log.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
+                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
                 time.sleep(15)
 
             threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
             threads_cleanup()
 
         except Exception as e:
-            log.error("Unexpected error in builder loop: {e}".format(e=str(e)))
+            LOG.error("Unexpected error in builder loop: {e}".format(e=str(e)))
             if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-                log.exception("DEBUG: Builder loop exception")
+                LOG.exception("DEBUG: Builder loop exception")
         finally:
             queue.task_done()
 

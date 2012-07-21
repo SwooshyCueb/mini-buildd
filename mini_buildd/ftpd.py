@@ -11,7 +11,7 @@ import mini_buildd
 import mini_buildd.setup
 import mini_buildd.misc
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def log_init():
@@ -26,28 +26,28 @@ def log_init():
      As pyftpd "logline" really spews lot of lines, this is only
      enabled in debug mode.
     """
-    pyftpdlib.ftpserver.log = log.debug
-    pyftpdlib.ftpserver.logline = log.debug if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
-    pyftpdlib.ftpserver.logerror = log.error
+    pyftpdlib.ftpserver.log = LOG.debug
+    pyftpdlib.ftpserver.logline = LOG.debug if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
+    pyftpdlib.ftpserver.logerror = LOG.error
 
 
 _CHANGES_RE = re.compile("^.*\.changes$")
 
 
-def handle_incoming_file(queue, f):
+def handle_incoming_file(queue, file_name):
     global _CHANGES_RE
-    if _CHANGES_RE.match(f):
-        log.info("Incoming changes file: {f}".format(f=f))
-        queue.put(f)
+    if _CHANGES_RE.match(file_name):
+        LOG.info("Incoming changes file: {f}".format(f=file_name))
+        queue.put(file_name)
     else:
-        log.debug("Ignoring incoming file: {f}".format(f=f))
+        LOG.debug("Ignoring incoming file: {f}".format(f=file_name))
 
 
 class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
-    def on_file_received(self, f):
+    def on_file_received(self, file_name):
         # Make any incoming file read-only as soon as it arrives; avoids multiple user uploads of the same file
-        os.chmod(f, stat.S_IRUSR | stat.S_IRGRP)
-        handle_incoming_file(self._mini_buildd_queue, f)
+        os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP)
+        handle_incoming_file(self._mini_buildd_queue, file_name)
 
 
 def run(bind, queue):
@@ -69,7 +69,7 @@ def run(bind, queue):
         handle_incoming_file(queue, f)
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
-    log.info("Starting ftpd on '{b}'.".format(b=ba.string))
+    LOG.info("Starting ftpd on '{b}'.".format(b=ba.string))
 
     global _RUN
     _RUN = True

@@ -3,7 +3,6 @@ import os
 import tempfile
 import shutil
 import subprocess
-import logging
 
 import django.db.models
 import django.contrib.admin
@@ -13,8 +12,6 @@ import mini_buildd.setup
 import mini_buildd.misc
 
 from mini_buildd.models import StatusModel, msg_info
-
-log = logging.getLogger(__name__)
 
 
 class BaseGnuPG(object):
@@ -34,8 +31,8 @@ class BaseGnuPG(object):
         with open(dest_file, "w") as f:
             subprocess.check_call(self.gpg_cmd + ["--export"], stdout=f)
 
-    def get_pub_key(self, id):
-        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=id)])
+    def get_pub_key(self, identity):
+        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=identity)])
 
     def pub_keys_info(self):
         res = []
@@ -43,8 +40,8 @@ class BaseGnuPG(object):
             res.append(l.split(":"))
         return res
 
-    def recv_key(self, keyserver, id):
-        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", id])
+    def recv_key(self, keyserver, identity):
+        return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", identity])
 
     def add_pub_key(self, key):
         with tempfile.TemporaryFile() as t:
@@ -62,8 +59,8 @@ class BaseGnuPG(object):
         except:
             raise Exception("GnuPG authorization failed on '{c}'".format(c=signed_file))
 
-    def sign(self, file, id=None):
-        xtra_opts = ["--local-user={i}".format(i=id)] if id else []
+    def sign(self, file, identity=None):
+        xtra_opts = ["--local-user={i}".format(i=identity)] if identity else []
         signed_file = file + ".signed"
         mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
         os.rename(signed_file, file)
@@ -78,18 +75,18 @@ Name-Real: {n}
 Name-Email: {e}
 """.format(t=template, n=fullname, e=email)
 
-    def prepare(self, r):
+    def prepare(self, request):
         if not self.get_pub_key():
-            msg_info(r, "Generating GnuPG secret key (this might take some time)...")
+            msg_info(request, "Generating GnuPG secret key (this might take some time)...")
             self.gen_secret_key(self.template)
-            msg_info(r, "New GnuPG secret key prepared...")
+            msg_info(request, "New GnuPG secret key prepared...")
         else:
-            msg_info(r, "GnuPG key already prepared...")
+            msg_info(request, "GnuPG key already prepared...")
 
-    def unprepare(self, r):
+    def unprepare(self, request):
         if os.path.exists(self.home):
             shutil.rmtree(self.home)
-            msg_info(r, "GnuPG setup removed: {h}".format(h=self.home))
+            msg_info(request, "GnuPG setup removed: {h}".format(h=self.home))
 
     def get_pub_key(self):
         return super(GnuPG, self).get_pub_key("mini-buildd")
@@ -104,9 +101,9 @@ class TmpGnuPG(BaseGnuPG):
     >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Email: test@key.org")
     >>> t = tempfile.NamedTemporaryFile()
     >>> t.write("A test file")
-    >>> gnupg.sign(file=t.name, id="test@key.org")
+    >>> gnupg.sign(file=t.name, identity="test@key.org")
     >>> gnupg.verify(t.name)
-    >>> pub_key = gnupg.get_pub_key(id="test@key.org")
+    >>> pub_key = gnupg.get_pub_key(identity="test@key.org")
     >>> tgnupg = TmpGnuPG()
     >>> tgnupg.add_pub_key(pub_key)
     >>> tgnupg.verify(t.name)
@@ -142,7 +139,7 @@ class GnuPGPublicKey(StatusModel):
     def __unicode__(self):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
 
-    def mbd_prepare(self, r):
+    def mbd_prepare(self, request):
         import mini_buildd.daemon
         gpg = TmpGnuPG()
         if self.key_id:

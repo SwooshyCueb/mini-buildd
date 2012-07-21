@@ -13,7 +13,6 @@ print "I: Using setuptools: {v}".format(v=setuptools.__version__)
 def sphinx_build_workaround():
     build_dir = "build/sphinx"
     static_files_build_dir = build_dir + "/_static"
-    static_files_source_dir = "doc/_static"
     template_files_build_dir = build_dir + "/_templates"
     template_files_source_dir = "doc/_templates"
 
@@ -22,11 +21,6 @@ def sphinx_build_workaround():
 
     if not os.path.exists(template_files_build_dir):
         os.makedirs(template_files_build_dir)
-
-    # copy static files (shutil.copytree does not fit our needs)
-    #file_list = os.listdir(static_files_source_dir)
-    #for f in file_list:
-    #    shutil.copy(static_files_source_dir + "/" + f, static_files_build_dir)
 
     # copy template files
     file_list = os.listdir(template_files_source_dir)

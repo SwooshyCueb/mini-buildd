@@ -239,7 +239,7 @@ class Package(object):
         self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
         self.success = {}
         self.failed = {}
-        for key, breq in self.requests.items():
+        for _key, breq in self.requests.items():
             breq.upload_buildrequest()
 
     def notify(self):

@@ -32,7 +32,7 @@ class Status(object):
         self._building[key] = (time.time(), 0)
 
     def build(self, key):
-        start, build = self._building[key]
+        start, _build = self._building[key]
         del self._building[key]
         self._pending[key] = (start, time.time())
 
@@ -43,7 +43,7 @@ class Status(object):
         def html_li(items):
             html = ""
             for key, value in items.items():
-                start, done = value
+                start, _done = value
                 html += "<li>{k} ({d})</li>".format(k=key, d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
             return html
 

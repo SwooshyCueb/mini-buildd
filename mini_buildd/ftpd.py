@@ -35,7 +35,6 @@ _CHANGES_RE = re.compile("^.*\.changes$")
 
 
 def handle_incoming_file(queue, file_name):
-    #global _CHANGES_RE
     if _CHANGES_RE.match(file_name):
         LOG.info("Incoming changes file: {f}".format(f=file_name))
         queue.put(file_name)

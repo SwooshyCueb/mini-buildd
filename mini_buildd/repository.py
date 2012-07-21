@@ -359,7 +359,7 @@ Example:
             debfullname = mini_buildd.daemon.get().model._fullname
             hopo = mini_buildd.daemon.get().model.mbd_get_ftp_hopo()
 
-            for root, dirs, files in os.walk(p):
+            for root, _dirs, files in os.walk(p):
                 for f in files:
                     old_file = os.path.join(root, f)
                     new_file = old_file + ".new"
@@ -477,7 +477,7 @@ Example:
         return ""
 
     def mbd_get_apt_keys(self, dist):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         import mini_buildd.daemon
         result = mini_buildd.daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
@@ -486,12 +486,12 @@ Example:
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.

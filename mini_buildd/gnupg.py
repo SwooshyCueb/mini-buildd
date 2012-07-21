@@ -8,8 +8,8 @@ import django.db.models
 import django.contrib.admin
 import django.contrib.messages
 
-import mini_buildd.setup
 import mini_buildd.misc
+import mini_buildd.setup
 
 from mini_buildd.models import StatusModel, msg_info
 

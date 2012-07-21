@@ -88,7 +88,7 @@ Name-Email: {e}
             shutil.rmtree(self.home)
             msg_info(request, "GnuPG setup removed: {h}".format(h=self.home))
 
-    def get_pub_key(self):
+    def get_pub_key(self, identity=None):
         return super(GnuPG, self).get_pub_key("mini-buildd")
 
     def get_fingerprint(self):

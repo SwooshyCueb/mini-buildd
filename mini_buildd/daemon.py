@@ -145,8 +145,8 @@ prevent original package maintainers to be spammed.
             R=len(Remote.objects.filter(status=Remote.STATUS_ACTIVE)),
             s=self.get_status_display())
 
-    def clean(self):
-        super(Daemon, self).clean()
+    def clean(self, *args, **kwargs):
+        super(Daemon, self).clean(*args, **kwargs)
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
@@ -205,9 +205,9 @@ incoming = /incoming
                 add_to(m.address)
             if changes:
                 if repository.notify_maintainer:
-                    add_to(email.utils.parseaddr(changes.get("Maintainer"))[1])
+                    add_to(email.utils.parseaddr(changes.get_or_empty("Maintainer"))[1])
                 if repository.notify_changed_by:
-                    add_to(email.utils.parseaddr(changes.get("Changed-By"))[1])
+                    add_to(email.utils.parseaddr(changes.get_or_empty("Changed-By"))[1])
 
         if m_to:
             try:

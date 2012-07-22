@@ -203,7 +203,10 @@ this would mean losing all packages!
         action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
 
         def colored_status(self, obj):
-            LOG.debug(self)
+            # [avoid pylint R0201]
+            if self:
+                pass
+
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 

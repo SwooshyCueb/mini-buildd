@@ -309,7 +309,10 @@ Example:
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
         def action_generate_keyring_packages(self, request, queryset):
-            LOG.debug(self)
+            # [avoid pylint R0201]
+            if self:
+                pass
+
             for s in queryset:
                 if s.status >= s.STATUS_ACTIVE:
                     s.mbd_generate_keyring_packages(request)
@@ -474,7 +477,10 @@ Example:
 
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
-        LOG.debug(self)
+        # [avoid pylint R0201]
+        if self:
+            pass
+
         return ""
 
     def mbd_get_apt_keys(self, dist):
@@ -500,7 +506,10 @@ Example:
 
     def mbd_get_sources(self, dist, _suite):
         ".. todo:: STUB/WTF"
-        LOG.debug(self)
+        # [avoid pylint R0201]
+        if self:
+            pass
+
         result = ""
         result += "Base: " + str(dist.base_source) + "\n"
         for e in dist.extra_sources.all():

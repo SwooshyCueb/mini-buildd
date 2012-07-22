@@ -105,6 +105,7 @@ class Model(django.db.models.Model):
     """
     class Meta:
         abstract = True
+        app_label = "mini_buildd"
 
     @classmethod
     def check_daemon_stopped(cls):
@@ -147,7 +148,7 @@ class StatusModel(Model):
         STATUS_PREPARED: "blue",
         STATUS_ACTIVE: "green"}
 
-    class Meta:
+    class Meta(Model.Meta):
         abstract = True
 
     class Admin(django.contrib.admin.ModelAdmin):
@@ -241,26 +242,26 @@ class AptKey(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(AptKey, AptKey.Admin)
 
 
-from mini_buildd import source
+from source import Archive, Architecture, Component, Source, PrioritySource
 
 
-class Archive(source.Archive):
+class Archive(Archive):
     pass
 
 
-class Architecture(source.Architecture):
+class Architecture(Architecture):
     pass
 
 
-class Component(source.Component):
+class Component(Component):
     pass
 
 
-class Source(source.Source):
+class Source(Source):
     pass
 
 
-class PrioritySource(source.PrioritySource):
+class PrioritySource(PrioritySource):
     pass
 
 

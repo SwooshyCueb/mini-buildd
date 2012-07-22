@@ -21,7 +21,7 @@ class Archive(Model):
                                     default="http://ftp.debian.org/debian",
                                     help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
 
-    class Meta:
+    class Meta(Model.Meta):
         ordering = ["url"]
 
     class Admin(django.contrib.admin.ModelAdmin):
@@ -182,7 +182,7 @@ class PrioritySource(Model):
                                              help_text="A apt pin priority value (see 'man apt_preferences')."
                                              "Examples: 1=not automatic, 1001=downgrade'")
 
-    class Meta:
+    class Meta(Model.Meta):
         unique_together = ('source', 'priority')
 
     def __unicode__(self):

@@ -306,7 +306,7 @@ class Package(object):
 def gen_uploader_keyrings():
     "Generate all upload keyrings for each repository."
     keyrings = {}
-    for r in Repository.objects.all():
+    for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
         keyrings[r.identity] = r.mbd_get_uploader_keyring()
         # Always add our key too for internal builds
         keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
@@ -319,7 +319,7 @@ def gen_remotes_keyring():
     keyring = mini_buildd.gnupg.TmpGnuPG()
     # Always add our own key
     keyring.add_pub_key(get().model.mbd_get_pub_key())
-    for r in Remote.objects.all():
+    for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
         keyring.add_pub_key(r.key)
         LOG.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring

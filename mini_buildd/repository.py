@@ -410,12 +410,13 @@ Example:
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()
         # Add keys from django users
-        for u in django.contrib.auth.models.User.objects.all():
+        for u in django.contrib.auth.models.User.objects.filter(is_active=True):
             p = u.get_profile()
-            for r in p.may_upload_to.all():
-                if r.identity == self.identity:
-                    gpg.add_pub_key(p.key)
-                    LOG.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+            if p.status == p.STATUS_ACTIVE:
+                for r in p.may_upload_to.all():
+                    if r.identity == self.identity:
+                        gpg.add_pub_key(p.key)
+                        LOG.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()

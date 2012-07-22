@@ -50,9 +50,6 @@ class Suite(Model):
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
-    class Meta(Model.Meta):
-        pass
-
     def __unicode__(self):
         return u"{e}{n}{e} [{u}]{m}".format(
             n=self.name,
@@ -73,9 +70,6 @@ class Layout(Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
-
-    class Meta(Model.Meta):
-        pass
 
     class Admin(django.contrib.admin.ModelAdmin):
         fieldsets = (
@@ -210,9 +204,6 @@ $path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games
 $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 </pre>
 """)
-
-    class Meta(Model.Meta):
-        pass
 
     class Admin(Model.Admin):
         fieldsets = (

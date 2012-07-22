@@ -24,7 +24,7 @@ class Archive(Model):
     class Meta(Model.Meta):
         ordering = ["url"]
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(Model.Admin):
         search_fields = ["url"]
 
     def __unicode__(self):

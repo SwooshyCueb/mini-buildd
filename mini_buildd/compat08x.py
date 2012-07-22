@@ -27,6 +27,7 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
         for t in ["base", "extra"]:
             archs = conf08x.mbd_archs.split(", ")
 
+            a = None
             for a in archs:
 
                 def architecture():

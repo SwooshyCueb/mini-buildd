@@ -53,44 +53,44 @@ class Changes(debian.deb822.Changes):
 
         # Get repository for identity
         try:
-            r = Repository.objects.get(identity=identity)
+            repository = Repository.objects.get(identity=identity)
         except:
             raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
 
         # Get distribution for codename
-        found = False
-        for d in r.distributions.all():
+        distribution = None
+        for d in repository.distributions.all():
             if d.base_source.codename == codename:
-                found = True
+                distribution = d
                 break
-        if not found:
+        if not distribution:
             raise Exception("Unsupported distribution '{d}': No such codename '{c}'".format(d=dist, c=codename))
 
         # Get uploadable suite
-        found = False
-        for s in r.layout.suites.all():
+        suite_ = None
+        for s in repository.layout.suites.all():
             if s.name == suite:
-                found = True
+                suite_ = s
                 break
-        if not found:
+        if not suite_:
             raise Exception("Unsupported distribution '{d}': No such suite '{s}'".format(d=dist, s=suite))
 
-        return r, d, s
+        return repository, distribution, suite_
 
     def get_repository(self):
         from mini_buildd.models import Repository
 
-        r, d, s = self.find_repository(self["Distribution"])
+        repository, dist, suite = self.find_repository(self["Distribution"])
 
-        if not s.uploadable:
-            raise Exception("Suite '{s}' is not uploadable".format(s=s))
+        if not suite.uploadable:
+            raise Exception("Suite '{s}' is not uploadable".format(s=suite))
 
-        if r.status < Repository.STATUS_ACTIVE:
-            raise Exception("Repository '{r}' is not active".format(r=r))
+        if repository.status < Repository.STATUS_ACTIVE:
+            raise Exception("Repository '{r}' is not active".format(r=repository))
 
-        r.mbd_check_version(self["Version"], d, s)
+        repository.mbd_check_version(self["Version"], dist, suite)
 
-        return r, d, s
+        return repository, dist, suite
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)

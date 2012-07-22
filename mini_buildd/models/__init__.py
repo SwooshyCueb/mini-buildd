@@ -241,10 +241,10 @@ this would mean losing all packages!
             d.mbd_check_status_dependencies(request, lower_status)
 
 
-from gnupg import GnuPGPublicKey
+import gnupg
 
 
-class AptKey(GnuPGPublicKey):
+class AptKey(gnupg.GnuPGPublicKey):
     pass
 try:
     django.contrib.admin.site.register(AptKey, AptKey.Admin)
@@ -252,85 +252,85 @@ except:
     pass
 
 
-from source import Archive, Architecture, Component, Source, PrioritySource
+import source
 
 
-class Archive(Archive):
+class Archive(source.Archive):
     pass
 
 
-class Architecture(Architecture):
+class Architecture(source.Architecture):
     pass
 
 
-class Component(Component):
+class Component(source.Component):
     pass
 
 
-class Source(Source):
+class Source(source.Source):
     pass
 
 
-class PrioritySource(PrioritySource):
+class PrioritySource(source.PrioritySource):
     pass
 
 
-from repository import EmailAddress, Suite, Layout, Distribution, Repository
+import repository
 
 
-class EmailAddress(EmailAddress):
+class EmailAddress(repository.EmailAddress):
     pass
 
 
-class Suite(Suite):
+class Suite(repository.Suite):
     pass
 
 
-class Layout(Layout):
+class Layout(repository.Layout):
     pass
 
 
-class Distribution(Distribution):
+class Distribution(repository.Distribution):
     pass
 
 
-class Repository(Repository):
+class Repository(repository.Repository):
     pass
 
 
-from chroot import Chroot, FileChroot, LVMChroot, LoopLVMChroot
+import chroot
 
 
-class Chroot(Chroot):
+class Chroot(chroot.Chroot):
     pass
 
 
-class FileChroot(FileChroot):
+class FileChroot(chroot.FileChroot):
     pass
 
 
-class LVMChroot(LVMChroot):
+class LVMChroot(chroot.LVMChroot):
     pass
 
 
-class LoopLVMChroot(LoopLVMChroot):
+class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
 
 
-from daemon import Daemon
+import daemon
 
 
-class Daemon(Daemon):
+class Daemon(daemon.Daemon):
     pass
 
 
-class UserProfile(GnuPGPublicKey):
+class UserProfile(gnupg.GnuPGPublicKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
     may_upload_to = django.db.models.ManyToManyField(Repository)
 
-    class Admin(GnuPGPublicKey.Admin):
-        search_fields = GnuPGPublicKey.Admin.search_fields + ["user"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
+    class Admin(gnupg.GnuPGPublicKey.Admin):
+        search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["user"]
+        readonly_fields = gnupg.GnuPGPublicKey.Admin.readonly_fields + ["user"]
 
     def __unicode__(self):
         return "User profile for '{u}'".format(u=self.user)
@@ -345,13 +345,13 @@ def cb_create_user_profile(sender, instance, created, **kwargs):
 django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
 
 
-class Remote(GnuPGPublicKey):
+class Remote(gnupg.GnuPGPublicKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default="")
     wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
-    class Admin(GnuPGPublicKey.Admin):
-        search_fields = GnuPGPublicKey.Admin.search_fields + ["http"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
+    class Admin(gnupg.GnuPGPublicKey.Admin):
+        search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["http"]
+        readonly_fields = gnupg.GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
 
     def __unicode__(self):
         try:

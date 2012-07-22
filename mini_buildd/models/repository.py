@@ -27,7 +27,7 @@ class EmailAddress(Model):
     address = django.db.models.EmailField(primary_key=True, max_length=255)
     name = django.db.models.CharField(blank=True, max_length=255)
 
-    class Meta:
+    class Meta(Model.Meta):
         verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
@@ -50,6 +50,9 @@ class Suite(Model):
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
+    class Meta(Model.Meta):
+        pass
+
     def __unicode__(self):
         return u"{e}{n}{e} [{u}]{m}".format(
             n=self.name,
@@ -70,6 +73,16 @@ class Layout(Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
+
+    class Meta(Model.Meta):
+        pass
+
+    class Admin(django.contrib.admin.ModelAdmin):
+        fieldsets = (
+            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
+            ("Extra", {"classes": ("collapse",),
+                       "fields": ("default_version", "mandatory_version_regex",
+                                  "experimental_default_version", "experimental_mandatory_version_regex")}),)
 
     # Version magic
     default_version = django.db.models.CharField(
@@ -111,13 +124,6 @@ class Layout(Model):
         return self._mbd_subst_placeholders(
             self.experimental_default_version if suite.experimental else self.default_version,
             repository, dist)
-
-    class Admin(django.contrib.admin.ModelAdmin):
-        fieldsets = (
-            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
-            ("Extra", {"classes": ("collapse",),
-                       "fields": ("default_version", "mandatory_version_regex",
-                                  "experimental_default_version", "experimental_mandatory_version_regex")}),)
 
 django.contrib.admin.site.register(Layout, Layout.Admin)
 
@@ -205,7 +211,10 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 </pre>
 """)
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Meta(Model.Meta):
+        pass
+
+    class Admin(Model.Admin):
         fieldsets = (
             ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
             ("Architectures", {"fields": ("mandatory_architectures", "optional_architectures", "architecture_all")}),

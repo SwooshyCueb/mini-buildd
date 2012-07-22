@@ -107,6 +107,9 @@ class Model(django.db.models.Model):
         abstract = True
         app_label = "mini_buildd"
 
+    class Admin(django.contrib.admin.ModelAdmin):
+        pass
+
     @classmethod
     def check_daemon_stopped(cls):
         import mini_buildd.daemon
@@ -151,7 +154,7 @@ class StatusModel(Model):
     class Meta(Model.Meta):
         abstract = True
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(Model.Admin):
         @classmethod
         def action(cls, request, queryset, action, success_status, status_calc):
             for s in queryset:
@@ -265,26 +268,26 @@ class PrioritySource(PrioritySource):
     pass
 
 
-from mini_buildd import repository
+from repository import EmailAddress, Suite, Layout, Distribution, Repository
 
 
-class EmailAddress(repository.EmailAddress):
+class EmailAddress(EmailAddress):
     pass
 
 
-class Suite(repository.Suite):
+class Suite(Suite):
     pass
 
 
-class Layout(repository.Layout):
+class Layout(Layout):
     pass
 
 
-class Distribution(repository.Distribution):
+class Distribution(Distribution):
     pass
 
 
-class Repository(repository.Repository):
+class Repository(Repository):
     pass
 
 
@@ -316,7 +319,7 @@ class Daemon(daemon.Daemon):
 
 class UserProfile(gnupg.GnuPGPublicKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
-    may_upload_to = django.db.models.ManyToManyField(repository.Repository)
+    may_upload_to = django.db.models.ManyToManyField(Repository)
 
     class Admin(gnupg.GnuPGPublicKey.Admin):
         search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["user"]

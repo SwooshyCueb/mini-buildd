@@ -246,7 +246,10 @@ from gnupg import GnuPGPublicKey
 
 class AptKey(GnuPGPublicKey):
     pass
-django.contrib.admin.site.register(AptKey, AptKey.Admin)
+try:
+    django.contrib.admin.site.register(AptKey, AptKey.Admin)
+except:
+    pass
 
 
 from source import Archive, Architecture, Component, Source, PrioritySource
@@ -314,10 +317,10 @@ class LoopLVMChroot(LoopLVMChroot):
     pass
 
 
-from mini_buildd import daemon
+from daemon import Daemon
 
 
-class Daemon(daemon.Daemon):
+class Daemon(Daemon):
     pass
 
 

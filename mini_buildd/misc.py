@@ -36,11 +36,11 @@ class BuilderState(object):
     (True, 324, 66, False, True)
     """
 
-    def __init__(self, state=None, file=None):
+    def __init__(self, state=None, pickled_state=None):
         if state:
             self._state = state
-        elif file:
-            self._state = pickle.load(file)
+        elif pickled_state:
+            self._state = pickle.load(pickled_state)
 
     def __unicode__(self):
         return u"{s}: {h}: {c} ({l})".format(

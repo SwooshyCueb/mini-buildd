@@ -193,7 +193,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                     break
 
             manager.stop()
-            mini_buildd.httpd.exit()
+            mini_buildd.httpd.shutdown()
 
 
 try:

@@ -52,18 +52,18 @@ class BaseGnuPG(object):
     def add_keyring(self, keyring):
         self.gpg_cmd.append("--keyring={k}".format(k=keyring))
 
-    def verify(self, signed_file, file=None):
+    def verify(self, signature, data=None):
         try:
-            xtra_opts = [file] if file else []
-            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signed_file] + xtra_opts)
+            xtra_opts = [data] if data else []
+            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signature] + xtra_opts)
         except:
-            raise Exception("GnuPG authorization failed on '{c}'".format(c=signed_file))
+            raise Exception("GnuPG authorization failed on '{c}'".format(c=signature))
 
-    def sign(self, file, identity=None):
+    def sign(self, file_name, identity=None):
         xtra_opts = ["--local-user={i}".format(i=identity)] if identity else []
-        signed_file = file + ".signed"
-        mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file])
-        os.rename(signed_file, file)
+        signed_file = file_name + ".signed"
+        mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file_name])
+        os.rename(signed_file, file_name)
 
 
 class GnuPG(BaseGnuPG):
@@ -101,7 +101,7 @@ class TmpGnuPG(BaseGnuPG):
     >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Email: test@key.org")
     >>> t = tempfile.NamedTemporaryFile()
     >>> t.write("A test file")
-    >>> gnupg.sign(file=t.name, identity="test@key.org")
+    >>> gnupg.sign(file_name=t.name, identity="test@key.org")
     >>> gnupg.verify(t.name)
     >>> pub_key = gnupg.get_pub_key(identity="test@key.org")
     >>> tgnupg = TmpGnuPG()

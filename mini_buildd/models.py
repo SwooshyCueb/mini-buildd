@@ -327,11 +327,11 @@ class UserProfile(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
 
 
-def create_user_profile(_sender, instance, created, **_kwargs):
+def cb_create_user_profile(sender, instance, created, **kwargs):
     "Automatically create a user profile with every user that is created"
     if created:
         UserProfile.objects.create(user=instance)
-django.db.models.signals.post_save.connect(create_user_profile, sender=django.contrib.auth.models.User)
+django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
 
 
 class Remote(gnupg.GnuPGPublicKey):
@@ -360,7 +360,6 @@ class Remote(gnupg.GnuPGPublicKey):
 
     def mbd_download_builder_state(self):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
-        status = urllib.urlopen(url)
-        return mini_buildd.misc.BuilderState(file=status)
+        return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
 
 django.contrib.admin.site.register(Remote, Remote.Admin)

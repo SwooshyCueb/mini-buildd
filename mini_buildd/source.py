@@ -145,7 +145,7 @@ class Source(StatusModel):
         if not len(self.archives.all()):
             raise Exception("{s}: No archives found (please add at least one)".format(s=self))
 
-    def mbd_unprepare(self, request):
+    def mbd_unprepare(self, _request):
         self.archives = []
         self.components = []
         self.architectures = []

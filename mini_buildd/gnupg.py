@@ -139,7 +139,7 @@ class GnuPGPublicKey(StatusModel):
     def __unicode__(self):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
 
-    def mbd_prepare(self, request):
+    def mbd_prepare(self, _request):
         import mini_buildd.daemon
         gpg = TmpGnuPG()
         if self.key_id:
@@ -158,7 +158,7 @@ class GnuPGPublicKey(StatusModel):
             if key[0] == "fpr":
                 self.key_fingerprint = key[9]
 
-    def mbd_unprepare(self, request):
+    def mbd_unprepare(self, _request):
         self.key_long_id = ""
         self.key_created = ""
         self.key_expires = ""

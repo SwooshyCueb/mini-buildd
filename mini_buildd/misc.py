@@ -71,7 +71,7 @@ class BuilderState(object):
             return False
 
 
-def nop(*args, **kwargs):
+def nop(*_args, **_kwargs):
     pass
 
 

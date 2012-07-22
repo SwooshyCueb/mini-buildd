@@ -5,7 +5,7 @@ disable=C0111,C0301,
         W0142,W0232,W0603,
 
         W0212,
-        W0613,W0621,W0622,W0631,W0702,W0703
+        W0621,W0622,W0631,W0702,W0703
 
 [TYPECHECK]
 # see ./devel pylintgeneratedmembers

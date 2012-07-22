@@ -8,22 +8,22 @@ import mini_buildd.daemon
 import mini_buildd.models
 
 
-def show_index(request):
+def show_index(_request):
     return render_to_response("mini_buildd/index.html",
                               {"repositories": mini_buildd.models.Repository.objects.all(),
                                "chroots": mini_buildd.models.Chroot.objects.all(),
                                "remotes": mini_buildd.models.Remote.objects.all()})
 
 
-def get_archive_key(request):
+def get_archive_key(_request):
     return django.http.HttpResponse(mini_buildd.daemon.get().model.mbd_get_pub_key(), mimetype="text/plain")
 
 
-def get_dput_conf(request):
+def get_dput_conf(_request):
     return django.http.HttpResponse(mini_buildd.daemon.get().model.mbd_get_dput_conf(), mimetype="text/plain")
 
 
-def get_builder_state(request):
+def get_builder_state(_request):
     return django.http.HttpResponse(mini_buildd.daemon.get().get_builder_state().dump(), mimetype="text/plain")
 
 

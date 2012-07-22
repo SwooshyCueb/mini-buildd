@@ -497,7 +497,7 @@ Example:
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
-    def mbd_get_sources(self, dist, suite):
+    def mbd_get_sources(self, dist, _suite):
         ".. todo:: STUB/WTF"
         LOG.debug(self)
         result = ""

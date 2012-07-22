@@ -75,7 +75,7 @@ def msg_warn(request, msg):
     LOG.warn(msg)
 
 
-def action_delete(model, request, queryset):
+def action_delete(_model, request, queryset):
     """Custom delete action.
 
     This workaround ensures that the model's delete() method is
@@ -324,7 +324,7 @@ class UserProfile(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
 
 
-def create_user_profile(sender, instance, created, **kwargs):
+def create_user_profile(_sender, instance, created, **_kwargs):
     "Automatically create a user profile with every user that is created"
     if created:
         UserProfile.objects.create(user=instance)

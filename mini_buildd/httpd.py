@@ -26,8 +26,7 @@ def log_init():
     cherrypy.log.screen = False
 
     # HTTP errors (status codes: 4xx-5xx)
-    http_error = cherrypy._cperror.HTTPError
-    http_error.set_response = lambda msg: LOG.log(logging.ERROR, msg)
+    cherrypy.HTTPError.set_response = lambda msg: LOG.log(logging.ERROR, msg)
 
 
 def shutdown():

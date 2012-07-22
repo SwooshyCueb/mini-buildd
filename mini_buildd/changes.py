@@ -29,6 +29,14 @@ class Changes(debian.deb822.Changes):
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
+    @property
+    def file_name(self):
+        return self._file_name
+
+    @property
+    def file_path(self):
+        return self._file_path
+
     def is_new(self):
         return self._new
 
@@ -119,7 +127,7 @@ class Changes(debian.deb822.Changes):
             self.dump(fd=open(self._file_path, "w+"))
             LOG.info("Signing changes: {f}".format(f=self._file_path))
             import mini_buildd.daemon
-            mini_buildd.daemon.get().model._gnupg.sign(self._file_path)
+            mini_buildd.daemon.get().model.mbd_gnupg.sign(self._file_path)
         except:
             # Existence of the file name is used as flag
             if os.path.exists(self._file_path):
@@ -229,13 +237,13 @@ class Changes(debian.deb822.Changes):
                 open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
                 # Generate tar from original changes
-                self.tar(tar_path=breq._file_path + ".tar",
+                self.tar(tar_path=breq.file_path + ".tar",
                          add_files=[os.path.join(path, "apt_sources.list"),
                                     os.path.join(path, "apt_preferences"),
                                     os.path.join(path, "apt_keys"),
                                     chroot_setup_script,
                                     os.path.join(path, "sbuildrc_snippet")])
-                breq.add_file(breq._file_path + ".tar")
+                breq.add_file(breq.file_path + ".tar")
 
                 breq["Upload-Result-To"] = mini_buildd.daemon.get().model.mbd_get_ftp_hopo().string
                 breq["Base-Distribution"] = dist.base_source.codename
@@ -255,7 +263,7 @@ class Changes(debian.deb822.Changes):
 
                 breq.save()
             else:
-                LOG.info("Re-using existing buildrequest: {b}".format(b=breq._file_name))
+                LOG.info("Re-using existing buildrequest: {b}".format(b=breq.file_name))
             breq_dict[a] = breq
 
         return breq_dict

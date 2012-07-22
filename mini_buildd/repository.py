@@ -359,7 +359,7 @@ Example:
 
             identity = mini_buildd.daemon.get().model.identity
             debemail = mini_buildd.daemon.get().model.email_address
-            debfullname = mini_buildd.daemon.get().model._fullname
+            debfullname = mini_buildd.daemon.get().model.mbd_fullname
             hopo = mini_buildd.daemon.get().model.mbd_get_ftp_hopo()
 
             for root, _dirs, files in os.walk(p):
@@ -374,7 +374,7 @@ Example:
                     os.rename(new_file, old_file)
 
             package_name = "{i}-archive-keyring".format(i=identity)
-            mini_buildd.daemon.get().model._gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
+            mini_buildd.daemon.get().model.mbd_gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
 
             env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
 

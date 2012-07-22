@@ -188,8 +188,8 @@ def build(breq, jobs, status):
                                               format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
             if os.path.exists(build_changes_file):
                 build_changes = mini_buildd.changes.Changes(build_changes_file)
-                build_changes.tar(tar_path=bres._file_path + ".tar")
-                bres.add_file(bres._file_path + ".tar")
+                build_changes.tar(tar_path=bres.file_path + ".tar")
+                bres.add_file(bres.file_path + ".tar")
 
             bres.save()
         except Exception as e:
@@ -198,7 +198,7 @@ def build(breq, jobs, status):
             # todo: internal_error.upload(...)
             return
     else:
-        LOG.info("Re-using existing buildresult: {b}".format(b=breq._file_name))
+        LOG.info("Re-using existing buildresult: {b}".format(b=breq.file_name))
 
     status.build(pkg_info)
 

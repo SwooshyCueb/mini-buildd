@@ -69,14 +69,10 @@ mbd_pylintgeneratedmembers()
 
 mbd_pylint()
 {
-	if [ "$(lsb_release -s -c)" = "squeeze" ]; then
-		printf "W: pylint/squeeze can't be set up to work for us (skipping)" >&2
-	else
-		(
-			pyenv
-			pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/
-		)
-	fi
+	(
+		pyenv
+		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/
+	)
 }
 
 mbd_pychecker()
@@ -95,7 +91,7 @@ mbd_pydjangolint()
 	)
 }
 
-mbd_pychecks()
+mbd_check()
 {
 	local tests="pep8 pydoctests pyflakes pylint"
 	for t in ${tests}; do
@@ -119,7 +115,15 @@ mbd_purge()
 
 mbd_build()
 {
-	mbd_pychecks
+	set +e
+	(
+		set -e
+		mbd_check
+	)
+	ret=$?
+	[ ${ret} -eq 0 ] || read -p "Check failed. Continue anyway? [R]" dummy
+	set -e
+
 	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc

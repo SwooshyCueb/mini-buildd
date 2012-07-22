@@ -160,10 +160,10 @@ prevent original package maintainers to be spammed.
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 
     def mbd_prepare(self, request):
-        self._mbd_gnupg.prepare(request)
+        self._mbd_gnupg.prepare()
 
     def mbd_unprepare(self, request):
-        self._mbd_gnupg.unprepare(request)
+        self._mbd_gnupg.unprepare()
 
     def mbd_activate(self, request):
         get().restart(request)

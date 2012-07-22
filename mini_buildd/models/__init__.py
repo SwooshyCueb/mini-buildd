@@ -291,22 +291,22 @@ class Repository(Repository):
     pass
 
 
-from mini_buildd import chroot
+from chroot import Chroot, FileChroot, LVMChroot, LoopLVMChroot
 
 
-class Chroot(chroot.Chroot):
+class Chroot(Chroot):
     pass
 
 
-class FileChroot(chroot.FileChroot):
+class FileChroot(FileChroot):
     pass
 
 
-class LVMChroot(chroot.LVMChroot):
+class LVMChroot(LVMChroot):
     pass
 
 
-class LoopLVMChroot(chroot.LoopLVMChroot):
+class LoopLVMChroot(LoopLVMChroot):
     pass
 
 

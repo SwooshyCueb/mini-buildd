@@ -14,10 +14,9 @@ import django.contrib.auth.models
 import mini_buildd.misc
 import mini_buildd.changes
 import mini_buildd.gnupg
-import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress
+from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
 
 LOG = logging.getLogger(__name__)
 
@@ -128,17 +127,21 @@ prevent original package maintainers to be spammed.
 
     def mbd_prepare(self, request):
         self._mbd_gnupg.prepare()
+        msg_info(request, "Daemon GnuPG key generated")
 
     def mbd_unprepare(self, request):
         self._mbd_gnupg.unprepare()
+        msg_info(request, "Daemon GnuPG key removed")
 
     def mbd_activate(self, request):
         import mini_buildd.daemon
-        mini_buildd.daemon.get().restart(request)
+        mini_buildd.daemon.get().restart()
+        msg_info(request, "Daemon restarted")
 
     def mbd_deactivate(self, request):
         import mini_buildd.daemon
-        mini_buildd.daemon.get().stop(request)
+        mini_buildd.daemon.get().stop()
+        msg_info(request, "Daemon stopped")
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

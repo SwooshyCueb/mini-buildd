@@ -186,7 +186,10 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                 signal.pause()
                 if self._status == "RESTART":
                     if manager.is_running():
-                        manager.restart()
+                        try:
+                            manager.restart()
+                        except Exception as e:
+                            LOG.error("Could not restart daemon: {e}".format(e=e))
                     else:
                         LOG.warn("Daemon not active (not restarted).")
                 else:

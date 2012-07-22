@@ -43,7 +43,7 @@ import mini_buildd.gnupg
 import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models import Daemon, Repository, Chroot, msg_info, msg_error
+from mini_buildd.models import Daemon, Repository, Chroot
 
 LOG = logging.getLogger(__name__)
 
@@ -249,35 +249,32 @@ class Manager():
         LOG.info("Daemon model instance updated...")
 
     @classmethod
-    def check(cls, request=None):
+    def check(cls):
         for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
-            r.mbd_check_status_dependencies(request)
+            r.mbd_check_status_dependencies()
 
-    def start(self, request=None):
+    def start(self):
         if not self.thread:
-            try:
-                self.update_model()
-                self.check(request)
-                self.thread = mini_buildd.misc.run_as_thread(run)
-                msg_info(request, "Daemon running")
-            except Exception as e:
-                msg_error(request, "Could not start daemon: {e}".format(e=e))
+            self.update_model()
+            self.check()
+            self.thread = mini_buildd.misc.run_as_thread(run)
+            LOG.info("Daemon running")
         else:
-            msg_info(request, "Daemon already running")
+            LOG.info("Daemon already running")
 
-    def stop(self, request=None):
+    def stop(self):
         if self.thread:
             self.model.mbd_incoming_queue.put("SHUTDOWN")
             self.thread.join()
             self.thread = None
             self.update_model()
-            msg_info(request, "Daemon stopped")
+            LOG.info("Daemon stopped")
         else:
-            msg_info(request, "Daemon already stopped")
+            LOG.info("Daemon already stopped")
 
-    def restart(self, request=None):
-        self.stop(request)
-        self.start(request)
+    def restart(self):
+        self.stop()
+        self.start()
 
     def is_running(self):
         return self.thread is not None

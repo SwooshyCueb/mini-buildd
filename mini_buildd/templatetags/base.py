@@ -16,6 +16,14 @@ def mbd_status():
     return mini_buildd.daemon.get().status_as_html()
 
 
+@register.simple_tag(takes_context=True)
+def admin_check_daemon_running(context):
+    context['daemon_running'] = False
+    if mini_buildd.daemon.get().is_running():
+        context['daemon_running'] = True
+    return ""
+
+
 @register.simple_tag
 def repository_dist(repository, dist, suite):
     return repository.mbd_get_dist(dist, suite)

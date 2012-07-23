@@ -18,17 +18,18 @@ import mini_buildd.misc
 import mini_buildd.gnupg
 import mini_buildd.reprepro
 
-from mini_buildd.models.source import Architecture, Component, Source, PrioritySource
-from mini_buildd.models.base import Model, StatusModel, msg_info, msg_warn, msg_error
+import mini_buildd.models.source
+import mini_buildd.models.base
+from mini_buildd.models.base import msg_info, msg_warn, msg_error
 
 LOG = logging.getLogger(__name__)
 
 
-class EmailAddress(Model):
+class EmailAddress(mini_buildd.models.base.Model):
     address = django.db.models.EmailField(primary_key=True, max_length=255)
     name = django.db.models.CharField(blank=True, max_length=255)
 
-    class Meta(Model.Meta):
+    class Meta(mini_buildd.models.base.Model.Meta):
         verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
@@ -37,7 +38,7 @@ class EmailAddress(Model):
 django.contrib.admin.site.register(EmailAddress, EmailAddress.Admin)
 
 
-class Suite(Model):
+class Suite(mini_buildd.models.base.Model):
     name = django.db.models.CharField(
         primary_key=True, max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
@@ -67,7 +68,7 @@ class Suite(Model):
 django.contrib.admin.site.register(Suite, Suite.Admin)
 
 
-class Layout(Model):
+class Layout(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
@@ -123,14 +124,14 @@ class Layout(Model):
 django.contrib.admin.site.register(Layout, Layout.Admin)
 
 
-class Distribution(Model):
-    base_source = django.db.models.ForeignKey(Source)
-    extra_sources = django.db.models.ManyToManyField(PrioritySource, blank=True)
-    components = django.db.models.ManyToManyField(Component)
+class Distribution(mini_buildd.models.base.Model):
+    base_source = django.db.models.ForeignKey(mini_buildd.models.source.Source)
+    extra_sources = django.db.models.ManyToManyField(mini_buildd.models.source.PrioritySource, blank=True)
+    components = django.db.models.ManyToManyField(mini_buildd.models.source.Component)
 
-    mandatory_architectures = django.db.models.ManyToManyField(Architecture)
-    optional_architectures = django.db.models.ManyToManyField(Architecture, related_name="OptionalArchitecture", blank=True)
-    architecture_all = django.db.models.ForeignKey(Architecture, related_name="ArchitectureAll")
+    mandatory_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture)
+    optional_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture, related_name="OptionalArchitecture", blank=True)
+    architecture_all = django.db.models.ForeignKey(mini_buildd.models.source.Architecture, related_name="ArchitectureAll")
 
     RESOLVER_APT = 0
     RESOLVER_APTITUDE = 1
@@ -206,7 +207,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 </pre>
 """)
 
-    class Admin(Model.Admin):
+    class Admin(mini_buildd.models.base.Model.Admin):
         fieldsets = (
             ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
             ("Architectures", {"fields": ("mandatory_architectures", "optional_architectures", "architecture_all")}),
@@ -270,7 +271,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
 
-class Repository(StatusModel):
+class Repository(mini_buildd.models.base.StatusModel):
     identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
 
     layout = django.db.models.ForeignKey(Layout)
@@ -301,10 +302,10 @@ Example:
 
     external_home_url = django.db.models.URLField(blank=True)
 
-    class Meta(StatusModel.Meta):
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Repositories"
 
-    class Admin(StatusModel.Admin):
+    class Admin(mini_buildd.models.base.StatusModel.Admin):
         fieldsets = (
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
@@ -321,7 +322,7 @@ Example:
                     msg_warn(request, "Repository not activated: {r}".format(r=s))
         action_generate_keyring_packages.short_description = "[X] Generate keyring packages"
 
-        actions = StatusModel.Admin.actions + [action_generate_keyring_packages]
+        actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
@@ -549,8 +550,8 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, request):
         # Check that the daemon model is prepared
-        from mini_buildd.models.daemon import Daemon
-        if Daemon.objects.get(id=1).status < StatusModel.STATUS_PREPARED:
+        import mini_buildd.models.daemon
+        if mini_buildd.models.daemon.Daemon.objects.get(id=1).status < mini_buildd.models.base.StatusModel.STATUS_PREPARED:
             raise Exception("Please prepare daemon first (for the gnupg key).")
 
         # Check that the codenames of the distributiosn are unique

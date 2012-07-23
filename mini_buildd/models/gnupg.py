@@ -7,10 +7,10 @@ import django.contrib.messages
 
 import mini_buildd.misc
 
-from mini_buildd.models.base import StatusModel
+import mini_buildd.models.base
 
 
-class GnuPGPublicKey(StatusModel):
+class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
     key_id = django.db.models.CharField(max_length=100, blank=True, default="",
                                         help_text="Give a key id here to retrieve the actual key automatically per configured keyserver.")
     key = django.db.models.TextField(blank=True, default="",
@@ -22,13 +22,13 @@ class GnuPGPublicKey(StatusModel):
     key_name = django.db.models.CharField(max_length=254, blank=True, default="")
     key_fingerprint = django.db.models.CharField(max_length=254, blank=True, default="")
 
-    class Meta(StatusModel.Meta):
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
         abstract = True
         app_label = "mini_buildd"
 
-    class Admin(StatusModel.Admin):
-        search_fields = StatusModel.Admin.search_fields + ["key_id", "key_long_id", "key_name", "key_fingerprint"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
+    class Admin(mini_buildd.models.base.StatusModel.Admin):
+        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["key_id", "key_long_id", "key_name", "key_fingerprint"]
+        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
 
     def __unicode__(self):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)

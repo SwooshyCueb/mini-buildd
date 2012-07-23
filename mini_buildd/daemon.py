@@ -43,9 +43,10 @@ import mini_buildd.gnupg
 import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models.daemon import Daemon
-from mini_buildd.models.repository import Repository
-from mini_buildd.models.chroot import Chroot
+import mini_buildd.models.daemon
+import mini_buildd.models.repository
+import mini_buildd.models.chroot
+import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
 
@@ -128,7 +129,7 @@ class Package(object):
 def gen_uploader_keyrings():
     "Generate all upload keyrings for each repository."
     keyrings = {}
-    for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
+    for r in mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE):
         keyrings[r.identity] = r.mbd_get_uploader_keyring()
         # Always add our key too for internal builds
         keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
@@ -137,11 +138,10 @@ def gen_uploader_keyrings():
 
 def gen_remotes_keyring():
     "Generate the remote keyring to authorize buildrequests and buildresults"
-    from mini_buildd.models.gnupg import Remote
     keyring = mini_buildd.gnupg.TmpGnuPG()
     # Always add our own key
     keyring.add_pub_key(get().model.mbd_get_pub_key())
-    for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
+    for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
         keyring.add_pub_key(r.key)
         LOG.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring
@@ -239,20 +239,20 @@ class Manager():
         self.thread = None
         global _INSTANCE
         _INSTANCE = self
-        if self.model.status == Daemon.STATUS_ACTIVE:
+        if self.model.status == self.model.STATUS_ACTIVE:
             self.start()
         else:
             LOG.info("Daemon NOT started (activate first)")
 
     def update_model(self):
-        self.model, created = Daemon.objects.get_or_create(id=1)
+        self.model, created = mini_buildd.models.daemon.Daemon.objects.get_or_create(id=1)
         if created:
             LOG.info("New default Daemon model instance created")
         LOG.info("Daemon model instance updated...")
 
     @classmethod
     def check(cls):
-        for r in Repository.objects.filter(status=Repository.STATUS_ACTIVE):
+        for r in mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE):
             r.mbd_check_status_dependencies()
 
     def start(self):
@@ -284,7 +284,7 @@ class Manager():
     def get_builder_state(self):
         def get_chroots():
             chroots = {}
-            for c in Chroot.objects.filter(status=Chroot.STATUS_ACTIVE):
+            for c in mini_buildd.models.chroot.Chroot.objects.filter(status=mini_buildd.models.chroot.Chroot.STATUS_ACTIVE):
                 chroots.setdefault(c.architecture.name, [])
                 chroots[c.architecture.name].append(c.source.codename)
             return chroots
@@ -296,8 +296,6 @@ class Manager():
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
-        from mini_buildd.models.gnupg import Remote
-
         def packages():
             packages = "<ul>"
             for p in self.model.mbd_packages:
@@ -307,7 +305,7 @@ class Manager():
 
         def remotes():
             remotes = "<ul>"
-            for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
+            for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
                 remotes += "<li>{r}</li>".format(r=r)
             remotes += "</ul>"
             return remotes
@@ -345,7 +343,7 @@ class Manager():
            p=len(self.model.mbd_packages),
            packages=packages(),
            builder_status=self.model.mbd_builder_status.get_html(),
-           r=len(Remote.objects.filter(status=Remote.STATUS_ACTIVE)),
+           r=len(mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE)),
            remote_status=remotes())
 
 _INSTANCE = None

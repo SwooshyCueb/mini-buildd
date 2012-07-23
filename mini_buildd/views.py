@@ -1,20 +1,20 @@
 ## -*- coding: utf-8 -*-
 import django.http
 
-from django.shortcuts import render_to_response
+import django.shortcuts
 
 import mini_buildd.daemon
 
-from mini_buildd.models.repository import Repository
-from mini_buildd.models.chroot import Chroot
-from mini_buildd.models.gnupg import Remote
+import mini_buildd.models.repository
+import mini_buildd.models.chroot
+import mini_buildd.models.gnupg
 
 
 def show_index(_request):
-    return render_to_response("mini_buildd/index.html",
-                              {"repositories": Repository.objects.all(),
-                               "chroots": Chroot.objects.all(),
-                               "remotes": Remote.objects.all()})
+    return django.shortcuts.render_to_response("mini_buildd/index.html",
+                                               {"repositories": mini_buildd.models.repository.Repository.objects.all(),
+                                                "chroots": mini_buildd.models.chroot.Chroot.objects.all(),
+                                                "remotes": mini_buildd.models.gnupg.Remote.objects.all()})
 
 
 def get_archive_key(_request):
@@ -39,12 +39,17 @@ def get_repository_results(request):
             repository = request.GET.get("repository", None)
             codename = request.GET.get("codename", None)
 
+            if repository:
+                search_repos = [mini_buildd.models.repository.Repository.objects.get(identity=repository)]
+            else:
+                search_repos = mini_buildd.models.repository.Repository.objects.all()
+
             result = {}
-            for r in [Repository.objects.get(identity=repository)] if repository else Repository.objects.all():
+            for r in search_repos:
                 result[r.identity] = r.mbd_package_search(package, codename)
 
-            ret = render_to_response("mini_buildd/package_search_results.html",
-                                     {'authenticated': authenticated, 'result': result})
+            ret = django.shortcuts.render_to_response("mini_buildd/package_search_results.html",
+                                                      {'authenticated': authenticated, 'result': result})
         elif action == "propagate":
             result = {}
             if authenticated:
@@ -54,11 +59,11 @@ def get_repository_results(request):
                 from_distribution = request.GET.get("from_distribution", None)
                 to_distribution = request.GET.get("to_distribution", None)
 
-                r = Repository.objects.get(identity=repository)
+                r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
                 result = r.mbd_reprepro().copysrc(to_distribution, from_distribution, package, version)
 
-            ret = render_to_response("mini_buildd/package_propagation_results.html",
-                                     {'authenticated': authenticated, 'result': result})
+            ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
+                                                      {'authenticated': authenticated, 'result': result})
 
         elif action == "remove":
             result = {}
@@ -68,14 +73,14 @@ def get_repository_results(request):
                 repository = request.GET.get("repository", None)
                 distribution = request.GET.get("distribution", None)
 
-                r = Repository.objects.get(identity=repository)
+                r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
                 result = r.mbd_reprepro().removesrc(distribution, package, version)
 
-            ret = render_to_response("mini_buildd/package_propagation_results.html",
-                                     {'authenticated': authenticated, 'result': result})
+            ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
+                                                      {'authenticated': authenticated, 'result': result})
 
     else:
-        ret = render_to_response("mini_buildd/repository_list.html",
-                                 {'repositories': Repository.objects.all()})
+        ret = django.shortcuts.render_to_response("mini_buildd/repository_list.html",
+                                                  {'repositories': mini_buildd.models.repository.Repository.objects.all()})
 
     return ret

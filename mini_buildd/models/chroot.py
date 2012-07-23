@@ -11,17 +11,17 @@ import django.contrib.messages
 import mini_buildd.setup
 import mini_buildd.misc
 
+import mini_buildd.models.base
+import mini_buildd.models.source
+
 LOG = logging.getLogger(__name__)
 
-from mini_buildd.models.base import StatusModel
 
-
-class Chroot(StatusModel):
+class Chroot(mini_buildd.models.base.StatusModel):
     PERSONALITIES = {'i386': 'linux32'}
 
-    from mini_buildd.models.source import Source, Architecture
-    source = django.db.models.ForeignKey(Source)
-    architecture = django.db.models.ForeignKey(Architecture)
+    source = django.db.models.ForeignKey(mini_buildd.models.source.Source)
+    architecture = django.db.models.ForeignKey(mini_buildd.models.source.Architecture)
 
     personality = django.db.models.CharField(max_length=50, editable=False, blank=True, default="",
                                              help_text="""\
@@ -35,13 +35,13 @@ an internal mapping). Please report manual overrides so it can
 go to the default mapping.
 """)
 
-    class Meta(StatusModel.Meta):
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
         unique_together = ("source", "architecture")
         ordering = ["source", "architecture"]
 
-    class Admin(StatusModel.Admin):
-        search_fields = StatusModel.Admin.search_fields + ["source", "architecture"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["personality"]
+    class Admin(mini_buildd.models.base.StatusModel.Admin):
+        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["source", "architecture"]
+        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["personality"]
 
     def __unicode__(self):
         return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.get_status_display())

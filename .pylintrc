@@ -1,9 +1,7 @@
 [MESSAGES CONTROL]
 
 disable=C0111,C0301,
-        W0142,W0232,W0603,W0702,W0703,
-
-        R0401,W0621
+        W0142,W0232,W0603,W0702,W0703
 
 [TYPECHECK]
 # see ./devel pylintgeneratedmembers

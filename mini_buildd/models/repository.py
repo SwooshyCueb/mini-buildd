@@ -34,7 +34,7 @@ class EmailAddress(Model):
     def __unicode__(self):
         return u"{n} <{a}>".format(n=self.name, a=self.address)
 
-django.contrib.admin.site.register(EmailAddress)
+django.contrib.admin.site.register(EmailAddress, EmailAddress.Admin)
 
 
 class Suite(Model):
@@ -64,7 +64,7 @@ class Suite(Model):
             i=repository.identity,
             s=self.name)
 
-django.contrib.admin.site.register(Suite)
+django.contrib.admin.site.register(Suite, Suite.Admin)
 
 
 class Layout(Model):

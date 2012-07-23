@@ -192,4 +192,4 @@ class PrioritySource(Model):
     def mbd_id(self):
         return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
 
-django.contrib.admin.site.register(PrioritySource)
+django.contrib.admin.site.register(PrioritySource, PrioritySource.Admin)

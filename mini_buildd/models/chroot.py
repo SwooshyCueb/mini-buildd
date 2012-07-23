@@ -11,7 +11,7 @@ import django.contrib.messages
 import mini_buildd.setup
 import mini_buildd.misc
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 from mini_buildd.models import StatusModel, msg_info
 
@@ -183,6 +183,7 @@ file={t}
 """.format(t=self.mbd_get_tar_file())
 
     def mbd_get_pre_sequence(self):
+        LOG.debug("No pre-squence for chroot {c}".format(c=self))
         return []
 
     def mbd_get_post_sequence(self):
@@ -263,13 +264,13 @@ class LoopLVMChroot(LVMChroot):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
             if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.mbd_get_backing_file()):
                 return "/dev/" + f.split("/")[3]
-        log.debug("No existing loop device for {b}, searching for free device".format(b=self.mbd_get_backing_file()))
+        LOG.debug("No existing loop device for {b}, searching for free device".format(b=self.mbd_get_backing_file()))
         return mini_buildd.misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()
 
     def mbd_get_pre_sequence(self):
         # todo get_loop_device() must not be dynamic
         loop_device = self.mbd_get_loop_device()
-        log.debug("Acting on loop device: {d}".format(d=loop_device))
+        LOG.debug("Acting on loop device: {d}".format(d=loop_device))
         return [
             (["/bin/dd",
               "if=/dev/zero", "of={imgfile}".format(imgfile=self.mbd_get_backing_file()),

@@ -13,7 +13,7 @@ import mini_buildd.gnupg
 
 from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Archive(Model):
@@ -21,10 +21,10 @@ class Archive(Model):
                                     default="http://ftp.debian.org/debian",
                                     help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
 
-    class Meta:
+    class Meta(Model.Meta):
         ordering = ["url"]
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(Model.Admin):
         search_fields = ["url"]
 
     def __unicode__(self):
@@ -33,12 +33,12 @@ class Archive(Model):
     def mbd_download_release(self, dist, gnupg):
         url = self.url + "/dists/" + dist + "/Release"
         with tempfile.NamedTemporaryFile() as release:
-            log.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
+            LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
             release.flush()
             if gnupg:
                 with tempfile.NamedTemporaryFile() as signature:
-                    log.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
+                    LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
                     signature.write(urllib.urlopen(url + ".gpg").read())
                     signature.flush()
                     gnupg.verify(signature.name, release.name)
@@ -130,22 +130,22 @@ class Source(StatusModel):
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
-                        newArch, created = Architecture.objects.get_or_create(name=a)
+                        new_arch, created = Architecture.objects.get_or_create(name=a)
                         if created:
                             msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                        self.architectures.add(newArch)
+                        self.architectures.add(new_arch)
                     for c in release["Components"].split(" "):
-                        newComponent, created = Component.objects.get_or_create(name=c)
+                        new_component, created = Component.objects.get_or_create(name=c)
                         if created:
                             msg_info(request, "Auto-adding new component: {c}".format(c=c))
-                        self.components.add(newComponent)
+                        self.components.add(new_component)
             except Exception as e:
                 msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
 
         if not len(self.archives.all()):
             raise Exception("{s}: No archives found (please add at least one)".format(s=self))
 
-    def mbd_unprepare(self, request):
+    def mbd_unprepare(self, _request):
         self.archives = []
         self.components = []
         self.architectures = []
@@ -182,11 +182,11 @@ class PrioritySource(Model):
                                              help_text="A apt pin priority value (see 'man apt_preferences')."
                                              "Examples: 1=not automatic, 1001=downgrade'")
 
-    class Meta:
+    class Meta(Model.Meta):
         unique_together = ('source', 'priority')
 
     def __unicode__(self):
-        return u"{i}: Priority={p}".format(i=self.source.__unicode__(), p=self.priority)
+        return u"{i}: Priority={p}".format(i=self.source, p=self.priority)
 
     def mbd_id(self):
         return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)

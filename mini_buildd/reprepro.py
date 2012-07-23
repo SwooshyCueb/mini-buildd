@@ -3,11 +3,7 @@
 Run reprepro commands.
 """
 
-import logging
-
 import mini_buildd.misc
-
-log = logging.getLogger(__name__)
 
 
 class Reprepro():
@@ -31,3 +27,11 @@ class Reprepro():
              "listmatched",
              dist,
              pattern])
+
+    def copysrc(self, dest_distribution, source_distribution, package, version):
+        return mini_buildd.misc.call(
+            self._cmd + ["copysrc", dest_distribution, source_distribution, package, version])
+
+    def removesrc(self, distribution, package, version):
+        return mini_buildd.misc.call(
+            self._cmd + ["removesrc", distribution, package, version])

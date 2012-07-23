@@ -21,7 +21,6 @@
 				<tr>
 					<th>Package</th>
 					<th>Repository</th>
-					<th>Distribution</th>
 					<th />
 				</tr>
 				<tr>
@@ -34,12 +33,6 @@
 							<option selected="selected" value="">any</option>
 					</select></td>
 
-					<td><select name="codename" size="1">
-							{% for d in repository.distributions.all %}
-							<option value="{{ d.base_source.codename|urlencode }}">{{ d }}</option>
-							{% endfor %}
-							<option selected="selected" value="">any</option>
-					</select></td>
 					<td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
 				</tr>
 			</table>

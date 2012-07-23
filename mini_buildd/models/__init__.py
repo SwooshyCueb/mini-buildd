@@ -54,28 +54,28 @@ import django.template.response
 
 import mini_buildd.misc
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 def msg_info(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
-    log.info(msg)
+    LOG.info(msg)
 
 
 def msg_error(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
-    log.error(msg)
+    LOG.error(msg)
 
 
 def msg_warn(request, msg):
     if request:
         django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
-    log.warn(msg)
+    LOG.warn(msg)
 
 
-def action_delete(model, request, queryset):
+def action_delete(_model, request, queryset):
     """Custom delete action.
 
     This workaround ensures that the model's delete() method is
@@ -93,7 +93,10 @@ def action_delete(model, request, queryset):
             msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
 action_delete.short_description = "[0] Delete selected objects"
 
-django.contrib.admin.site.disable_action("delete_selected")
+try:
+    django.contrib.admin.site.disable_action("delete_selected")
+except:
+    pass
 django.contrib.admin.site.add_action(action_delete, "mini_buildd_delete")
 
 
@@ -105,19 +108,24 @@ class Model(django.db.models.Model):
     """
     class Meta:
         abstract = True
+        app_label = "mini_buildd"
 
-    def check_daemon_stopped(self):
+    class Admin(django.contrib.admin.ModelAdmin):
+        pass
+
+    @classmethod
+    def check_daemon_stopped(cls):
         import mini_buildd.daemon
         if mini_buildd.daemon.get().is_running():
             raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
 
-    def delete(self):
+    def delete(self, *args, **kwargs):
         self.check_daemon_stopped()
-        super(Model, self).delete()
+        super(Model, self).delete(*args, **kwargs)
 
-    def clean(self):
+    def clean(self, *args, **kwargs):
         self.check_daemon_stopped()
-        super(Model, self).clean()
+        super(Model, self).clean(*args, **kwargs)
 
 
 class StatusModel(Model):
@@ -146,10 +154,10 @@ class StatusModel(Model):
         STATUS_PREPARED: "blue",
         STATUS_ACTIVE: "green"}
 
-    class Meta:
+    class Meta(Model.Meta):
         abstract = True
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(Model.Admin):
         @classmethod
         def action(cls, request, queryset, action, success_status, status_calc):
             for s in queryset:
@@ -201,8 +209,12 @@ this would mean losing all packages!
             self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
         action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
 
-        def colored_status(self, o):
-            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=o.get_status_display(), c=o.STATUS_COLORS[o.status])
+        def colored_status(self, obj):
+            # [avoid pylint R0201]
+            if self:
+                pass
+
+            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
         actions = [action_prepare, action_unprepare, action_activate, action_deactivate]
@@ -217,6 +229,7 @@ this would mean losing all packages!
         pass
 
     def mbd_get_status_dependencies(self):
+        LOG.debug("No status dependencies for {o}".format(o=self))
         return []
 
     def mbd_check_status_dependencies(self, request=None, lower_status=0):
@@ -227,15 +240,19 @@ this would mean losing all packages!
                 raise Exception("'{S}' has dependent instance '{d}' with insufficent status '{s}'".format(S=self, d=d, s=d.get_status_display()))
             d.mbd_check_status_dependencies(request, lower_status)
 
-from mini_buildd import gnupg
+
+import gnupg
 
 
 class AptKey(gnupg.GnuPGPublicKey):
     pass
-django.contrib.admin.site.register(AptKey, AptKey.Admin)
+try:
+    django.contrib.admin.site.register(AptKey, AptKey.Admin)
+except:
+    pass
 
 
-from mini_buildd import source
+import source
 
 
 class Archive(source.Archive):
@@ -258,7 +275,7 @@ class PrioritySource(source.PrioritySource):
     pass
 
 
-from mini_buildd import repository
+import repository
 
 
 class EmailAddress(repository.EmailAddress):
@@ -281,7 +298,7 @@ class Repository(repository.Repository):
     pass
 
 
-from mini_buildd import chroot
+import chroot
 
 
 class Chroot(chroot.Chroot):
@@ -300,7 +317,7 @@ class LoopLVMChroot(chroot.LoopLVMChroot):
     pass
 
 
-from mini_buildd import daemon
+import daemon
 
 
 class Daemon(daemon.Daemon):
@@ -309,7 +326,7 @@ class Daemon(daemon.Daemon):
 
 class UserProfile(gnupg.GnuPGPublicKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
-    may_upload_to = django.db.models.ManyToManyField(repository.Repository)
+    may_upload_to = django.db.models.ManyToManyField(Repository)
 
     class Admin(gnupg.GnuPGPublicKey.Admin):
         search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["user"]
@@ -321,15 +338,16 @@ class UserProfile(gnupg.GnuPGPublicKey):
 django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
 
 
-def create_user_profile(sender, instance, created, **kwargs):
+def cb_create_user_profile(sender, instance, created, **kwargs):
     "Automatically create a user profile with every user that is created"
     if created:
         UserProfile.objects.create(user=instance)
-django.db.models.signals.post_save.connect(create_user_profile, sender=django.contrib.auth.models.User)
+django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
 
 
 class Remote(gnupg.GnuPGPublicKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+    wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     class Admin(gnupg.GnuPGPublicKey.Admin):
         search_fields = gnupg.GnuPGPublicKey.Admin.search_fields + ["http"]
@@ -341,19 +359,18 @@ class Remote(gnupg.GnuPGPublicKey):
         except Exception as e:
             return "{h}: {e}".format(h=self.http, e=unicode(e))
 
-    def mbd_prepare(self, r):
+    def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
-        msg_info(r, "Downloading '{u}'...".format(u=url))
+        msg_info(request, "Downloading '{u}'...".format(u=url))
         self.key = urllib.urlopen(url).read()
         if self.key:
-            msg_warn(r, "Downloaded remote key integrated: Please check key manually before activation!")
+            msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
-        super(Remote, self).mbd_prepare(r)
+        super(Remote, self).mbd_prepare(request)
 
     def mbd_download_builder_state(self):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
-        status = urllib.urlopen(url)
-        return mini_buildd.misc.BuilderState(file=status)
+        return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
 
 django.contrib.admin.site.register(Remote, Remote.Admin)

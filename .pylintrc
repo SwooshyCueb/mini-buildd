@@ -1,0 +1,33 @@
+[MESSAGES CONTROL]
+
+disable=C0111,C0301,
+        W0142,W0232,W0603,W0702,W0703,
+
+        R0401,W0621
+
+[TYPECHECK]
+# see ./devel pylintgeneratedmembers
+generated-members=add,all,build_keyring_package_for,codename,create_default_layout,DoesNotExist,filechroot,get_status_display,id,looplvmchroot,lvmchroot,mandatory_architectures,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_default_version,mbd_get_mandatory_version_regex,mbd_id,objects,split,splitlines,suites
+
+[BASIC]
+
+good-names=mini-buildd,urlpatterns,register
+variable-rgx=[a-z_][a-z0-9_]{0,30}$
+method-rgx=[a-z_][a-z0-9_]{2,40}$
+
+[DESIGN]
+
+# Django adds many public methods to classes, FTPDHandler is the winner though
+max-public-methods=105
+min-public-methods=0
+
+# We need to pimp some default values a little
+max-args=10
+max-locals=25
+max-branchs=25
+max-attributes=10
+max-statements=60
+
+[REPORTS]
+
+include-ids=yes

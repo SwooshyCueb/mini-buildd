@@ -10,7 +10,7 @@ import django.core.management
 import mini_buildd.setup
 import mini_buildd.compat08x
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
@@ -19,7 +19,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
 
     def __init__(self):
-        log.info("Configuring && generating django app...")
+        LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
         django.conf.settings.configure(
@@ -52,7 +52,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         self.syncdb()
         self.setup_default_models()
 
-    def setup_default_models(self):
+    @classmethod
+    def setup_default_models(cls):
         from mini_buildd import models
         default_layout, created = models.Layout.objects.get_or_create(name="Default")
         if created:
@@ -69,7 +70,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             default_layout.build_keyring_package_for.add(unstable)
             default_layout.save()
 
-    def set_admin_password(self, password):
+    @classmethod
+    def set_admin_password(cls, password):
         """
         This method sets the password for the administrator.
 
@@ -80,42 +82,44 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         import django.contrib.auth.models
         try:
             user = django.contrib.auth.models.User.objects.get(username='admin')
-            log.info("Updating 'admin' user password...")
+            LOG.info("Updating 'admin' user password...")
             user.set_password(password)
             user.save()
         except django.contrib.auth.models.User.DoesNotExist:
-            log.info("Creating initial 'admin' user...")
+            LOG.info("Creating initial 'admin' user...")
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
-    def unprepare(self, models):
+    @classmethod
+    def unprepare(cls, models):
         """
         Unprepare all given (status) models.
         """
         import mini_buildd.models
         for m in models:
-            M = getattr(mini_buildd.models, m)
-            for o in M.objects.all():
-                M.Admin.action(None, (o,), "unprepare", M.STATUS_UNPREPARED, min)
+            model_class = getattr(mini_buildd.models, m)
+            for o in model_class.objects.all():
+                model_class.Admin.action(None, (o,), "unprepare", model_class.STATUS_UNPREPARED, min)
 
-    def syncdb(self):
-        log.info("Syncing database...")
+    @classmethod
+    def syncdb(cls):
+        LOG.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)
 
-    def loaddata(self, f):
-        if os.path.splitext(f)[1] == ".conf":
-            log.info("Try loading ad 08x.conf: {f}".format(f=f))
-            mini_buildd.compat08x.importConf(f)
+    @classmethod
+    def loaddata(cls, file_name):
+        if os.path.splitext(file_name)[1] == ".conf":
+            LOG.info("Try loading ad 08x.conf: {f}".format(f=file_name))
+            mini_buildd.compat08x.import_conf(file_name)
         else:
-            django.core.management.call_command('loaddata', f)
+            django.core.management.call_command('loaddata', file_name)
 
-    def dumpdata(self, a):
-        log.info("Dumping data for: {a}".format(a=a))
-        if a == "08x":
-            mini_buildd.compat08x.exportConf("/dev/stdout")
-        else:
-            django.core.management.call_command('dumpdata', a, indent=2, format='json')
+    @classmethod
+    def dumpdata(cls, app_path):
+        LOG.info("Dumping data for: {a}".format(a=app_path))
+        django.core.management.call_command('dumpdata', app_path, indent=2, format='json')
 
-    def get_django_secret_key(self, home):
+    @classmethod
+    def get_django_secret_key(cls, home):
         """
         This method creates *once* django's SECRET_KEY and/or returns it.
 
@@ -131,7 +135,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         if not os.path.exists(secret_key_filename):
             # use same randomize-algorithm as in "django/core/management/commands/startproject.py"
-            secret_key = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for i in range(50)])
+            secret_key = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _i in range(50)])
             secret_key_fd = os.open(secret_key_filename, os.O_CREAT | os.O_WRONLY, 0600)
             os.write(secret_key_fd, secret_key)
             os.close(secret_key_fd)

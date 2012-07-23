@@ -20,14 +20,14 @@ import mini_buildd.reprepro
 
 from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class EmailAddress(Model):
     address = django.db.models.EmailField(primary_key=True, max_length=255)
     name = django.db.models.CharField(blank=True, max_length=255)
 
-    class Meta:
+    class Meta(Model.Meta):
         verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
@@ -71,6 +71,13 @@ class Layout(Model):
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
 
+    class Admin(django.contrib.admin.ModelAdmin):
+        fieldsets = (
+            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
+            ("Extra", {"classes": ("collapse",),
+                       "fields": ("default_version", "mandatory_version_regex",
+                                  "experimental_default_version", "experimental_mandatory_version_regex")}),)
+
     # Version magic
     default_version = django.db.models.CharField(
         max_length=100, default="~%IDENTITY%%CODEVERSION%+1",
@@ -111,13 +118,6 @@ class Layout(Model):
         return self._mbd_subst_placeholders(
             self.experimental_default_version if suite.experimental else self.default_version,
             repository, dist)
-
-    class Admin(django.contrib.admin.ModelAdmin):
-        fieldsets = (
-            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
-            ("Extra", {"classes": ("collapse",), "fields":
-                           ("default_version", "mandatory_version_regex",
-                            "experimental_default_version", "experimental_mandatory_version_regex")}),)
 
 django.contrib.admin.site.register(Layout, Layout.Admin)
 
@@ -205,7 +205,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 </pre>
 """)
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(Model.Admin):
         fieldsets = (
             ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
             ("Architectures", {"fields": ("mandatory_architectures", "optional_architectures", "architecture_all")}),
@@ -219,13 +219,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                 result += "+ " + e.mbd_id()
             return result
 
-        def cmps():
-            result = u""
-            for c in self.components.all():
-                result += c.name + " "
-            return result
-
-        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=cmps())
+        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=u" ".join(self.mbd_get_components()))
 
     def _mbd_clean_architectures(self):
         ".. todo:: Not enabled in clean() as code does not work there: ManyToMany fields keep old values until actually saved (??)."
@@ -236,11 +230,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                 if ma.name == oa.name:
                     raise django.core.exceptions.ValidationError(u"Architecture {a} is in both, mandatory and optional architectures!".format(a=ma.name))
 
-    def clean(self):
+    def clean(self, *args, **kwargs):
         # self._mbd_clean_architectures()
-        super(Distribution, self).clean()
+        super(Distribution, self).clean(*args, **kwargs)
 
-    def _mbd_get_architectures(self, m2m_objects):
+    @classmethod
+    def _mbd_get_architectures(cls, m2m_objects):
         architectures = []
         for o in m2m_objects:
             for a in o.all():
@@ -255,6 +250,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     def mbd_get_all_architectures(self):
         return self._mbd_get_architectures([self.mandatory_architectures, self.optional_architectures])
+
+    def mbd_get_components(self):
+        result = []
+        for c in self.components.all():
+            result.append(c.name)
+        return result
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
@@ -308,6 +309,10 @@ Example:
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
 
         def action_generate_keyring_packages(self, request, queryset):
+            # [avoid pylint R0201]
+            if self:
+                pass
+
             for s in queryset:
                 if s.status >= s.STATUS_ACTIVE:
                     s.mbd_generate_keyring_packages(request)
@@ -319,7 +324,7 @@ Example:
 
     def __init__(self, *args, **kwargs):
         super(Repository, self).__init__(*args, **kwargs)
-        log.debug("Initializing repository '{identity}'".format(identity=self.identity))
+        LOG.debug("Initializing repository '{identity}'".format(identity=self.identity))
 
         self.mbd_uploadable_distributions = []
         for d in self.distributions.all():
@@ -354,10 +359,10 @@ Example:
 
             identity = mini_buildd.daemon.get().model.identity
             debemail = mini_buildd.daemon.get().model.email_address
-            debfullname = mini_buildd.daemon.get().model._fullname
+            debfullname = mini_buildd.daemon.get().model.mbd_fullname
             hopo = mini_buildd.daemon.get().model.mbd_get_ftp_hopo()
 
-            for root, dirs, files in os.walk(p):
+            for root, _dirs, files in os.walk(p):
                 for f in files:
                     old_file = os.path.join(root, f)
                     new_file = old_file + ".new"
@@ -369,7 +374,7 @@ Example:
                     os.rename(new_file, old_file)
 
             package_name = "{i}-archive-keyring".format(i=identity)
-            mini_buildd.daemon.get().model._gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
+            mini_buildd.daemon.get().model.mbd_gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
 
             env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
 
@@ -402,25 +407,25 @@ Example:
 
         except Exception as e:
             msg_error(request, "Some package failed: {e}".format(e=str(e)))
-            pass
         finally:
             shutil.rmtree(t)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()
         # Add keys from django users
-        for u in django.contrib.auth.models.User.objects.all():
+        for u in django.contrib.auth.models.User.objects.filter(is_active=True):
             p = u.get_profile()
-            for r in p.may_upload_to.all():
-                if r.identity == self.identity:
-                    gpg.add_pub_key(p.key)
-                    log.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+            if p.status == p.STATUS_ACTIVE:
+                for r in p.may_upload_to.all():
+                    if r.identity == self.identity:
+                        gpg.add_pub_key(p.key)
+                        LOG.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()
             if l and l[0] != "#":
                 gpg.add_keyring(l)
-                log.info("Adding keyring: {k}".format(k=l))
+                LOG.info("Adding keyring: {k}".format(k=l))
         return gpg
 
     def mbd_get_path(self):
@@ -435,9 +440,6 @@ Example:
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity
 
-    def mbd_get_components(self):
-        return "main contrib non-free"
-
     def mbd_get_desc(self, dist, suite):
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
@@ -446,11 +448,11 @@ Example:
         return "deb {u}/{r}/{i}/ {d} {c}".format(
             u=mini_buildd.daemon.get().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=self.identity, d=self.mbd_get_dist(dist, suite), c=self.mbd_get_components())
+            i=self.identity, d=self.mbd_get_dist(dist, suite), c=u" ".join(dist.mbd_get_components()))
 
     def mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
-        log.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
+        LOG.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
         if identity == self.identity:
             for d in self.distributions.all():
@@ -475,10 +477,14 @@ Example:
 
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
+        # [avoid pylint R0201]
+        if self:
+            pass
+
         return ""
 
     def mbd_get_apt_keys(self, dist):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         import mini_buildd.daemon
         result = mini_buildd.daemon.get().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
@@ -487,18 +493,23 @@ Example:
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d, s = self.mbd_find_dist(dist)
+        d, _s = self.mbd_find_dist(dist)
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
-    def mbd_get_sources(self, dist, suite):
+    def mbd_get_sources(self, dist, _suite):
+        ".. todo:: STUB/WTF"
+        # [avoid pylint R0201]
+        if self:
+            pass
+
         result = ""
         result += "Base: " + str(dist.base_source) + "\n"
         for e in dist.extra_sources.all():
@@ -524,7 +535,7 @@ DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
-           components=self.mbd_get_components(),
+           components=u" ".join(d.mbd_get_components()),
            architectures=" ".join(d.mbd_get_all_architectures()),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
@@ -589,11 +600,12 @@ gnupghome {h}
                         name, version, distribution = item.split("|")
                         pck = result.setdefault(name, {})
                         ver = pck.setdefault(version, {})
-                        ver["distribution"] = distribution
+                        dis = ver.setdefault(distribution, {})
                         if s.migrates_to:
-                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
+                            dis["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
                     except:
-                        log.error("Item failed: {l}".format(l=item))
+                        LOG.error("Item failed: {l}".format(l=item))
+
         return result
 
 django.contrib.admin.site.register(Repository, Repository.Admin)

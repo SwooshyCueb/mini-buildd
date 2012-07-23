@@ -34,7 +34,7 @@ mbd_pep8()
 		# squeeze version does not set an error exit status
 		t=$(mktemp)
 		trap "rm ${t}" EXIT
-		pep8 --ignore=E501,E122 mini-buildd mini_buildd/ | tee "${t}"
+		pep8 --ignore=E501,E122 doc/conf.py doc/django_settings.py setup.py mini-buildd mini_buildd/ | tee "${t}"
 		[ ! -s "${t}" ]
 	)
 }
@@ -56,20 +56,22 @@ mbd_pyflakes()
 	)
 }
 
+mbd_pylintgeneratedmembers()
+{
+	# Generate all identifiers with "has no xxx member"
+	# error. These are most likely false-positive due to django
+	# models.
+	for o in $(${0} pylint | grep "has no.*member" | cut -d"'" -f4 | sort | uniq); do
+		printf "${o},"
+	done
+	printf "\n"
+}
+
 mbd_pylint()
 {
-	# C0111: Missing docstring
-	# C0301: Line too long
-	# E1101: Used when a variable is accessed for a nonexistent member.
-	# W0232: Used when a class has no __init__ method, and neither does its parent classes.
-	# R0903: Too few public methods (%s/%s)
-	# R0904: Too many public methods (%s/%s)
 	(
 		pyenv
-		pylint \
-			--disable=C0111,C0301,E1101,W0232,R0903,R0904 \
-			--generated-members=objects \
-			mini-buildd mini_buildd/
+		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/
 	)
 }
 
@@ -89,9 +91,9 @@ mbd_pydjangolint()
 	)
 }
 
-mbd_pychecks()
+mbd_check()
 {
-	local tests="pep8 pydoctests pyflakes"
+	local tests="pep8 pydoctests pyflakes pylint"
 	for t in ${tests}; do
 		echo "=> mbd_${t}"
 		mbd_${t}
@@ -113,7 +115,15 @@ mbd_purge()
 
 mbd_build()
 {
-	mbd_pychecks
+	set +e
+	(
+		set -e
+		mbd_check
+	)
+	ret=$?
+	[ ${ret} -eq 0 ] || read -p "Check failed. Continue anyway? [R]" dummy
+	set -e
+
 	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc

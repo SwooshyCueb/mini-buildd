@@ -13,7 +13,7 @@ import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
 
-log = logging.getLogger(__name__)
+LOG = logging.getLogger(__name__)
 
 
 class Changes(debian.deb822.Changes):
@@ -29,6 +29,14 @@ class Changes(debian.deb822.Changes):
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
+    @property
+    def file_name(self):
+        return self._file_name
+
+    @property
+    def file_path(self):
+        return self._file_path
+
     def is_new(self):
         return self._new
 
@@ -38,7 +46,7 @@ class Changes(debian.deb822.Changes):
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
 
-    def get(self, key):
+    def get_or_empty(self, key):
         try:
             return self[key]
         except:
@@ -53,44 +61,44 @@ class Changes(debian.deb822.Changes):
 
         # Get repository for identity
         try:
-            r = Repository.objects.get(identity=identity)
+            repository = Repository.objects.get(identity=identity)
         except:
             raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
 
         # Get distribution for codename
-        found = False
-        for d in r.distributions.all():
+        distribution = None
+        for d in repository.distributions.all():
             if d.base_source.codename == codename:
-                found = True
+                distribution = d
                 break
-        if not found:
+        if not distribution:
             raise Exception("Unsupported distribution '{d}': No such codename '{c}'".format(d=dist, c=codename))
 
         # Get uploadable suite
-        found = False
-        for s in r.layout.suites.all():
+        suite_ = None
+        for s in repository.layout.suites.all():
             if s.name == suite:
-                found = True
+                suite_ = s
                 break
-        if not found:
+        if not suite_:
             raise Exception("Unsupported distribution '{d}': No such suite '{s}'".format(d=dist, s=suite))
 
-        return r, d, s
+        return repository, distribution, suite_
 
     def get_repository(self):
         from mini_buildd.models import Repository
 
-        r, d, s = self.find_repository(self["Distribution"])
+        repository, dist, suite = self.find_repository(self["Distribution"])
 
-        if not s.uploadable:
-            raise Exception("Suite '{s}' is not uploadable".format(s=s))
+        if not suite.uploadable:
+            raise Exception("Suite '{s}' is not uploadable".format(s=suite))
 
-        if r.status < Repository.STATUS_ACTIVE:
-            raise Exception("Repository '{r}' is not active".format(r=r))
+        if repository.status < Repository.STATUS_ACTIVE:
+            raise Exception("Repository '{r}' is not active".format(r=repository))
 
-        r.mbd_check_version(self["Version"], d, s)
+        repository.mbd_check_version(self["Version"], dist, suite)
 
-        return r, d, s
+        return repository, dist, suite
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
@@ -104,22 +112,22 @@ class Changes(debian.deb822.Changes):
     def get_files(self):
         return self["Files"] if "Files" in self else []
 
-    def add_file(self, fn):
+    def add_file(self, file_name):
         if not "Files" in self:
             self["Files"] = []
-        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(fn),
-                              "size": os.path.getsize(fn),
+        self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(file_name),
+                              "size": os.path.getsize(file_name),
                               "section": "mini-buildd",
                               "priority": "extra",
-                              "name": os.path.basename(fn)})
+                              "name": os.path.basename(file_name)})
 
     def save(self):
         try:
-            log.info("Saving changes: {f}".format(f=self._file_path))
+            LOG.info("Saving changes: {f}".format(f=self._file_path))
             self.dump(fd=open(self._file_path, "w+"))
-            log.info("Signing changes: {f}".format(f=self._file_path))
+            LOG.info("Signing changes: {f}".format(f=self._file_path))
             import mini_buildd.daemon
-            mini_buildd.daemon.get().model._gnupg.sign(self._file_path)
+            mini_buildd.daemon.get().model.mbd_gnupg.sign(self._file_path)
         except:
             # Existence of the file name is used as flag
             if os.path.exists(self._file_path):
@@ -129,7 +137,7 @@ class Changes(debian.deb822.Changes):
     def upload(self, hopo):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):
-            log.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
+            LOG.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
         else:
             ftp = ftplib.FTP()
             ftp.connect(hopo.host, hopo.port)
@@ -137,10 +145,10 @@ class Changes(debian.deb822.Changes):
             ftp.cwd("/incoming")
             for fd in self.get_files() + [{"name": self._file_name}]:
                 f = fd["name"]
-                log.debug("FTP: Uploading file: '{f}'".format(f=f))
+                LOG.debug("FTP: Uploading file: '{f}'".format(f=f))
                 ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
             open(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
-            log.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
+            LOG.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
 
     def upload_buildrequest(self):
         arch = self["Architecture"]
@@ -169,18 +177,19 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                log.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
+                LOG.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 
-    def tar(self, tar_path, add_files=[]):
+    def tar(self, tar_path, add_files=None):
         with contextlib.closing(tarfile.open(tar_path, "w")) as tar:
             tar_add = lambda f: tar.add(f, arcname=os.path.basename(f))
             tar_add(self._file_path)
             for f in self.get_files():
                 tar_add(os.path.join(os.path.dirname(self._file_path), f["name"]))
-            for f in add_files:
-                tar_add(f)
+            if add_files:
+                for f in add_files:
+                    tar_add(f)
 
     def untar(self, path):
         tar_file = self._file_path + ".tar"
@@ -188,23 +197,23 @@ class Changes(debian.deb822.Changes):
             with contextlib.closing(tarfile.open(tar_file, "r")) as tar:
                 tar.extractall(path=path)
         else:
-            log.info("No tar file (skipping): {f}".format(f=tar_file))
+            LOG.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self):
         logdir = self.get_log_dir()
         if not os.path.exists(logdir):
             os.makedirs(logdir)
-        log.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
+        LOG.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
         for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
+            LOG.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
             os.rename(f, os.path.join(logdir, fd["name"]))
 
     def remove(self):
-        log.info("Removing changes: '{f}'".format(f=self._file_path))
+        LOG.info("Removing changes: '{f}'".format(f=self._file_path))
         for fd in [{"name": self._file_name}] + self.get_files():
             f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            log.debug("Removing: '{f}'".format(f=fd["name"]))
+            LOG.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
 
     def gen_buildrequests(self, repository, dist):
@@ -228,13 +237,13 @@ class Changes(debian.deb822.Changes):
                 open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
 
                 # Generate tar from original changes
-                self.tar(tar_path=breq._file_path + ".tar",
+                self.tar(tar_path=breq.file_path + ".tar",
                          add_files=[os.path.join(path, "apt_sources.list"),
                                     os.path.join(path, "apt_preferences"),
                                     os.path.join(path, "apt_keys"),
                                     chroot_setup_script,
                                     os.path.join(path, "sbuildrc_snippet")])
-                breq.add_file(breq._file_path + ".tar")
+                breq.add_file(breq.file_path + ".tar")
 
                 breq["Upload-Result-To"] = mini_buildd.daemon.get().model.mbd_get_ftp_hopo().string
                 breq["Base-Distribution"] = dist.base_source.codename
@@ -254,7 +263,7 @@ class Changes(debian.deb822.Changes):
 
                 breq.save()
             else:
-                log.info("Re-using existing buildrequest: {b}".format(b=breq._file_name))
+                LOG.info("Re-using existing buildrequest: {b}".format(b=breq.file_name))
             breq_dict[a] = breq
 
         return breq_dict

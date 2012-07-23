@@ -6,6 +6,7 @@ import random
 import django.conf
 import django.core.handlers.wsgi
 import django.core.management
+import django.contrib.auth
 
 import mini_buildd.setup
 import mini_buildd.compat08x
@@ -54,13 +55,14 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     @classmethod
     def setup_default_models(cls):
-        from mini_buildd.models.repository import Suite, Layout
-        default_layout, created = Layout.objects.get_or_create(name="Default")
+        import mini_buildd.models.repository
+
+        default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name="Default")
         if created:
-            stable, created = Suite.objects.get_or_create(name="stable", uploadable=False)
-            testing, created = Suite.objects.get_or_create(name="testing", uploadable=False, migrates_to=stable)
-            unstable, created = Suite.objects.get_or_create(name="unstable", migrates_to=testing)
-            experimental, created = Suite.objects.get_or_create(name="experimental", experimental=True)
+            stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="stable", uploadable=False)
+            testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="testing", uploadable=False, migrates_to=stable)
+            unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="unstable", migrates_to=testing)
+            experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="experimental", experimental=True)
 
             default_layout.suites.add(stable)
             default_layout.suites.add(testing)
@@ -79,7 +81,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         :type password: string
         """
 
-        import django.contrib.auth.models
         try:
             user = django.contrib.auth.models.User.objects.get(username='admin')
             LOG.info("Updating 'admin' user password...")

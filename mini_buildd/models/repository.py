@@ -20,7 +20,6 @@ import mini_buildd.reprepro
 
 import mini_buildd.models.source
 import mini_buildd.models.base
-from mini_buildd.models.base import msg_info, msg_warn, msg_error
 
 LOG = logging.getLogger(__name__)
 
@@ -319,7 +318,7 @@ Example:
                 if s.status >= s.STATUS_ACTIVE:
                     s.mbd_generate_keyring_packages(request)
                 else:
-                    msg_warn(request, "Repository not activated: {r}".format(r=s))
+                    s.mbd_msg_warn(request, "Repository not activated: {r}".format(r=s))
         action_generate_keyring_packages.short_description = "[X] Generate keyring packages"
 
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
@@ -405,10 +404,10 @@ Example:
 
             for c in glob.glob(os.path.join(t, "*.changes")):
                 mini_buildd.changes.Changes(c).upload(hopo)
-                msg_info(request, "Keyring package uploaded: {c}".format(c=c))
+                self.mbd_msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
-            msg_error(request, "Some package failed: {e}".format(e=str(e)))
+            self.mbd_msg_error(request, "Some package failed: {e}".format(e=str(e)))
         finally:
             shutil.rmtree(t)
 
@@ -581,12 +580,12 @@ gnupghome {h}
         repo.clearvanished()
         repo.export()
 
-        msg_info(request, "Prepared repository '{i}' in '{b}'".format(i=self.identity, b=self.mbd_get_path()))
+        self.mbd_msg_info(request, "Prepared repository '{i}' in '{b}'".format(i=self.identity, b=self.mbd_get_path()))
 
     def mbd_unprepare(self, request):
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
-            msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
+            self.mbd_msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
 
     def mbd_package_search(self, package, codename):
         distributions = []

@@ -11,7 +11,7 @@ import debian.deb822
 
 import mini_buildd.gnupg
 
-from mini_buildd.models.base import Model, StatusModel, msg_info, msg_warn
+from mini_buildd.models.base import Model, StatusModel
 from mini_buildd.models.gnupg import AptKey
 
 LOG = logging.getLogger(__name__)
@@ -108,13 +108,13 @@ class Source(StatusModel):
 
         for m in Archive.objects.all():
             try:
-                msg_info(request, "Scanning archive: {m}".format(m=m))
+                self.mbd_msg_info(request, "Scanning archive: {m}".format(m=m))
                 release = m.mbd_download_release(self.codename, gpg)
                 origin = release["Origin"]
                 codename = release["Codename"]
 
                 if self.origin == origin and self.codename == codename:
-                    msg_info(request, "Archive found: {m}".format(m=m))
+                    self.mbd_msg_info(request, "Archive found: {m}".format(m=m))
                     self.archives.add(m)
                     self.description = release["Description"]
 
@@ -133,15 +133,15 @@ class Source(StatusModel):
                     for a in release["Architectures"].split(" "):
                         new_arch, created = Architecture.objects.get_or_create(name=a)
                         if created:
-                            msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                            self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
                         self.architectures.add(new_arch)
                     for c in release["Components"].split(" "):
                         new_component, created = Component.objects.get_or_create(name=c)
                         if created:
-                            msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                            self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
                         self.components.add(new_component)
             except Exception as e:
-                msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
+                self.mbd_msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
 
         if not len(self.archives.all()):
             raise Exception("{s}: No archives found (please add at least one)".format(s=self))

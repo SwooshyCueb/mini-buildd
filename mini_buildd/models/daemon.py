@@ -19,7 +19,7 @@ import mini_buildd.builder
 from mini_buildd.models.repository import EmailAddress, Repository
 from mini_buildd.models.chroot import Chroot
 from mini_buildd.models.gnupg import Remote
-from mini_buildd.models.base import StatusModel, msg_info
+from mini_buildd.models.base import StatusModel
 
 LOG = logging.getLogger(__name__)
 
@@ -129,21 +129,21 @@ prevent original package maintainers to be spammed.
 
     def mbd_prepare(self, request):
         self._mbd_gnupg.prepare()
-        msg_info(request, "Daemon GnuPG key generated")
+        self.mbd_msg_info(request, "Daemon GnuPG key generated")
 
     def mbd_unprepare(self, request):
         self._mbd_gnupg.unprepare()
-        msg_info(request, "Daemon GnuPG key removed")
+        self.mbd_msg_info(request, "Daemon GnuPG key removed")
 
     def mbd_activate(self, request):
         import mini_buildd.daemon
         mini_buildd.daemon.get().restart()
-        msg_info(request, "Daemon restarted")
+        self.mbd_msg_info(request, "Daemon restarted")
 
     def mbd_deactivate(self, request):
         import mini_buildd.daemon
         mini_buildd.daemon.get().stop()
-        msg_info(request, "Daemon stopped")
+        self.mbd_msg_info(request, "Daemon stopped")
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

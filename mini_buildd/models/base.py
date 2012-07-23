@@ -54,24 +54,6 @@ import django.template.response
 LOG = logging.getLogger(__name__)
 
 
-def msg_info(request, msg):
-    if request:
-        django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
-    LOG.info(msg)
-
-
-def msg_error(request, msg):
-    if request:
-        django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
-    LOG.error(msg)
-
-
-def msg_warn(request, msg):
-    if request:
-        django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
-    LOG.warn(msg)
-
-
 def action_delete(_model, request, queryset):
     """Custom delete action.
 
@@ -87,7 +69,7 @@ def action_delete(_model, request, queryset):
             else:
                 o.delete()
         except Exception as e:
-            msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
+            o.mbd_msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
 action_delete.short_description = "[0] Delete selected objects"
 
 try:
@@ -184,9 +166,9 @@ class StatusModel(Model):
                     getattr(s, "mbd_" + action)(request)
                     s.status = status_calc(s.status, success_status)
                     s.save()
-                    msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
+                    s.mbd_msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
                 except Exception as e:
-                    msg_error(request, "{s}: '{a}' FAILED: {e}".format(s=s, a=action, e=str(e)))
+                    s.mbd_msg_error(request, "{s}: '{a}' FAILED: {e}".format(s=s, a=action, e=str(e)))
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)
@@ -248,9 +230,9 @@ this would mean losing all packages!
         return []
 
     def mbd_check_status_dependencies(self, request=None, lower_status=0):
-        msg_info(request, "Checking status deps for: {M} {S}".format(M=self.__class__.__name__, S=self))
+        self.mbd_msg_info(request, "Checking status deps for: {M} {S}".format(M=self.__class__.__name__, S=self))
         for d in self.mbd_get_status_dependencies():
-            msg_info(request, "Checking dependency: {d}".format(d=d))
+            self.mbd_msg_info(request, "Checking dependency: {d}".format(d=d))
             if d.status < (self.status - lower_status):
                 raise Exception("'{S}' has dependent instance '{d}' with insufficent status '{s}'".format(S=self, d=d, s=d.get_status_display()))
             d.mbd_check_status_dependencies(request, lower_status)

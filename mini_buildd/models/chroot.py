@@ -13,7 +13,7 @@ import mini_buildd.misc
 
 LOG = logging.getLogger(__name__)
 
-from mini_buildd.models.base import StatusModel, msg_info
+from mini_buildd.models.base import StatusModel
 
 
 class Chroot(StatusModel):
@@ -99,7 +99,7 @@ go to the default mapping.
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
         """
         if self.status >= self.STATUS_PREPARED:
-            msg_info(request, "Chroot {c}: Already prepared".format(c=self))
+            self.mbd_msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
             mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))
 
@@ -133,12 +133,12 @@ personality={p}
 """.format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
             mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
-            msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
+            self.mbd_msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
 
     def mbd_unprepare(self, request):
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
-        msg_info(request, "Chroot {c}: Removed from system".format(c=self))
+        self.mbd_msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
     def mbd_get_status_dependencies(self):
         return [self.source]

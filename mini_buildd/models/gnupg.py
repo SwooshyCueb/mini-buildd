@@ -7,7 +7,7 @@ import django.contrib.messages
 
 import mini_buildd.misc
 
-from mini_buildd.models.base import StatusModel, msg_info, msg_warn
+from mini_buildd.models.base import StatusModel
 
 
 class GnuPGPublicKey(StatusModel):
@@ -106,10 +106,10 @@ class Remote(GnuPGPublicKey):
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
-        msg_info(request, "Downloading '{u}'...".format(u=url))
+        self.mbd_msg_info(request, "Downloading '{u}'...".format(u=url))
         self.key = urllib.urlopen(url).read()
         if self.key:
-            msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
+            self.mbd_msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)

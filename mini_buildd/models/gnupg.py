@@ -69,7 +69,7 @@ class AptKey(GnuPGPublicKey):
 django.contrib.admin.site.register(AptKey, AptKey.Admin)
 
 
-class UserProfile(GnuPGPublicKey):
+class Uploader(GnuPGPublicKey):
     from mini_buildd.models.repository import Repository
 
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
@@ -80,15 +80,15 @@ class UserProfile(GnuPGPublicKey):
         readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
 
     def __unicode__(self):
-        return "User profile for '{u}'".format(u=self.user)
+        return "Uploader '{u}'".format(u=self.user)
 
-django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
+django.contrib.admin.site.register(Uploader, Uploader.Admin)
 
 
 def cb_create_user_profile(sender, instance, created, **kwargs):
     "Automatically create a user profile with every user that is created"
     if created:
-        UserProfile.objects.create(user=instance)
+        Uploader.objects.create(user=instance)
 django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
 
 

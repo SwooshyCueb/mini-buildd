@@ -6,7 +6,7 @@ class AptKey(gnupg.AptKey):
     pass
 
 
-class UserProfile(gnupg.UserProfile):
+class Uploader(gnupg.Uploader):
     pass
 
 

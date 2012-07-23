@@ -19,7 +19,7 @@ from mini_buildd.models.base import StatusModel, msg_info
 class Chroot(StatusModel):
     PERSONALITIES = {'i386': 'linux32'}
 
-    from mini_buildd.models import Source, Architecture
+    from mini_buildd.models.source import Source, Architecture
     source = django.db.models.ForeignKey(Source)
     architecture = django.db.models.ForeignKey(Architecture)
 

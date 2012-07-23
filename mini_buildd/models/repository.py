@@ -549,7 +549,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, request):
         # Check that the daemon model is prepared
-        from mini_buildd.models import Daemon
+        from mini_buildd.models.daemon import Daemon
         if Daemon.objects.get(id=1).status < StatusModel.STATUS_PREPARED:
             raise Exception("Please prepare daemon first (for the gnupg key).")
 

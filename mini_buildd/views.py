@@ -5,14 +5,16 @@ from django.shortcuts import render_to_response
 
 import mini_buildd.daemon
 
-import mini_buildd.models
+from mini_buildd.models.repository import Repository
+from mini_buildd.models.chroot import Chroot
+from mini_buildd.models.gnupg import Remote
 
 
 def show_index(_request):
     return render_to_response("mini_buildd/index.html",
-                              {"repositories": mini_buildd.models.Repository.objects.all(),
-                               "chroots": mini_buildd.models.Chroot.objects.all(),
-                               "remotes": mini_buildd.models.Remote.objects.all()})
+                              {"repositories": Repository.objects.all(),
+                               "chroots": Chroot.objects.all(),
+                               "remotes": Remote.objects.all()})
 
 
 def get_archive_key(_request):
@@ -28,8 +30,6 @@ def get_builder_state(_request):
 
 
 def get_repository_results(request):
-    from mini_buildd.models import Repository
-
     if request.GET:
         authenticated = (request.user.is_authenticated() and request.user.is_superuser)
         action = request.GET.get("action", None)
@@ -76,6 +76,6 @@ def get_repository_results(request):
 
     else:
         ret = render_to_response("mini_buildd/repository_list.html",
-                                 {'repositories': mini_buildd.models.Repository.objects.all()})
+                                 {'repositories': Repository.objects.all()})
 
     return ret

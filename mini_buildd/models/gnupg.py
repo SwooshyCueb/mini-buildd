@@ -70,10 +70,8 @@ django.contrib.admin.site.register(AptKey, AptKey.Admin)
 
 
 class Uploader(GnuPGPublicKey):
-    from mini_buildd.models.repository import Repository
-
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
-    may_upload_to = django.db.models.ManyToManyField(Repository)
+    may_upload_to = django.db.models.ManyToManyField("Repository")
 
     class Admin(GnuPGPublicKey.Admin):
         search_fields = GnuPGPublicKey.Admin.search_fields + ["user"]

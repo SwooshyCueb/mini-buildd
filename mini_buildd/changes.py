@@ -54,7 +54,7 @@ class Changes(debian.deb822.Changes):
 
     @classmethod
     def find_repository(cls, dist):
-        from mini_buildd.models import Repository
+        from mini_buildd.models.repository import Repository
 
         # Check and parse distribution
         codename, identity, suite = mini_buildd.misc.parse_distribution(dist)
@@ -86,7 +86,7 @@ class Changes(debian.deb822.Changes):
         return repository, distribution, suite_
 
     def get_repository(self):
-        from mini_buildd.models import Repository
+        from mini_buildd.models.repository import Repository
 
         repository, dist, suite = self.find_repository(self["Distribution"])
 
@@ -153,7 +153,7 @@ class Changes(debian.deb822.Changes):
     def upload_buildrequest(self):
         arch = self["Architecture"]
         codename = self["Base-Distribution"]
-        from mini_buildd.models import Remote
+        from mini_buildd.models.gnupg import Remote
 
         remotes = {}
 

@@ -18,6 +18,7 @@ import mini_buildd.builder
 
 from mini_buildd.models.repository import EmailAddress, Repository
 from mini_buildd.models.chroot import Chroot
+from mini_buildd.models.gnupg import Remote
 from mini_buildd.models.base import StatusModel, msg_info
 
 LOG = logging.getLogger(__name__)
@@ -114,7 +115,6 @@ prevent original package maintainers to be spammed.
         return self._mbd_gnupg
 
     def __unicode__(self):
-        from mini_buildd.models import Remote
         return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
             i=self.identity,
             r=len(Repository.objects.filter(status=Repository.STATUS_ACTIVE)),

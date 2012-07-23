@@ -7,7 +7,8 @@ LOG = logging.getLogger(__name__)
 
 
 def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
-    import mini_buildd.models
+    from mini_buildd.models.source import Archive, Architecture, Source, PrioritySource
+    from mini_buildd.models.repository import Layout, Distribution, Repository
 
     LOG.info("Importing 0.8.x config from: {f}".format(f=conf_file))
     conf08x = imp.load_source('mini_buildd.shconf', conf_file)
@@ -20,7 +21,7 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
         except Exception as e:
             LOG.warn("{f}: import failed: {e}".format(f=func.__name__, e=str(e)))
 
-    try_import(mini_buildd.models.create_default_layout)
+    #try_import(mini_buildd.models.create_default_layout)
 
     # Wander all dists...
     for d in conf08x.mbd_dists.split(", "):
@@ -31,7 +32,7 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
             for a in archs:
 
                 def architecture():
-                    return mini_buildd.models.Architecture(arch=a)
+                    return Architecture(arch=a)
 
                 try_import(architecture)
 
@@ -66,26 +67,26 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
 
                         # "Archive"
                         def archive():
-                            return mini_buildd.models.Archive(url=url)
+                            return Archive(url=url)
                         try_import(archive)
 
                         # "Source"
                         def source():
-                            no = mini_buildd.models.Source(codename=codename, origin=origin)
+                            no = Source(codename=codename, origin=origin)
                             no.save()
-                            no.archives = mini_buildd.models.Archive.objects.filter(url=url)
+                            no.archives = Archive.objects.filter(url=url)
                             return no
                         try_import(source)
 
                         if (t == "extra"):
 
                             def prioritysource():
-                                ps = mini_buildd.models.PrioritySource(
-                                    source=mini_buildd.models.Source.objects.get(codename=codename, origin=origin), priority=priority)
+                                ps = PrioritySource(
+                                    source=Source.objects.get(codename=codename, origin=origin), priority=priority)
                                 ps.save()
                                 # Add it to dist
-                                dist = mini_buildd.models.Distribution.objects.get(
-                                    base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
+                                dist = Distribution.objects.get(
+                                    base_source=Source.objects.get(codename=d, origin="Debian"))
                                 dist.extra_sources.add(ps)
                                 dist.save()
                                 return ps
@@ -94,20 +95,20 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
                         if (t == "base"):
 
                             def distribution():
-                                return mini_buildd.models.Distribution(base_source=mini_buildd.models.Source.objects.get(codename=d, origin="Debian"))
+                                return Distribution(base_source=Source.objects.get(codename=d, origin="Debian"))
                             try_import(distribution)
 
     def repository():
-        r = mini_buildd.models.Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
-                                          layout=mini_buildd.models.Layout.objects.get(name="Default"),
-                                          apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
-                                          mail=conf08x.mbd_mail,
-                                          external_home_url=conf08x.mbd_extdocurl)
+        r = Repository(identity=conf08x.mbd_id, host=conf08x.mbd_rephost,
+                       layout=Layout.objects.get(name="Default"),
+                       apt_allow_unauthenticated=conf08x.mbd_apt_allow_unauthenticated == "true",
+                       mail=conf08x.mbd_mail,
+                       external_home_url=conf08x.mbd_extdocurl)
 
-        for d in mini_buildd.models.Distribution.objects.all():
+        for d in Distribution.objects.all():
             r.distributions.add(d)
 
-        for a in mini_buildd.models.Architecture.objects.all():
+        for a in Architecture.objects.all():
             r.mandatory_architectures.add(a)
         return r
     try_import(repository)

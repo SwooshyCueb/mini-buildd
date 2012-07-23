@@ -54,13 +54,13 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     @classmethod
     def setup_default_models(cls):
-        from mini_buildd import models
-        default_layout, created = models.Layout.objects.get_or_create(name="Default")
+        from mini_buildd.models.repository import Suite, Layout
+        default_layout, created = Layout.objects.get_or_create(name="Default")
         if created:
-            stable, created = mini_buildd.models.Suite.objects.get_or_create(name="stable", uploadable=False)
-            testing, created = mini_buildd.models.Suite.objects.get_or_create(name="testing", uploadable=False, migrates_to=stable)
-            unstable, created = mini_buildd.models.Suite.objects.get_or_create(name="unstable", migrates_to=testing)
-            experimental, created = mini_buildd.models.Suite.objects.get_or_create(name="experimental", experimental=True)
+            stable, created = Suite.objects.get_or_create(name="stable", uploadable=False)
+            testing, created = Suite.objects.get_or_create(name="testing", uploadable=False, migrates_to=stable)
+            unstable, created = Suite.objects.get_or_create(name="unstable", migrates_to=testing)
+            experimental, created = Suite.objects.get_or_create(name="experimental", experimental=True)
 
             default_layout.suites.add(stable)
             default_layout.suites.add(testing)

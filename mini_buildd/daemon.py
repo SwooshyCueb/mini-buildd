@@ -43,7 +43,9 @@ import mini_buildd.gnupg
 import mini_buildd.ftpd
 import mini_buildd.builder
 
-from mini_buildd.models import Daemon, Repository, Chroot
+from mini_buildd.models.daemon import Daemon
+from mini_buildd.models.repository import Repository
+from mini_buildd.models.chroot import Chroot
 
 LOG = logging.getLogger(__name__)
 
@@ -135,7 +137,7 @@ def gen_uploader_keyrings():
 
 def gen_remotes_keyring():
     "Generate the remote keyring to authorize buildrequests and buildresults"
-    from mini_buildd.models import Remote
+    from mini_buildd.models.gnupg import Remote
     keyring = mini_buildd.gnupg.TmpGnuPG()
     # Always add our own key
     keyring.add_pub_key(get().model.mbd_get_pub_key())
@@ -294,7 +296,7 @@ class Manager():
 
     def status_as_html(self):
         """.. todo:: This should be mutex-locked. """
-        from mini_buildd.models import Remote
+        from mini_buildd.models.gnupg import Remote
 
         def packages():
             packages = "<ul>"

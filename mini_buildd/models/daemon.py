@@ -16,15 +16,16 @@ import mini_buildd.changes
 import mini_buildd.gnupg
 import mini_buildd.builder
 
-from mini_buildd.models.repository import EmailAddress, Repository
-from mini_buildd.models.chroot import Chroot
-from mini_buildd.models.gnupg import Remote
-from mini_buildd.models.base import StatusModel
+import mini_buildd.models.base
+import mini_buildd.models.repository
+import mini_buildd.models.chroot
+import mini_buildd.models.gnupg
+
 
 LOG = logging.getLogger(__name__)
 
 
-class Daemon(StatusModel):
+class Daemon(mini_buildd.models.base.StatusModel):
     # Basics
     identity = django.db.models.CharField(max_length=50, default=socket.gethostname())
 
@@ -71,7 +72,7 @@ Expire-Date: 0
         default="{h}:25".format(h=socket.getfqdn()),
         help_text="SMTP server (and optionally port) for mail sending.")
 
-    notify = django.db.models.ManyToManyField(EmailAddress, blank=True)
+    notify = django.db.models.ManyToManyField(mini_buildd.models.repository.EmailAddress, blank=True)
     allow_emails_to = django.db.models.CharField(
         max_length=254,
         default=".*@{h}".format(h=socket.getfqdn()),
@@ -84,10 +85,10 @@ prevent original package maintainers to be spammed.
 'Maintainer' notify options in repositories.]
 """)
 
-    class Meta(StatusModel.Meta):
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Daemon"
 
-    class Admin(StatusModel.Admin):
+    class Admin(mini_buildd.models.base.StatusModel.Admin):
         fieldsets = (
             ("Archive identity", {"fields": ("identity", "hostname", "email_address", "gnupg_template")}),
             ("FTP (incoming) Options", {"fields": ("ftpd_bind",)}),
@@ -117,9 +118,9 @@ prevent original package maintainers to be spammed.
     def __unicode__(self):
         return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
             i=self.identity,
-            r=len(Repository.objects.filter(status=Repository.STATUS_ACTIVE)),
-            c=len(Chroot.objects.filter(status=Chroot.STATUS_ACTIVE)),
-            R=len(Remote.objects.filter(status=Remote.STATUS_ACTIVE)),
+            r=len(mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE)),
+            c=len(mini_buildd.models.chroot.Chroot.objects.filter(status=mini_buildd.models.chroot.Chroot.STATUS_ACTIVE)),
+            R=len(mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE)),
             s=self.get_status_display())
 
     def clean(self, *args, **kwargs):

@@ -12,6 +12,10 @@ import debian.deb822
 import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
+import mini_buildd.daemon
+
+import mini_buildd.models.repository
+import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
 
@@ -54,14 +58,12 @@ class Changes(debian.deb822.Changes):
 
     @classmethod
     def find_repository(cls, dist):
-        from mini_buildd.models.repository import Repository
-
         # Check and parse distribution
         codename, identity, suite = mini_buildd.misc.parse_distribution(dist)
 
         # Get repository for identity
         try:
-            repository = Repository.objects.get(identity=identity)
+            repository = mini_buildd.models.repository.Repository.objects.get(identity=identity)
         except:
             raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
 
@@ -86,14 +88,12 @@ class Changes(debian.deb822.Changes):
         return repository, distribution, suite_
 
     def get_repository(self):
-        from mini_buildd.models.repository import Repository
-
         repository, dist, suite = self.find_repository(self["Distribution"])
 
         if not suite.uploadable:
             raise Exception("Suite '{s}' is not uploadable".format(s=suite))
 
-        if repository.status < Repository.STATUS_ACTIVE:
+        if repository.status < mini_buildd.models.repository.Repository.STATUS_ACTIVE:
             raise Exception("Repository '{r}' is not active".format(r=repository))
 
         repository.mbd_check_version(self["Version"], dist, suite)
@@ -126,7 +126,6 @@ class Changes(debian.deb822.Changes):
             LOG.info("Saving changes: {f}".format(f=self._file_path))
             self.dump(fd=open(self._file_path, "w+"))
             LOG.info("Signing changes: {f}".format(f=self._file_path))
-            import mini_buildd.daemon
             mini_buildd.daemon.get().model.mbd_gnupg.sign(self._file_path)
         except:
             # Existence of the file name is used as flag
@@ -153,7 +152,6 @@ class Changes(debian.deb822.Changes):
     def upload_buildrequest(self):
         arch = self["Architecture"]
         codename = self["Base-Distribution"]
-        from mini_buildd.models.gnupg import Remote
 
         remotes = {}
 
@@ -163,10 +161,10 @@ class Changes(debian.deb822.Changes):
                 remotes[state.get_load()] = state.get_hopo()
 
         # Always checkout our own instance as pseudo remote
-        check_remote(Remote(http=mini_buildd.daemon.get().model.mbd_get_http_hopo().string))
+        check_remote(mini_buildd.models.gnupg.Remote(http=mini_buildd.daemon.get().model.mbd_get_http_hopo().string))
 
         # Checkout all active remotes
-        for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
+        for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
             check_remote(r)
 
         if not remotes:

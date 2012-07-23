@@ -16,7 +16,9 @@ import mini_buildd.changes
 import mini_buildd.gnupg
 import mini_buildd.builder
 
-from mini_buildd.models import StatusModel, Repository, Chroot, EmailAddress, msg_info
+from mini_buildd.models.repository import EmailAddress, Repository
+from mini_buildd.models.chroot import Chroot
+from mini_buildd.models.base import StatusModel, msg_info
 
 LOG = logging.getLogger(__name__)
 

@@ -166,7 +166,7 @@ class Changes(debian.deb822.Changes):
         check_remote(Remote(http=mini_buildd.daemon.get().model.mbd_get_http_hopo().string))
 
         # Checkout all active remotes
-        for r in Remote.objects.filter(status=mini_buildd.models.StatusModel.STATUS_ACTIVE):
+        for r in Remote.objects.filter(status=Remote.STATUS_ACTIVE):
             check_remote(r)
 
         if not remotes:

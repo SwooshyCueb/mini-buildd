@@ -13,7 +13,7 @@ import mini_buildd.misc
 
 LOG = logging.getLogger(__name__)
 
-from mini_buildd.models import StatusModel, msg_info
+from mini_buildd.models.base import StatusModel, msg_info
 
 
 class Chroot(StatusModel):

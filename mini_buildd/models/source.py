@@ -11,7 +11,8 @@ import debian.deb822
 
 import mini_buildd.gnupg
 
-from mini_buildd.models import Model, StatusModel, AptKey, msg_info, msg_warn
+from mini_buildd.models.base import Model, StatusModel, msg_info, msg_warn
+from mini_buildd.models.gnupg import AptKey
 
 LOG = logging.getLogger(__name__)
 

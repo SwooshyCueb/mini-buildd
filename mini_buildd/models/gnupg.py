@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
+import urllib
+
 import django.db.models
 import django.contrib.admin
 import django.contrib.messages
 
-from mini_buildd.models import StatusModel
+import mini_buildd.misc
+
+from mini_buildd.models.base import StatusModel, msg_info, msg_warn
 
 
 class GnuPGPublicKey(StatusModel):
@@ -57,3 +61,63 @@ class GnuPGPublicKey(StatusModel):
         self.key_fingerprint = ""
         if self.key_id:
             self.key = ""
+
+
+class AptKey(GnuPGPublicKey):
+    pass
+
+django.contrib.admin.site.register(AptKey, AptKey.Admin)
+
+
+class UserProfile(GnuPGPublicKey):
+    from mini_buildd.models.repository import Repository
+
+    user = django.db.models.OneToOneField(django.contrib.auth.models.User)
+    may_upload_to = django.db.models.ManyToManyField(Repository)
+
+    class Admin(GnuPGPublicKey.Admin):
+        search_fields = GnuPGPublicKey.Admin.search_fields + ["user"]
+        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
+
+    def __unicode__(self):
+        return "User profile for '{u}'".format(u=self.user)
+
+django.contrib.admin.site.register(UserProfile, UserProfile.Admin)
+
+
+def cb_create_user_profile(sender, instance, created, **kwargs):
+    "Automatically create a user profile with every user that is created"
+    if created:
+        UserProfile.objects.create(user=instance)
+django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
+
+
+class Remote(GnuPGPublicKey):
+    http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+    wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
+
+    class Admin(GnuPGPublicKey.Admin):
+        search_fields = GnuPGPublicKey.Admin.search_fields + ["http"]
+        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
+
+    def __unicode__(self):
+        try:
+            return unicode(self.mbd_download_builder_state())
+        except Exception as e:
+            return "{h}: {e}".format(h=self.http, e=unicode(e))
+
+    def mbd_prepare(self, request):
+        url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
+        msg_info(request, "Downloading '{u}'...".format(u=url))
+        self.key = urllib.urlopen(url).read()
+        if self.key:
+            msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
+        else:
+            raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
+        super(Remote, self).mbd_prepare(request)
+
+    def mbd_download_builder_state(self):
+        url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
+        return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
+
+django.contrib.admin.site.register(Remote, Remote.Admin)

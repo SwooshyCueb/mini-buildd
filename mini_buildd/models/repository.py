@@ -18,7 +18,8 @@ import mini_buildd.misc
 import mini_buildd.gnupg
 import mini_buildd.reprepro
 
-from mini_buildd.models import Model, StatusModel, Architecture, Source, PrioritySource, Component, msg_info, msg_warn, msg_error
+from mini_buildd.models.source import Architecture, Component, Source, PrioritySource
+from mini_buildd.models.base import Model, StatusModel, msg_info, msg_warn, msg_error
 
 LOG = logging.getLogger(__name__)
 

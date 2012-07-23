@@ -11,21 +11,21 @@ import debian.deb822
 
 import mini_buildd.gnupg
 
-from mini_buildd.models.base import Model, StatusModel
-from mini_buildd.models.gnupg import AptKey
+import mini_buildd.models.base
+import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
 
 
-class Archive(Model):
+class Archive(mini_buildd.models.base.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
                                     default="http://ftp.debian.org/debian",
                                     help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
 
-    class Meta(Model.Meta):
+    class Meta(mini_buildd.models.base.Model.Meta):
         ordering = ["url"]
 
-    class Admin(Model.Admin):
+    class Admin(mini_buildd.models.base.Model.Admin):
         search_fields = ["url"]
 
     def __unicode__(self):
@@ -49,21 +49,21 @@ class Archive(Model):
 django.contrib.admin.site.register(Archive, Archive.Admin)
 
 
-class Architecture(Model):
+class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
     def __unicode__(self):
         return self.name
 
 
-class Component(Model):
+class Component(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
     def __unicode__(self):
         return self.name
 
 
-class Source(StatusModel):
+class Source(mini_buildd.models.base.StatusModel):
     # Identity
     origin = django.db.models.CharField(max_length=60, default="Debian",
                                         help_text="The exact string of the 'Origin' field of the resp. Release file.")
@@ -71,7 +71,7 @@ class Source(StatusModel):
                                           help_text="The exact string of the 'Codename' field of the resp. Release file.")
 
     # Apt Secure
-    apt_keys = django.db.models.ManyToManyField(AptKey, blank=True)
+    apt_keys = django.db.models.ManyToManyField(mini_buildd.models.gnupg.AptKey, blank=True)
 
     # Extra
     description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")
@@ -83,13 +83,13 @@ class Source(StatusModel):
     components = django.db.models.ManyToManyField(Component, null=True)
     architectures = django.db.models.ManyToManyField(Architecture, null=True)
 
-    class Meta(StatusModel.Meta):
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
         unique_together = ("origin", "codename")
         ordering = ["origin", "codename"]
 
-    class Admin(StatusModel.Admin):
-        search_fields = StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = StatusModel.Admin.readonly_fields + ["codeversion", "archives", "components", "architectures", "description"]
+    class Admin(mini_buildd.models.base.StatusModel.Admin):
+        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["origin", "codename"]
+        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
             ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
@@ -177,13 +177,13 @@ class Source(StatusModel):
 django.contrib.admin.site.register(Source, Source.Admin)
 
 
-class PrioritySource(Model):
+class PrioritySource(mini_buildd.models.base.Model):
     source = django.db.models.ForeignKey(Source)
     priority = django.db.models.IntegerField(default=1,
                                              help_text="A apt pin priority value (see 'man apt_preferences')."
                                              "Examples: 1=not automatic, 1001=downgrade'")
 
-    class Meta(Model.Meta):
+    class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ('source', 'priority')
 
     def __unicode__(self):

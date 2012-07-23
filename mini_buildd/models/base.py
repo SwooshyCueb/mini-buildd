@@ -111,17 +111,17 @@ class Model(django.db.models.Model):
         pass
 
     @classmethod
-    def check_daemon_stopped(cls):
+    def mbd_check_daemon_stopped(cls):
         import mini_buildd.daemon
         if mini_buildd.daemon.get().is_running():
             raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
 
     def delete(self, *args, **kwargs):
-        self.check_daemon_stopped()
+        self.mbd_check_daemon_stopped()
         super(Model, self).delete(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        self.check_daemon_stopped()
+        self.mbd_check_daemon_stopped()
         super(Model, self).clean(*args, **kwargs)
 
 

@@ -73,7 +73,7 @@ class Layout(mini_buildd.models.base.Model):
     suites = django.db.models.ManyToManyField(Suite)
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
 
-    class Admin(django.contrib.admin.ModelAdmin):
+    class Admin(mini_buildd.models.base.Model.Admin):
         fieldsets = (
             ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
             ("Extra", {"classes": ("collapse",),

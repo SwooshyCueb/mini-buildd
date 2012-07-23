@@ -11,6 +11,29 @@
 	margin: 0px 10px 8px 10px;
 }
 
+#mb_django_admin_daemon_status
+{
+	float: left;
+	width: 100%;
+	background: url("/static/admin/img/admin/nav-bg-reverse.gif") repeat-x scroll 0 0px white;
+	border-bottom: 1px solid #cccccc;
+	border-top: 1px solid #cccccc;
+	color: #999999;
+	font-size: 11px;
+	padding: 2px 0px 3px 7px;
+}
+
+#mb_django_admin_daemon_status p
+{
+	display: inline;
+}
+
+#mb_django_admin_daemon_status span.warning
+{
+	color: red;
+	font-weight: bold;
+}
+
 #mb_box h1.mini-buildd
 {
 	background: url("/static/admin/img/admin/default-bg.gif") repeat-x scroll left top #7CA0C7;

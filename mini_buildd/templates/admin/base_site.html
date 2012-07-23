@@ -1,5 +1,6 @@
 {% extends "admin/base.html" %}
 {% load i18n %}
+{% load base %}
 
 {% block title %}{{ title }} | {% trans 'Configuration of Mini-buildd' %}{% endblock %}
 
@@ -13,6 +14,17 @@
 	<a title="Mini-buildd Home" href="/"><img src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
 	<h1>{% trans 'Configuration of Mini-buildd' %}</h1>
 </div>
+
+{% admin_check_daemon_running %}
+
+{% if daemon_running %}
+<div id="mb_django_admin_daemon_status">
+	<p><span class="warning">Warning:</span>
+		The daemon is <span style="font-weight: bold">running</span>!&nbsp;
+		Stop it in order to change settings!</p>
+</div>
+{% endif %}
+
 {% endblock %}
 
 {% block nav-global %}

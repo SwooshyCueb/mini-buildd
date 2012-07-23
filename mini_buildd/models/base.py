@@ -110,12 +110,6 @@ class Model(django.db.models.Model):
     class Admin(django.contrib.admin.ModelAdmin):
         pass
 
-    @classmethod
-    def mbd_check_daemon_stopped(cls):
-        import mini_buildd.daemon
-        if mini_buildd.daemon.get().is_running():
-            raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
-
     def delete(self, *args, **kwargs):
         self.mbd_check_daemon_stopped()
         super(Model, self).delete(*args, **kwargs)
@@ -123,6 +117,30 @@ class Model(django.db.models.Model):
     def clean(self, *args, **kwargs):
         self.mbd_check_daemon_stopped()
         super(Model, self).clean(*args, **kwargs)
+
+    @classmethod
+    def mbd_msg_info(cls, request, msg):
+        if request:
+            django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
+        LOG.info(msg)
+
+    @classmethod
+    def mbd_msg_error(cls, request, msg):
+        if request:
+            django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
+        LOG.error(msg)
+
+    @classmethod
+    def mbd_msg_warn(cls, request, msg):
+        if request:
+            django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
+        LOG.warn(msg)
+
+    @classmethod
+    def mbd_check_daemon_stopped(cls):
+        import mini_buildd.daemon
+        if mini_buildd.daemon.get().is_running():
+            raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
 
 
 class StatusModel(Model):

@@ -374,7 +374,7 @@ Example:
                     os.rename(new_file, old_file)
 
             package_name = "{i}-archive-keyring".format(i=identity)
-            mini_buildd.daemon.get().model.mbd_gnupg.export(os.path.join(p, "keyrings", package_name + ".gpg"))
+            mini_buildd.daemon.get().model.mbd_gnupg.export(os.path.join(p, package_name + ".gpg"))
 
             env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
 

@@ -18,14 +18,14 @@ clean:
 	rm -rf debian/tmp
 
 binary-indep: checkroot
-	test -f keyrings/%ID%-archive-keyring.gpg
+	test -f %ID%-archive-keyring.gpg
 
 	rm -rf debian/tmp
 	$(instdir) debian/tmp/DEBIAN/
 	$(instscript) debian/postinst debian/tmp/DEBIAN/
 
 	$(instdir) debian/tmp/usr/share/keyrings/
-	$(instfile) keyrings/%ID%-archive-keyring.gpg debian/tmp/usr/share/keyrings/
+	$(instfile) %ID%-archive-keyring.gpg debian/tmp/usr/share/keyrings/
 
 	$(instdir) debian/tmp/usr/share/doc/%ID%-archive-keyring/
 	$(instfile) README debian/tmp/usr/share/doc/%ID%-archive-keyring/

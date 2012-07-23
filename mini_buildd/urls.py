@@ -5,7 +5,7 @@ import django.views.generic.list_detail
 import django.conf.urls.defaults
 
 import mini_buildd.views
-from mini_buildd.models.repository import Repository
+import mini_buildd.models.repository
 
 urlpatterns = django.conf.urls.defaults.patterns(
     '',
@@ -16,4 +16,4 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^repositories/$", mini_buildd.views.get_repository_results),
     (r"^repositories/(?P<object_id>.+)/$",
      django.views.generic.list_detail.object_detail,
-     {'queryset': Repository.objects.all()}),)
+     {'queryset': mini_buildd.models.repository.Repository.objects.all()}),)

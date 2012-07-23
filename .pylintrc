@@ -23,7 +23,7 @@ min-public-methods=0
 
 # We need to pimp some default values a little
 max-args=10
-max-locals=25
+max-locals=30
 max-branchs=25
 max-attributes=10
 max-statements=60

@@ -20,6 +20,9 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
 
     def __init__(self):
+        """
+        .. todo:: Update to new model scheme!!
+        """
         LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
@@ -93,6 +96,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     @classmethod
     def unprepare(cls, models):
         """
+        .. todo:: Update to new model scheme!!
+
         Unprepare all given (status) models.
         """
         import mini_buildd.models

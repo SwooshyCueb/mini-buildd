@@ -323,19 +323,6 @@ Example:
 
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
 
-    def __init__(self, *args, **kwargs):
-        super(Repository, self).__init__(*args, **kwargs)
-        LOG.debug("Initializing repository '{identity}'".format(identity=self.identity))
-
-        self.mbd_uploadable_distributions = []
-        for d in self.distributions.all():
-            for s in self.layout.suites.all():
-                if s.uploadable:
-                    self.mbd_uploadable_distributions.append(
-                        "{d}-{identity}-{s}".format(identity=self.identity,
-                                                    d=d.base_source.codename,
-                                                    s=s.name))
-
     def __unicode__(self):
         return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.get_status_display())
 
@@ -437,6 +424,15 @@ Example:
 
     def mbd_get_dist(self, dist, suite):
         return suite.mbd_get_distribution(self, dist)
+
+    @property
+    def mbd_uploadable_distributions(self):
+        result = []
+        for d in self.distributions.all():
+            for s in self.layout.suites.all():
+                if s.uploadable:
+                    result.append(self.mbd_get_dist(d, s))
+        return result
 
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity
@@ -546,10 +542,6 @@ DscIndices: Sources Release . .gz .bz2
         return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
 
     def mbd_prepare(self, request):
-        # Check that the daemon model is prepared
-        if not self.mbd_get_daemon().model.mbd_is_prepared():
-            raise Exception("Please prepare daemon first (for the gnupg key).")
-
         # Check that the codenames of the distributiosn are unique
         codenames = []
         for d in self.distributions.all():

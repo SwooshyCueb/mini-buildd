@@ -96,6 +96,14 @@ prevent original package maintainers to be spammed.
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver",)}))
 
+    def __unicode__(self):
+        return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
+            i=self.identity,
+            r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
+            c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
+            R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
+            s=self.get_status_display())
+
     def __init__(self, *args, **kwargs):
         super(Daemon, self).__init__(*args, **kwargs)
         self._mbd_fullname = "mini-buildd archive {i}".format(i=self.identity)
@@ -114,14 +122,6 @@ prevent original package maintainers to be spammed.
     @property
     def mbd_gnupg(self):
         return self._mbd_gnupg
-
-    def __unicode__(self):
-        return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
-            i=self.identity,
-            r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
-            c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
-            R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
-            s=self.get_status_display())
 
     def clean(self, *args, **kwargs):
         super(Daemon, self).clean(*args, **kwargs)

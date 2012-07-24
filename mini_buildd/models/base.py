@@ -148,7 +148,7 @@ class StatusModel(Model):
         (STATUS_UNPREPARED, 'Unprepared'),
         (STATUS_PREPARED, 'Prepared'),
         (STATUS_ACTIVE, 'Active'))
-    status = django.db.models.SmallIntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
+    status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
     STATUS_COLORS = {
         STATUS_UNPREPARED: "yellow",
         STATUS_PREPARED: "blue",

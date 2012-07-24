@@ -54,15 +54,15 @@ Expire-Date: 0
         help_text="FTP Server IP/Hostname and port to bind to.")
 
     # Load options
-    incoming_queue_size = django.db.models.SmallIntegerField(
+    incoming_queue_size = django.db.models.IntegerField(
         default=2 * mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel packages to process.")
 
-    build_queue_size = django.db.models.SmallIntegerField(
+    build_queue_size = django.db.models.IntegerField(
         default=mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel builds.")
 
-    sbuild_jobs = django.db.models.SmallIntegerField(
+    sbuild_jobs = django.db.models.IntegerField(
         default=1,
         help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 

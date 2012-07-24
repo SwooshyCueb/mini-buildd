@@ -139,7 +139,7 @@ class Distribution(mini_buildd.models.base.Model):
         (RESOLVER_APT, "apt"),
         (RESOLVER_APTITUDE, "aptitude"),
         (RESOLVER_INTERNAL, "internal"))
-    build_dep_resolver = django.db.models.SmallIntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
+    build_dep_resolver = django.db.models.IntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 
@@ -152,7 +152,7 @@ class Distribution(mini_buildd.models.base.Model):
         (LINTIAN_RUN_ONLY, "Run lintian"),
         (LINTIAN_FAIL_ON_ERROR, "Run lintian and fail on errors"),
         (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
-    lintian_mode = django.db.models.SmallIntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
+    lintian_mode = django.db.models.IntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
     # piuparts not used atm; placeholder for later
@@ -165,7 +165,7 @@ class Distribution(mini_buildd.models.base.Model):
         (PIUPARTS_RUN_ONLY, "Run piuparts"),
         (PIUPARTS_FAIL_ON_ERROR, "Run piuparts and fail on errors"),
         (PIUPARTS_FAIL_ON_WARNING, "Run piuparts and fail on warnings"))
-    piuparts_mode = django.db.models.SmallIntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
+    piuparts_mode = django.db.models.IntegerField(choices=PIUPARTS_CHOICES, default=PIUPARTS_DISABLED)
     piuparts_extra_options = django.db.models.CharField(max_length=200, default="--info")
     piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
 

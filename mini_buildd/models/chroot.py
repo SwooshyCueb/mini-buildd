@@ -157,7 +157,7 @@ class FileChroot(Chroot):
         (COMPRESSION_BZIP2, "bzip2"),
         (COMPRESSION_XZ, "xz"))
 
-    compression = django.db.models.SmallIntegerField(choices=COMPRESSION_CHOICES, default=COMPRESSION_NONE)
+    compression = django.db.models.IntegerField(choices=COMPRESSION_CHOICES, default=COMPRESSION_NONE)
 
     TAR_ARGS = {
         COMPRESSION_NONE: [],

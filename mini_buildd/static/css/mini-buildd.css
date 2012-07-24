@@ -280,7 +280,7 @@ a:hover
 
 #mb_content a.propagate:link, #mb_content a.propagate:visited
 {
-	border-color: #DDDDDD #AAAAAA #AAAAAA #DDDDDD;
+	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
 	margin: 0px 0px 0px 0px;
@@ -289,12 +289,32 @@ a:hover
 	font-size: 11px;
 	font-weight: normal;
 	color: #222222;
-	background-color: #f0f0f0;
+	background-color: #e7e7e7;
 }
 
 #mb_content a.propagate:hover
 {
 	background-color: #f7f7f7;
+}
+
+#mb_content a.remove:link, #mb_content a.remove:visited
+{
+	background: url("/static/admin/img/icon_deletelink.gif") no-repeat scroll 3px 50% #e7e7e7;
+	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
+	border-style: solid;
+	border-width: 1px;
+	margin: 0px 0px 0px 0px;
+	padding: 4px 6px 4px 16px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: normal;
+	color: #222222;
+}
+
+#mb_content a.remove:hover
+{
+	color: white;
+	background-color: #ff6060;
 }
 
 #mb_content span.emphasize-headline

@@ -92,7 +92,7 @@ class Changes(debian.deb822.Changes):
         if not suite.uploadable:
             raise Exception("Suite '{s}' is not uploadable".format(s=suite))
 
-        if repository.status < mini_buildd.models.repository.Repository.STATUS_ACTIVE:
+        if not repository.mbd_is_active():
             raise Exception("Repository '{r}' is not active".format(r=repository))
 
         repository.mbd_check_version(self["Version"], dist, suite)

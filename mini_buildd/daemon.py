@@ -240,7 +240,7 @@ class Manager():
         self.thread = None
         global _INSTANCE
         _INSTANCE = self
-        if self.model.status == self.model.STATUS_ACTIVE:
+        if self.model.mbd_is_active():
             self.start()
         else:
             LOG.info("Daemon NOT started (activate first)")

@@ -98,7 +98,7 @@ go to the default mapping.
           - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
             - '--include=sudo' and all handling of 'sudoers_workaround_file'
         """
-        if self.status >= self.STATUS_PREPARED:
+        if self.mbd_is_prepared():
             self.mbd_msg_info(request, "Chroot {c}: Already prepared".format(c=self))
         else:
             mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))

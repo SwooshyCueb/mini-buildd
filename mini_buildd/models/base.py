@@ -228,6 +228,12 @@ this would mean losing all packages!
     def mbd_deactivate(self, request):
         pass
 
+    def mbd_is_prepared(self):
+        return self.status >= self.STATUS_PREPARED
+
+    def mbd_is_active(self):
+        return self.status >= self.STATUS_ACTIVE
+
     def mbd_get_status_dependencies(self):
         LOG.debug("No status dependencies for {o}".format(o=self))
         return []

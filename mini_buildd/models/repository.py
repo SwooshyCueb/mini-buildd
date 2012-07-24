@@ -315,7 +315,7 @@ Example:
                 pass
 
             for s in queryset:
-                if s.status >= s.STATUS_ACTIVE:
+                if s.mbd_is_active():
                     s.mbd_generate_keyring_packages(request)
                 else:
                     s.mbd_msg_warn(request, "Repository not activated: {r}".format(r=s))
@@ -416,7 +416,7 @@ Example:
         # Add keys from django users
         for u in django.contrib.auth.models.User.objects.filter(is_active=True):
             p = u.get_profile()
-            if p.status == p.STATUS_ACTIVE:
+            if p.mbd_is_active():
                 for r in p.may_upload_to.all():
                     if r.identity == self.identity:
                         gpg.add_pub_key(p.key)
@@ -547,7 +547,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, request):
         # Check that the daemon model is prepared
-        if self.mbd_get_daemon().model.status < mini_buildd.models.base.StatusModel.STATUS_PREPARED:
+        if not self.mbd_get_daemon().model.is_prepared():
             raise Exception("Please prepare daemon first (for the gnupg key).")
 
         # Check that the codenames of the distributiosn are unique

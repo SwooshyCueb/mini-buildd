@@ -171,6 +171,7 @@ def run():
 
     builder_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.builder.run,
+        gnupg=get().model.mbd_gnupg,
         queue=get().model.mbd_build_queue,
         status=get().model.mbd_builder_status,
         build_queue_size=get().model.build_queue_size,

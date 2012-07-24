@@ -8,8 +8,8 @@ import subprocess
 import logging
 
 import mini_buildd.setup
-import mini_buildd.changes
 import mini_buildd.misc
+import mini_buildd.changes
 
 LOG = logging.getLogger(__name__)
 
@@ -107,7 +107,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 """)
 
 
-def build(breq, jobs, status):
+def build(breq, gnupg, jobs, status):
     """
     .. todo:: Builder
 
@@ -175,8 +175,6 @@ def build(breq, jobs, status):
             for v in ["Distribution", "Source", "Version", "Architecture"]:
                 bres[v] = breq[v]
 
-            bres["Build-Host"] = u"{h}".format(h=mini_buildd.daemon.get().model.hostname)
-
             # Add build results to build request object
             bres["Sbuildretval"] = str(retval)
             buildlog_to_buildresult(buildlog, bres)
@@ -191,7 +189,7 @@ def build(breq, jobs, status):
                 build_changes.tar(tar_path=bres.file_path + ".tar")
                 bres.add_file(bres.file_path + ".tar")
 
-            bres.save(mini_buildd.daemon.get().model.mbd_gnupg)
+            bres.save(gnupg)
         except Exception as e:
             LOG.exception("Build internal error: {e}".format(e=str(e)))
             build_clean(breq)
@@ -212,7 +210,7 @@ def build(breq, jobs, status):
         LOG.error("Upload failed (trying later): {e}".format(e=str(e)))
 
 
-def run(queue, status, build_queue_size, sbuild_jobs):
+def run(queue, gnupg, status, build_queue_size, sbuild_jobs):
     threads = []
 
     def threads_cleanup():
@@ -237,7 +235,7 @@ def run(queue, status, build_queue_size, sbuild_jobs):
                 LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
                 time.sleep(15)
 
-            threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), jobs=sbuild_jobs, status=status))
+            threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs, status=status))
             threads_cleanup()
 
         except Exception as e:

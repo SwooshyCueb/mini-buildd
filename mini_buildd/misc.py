@@ -102,12 +102,12 @@ def fromdos(string):
     return string.replace('\r\n', '\n').replace('\r', '')
 
 
-def run_as_thread(call=None, daemon=False, **kwargs):
+def run_as_thread(thread_func=None, daemon=False, **kwargs):
     def run(**kwargs):
-        tid = call.__module__ + "." + call.__name__
+        tid = thread_func.__module__ + "." + thread_func.__name__
         try:
             LOG.info("{i}: Starting...".format(i=tid))
-            call(**kwargs)
+            thread_func(**kwargs)
             LOG.info("{i}: Finished.".format(i=tid))
         except Exception as e:
             LOG.exception("{i}: Exception: {e}".format(i=tid, e=str(e)))

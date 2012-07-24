@@ -118,9 +118,9 @@ prevent original package maintainers to be spammed.
     def __unicode__(self):
         return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
             i=self.identity,
-            r=len(mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE)),
-            c=len(mini_buildd.models.chroot.Chroot.objects.filter(status=mini_buildd.models.chroot.Chroot.STATUS_ACTIVE)),
-            R=len(mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE)),
+            r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
+            c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
+            R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
             s=self.get_status_display())
 
     def clean(self, *args, **kwargs):

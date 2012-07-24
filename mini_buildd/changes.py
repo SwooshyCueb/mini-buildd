@@ -163,7 +163,7 @@ class Changes(debian.deb822.Changes):
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
 
         # Checkout all active remotes
-        for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
+        for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
             check_remote(r)
 
         if not remotes:

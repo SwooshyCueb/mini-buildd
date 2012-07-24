@@ -234,6 +234,10 @@ this would mean losing all packages!
     def mbd_is_active(self):
         return self.status >= self.STATUS_ACTIVE
 
+    @classmethod
+    def mbd_get_active(cls):
+        return cls.objects.filter(status=cls.STATUS_ACTIVE)
+
     def mbd_get_status_dependencies(self):
         LOG.debug("No status dependencies for {o}".format(o=self))
         return []

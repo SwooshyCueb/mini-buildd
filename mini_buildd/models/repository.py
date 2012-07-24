@@ -547,7 +547,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, request):
         # Check that the daemon model is prepared
-        if not self.mbd_get_daemon().model.is_prepared():
+        if not self.mbd_get_daemon().model.mbd_is_prepared():
             raise Exception("Please prepare daemon first (for the gnupg key).")
 
         # Check that the codenames of the distributiosn are unique

@@ -129,7 +129,7 @@ class Package(object):
 def gen_uploader_keyrings():
     "Generate all upload keyrings for each repository."
     keyrings = {}
-    for r in mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE):
+    for r in mini_buildd.models.repository.Repository.mbd_get_active():
         keyrings[r.identity] = r.mbd_get_uploader_keyring()
         # Always add our key too for internal builds
         keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
@@ -141,7 +141,7 @@ def gen_remotes_keyring():
     keyring = mini_buildd.gnupg.TmpGnuPG()
     # Always add our own key
     keyring.add_pub_key(get().model.mbd_get_pub_key())
-    for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
+    for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
         keyring.add_pub_key(r.key)
         LOG.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring
@@ -253,7 +253,7 @@ class Manager():
 
     @classmethod
     def check(cls):
-        for r in mini_buildd.models.repository.Repository.objects.filter(status=mini_buildd.models.repository.Repository.STATUS_ACTIVE):
+        for r in mini_buildd.models.repository.Repository.mbd_get_active():
             r.mbd_check_status_dependencies()
 
     def start(self):
@@ -285,7 +285,7 @@ class Manager():
     def get_builder_state(self):
         def get_chroots():
             chroots = {}
-            for c in mini_buildd.models.chroot.Chroot.objects.filter(status=mini_buildd.models.chroot.Chroot.STATUS_ACTIVE):
+            for c in mini_buildd.models.chroot.Chroot.mbd_get_active():
                 chroots.setdefault(c.architecture.name, [])
                 chroots[c.architecture.name].append(c.source.codename)
             return chroots
@@ -306,7 +306,7 @@ class Manager():
 
         def remotes():
             remotes = "<ul>"
-            for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
+            for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
                 remotes += "<li>{r}</li>".format(r=r)
             remotes += "</ul>"
             return remotes
@@ -344,7 +344,7 @@ class Manager():
            p=len(self.model.mbd_packages),
            packages=packages(),
            builder_status=self.model.mbd_builder_status.get_html(),
-           r=len(mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE)),
+           r=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
            remote_status=remotes())
 
 _INSTANCE = None

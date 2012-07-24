@@ -105,7 +105,7 @@ mbd_sfood()
 {
 	(
 		pyenv
-		sfood --internal-only mini_buildd/ | sfood-graph >depdendency.pdf
+		sfood --internal-only mini_buildd/ | sfood-graph | dot -Tpdf >dependency.pdf
 		evince --fullscreen dependency.pdf
 	)
 }

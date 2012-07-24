@@ -34,12 +34,11 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
 
     def mbd_prepare(self, _request):
-        import mini_buildd.daemon
         import mini_buildd.gnupg
         gpg = mini_buildd.gnupg.TmpGnuPG()
         if self.key_id:
             # Receive key from keyserver
-            gpg.recv_key(mini_buildd.daemon.get().model.gnupg_keyserver, self.key_id)
+            gpg.recv_key(self.mbd_get_daemon().model.gnupg_keyserver, self.key_id)
             self.key = gpg.get_pub_key(self.key_id)
         elif self.key:
             gpg.add_pub_key(self.key)

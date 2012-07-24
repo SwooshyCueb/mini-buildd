@@ -119,9 +119,12 @@ class Model(django.db.models.Model):
         LOG.warn(msg)
 
     @classmethod
-    def mbd_check_daemon_stopped(cls):
+    def mbd_get_daemon(cls):
         import mini_buildd.daemon
-        if mini_buildd.daemon.get().is_running():
+        return mini_buildd.daemon.get()
+
+    def mbd_check_daemon_stopped(self):
+        if self.mbd_get_daemon().is_running():
             raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
 
 

@@ -137,13 +137,11 @@ prevent original package maintainers to be spammed.
         self.mbd_msg_info(request, "Daemon GnuPG key removed")
 
     def mbd_activate(self, request):
-        import mini_buildd.daemon
-        mini_buildd.daemon.get().restart()
+        self.mbd_get_daemon().restart()
         self.mbd_msg_info(request, "Daemon restarted")
 
     def mbd_deactivate(self, request):
-        import mini_buildd.daemon
-        mini_buildd.daemon.get().stop()
+        self.mbd_get_daemon().stop()
         self.mbd_msg_info(request, "Daemon stopped")
 
     def mbd_get_ftp_hopo(self):

@@ -358,10 +358,10 @@ Example:
             p = os.path.join(t, "package")
             shutil.copytree("/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template", p)
 
-            identity = mini_buildd.daemon.get().model.identity
-            debemail = mini_buildd.daemon.get().model.email_address
-            debfullname = mini_buildd.daemon.get().model.mbd_fullname
-            hopo = mini_buildd.daemon.get().model.mbd_get_ftp_hopo()
+            identity = self.mbd_get_daemon().model.identity
+            debemail = self.mbd_get_daemon().model.email_address
+            debfullname = self.mbd_get_daemon().model.mbd_fullname
+            hopo = self.mbd_get_daemon().model.mbd_get_ftp_hopo()
 
             for root, _dirs, files in os.walk(p):
                 for f in files:
@@ -375,7 +375,7 @@ Example:
                     os.rename(new_file, old_file)
 
             package_name = "{i}-archive-keyring".format(i=identity)
-            mini_buildd.daemon.get().model.mbd_gnupg.export(os.path.join(p, package_name + ".gpg"))
+            self.mbd_get_daemon().model.mbd_gnupg.export(os.path.join(p, package_name + ".gpg"))
 
             env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
 
@@ -445,9 +445,8 @@ Example:
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
 
     def mbd_get_apt_line(self, dist, suite):
-        import mini_buildd.daemon
         return "deb {u}/{r}/{i}/ {d} {c}".format(
-            u=mini_buildd.daemon.get().model.mbd_get_http_url(),
+            u=self.mbd_get_daemon().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
             i=self.identity, d=self.mbd_get_dist(dist, suite), c=u" ".join(dist.mbd_get_components()))
 
@@ -486,8 +485,7 @@ Example:
 
     def mbd_get_apt_keys(self, dist):
         d, _s = self.mbd_find_dist(dist)
-        import mini_buildd.daemon
-        result = mini_buildd.daemon.get().model.mbd_get_pub_key()
+        result = self.mbd_get_daemon().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             for k in e.source.apt_keys.all():
                 result += k.key
@@ -549,8 +547,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, request):
         # Check that the daemon model is prepared
-        import mini_buildd.models.daemon
-        if mini_buildd.models.daemon.Daemon.objects.get(id=1).status < mini_buildd.models.base.StatusModel.STATUS_PREPARED:
+        if self.mbd_get_daemon().model.status < mini_buildd.models.base.StatusModel.STATUS_PREPARED:
             raise Exception("Please prepare daemon first (for the gnupg key).")
 
         # Check that the codenames of the distributiosn are unique

@@ -299,6 +299,11 @@ a:hover
 	width: 300px;
 }
 
+#mb_package_propagation_results pre
+{
+		margin: 0px 15px;
+}
+
 
 /* FOOTER */
 

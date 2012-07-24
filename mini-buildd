@@ -51,8 +51,8 @@ main,django,ftpd,build,sbuild")
         group_db = parser.add_argument_group("Database")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-        group_db.add_argument("-U", "--unprepare", action='store', metavar="MODELCLASS,MODELCLASS,..",
-                              help="Internal use only, use with care! Bulk-unprepare all objects of the given (status) model classes.")
+        group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
+                              help="Internal use only, use with care! Bulk-unprepare all objects that might have produced artifacts on the system.")
 
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
                               help="JSON fixture path (see 'django-admin dumpdata'), or an \
@@ -168,8 +168,8 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:
             webapp.set_admin_password(self._args.set_admin_password)
-        elif self._args.unprepare:
-            webapp.unprepare(self._args.unprepare.split(","))
+        elif self._args.remove_system_artifacts:
+            webapp.remove_system_artifacts()
         elif self._args.loaddata:
             webapp.loaddata(self._args.loaddata)
         elif self._args.dumpdata:

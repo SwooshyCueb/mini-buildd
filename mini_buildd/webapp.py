@@ -93,17 +93,15 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
 
     @classmethod
-    def unprepare(cls, models):
+    def remove_system_artifacts(cls):
         """
-        .. todo:: Update to new model scheme!!
-
-        Unprepare all given (status) models.
+        Bulk-unprepare all model instances that might have produced cruft on the system.
         """
-        import mini_buildd.models
-        for m in models:
-            model_class = getattr(mini_buildd.models, m)
-            for o in model_class.objects.all():
-                model_class.Admin.action(None, (o,), "unprepare", model_class.STATUS_UNPREPARED, min)
+        import mini_buildd.models.chroot
+        mini_buildd.models.chroot.Chroot.Admin.action(
+            None,
+            mini_buildd.models.chroot.Chroot.objects.all(),
+            "unprepare", mini_buildd.models.chroot.Chroot.STATUS_UNPREPARED, min)
 
     @classmethod
     def syncdb(cls):

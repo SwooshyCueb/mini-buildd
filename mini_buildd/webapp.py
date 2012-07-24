@@ -10,6 +10,7 @@ import django.contrib.auth
 
 import mini_buildd.setup
 import mini_buildd.compat08x
+import mini_buildd.models
 
 LOG = logging.getLogger(__name__)
 
@@ -20,9 +21,6 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
 
     def __init__(self):
-        """
-        .. todo:: Update to new model scheme!!
-        """
         LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
@@ -53,6 +51,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'django_extensions',
                 'mini_buildd'))
 
+        mini_buildd.models.import_all()
         self.syncdb()
         self.setup_default_models()
 

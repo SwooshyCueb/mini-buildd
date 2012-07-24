@@ -70,7 +70,7 @@ django.contrib.admin.site.register(Suite, Suite.Admin)
 class Layout(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
     suites = django.db.models.ManyToManyField(Suite)
-    build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="KeyringSuites")
+    build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="layout_keyring_set")
 
     class Admin(mini_buildd.models.base.Model.Admin):
         fieldsets = (
@@ -129,8 +129,8 @@ class Distribution(mini_buildd.models.base.Model):
     components = django.db.models.ManyToManyField(mini_buildd.models.source.Component)
 
     mandatory_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture)
-    optional_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture, related_name="OptionalArchitecture", blank=True)
-    architecture_all = django.db.models.ForeignKey(mini_buildd.models.source.Architecture, related_name="ArchitectureAll")
+    optional_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture, blank=True, related_name="distribution_optional_set")
+    architecture_all = django.db.models.ForeignKey(mini_buildd.models.source.Architecture, related_name="distribution_all_set")
 
     RESOLVER_APT = 0
     RESOLVER_APTITUDE = 1

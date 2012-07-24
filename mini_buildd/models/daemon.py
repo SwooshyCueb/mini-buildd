@@ -87,6 +87,8 @@ prevent original package maintainers to be spammed.
 'Maintainer' notify options in repositories.]
 """)
 
+    custom_hooks_directory = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
+
     class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Daemon"
 
@@ -96,7 +98,7 @@ prevent original package maintainers to be spammed.
             ("FTP (incoming) Options", {"fields": ("ftpd_bind", "ftpd_options")}),
             ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
-            ("Other Options", {"fields": ("gnupg_keyserver",)}))
+            ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory")}))
 
     def __unicode__(self):
         return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(

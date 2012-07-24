@@ -198,8 +198,6 @@ file={t}
             (["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()],
              [])]
 
-django.contrib.admin.site.register(FileChroot, Chroot.Admin)
-
 
 class LVMChroot(Chroot):
     """ LVM chroot backend. """
@@ -243,8 +241,6 @@ lvm-snapshot-options=--size {s}G
     def mbd_get_post_sequence(self):
         return [(["/bin/umount", "-v", self.mbd_get_tmp_dir()], [])]
 
-django.contrib.admin.site.register(LVMChroot, Chroot.Admin)
-
 
 class LoopLVMChroot(LVMChroot):
     """ Loop LVM chroot backend. """
@@ -286,5 +282,3 @@ class LoopLVMChroot(LVMChroot):
 
             (["/sbin/vgcreate", "--verbose", self.mbd_get_volume_group(), loop_device],
              ["/sbin/vgremove", "--verbose", "--force", self.mbd_get_volume_group()])] + super(LoopLVMChroot, self).mbd_get_pre_sequence()
-
-django.contrib.admin.site.register(LoopLVMChroot, Chroot.Admin)

@@ -65,8 +65,6 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
 class AptKey(GnuPGPublicKey):
     pass
 
-django.contrib.admin.site.register(AptKey, AptKey.Admin)
-
 
 class Uploader(GnuPGPublicKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
@@ -78,8 +76,6 @@ class Uploader(GnuPGPublicKey):
 
     def __unicode__(self):
         return "Uploader '{u}'".format(u=self.user)
-
-django.contrib.admin.site.register(Uploader, Uploader.Admin)
 
 
 def cb_create_user_profile(sender, instance, created, **kwargs):
@@ -116,5 +112,3 @@ class Remote(GnuPGPublicKey):
     def mbd_download_builder_state(self):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
         return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
-
-django.contrib.admin.site.register(Remote, Remote.Admin)

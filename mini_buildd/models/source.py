@@ -46,8 +46,6 @@ class Archive(mini_buildd.models.base.Model):
             release.seek(0)
             return debian.deb822.Release(release)
 
-django.contrib.admin.site.register(Archive, Archive.Admin)
-
 
 class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
@@ -174,8 +172,6 @@ class Source(mini_buildd.models.base.StatusModel):
     def mbd_get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
 
-django.contrib.admin.site.register(Source, Source.Admin)
-
 
 class PrioritySource(mini_buildd.models.base.Model):
     source = django.db.models.ForeignKey(Source)
@@ -191,5 +187,3 @@ class PrioritySource(mini_buildd.models.base.Model):
 
     def mbd_id(self):
         return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
-
-django.contrib.admin.site.register(PrioritySource, PrioritySource.Admin)

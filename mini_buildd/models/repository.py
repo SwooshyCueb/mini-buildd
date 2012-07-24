@@ -34,8 +34,6 @@ class EmailAddress(mini_buildd.models.base.Model):
     def __unicode__(self):
         return u"{n} <{a}>".format(n=self.name, a=self.address)
 
-django.contrib.admin.site.register(EmailAddress, EmailAddress.Admin)
-
 
 class Suite(mini_buildd.models.base.Model):
     name = django.db.models.CharField(
@@ -63,8 +61,6 @@ class Suite(mini_buildd.models.base.Model):
             c=dist.base_source.codename,
             i=repository.identity,
             s=self.name)
-
-django.contrib.admin.site.register(Suite, Suite.Admin)
 
 
 class Layout(mini_buildd.models.base.Model):
@@ -119,8 +115,6 @@ class Layout(mini_buildd.models.base.Model):
         return self._mbd_subst_placeholders(
             self.experimental_default_version if suite.experimental else self.default_version,
             repository, dist)
-
-django.contrib.admin.site.register(Layout, Layout.Admin)
 
 
 class Distribution(mini_buildd.models.base.Model):
@@ -265,9 +259,6 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             res += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
             res += e.source.mbd_get_apt_line() + "\n"
         return res
-
-
-django.contrib.admin.site.register(Distribution, Distribution.Admin)
 
 
 class Repository(mini_buildd.models.base.StatusModel):
@@ -597,5 +588,3 @@ gnupghome {h}
                         LOG.error("Item failed: {l}".format(l=item))
 
         return result
-
-django.contrib.admin.site.register(Repository, Repository.Admin)

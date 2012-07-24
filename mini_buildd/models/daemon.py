@@ -206,5 +206,3 @@ incoming = /incoming
                 LOG.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=str(m_to), e=str(e)))
         else:
             LOG.warn("No email addresses found, skipping: {s}".format(s=subject))
-
-django.contrib.admin.site.register(Daemon, Daemon.Admin)

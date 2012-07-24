@@ -6,6 +6,7 @@ import django.contrib.admin
 import django.contrib.messages
 
 import mini_buildd.misc
+import mini_buildd.gnupg
 
 import mini_buildd.models.base
 
@@ -34,7 +35,6 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
 
     def mbd_prepare(self, _request):
-        import mini_buildd.gnupg
         gpg = mini_buildd.gnupg.TmpGnuPG()
         if self.key_id:
             # Receive key from keyserver

@@ -101,6 +101,15 @@ mbd_check()
 	printf "\nOK. Tests passed: %s\n" "${tests}"
 }
 
+mbd_sfood()
+{
+	(
+		pyenv
+		sfood --internal-only mini_buildd/ | sfood-graph >depdendency.pdf
+		evince --fullscreen dependency.pdf
+	)
+}
+
 mbd_purge()
 {
 	_head "Purging ${MBD_HOME}"

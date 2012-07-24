@@ -53,6 +53,8 @@ Expire-Date: 0
         default="0.0.0.0:8067",
         help_text="FTP Server IP/Hostname and port to bind to.")
 
+    ftpd_options = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
+
     # Load options
     incoming_queue_size = django.db.models.IntegerField(
         default=2 * mini_buildd.misc.get_cpus(),
@@ -91,7 +93,7 @@ prevent original package maintainers to be spammed.
     class Admin(mini_buildd.models.base.StatusModel.Admin):
         fieldsets = (
             ("Archive identity", {"fields": ("identity", "hostname", "email_address", "gnupg_template")}),
-            ("FTP (incoming) Options", {"fields": ("ftpd_bind",)}),
+            ("FTP (incoming) Options", {"fields": ("ftpd_bind", "ftpd_options")}),
             ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver",)}))

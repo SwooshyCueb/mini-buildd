@@ -59,11 +59,11 @@ class Package(object):
         self.changes = changes
         self.repository, self.dist, self.suite = repository, dist, suite
         self.pid = changes.get_pkg_id()
-        self.requests = self.changes.gen_buildrequests(self.repository, self.dist)
+        self.requests = self.changes.gen_buildrequests(get().model, self.repository, self.dist)
         self.success = {}
         self.failed = {}
         for _key, breq in self.requests.items():
-            breq.upload_buildrequest()
+            breq.upload_buildrequest(get().model.mbd_get_http_hopo())
 
     def notify(self):
         results = u""

@@ -191,7 +191,7 @@ def build(breq, jobs, status):
                 build_changes.tar(tar_path=bres.file_path + ".tar")
                 bres.add_file(bres.file_path + ".tar")
 
-            bres.save()
+            bres.save(mini_buildd.daemon.get().model.mbd_gnupg)
         except Exception as e:
             LOG.exception("Build internal error: {e}".format(e=str(e)))
             build_clean(breq)

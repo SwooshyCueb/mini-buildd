@@ -12,7 +12,6 @@ import debian.deb822
 import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
-import mini_buildd.daemon
 
 import mini_buildd.models.repository
 import mini_buildd.models.gnupg
@@ -121,12 +120,12 @@ class Changes(debian.deb822.Changes):
                               "priority": "extra",
                               "name": os.path.basename(file_name)})
 
-    def save(self):
+    def save(self, gnupg):
         try:
             LOG.info("Saving changes: {f}".format(f=self._file_path))
             self.dump(fd=open(self._file_path, "w+"))
             LOG.info("Signing changes: {f}".format(f=self._file_path))
-            mini_buildd.daemon.get().model.mbd_gnupg.sign(self._file_path)
+            gnupg.sign(self._file_path)
         except:
             # Existence of the file name is used as flag
             if os.path.exists(self._file_path):
@@ -149,7 +148,7 @@ class Changes(debian.deb822.Changes):
             open(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
             LOG.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
 
-    def upload_buildrequest(self):
+    def upload_buildrequest(self, local_hopo):
         arch = self["Architecture"]
         codename = self["Base-Distribution"]
 
@@ -161,7 +160,7 @@ class Changes(debian.deb822.Changes):
                 remotes[state.get_load()] = state.get_hopo()
 
         # Always checkout our own instance as pseudo remote
-        check_remote(mini_buildd.models.gnupg.Remote(http=mini_buildd.daemon.get().model.mbd_get_http_hopo().string))
+        check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
 
         # Checkout all active remotes
         for r in mini_buildd.models.gnupg.Remote.objects.filter(status=mini_buildd.models.gnupg.Remote.STATUS_ACTIVE):
@@ -214,7 +213,7 @@ class Changes(debian.deb822.Changes):
             LOG.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
 
-    def gen_buildrequests(self, repository, dist):
+    def gen_buildrequests(self, daemon, repository, dist):
         # Build buildrequest files for all architectures
         breq_dict = {}
         for a in dist.mbd_get_all_architectures():
@@ -243,7 +242,7 @@ class Changes(debian.deb822.Changes):
                                     os.path.join(path, "sbuildrc_snippet")])
                 breq.add_file(breq.file_path + ".tar")
 
-                breq["Upload-Result-To"] = mini_buildd.daemon.get().model.mbd_get_ftp_hopo().string
+                breq["Upload-Result-To"] = daemon.mbd_get_ftp_hopo().string
                 breq["Base-Distribution"] = dist.base_source.codename
                 breq["Architecture"] = a
                 if a == dist.architecture_all.name:
@@ -259,7 +258,7 @@ class Changes(debian.deb822.Changes):
                         dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
                     breq["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
 
-                breq.save()
+                breq.save(daemon.mbd_gnupg)
             else:
                 LOG.info("Re-using existing buildrequest: {b}".format(b=breq.file_name))
             breq_dict[a] = breq

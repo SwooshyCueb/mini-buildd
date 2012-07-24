@@ -342,7 +342,12 @@ a:hover
 
 #mb_package_propagation_results pre
 {
-		margin: 0px 15px;
+	margin: 0px 15px;
+}
+
+#mb_package_propagation_results ul
+{
+	margin-left: 0px;
 }
 
 

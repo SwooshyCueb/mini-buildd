@@ -79,9 +79,9 @@ class Source(mini_buildd.models.base.StatusModel):
     codeversion_override = django.db.models.CharField(
         max_length=50, blank=True, default="",
         help_text="Leave empty unless the automated way (via the Release file's 'Version' field) is broken. The codeversion is only used for base sources.")
-    archives = django.db.models.ManyToManyField(Archive, null=True)
-    components = django.db.models.ManyToManyField(Component, null=True)
-    architectures = django.db.models.ManyToManyField(Architecture, null=True)
+    archives = django.db.models.ManyToManyField(Archive, blank=True)
+    components = django.db.models.ManyToManyField(Component, blank=True)
+    architectures = django.db.models.ManyToManyField(Architecture, blank=True)
 
     class Meta(mini_buildd.models.base.StatusModel.Meta):
         unique_together = ("origin", "codename")

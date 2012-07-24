@@ -45,7 +45,7 @@ class Suite(mini_buildd.models.base.Model):
     experimental = django.db.models.BooleanField(default=False)
 
     migrates_to = django.db.models.ForeignKey(
-        'self', blank=True, null=True,
+        "self", blank=True, null=True,
         help_text="Give another suite where packages may migrate to.")
 
     not_automatic = django.db.models.BooleanField(default=True)

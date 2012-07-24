@@ -87,7 +87,7 @@ mbd_pydjangolint()
 {
 	(
 		pyenv
-		django-lint --reports mini_buildd/
+		django-lint mini_buildd/
 	)
 }
 

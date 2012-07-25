@@ -41,6 +41,7 @@ conflicts with method names form the django model's class, but
 still keeps the logic where it belongs.
 """
 
+import datetime
 import logging
 
 import django.db.models
@@ -154,7 +155,8 @@ class StatusModel(Model):
         (STATUS_UNPREPARED, 'Unprepared'),
         (STATUS_PREPARED, 'Prepared'),
         (STATUS_ACTIVE, 'Active'))
-    status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED)
+    status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED, editable=False)
+    last_checked = django.db.models.DateTimeField(default=datetime.datetime.min, editable=False)
     STATUS_COLORS = {
         STATUS_UNPREPARED: "yellow",
         STATUS_PREPARED: "blue",
@@ -246,6 +248,9 @@ this would mean losing all packages!
     @classmethod
     def mbd_get_active(cls):
         return cls.objects.filter(status=cls.STATUS_ACTIVE)
+
+    def mbd_get_status_display(self):
+        return u"{s} [{c}]".format(s=self.get_status_display(), c=self.last_checked)
 
     def mbd_get_status_dependencies(self):
         LOG.debug("No status dependencies for {o}".format(o=self))

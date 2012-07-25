@@ -69,6 +69,7 @@ mbd_pylintgeneratedmembers()
 
 mbd_pylint()
 {
+	[ "$(lsb_release -s -c)" != "squeeze" ] || { printf "W: Skipping pylint on squeeze" >&2; return; }
 	(
 		pyenv
 		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/

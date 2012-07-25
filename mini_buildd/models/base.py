@@ -166,18 +166,21 @@ class StatusModel(Model):
     class Admin(Model.Admin):
         @classmethod
         def action(cls, request, queryset, action, success_status, status_calc):
-            for s in queryset:
+            for o in queryset:
                 try:
-                    # For prepare, activate, also run for all status dependencies
-                    if status_calc == max:
-                        cls.action(request, s.mbd_get_status_dependencies(), action, success_status, status_calc)
+                    if o.status != success_status:
+                        # For prepare, activate, also run for all status dependencies
+                        if status_calc == max:
+                            cls.action(request, o.mbd_get_status_dependencies(), action, success_status, status_calc)
 
-                    getattr(s, "mbd_" + action)(request)
-                    s.status = status_calc(s.status, success_status)
-                    s.save()
-                    s.mbd_msg_info(request, "{s}: '{a}' successful".format(s=s, a=action))
+                        getattr(o, "mbd_" + action)(request)
+                        o.status = status_calc(o.status, success_status)
+                        o.save()
+                        o.mbd_msg_info(request, "{o}: '{a}' successful.".format(o=o, a=action))
+                    else:
+                        o.mbd_msg_info(request, "{o}: Already in status '{s}'.".format(o=o, s=o.get_status_display()))
                 except Exception as e:
-                    s.mbd_msg_error(request, "{s}: '{a}' FAILED: {e}".format(s=s, a=action, e=str(e)))
+                    o.mbd_msg_error(request, "{o}: '{a}' FAILED: {e}.".format(o=o, a=action, e=str(e)))
 
         def action_prepare(self, request, queryset):
             self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)

@@ -220,6 +220,26 @@ this would mean losing all packages!
                 self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE, status_calc=max)
         action_activate.short_description = "[4] Activate selected objects"
 
+        def action_check_and_update(self, request, queryset):
+            # [avoid pylint R0201]
+            if self:
+                pass
+            for o in queryset:
+                if o.mbd_is_prepared():
+                    try:
+                        o.mbd_check_and_update(request)
+                        o.last_checked = datetime.datetime.now()
+                        o.save()
+                        o.mbd_msg_info(request, "{o}: Check and update successful.".format(o=o))
+                    except Exception as e:
+                        # Check failed, deactivate this instance
+                        o.status = StatusModel.STATUS_PREPARED
+                        o.save()
+                        o.mbd_msg_error(request, "{o}: Check and update FAILED: {e}.".format(o=o, e=str(e)))
+                else:
+                    o.mbd_msg_warn(request, "{o}: Skipped -- not prepared.".format(o=o))
+        action_check_and_update.short_description = "[5] Check and update selected objects"
+
         def colored_status(self, obj):
             # [avoid pylint R0201]
             if self:
@@ -228,7 +248,7 @@ this would mean losing all packages!
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
-        actions = [action_unprepare, action_deactivate, action_prepare, action_activate]
+        actions = [action_unprepare, action_deactivate, action_prepare, action_activate, action_check_and_update]
         search_fields = ["status"]
         readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')
@@ -238,6 +258,9 @@ this would mean losing all packages!
 
     def mbd_deactivate(self, request):
         pass
+
+    def mbd_check_and_update(self, request):
+        self.mbd_msg_warn(request, "Model has no check_and_update method defined")
 
     def mbd_is_prepared(self):
         return self.status >= self.STATUS_PREPARED

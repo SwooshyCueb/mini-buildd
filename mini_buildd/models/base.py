@@ -163,6 +163,7 @@ class StatusModel(Model):
         (STATUS_ACTIVE, 'Active'))
     status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED, editable=False)
     last_checked = django.db.models.DateTimeField(default=datetime.datetime.min, editable=False)
+    auto_reactivate = django.db.models.BooleanField(default=False, editable=False)
     STATUS_COLORS = {
         STATUS_UNPREPARED: "yellow",
         STATUS_PREPARED: "blue",

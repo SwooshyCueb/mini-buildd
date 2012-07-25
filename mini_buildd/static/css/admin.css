@@ -107,7 +107,7 @@
 	margin-top: 12px;
 }
 
-#content-main th
+#content-main th.overview
 {
 	width: 100%;
 }

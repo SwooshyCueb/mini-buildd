@@ -65,12 +65,10 @@ def action_delete(_model, request, queryset):
     """
     for o in queryset:
         try:
-            if getattr(o, "status", None) and o.status > o.STATUS_UNPREPARED:
-                raise Exception(u"Unprepare first.")
-            else:
-                o.delete()
+            o.delete()
         except Exception as e:
             o.mbd_msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
+
 action_delete.short_description = "[0] Delete selected objects"
 
 try:
@@ -100,7 +98,15 @@ options to support without changing the database scheme.
         pass
 
     def delete(self, *args, **kwargs):
+        """
+        Custom delete. Deny deletion if Daemon is running, or the instance is prepared.
+        """
         self.mbd_check_daemon_stopped()
+
+        is_prepared_func = getattr(self, "mbd_is_prepared", None)
+        if is_prepared_func and is_prepared_func():
+            raise Exception(u"Unprepare first.")
+
         super(Model, self).delete(*args, **kwargs)
 
     def clean(self, *args, **kwargs):

@@ -182,10 +182,6 @@ class StatusModel(Model):
                 except Exception as e:
                     o.mbd_msg_error(request, "{o}: '{a}' FAILED: {e}.".format(o=o, a=action, e=str(e)))
 
-        def action_prepare(self, request, queryset):
-            self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)
-        action_prepare.short_description = "[1] Prepare selected objects (and dependencies)"
-
         def action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
                 self.action(request, queryset, "unprepare", StatusModel.STATUS_UNPREPARED, min)
@@ -204,7 +200,15 @@ this would mean losing all packages!
 """,
                         "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
                     current_app=self.admin_site.name)
-        action_unprepare.short_description = "[2] Unprepare selected objects"
+        action_unprepare.short_description = "[1] Unprepare selected objects"
+
+        def action_deactivate(self, request, queryset):
+            self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
+        action_deactivate.short_description = "[2] Deactivate selected objects"
+
+        def action_prepare(self, request, queryset):
+            self.action(request, queryset, "prepare", StatusModel.STATUS_PREPARED, max)
+        action_prepare.short_description = "[3] Prepare selected objects (and dependencies)"
 
         def action_activate(self, request, queryset):
             for s in queryset:
@@ -212,11 +216,7 @@ this would mean losing all packages!
                 if s.status < s.STATUS_PREPARED:
                     self.action_prepare(request, (s,))
                 self.action(request, (s,), "activate", StatusModel.STATUS_ACTIVE, status_calc=max)
-        action_activate.short_description = "[3] Activate selected objects"
-
-        def action_deactivate(self, request, queryset):
-            self.action(request, queryset, "deactivate", StatusModel.STATUS_PREPARED, status_calc=min)
-        action_deactivate.short_description = "[4] Deactivate selected objects (and dependencies)"
+        action_activate.short_description = "[4] Activate selected objects"
 
         def colored_status(self, obj):
             # [avoid pylint R0201]
@@ -226,7 +226,7 @@ this would mean losing all packages!
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
-        actions = [action_prepare, action_unprepare, action_activate, action_deactivate]
+        actions = [action_unprepare, action_deactivate, action_prepare, action_activate]
         search_fields = ["status"]
         readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')

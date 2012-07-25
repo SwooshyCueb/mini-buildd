@@ -85,6 +85,12 @@ class Model(django.db.models.Model):
     This just makes sure no config is changed or deleted while
     the daemon is running.
     """
+    extra_options = django.db.models.TextField(blank=True, editable=False,
+                                               help_text="""\
+Free form text that may be used by any real model for any extra
+options to support without changing the database scheme.
+""")
+
     class Meta:
         abstract = True
         app_label = "mini_buildd"

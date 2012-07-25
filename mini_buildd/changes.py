@@ -155,9 +155,13 @@ class Changes(debian.deb822.Changes):
         remotes = {}
 
         def check_remote(remote):
-            state = remote.mbd_download_builder_state()
-            if state.has_chroot(arch, codename):
-                remotes[state.get_load()] = state.get_hopo()
+            try:
+                remote.mbd_check_and_update(request=None)
+                state = remote.mbd_get_builder_state()
+                if state.is_up() and state.has_chroot(arch, codename):
+                    remotes[state.get_load()] = state.get_hopo()
+            except Exception as e:
+                LOG.warn("Builder check failed: {e}".format(e=str(e)))
 
         # Always checkout our own instance as pseudo remote
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))

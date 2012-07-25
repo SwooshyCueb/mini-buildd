@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import urllib
+import StringIO
 
 import django.db.models
 import django.contrib.admin
@@ -91,17 +92,22 @@ django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django
 
 class Remote(GnuPGPublicKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+    pickled_state = django.db.models.TextField(blank=True, editable=False)
+
     wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     class Admin(GnuPGPublicKey.Admin):
         search_fields = GnuPGPublicKey.Admin.search_fields + ["http"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id"]
+        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_state"]
 
     def __unicode__(self):
-        try:
-            return unicode(self.mbd_download_builder_state())
-        except Exception as e:
-            return "{h}: {e}".format(h=self.http, e=unicode(e))
+        return "{S} ({s})".format(S=self.mbd_get_builder_state(), s=self.mbd_get_status_display())
+
+    def mbd_get_builder_state(self):
+        if self.pickled_state:
+            return mini_buildd.misc.BuilderState(pickled_state=StringIO.StringIO(self.pickled_state.encode("UTF-8")))
+        else:
+            return mini_buildd.misc.BuilderState(state=[False, self.http, 0, {}])
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
@@ -113,6 +119,16 @@ class Remote(GnuPGPublicKey):
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)
 
-    def mbd_download_builder_state(self):
+        self.mbd_check_and_update(request)
+
+    def mbd_unprepare(self, request):
+        self.key = ""
+        self.pickled_state = ""
+        self.mbd_msg_info(request, "Remote key and state removed.")
+
+    def mbd_check_and_update(self, request):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
-        return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
+        self.pickled_state = urllib.urlopen(url).read()
+        state = self.mbd_get_builder_state()
+        if not state.is_up():
+            raise Exception("Remote builder down")

@@ -86,8 +86,8 @@ class Source(mini_buildd.models.base.StatusModel):
         ordering = ["origin", "codename"]
 
     class Admin(mini_buildd.models.base.StatusModel.Admin):
-        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["origin", "codename"]
-        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["codeversion", "archives", "components", "architectures", "description"]
+        search_fields = ["origin", "codename"]
+        readonly_fields = ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
             ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)

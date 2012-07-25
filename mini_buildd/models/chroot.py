@@ -40,8 +40,8 @@ go to the default mapping.
         ordering = ["source", "architecture"]
 
     class Admin(mini_buildd.models.base.StatusModel.Admin):
-        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["source", "architecture"]
-        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["personality"]
+        search_fields = ["source", "architecture"]
+        readonly_fields = ["personality"]
 
     def __unicode__(self):
         return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.mbd_get_status_display())

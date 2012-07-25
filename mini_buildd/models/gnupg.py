@@ -28,8 +28,8 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         app_label = "mini_buildd"
 
     class Admin(mini_buildd.models.base.StatusModel.Admin):
-        search_fields = mini_buildd.models.base.StatusModel.Admin.search_fields + ["key_id", "key_long_id", "key_name", "key_fingerprint"]
-        readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
+        search_fields = ["key_id", "key_long_id", "key_name", "key_fingerprint"]
+        readonly_fields = ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
 
     def __unicode__(self):
         return u"{i}: {n} ({s})".format(i=self.key_long_id, n=self.key_name, s=self.mbd_get_status_display())

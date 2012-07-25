@@ -255,8 +255,6 @@ this would mean losing all packages!
         colored_status.allow_tags = True
 
         actions = [action_unprepare, action_deactivate, action_prepare, action_activate, action_check_and_update]
-        search_fields = ["status"]
-        readonly_fields = ["status"]
         list_display = ('colored_status', '__unicode__')
 
     def mbd_activate(self, request):

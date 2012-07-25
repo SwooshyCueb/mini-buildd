@@ -5,7 +5,7 @@ if [ "${1}" = "remove" ]; then
 	# system. We need to properly run 'unprepare' to all of them
 	# to not leave artefacts (i.e., /etc/schroot/chroot.d/*.conf
 	# plus backend-related cruft like LVM setups).
-	su mini-buildd -c "/usr/bin/mini-buildd --foreground --verbose --remove-system-artifacts"
+	su mini-buildd -c "/usr/bin/mini-buildd --foreground --verbose --remove-system-artifacts" || true
 fi
 
 #DEBHELPER#

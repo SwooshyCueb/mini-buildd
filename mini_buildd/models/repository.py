@@ -315,7 +315,7 @@ Example:
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
 
     def __unicode__(self):
-        return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.get_status_display())
+        return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
 
     def mbd_get_status_dependencies(self):
         result = []

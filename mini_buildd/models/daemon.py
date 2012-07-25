@@ -106,7 +106,7 @@ prevent original package maintainers to be spammed.
             r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
             c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
             R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
-            s=self.get_status_display())
+            s=self.mbd_get_status_display())
 
     def __init__(self, *args, **kwargs):
         super(Daemon, self).__init__(*args, **kwargs)

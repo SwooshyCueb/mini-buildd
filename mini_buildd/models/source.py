@@ -93,7 +93,7 @@ class Source(mini_buildd.models.base.StatusModel):
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
 
     def __unicode__(self):
-        return u"{i}: {d} ({m} archives)".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()))
+        return u"{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
 
     def mbd_id(self):
         return "{o} '{c}'".format(o=self.origin, c=self.codename)

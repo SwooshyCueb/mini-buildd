@@ -32,7 +32,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         readonly_fields = mini_buildd.models.base.StatusModel.Admin.readonly_fields + ["key_long_id", "key_created", "key_expires", "key_name", "key_fingerprint"]
 
     def __unicode__(self):
-        return u"{i}: {n}".format(i=self.key_id, n=self.key_name)
+        return u"{i}: {n} ({s})".format(i=self.key_long_id, n=self.key_name, s=self.mbd_get_status_display())
 
     def mbd_prepare(self, _request):
         gpg = mini_buildd.gnupg.TmpGnuPG()
@@ -75,7 +75,7 @@ class Uploader(GnuPGPublicKey):
         readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
 
     def __unicode__(self):
-        return "Uploader '{u}'".format(u=self.user)
+        return "User '{u}': {s}".format(u=self.user, s=super(Uploader, self).__unicode__())
 
 
 def cb_create_user_profile(sender, instance, created, **kwargs):

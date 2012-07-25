@@ -143,6 +143,27 @@ a:hover
 	padding: 3px 0px 3px 5px;
 }
 
+#mb_content a.inner-box-anchor
+{
+	color: white;
+}
+
+#mb_content .inner-inner-box
+{
+	border: 1px solid #c7c7c7;
+	margin: 15px 15px 15px 15px;
+}
+
+#mb_content h1.inner-inner-box-caption
+{
+	background-color: #e7e7e7;
+	color: #444444;
+	font-size: 12px;
+	font-weight: bold;
+	margin: 0;
+	padding: 3px 0px 3px 5px;
+}
+
 #mb_content h1, #mb_content h2, #mb_content h3, #mb_content h4, #mb_content h5
 {
 	color: #417690;
@@ -259,7 +280,7 @@ a:hover
 
 #mb_content a.propagate:link, #mb_content a.propagate:visited
 {
-	border-color: #DDDDDD #AAAAAA #AAAAAA #DDDDDD;
+	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
 	margin: 0px 0px 0px 0px;
@@ -268,12 +289,32 @@ a:hover
 	font-size: 11px;
 	font-weight: normal;
 	color: #222222;
-	background-color: #f0f0f0;
+	background-color: #e7e7e7;
 }
 
 #mb_content a.propagate:hover
 {
 	background-color: #f7f7f7;
+}
+
+#mb_content a.remove:link, #mb_content a.remove:visited
+{
+	background: url("/static/admin/img/icon_deletelink.gif") no-repeat scroll 3px 50% #e7e7e7;
+	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
+	border-style: solid;
+	border-width: 1px;
+	margin: 0px 0px 0px 0px;
+	padding: 4px 6px 4px 16px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: normal;
+	color: #222222;
+}
+
+#mb_content a.remove:hover
+{
+	color: white;
+	background-color: #ff6060;
 }
 
 #mb_content span.emphasize-headline
@@ -297,6 +338,16 @@ a:hover
 #mb_repository_search_form input.package-input
 {
 	width: 300px;
+}
+
+#mb_package_propagation_results pre
+{
+	margin: 0px 15px;
+}
+
+#mb_package_propagation_results ul
+{
+	margin-left: 0px;
 }
 
 

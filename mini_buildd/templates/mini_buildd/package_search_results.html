@@ -2,7 +2,7 @@
 {% load base %}
 
 {% block mbd_page_title %} - search results{% endblock %}
-{% block mbd_page_footer %} &raquo; <a href="/mini_buildd/repositories/">repositories</a> &raquo; search results{% endblock %}
+{% block mbd_page_footer %} &raquo; search results{% endblock %}
 
 
 {% block content %}
@@ -13,13 +13,15 @@
 
 		{% if result %}
 		{% for repository, packages in result.items %}
-		<div class="box">
-			<h1 class="box-caption"><a href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
+		<div class="inner-box">
+			<h1 class="inner-box-caption"><a class="inner-box-anchor"
+																			 title="goto repositoroy {{ repository }}"
+																			 href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
 
 			{% for package, versions in packages.items %}
 
-			<div class="inner-box">
-				<h1 class="inner-box-caption">{{ package }}</h1>
+			<div class="inner-inner-box">
+				<h1 class="inner-inner-box-caption">{{ package }}</h1>
 
 				<table>
 					<tr>

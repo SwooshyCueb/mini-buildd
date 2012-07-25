@@ -47,134 +47,50 @@
 			<div class="inner-box">
 				<table>
 					<caption>Daemon</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Daemon" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						<!-- {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %} -->
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="Daemon" hide_add="True" %}
 				</table>
 			</div>
 			<!-- ARCHIVES AND SOURCES -->
 			<div class="inner-box">
 				<table>
 					<caption>Archives and Sources</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Apt keys" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Archives" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Sources" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Priority sources" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="Apt keys" %}
+					{% include "admin/index_mb_row.html" with model_name="Archives" %}
+					{% include "admin/index_mb_row.html" with model_name="Sources" %}
+					{% include "admin/index_mb_row.html" with model_name="Priority sources" %}
 				</table>
 			</div>
 			<!-- SUITES AND LAYOUTS-->
 			<div class="inner-box">
 				<table>
 					<caption>Suites and Layouts</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Suites" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Layouts" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="Suites" %}
+					{% include "admin/index_mb_row.html" with model_name="Layouts" %}
 				</table>
 			</div>
 			<!-- DISTRIBUTIONS AND REPOSITORIES -->
 			<div class="inner-box">
 				<table>
 					<caption>Distributions and Repositories</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Distributions" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Repositories" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="Distributions" %}
+					{% include "admin/index_mb_row.html" with model_name="Repositories" %}
 				</table>
 			</div>
 			<!-- CHROOTS -->
 			<div class="inner-box">
 				<table>
 					<caption>Chroots</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "File chroots" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Lvm chroots" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Loop lvm chroots" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="File chroots" %}
+					{% include "admin/index_mb_row.html" with model_name="Lvm chroots" %}
+					{% include "admin/index_mb_row.html" with model_name="Loop lvm chroots" %}
 				</table>
 			</div>
 			<!-- UPLOADERS AND REMOTES -->
 			<div class="inner-box">
 				<table>
 					<caption>Uploaders and Remotes</caption>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Uploaders" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						<!-- {% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %} -->
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
-					<tr>
-						{% for model in app.models %}{% if model.name == "Remotes" %}
-						{% if model.perms.change %}<th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% endif %}{% endfor %}
-					</tr>
+					{% include "admin/index_mb_row.html" with model_name="Uploaders" hide_add="True" %}
+					{% include "admin/index_mb_row.html" with model_name="Remotes" %}
 				</table>
 			</div>
 		</div>

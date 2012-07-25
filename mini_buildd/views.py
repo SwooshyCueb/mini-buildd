@@ -80,7 +80,6 @@ def get_repository_results(request):
                                                       {'authenticated': authenticated, 'result': result})
 
     else:
-        ret = django.shortcuts.render_to_response("mini_buildd/repository_list.html",
-                                                  {'repositories': mini_buildd.models.repository.Repository.objects.all()})
+        ret = ""
 
     return ret

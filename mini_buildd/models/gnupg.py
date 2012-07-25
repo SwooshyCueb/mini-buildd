@@ -61,6 +61,10 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         if self.key_id:
             self.key = ""
 
+    def mbd_check_and_update(self, request):
+        ".. todo:: STUB"
+        pass
+
 
 class AptKey(GnuPGPublicKey):
     pass

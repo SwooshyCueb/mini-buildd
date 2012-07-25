@@ -140,6 +140,16 @@ prevent original package maintainers to be spammed.
         self._mbd_gnupg.unprepare()
         self.mbd_msg_info(request, "Daemon GnuPG key removed")
 
+    def mbd_check_and_update(self, request):
+        for r in mini_buildd.models.repository.Repository.mbd_get_active():
+            r.mbd_check_and_update(request)
+
+        for c in mini_buildd.models.chroot.Chroot.mbd_get_active():
+            c.mbd_check_and_update(request)
+
+        for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
+            r.mbd_check_and_update(request)
+
     def mbd_activate(self, request):
         self.mbd_get_daemon().restart()
         self.mbd_msg_info(request, "Daemon restarted")

@@ -150,6 +150,10 @@ class Source(mini_buildd.models.base.StatusModel):
         self.architectures = []
         self.description = ""
 
+    def mbd_check_and_update(self, request):
+        ".. todo:: STUB"
+        pass
+
     def mbd_get_status_dependencies(self):
         dependencies = []
         for k in self.apt_keys.all():

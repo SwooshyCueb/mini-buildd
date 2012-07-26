@@ -63,7 +63,6 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
             self.key = ""
 
     def mbd_check_and_update(self, request):
-        ".. todo:: STUB"
         pass
 
 

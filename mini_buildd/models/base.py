@@ -259,13 +259,12 @@ this would mean losing all packages!
         list_display = ('colored_status', '__unicode__')
 
     def mbd_activate(self, request):
+        "Per default, nothing is to be done on 'activate'."
         pass
 
     def mbd_deactivate(self, request):
+        "Per default, nothing is to be done on 'deactivate'."
         pass
-
-    def mbd_check_and_update(self, request):
-        self.mbd_msg_warn(request, "Model has no check_and_update method defined")
 
     def mbd_is_prepared(self):
         return self.status >= self.STATUS_PREPARED

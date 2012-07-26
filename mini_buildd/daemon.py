@@ -233,7 +233,7 @@ def run():
     ftpd_thread.join()
 
 
-class Manager():
+class Daemon():
     def __init__(self):
         self.model = None
         self.update_model()

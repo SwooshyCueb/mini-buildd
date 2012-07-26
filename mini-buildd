@@ -176,8 +176,8 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
             webapp.dumpdata(self._args.dumpdata)
         else:
             # Get the daemon manager instance (due to django, import must be here)
-            from mini_buildd.daemon import Manager
-            manager = Manager()
+            from mini_buildd.daemon import Daemon
+            daemon = Daemon()
 
             # Start httpd webapp
             mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
@@ -185,9 +185,9 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    if manager.is_running():
+                    if daemon.is_running():
                         try:
-                            manager.restart(run_check=True)
+                            daemon.restart(run_check=True)
                         except Exception as e:
                             LOG.error("Could not restart daemon: {e}".format(e=e))
                     else:
@@ -195,7 +195,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                 else:
                     break
 
-            manager.stop()
+            daemon.stop()
             mini_buildd.httpd.shutdown()
 
 

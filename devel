@@ -88,13 +88,19 @@ mbd_pydjangolint()
 {
 	(
 		pyenv
-		django-lint mini_buildd/
+		! django-lint mini_buildd/ | grep --invert-match \
+			-e "is actually a directory; consider splitting application" \
+			-e "BooleanField with default=True will not be reflected in database" \
+			-e "Naive tree structure implementation using ForeignKey('self')" \
+			-e "ForeignKey missing related_name" \
+			-e "URLField uses verify_exists=True default" \
+			-e "^\*"
 	)
 }
 
 mbd_check()
 {
-	local tests="pep8 pydoctests pyflakes pylint"
+	local tests="pep8 pydoctests pyflakes pylint pydjangolint"
 	for t in ${tests}; do
 		echo "=> mbd_${t}"
 		mbd_${t}

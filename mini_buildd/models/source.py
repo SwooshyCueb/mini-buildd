@@ -46,6 +46,9 @@ class Archive(mini_buildd.models.base.Model):
             release.seek(0)
             return debian.deb822.Release(release)
 
+    def mbd_check_up(self):
+        urllib.urlopen(self.url)
+
 
 class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
@@ -151,8 +154,8 @@ class Source(mini_buildd.models.base.StatusModel):
         self.description = ""
 
     def mbd_check_and_update(self, request):
-        ".. todo:: STUB"
-        pass
+        for a in self.archives.all():
+            a.mbd_check_up()
 
     def mbd_get_status_dependencies(self):
         dependencies = []

@@ -55,39 +55,14 @@ class Changes(debian.deb822.Changes):
         except:
             return ""
 
-    @classmethod
-    def find_repository(cls, dist):
-        # Check and parse distribution
-        codename, identity, suite = mini_buildd.misc.parse_distribution(dist)
-
-        # Get repository for identity
-        try:
-            repository = mini_buildd.models.repository.Repository.objects.get(identity=identity)
-        except:
-            raise Exception("Unsupported distribution '{d}': No such repository identity '{i}'".format(d=dist, i=identity))
-
-        # Get distribution for codename
-        distribution = None
-        for d in repository.distributions.all():
-            if d.base_source.codename == codename:
-                distribution = d
-                break
-        if not distribution:
-            raise Exception("Unsupported distribution '{d}': No such codename '{c}'".format(d=dist, c=codename))
-
-        # Get uploadable suite
-        suite_ = None
-        for s in repository.layout.suites.all():
-            if s.name == suite:
-                suite_ = s
-                break
-        if not suite_:
-            raise Exception("Unsupported distribution '{d}': No such suite '{s}'".format(d=dist, s=suite))
-
-        return repository, distribution, suite_
-
     def get_repository(self):
-        repository, dist, suite = self.find_repository(self["Distribution"])
+        # Check and parse changes distribution string
+        distribution_codename, repository_identity, suite_name = mini_buildd.misc.parse_distribution(self["Distribution"])
+
+        # Get repository for identity; django exceptions will suite quite well as-is
+        repository = mini_buildd.models.repository.Repository.objects.get(identity=repository_identity)
+        distribution = repository.distributions.all().get(base_source__codename__exact=distribution_codename)
+        suite = repository.layout.suites.all().get(name=suite_name)
 
         if not suite.uploadable:
             raise Exception("Suite '{s}' is not uploadable".format(s=suite))
@@ -95,9 +70,9 @@ class Changes(debian.deb822.Changes):
         if not repository.mbd_is_active():
             raise Exception("Repository '{r}' is not active".format(r=repository))
 
-        repository.mbd_check_version(self["Version"], dist, suite)
+        repository.mbd_check_version(self["Version"], distribution, suite)
 
-        return repository, dist, suite
+        return repository, distribution, suite
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)

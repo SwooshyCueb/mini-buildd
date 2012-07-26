@@ -145,14 +145,32 @@ class StatusModel(Model):
     """
     Abstract model for all models that carry a status.
 
-    ========== =====================================
-    Status     Desc
-    ========== =====================================
-    error      Unknown error state.
-    unprepared Not prepared on the system.
-    prepared   Prepared on system.
-    active     Prepared on the system and activated.
-    ========== =====================================
+    ============ =====================================
+    Status       Semantic
+    ============ =====================================
+    0=unprepared Not prepared on the system.
+    1=prepared   Prepared on system.
+    2=active     Prepared on the system and activated.
+    ============ =====================================
+
+    Inheriting classes may overwrite the following hooks to
+    control status handling.
+
+    The pre-condition is guaranteed when called via the admin
+    action methods defined here. The hooks must not be called
+    directly (except for the Daemon model's "check" hook; it's
+    called directly when the daemon is started implicitely on
+    "mini-buildd" restarts or reloads).
+
+    =========== ============== =========== =========== ============================================================================
+    Action      Pre condition  On success  On failure  Hook semantic
+    =========== ============== =========== =========== ============================================================================
+    Prepare     <= unprepared  prepared    uprepared   Prepare the instance on the system; must not leave cruft around on failure.
+    Unprepare   >= prepared    unprepared  prepared    Remove the instance from the system; should not change anything on failure.
+    Check       >= prepared    UNCHANGED   prepared    Check the instance. Will be run prior to each activation action.
+    Activate    >= prepared    active      UNCHANGED   Any additional actions on activation (used for Daemon model only).
+    Deactivate  >= prepared    prepared    UNCHANGED   Any additional actions on deactivation (used for Daemon model only).
+    =========== ============== =========== =========== ============================================================================
     """
     STATUS_UNPREPARED = 0
     STATUS_PREPARED = 1

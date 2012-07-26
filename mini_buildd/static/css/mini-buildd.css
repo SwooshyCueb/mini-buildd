@@ -110,6 +110,18 @@ a:hover
 	margin: 15px 0px 15px 0px;
 }
 
+#mb_content .box.error
+{
+	border-color: #ff0000;
+}
+
+
+#mb_content .box-caption.error
+{
+	border-color: #ff0000;
+	background-color: #ff0000;
+}
+
 #mb_content h1.box-caption
 {
 	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;

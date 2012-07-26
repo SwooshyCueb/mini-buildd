@@ -40,9 +40,9 @@ def get_repository_results(request):
             codename = request.GET.get("codename", None)
 
             if repository:
-                search_repos = [mini_buildd.models.repository.Repository.objects.get(identity=repository)]
+                search_repos = [mini_buildd.models.repository.Repository.mbd_get_prepared().get(identity=repository)]
             else:
-                search_repos = mini_buildd.models.repository.Repository.objects.all()
+                search_repos = mini_buildd.models.repository.Repository.mbd_get_prepared()
 
             result = {}
             for r in search_repos:

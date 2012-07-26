@@ -158,7 +158,7 @@ prevent original package maintainers to be spammed.
             mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate())
 
     def mbd_activate(self, request):
-        self.mbd_get_daemon().restart()
+        self.mbd_get_daemon().restart(run_check=False)
         self.mbd_msg_info(request, "Daemon restarted")
 
     def mbd_deactivate(self, request):

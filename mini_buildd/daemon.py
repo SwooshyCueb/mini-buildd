@@ -241,7 +241,7 @@ class Manager():
         global _INSTANCE
         _INSTANCE = self
         if self.model.mbd_is_active():
-            self.start()
+            self.start(run_check=True)
         else:
             LOG.info("Daemon NOT started (activate first)")
 
@@ -251,15 +251,11 @@ class Manager():
             LOG.info("New default Daemon model instance created")
         LOG.info("Daemon model instance updated...")
 
-    @classmethod
-    def check(cls):
-        for r in mini_buildd.models.repository.Repository.mbd_get_active():
-            r.mbd_check_status_dependencies()
-
-    def start(self):
+    def start(self, run_check):
         if not self.thread:
             self.update_model()
-            self.check()
+            if run_check:
+                self.model.mbd_check_and_update(request=None)
             self.thread = mini_buildd.misc.run_as_thread(run)
             LOG.info("Daemon running")
         else:
@@ -275,9 +271,9 @@ class Manager():
         else:
             LOG.info("Daemon already stopped")
 
-    def restart(self):
+    def restart(self, run_check):
         self.stop()
-        self.start()
+        self.start(run_check)
 
     def is_running(self):
         return self.thread is not None

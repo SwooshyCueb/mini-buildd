@@ -187,7 +187,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                 if self._status == "RESTART":
                     if manager.is_running():
                         try:
-                            manager.restart()
+                            manager.restart(run_check=True)
                         except Exception as e:
                             LOG.error("Could not restart daemon: {e}".format(e=e))
                     else:

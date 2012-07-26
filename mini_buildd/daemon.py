@@ -31,8 +31,6 @@
 """
 
 import os
-import shutil
-import re
 import email.mime.text
 import email.utils
 import logging
@@ -41,6 +39,7 @@ import mini_buildd.misc
 import mini_buildd.changes
 import mini_buildd.gnupg
 import mini_buildd.ftpd
+import mini_buildd.packager
 import mini_buildd.builder
 
 import mini_buildd.models.daemon
@@ -49,81 +48,6 @@ import mini_buildd.models.chroot
 import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
-
-
-class Package(object):
-    DONE = 0
-    INCOMPLETE = 1
-
-    def __init__(self, changes, repository, dist, suite):
-        self.changes = changes
-        self.repository, self.dist, self.suite = repository, dist, suite
-        self.pid = changes.get_pkg_id()
-        self.requests = self.changes.gen_buildrequests(get().model, self.repository, self.dist)
-        self.success = {}
-        self.failed = {}
-        for _key, breq in self.requests.items():
-            breq.upload_buildrequest(get().model.mbd_get_http_hopo())
-
-    def notify(self):
-        results = u""
-        for arch, c in self.failed.items() + self.success.items():
-            for fd in c.get_files():
-                f = fd["name"]
-                if re.compile("^.*\.buildlog$").match(f):
-                    results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=get().model.mbd_get_http_url() + "/" +
-                                                         os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, f))
-
-        results += u"\n"
-        body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
-
-        get().model.mbd_notify(
-            "{s}: {p} ({f}/{r} failed)".format(
-                s="Failed" if self.failed else "Build",
-                p=self.pid, f=len(self.failed), r=len(self.requests)),
-            body,
-            self.repository,
-            self.changes)
-
-    def update(self, result):
-        arch = result["Architecture"]
-        status = result["Sbuild-Status"]
-        retval = int(result["Sbuildretval"])
-        LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
-
-        if retval == 0:
-            self.success[arch] = result
-        else:
-            self.failed[arch] = result
-
-        missing = len(self.requests) - len(self.success) - len(self.failed)
-        if missing > 0:
-            LOG.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
-            return self.INCOMPLETE
-
-        # Finish up
-        LOG.info("{p}: All build results received".format(p=self.pid))
-        try:
-            if self.failed:
-                raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
-
-            for arch, c in self.success.items():
-                c.untar(path=self.repository.mbd_get_incoming_path())
-                self.repository.mbd_reprepro().processincoming()
-        except Exception as e:
-            LOG.error(str(e))
-            # todo Error!
-        finally:
-            # Archive build results and request
-            for arch, c in self.success.items() + self.failed.items() + self.requests.items():
-                c.archive()
-            # Archive incoming changes
-            self.changes.archive()
-            # Purge complete package dir
-            shutil.rmtree(self.changes.get_spool_dir())
-
-            self.notify()
-        return self.DONE
 
 
 def gen_uploader_keyrings():
@@ -150,7 +74,7 @@ def gen_remotes_keyring():
 def handle_buildresult(bres):
     pid = bres.get_pkg_id()
     if pid in get().model.mbd_packages:
-        if get().model.mbd_packages[pid].update(bres) == Package.DONE:
+        if get().model.mbd_packages[pid].update(bres) == mini_buildd.packager.Package.DONE:
             del get().model.mbd_packages[pid]
         return True
     return False
@@ -204,7 +128,7 @@ def run():
                 else:
                     uploader_keyrings[repository.identity].verify(changes.file_path)
 
-                get().model.mbd_packages[changes_pid] = Package(changes, repository, dist, suite)
+                get().model.mbd_packages[changes_pid] = mini_buildd.packager.Package(get().model, changes, repository, dist, suite)
 
                 for bres in get().model.mbd_stray_buildresults:
                     handle_buildresult(bres)

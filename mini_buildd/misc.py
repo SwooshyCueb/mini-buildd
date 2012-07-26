@@ -49,6 +49,9 @@ class BuilderState(object):
             c=pprint.pformat(self.get_chroots()),
             l=self.get_load())
 
+    def __str__(self):
+        return self.__unicode__()
+
     def dump(self):
         return pickle.dumps(self._state)
 

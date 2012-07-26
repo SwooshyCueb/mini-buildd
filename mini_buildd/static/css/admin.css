@@ -15,7 +15,7 @@
 {
 	float: left;
 	width: 100%;
-	background: url("/static/admin/img/admin/nav-bg-reverse.gif") repeat-x scroll 0 0px white;
+	background: url("/static/admin/img/nav-bg-reverse.gif") repeat-x scroll 0 0px white;
 	border-bottom: 1px solid #cccccc;
 	border-top: 1px solid #cccccc;
 	color: #999999;
@@ -36,7 +36,7 @@
 
 #mb_box h1.mini-buildd
 {
-	background: url("/static/admin/img/admin/default-bg.gif") repeat-x scroll left top #7CA0C7;
+	background: url("/static/admin/img/default-bg.gif") repeat-x scroll left top #7CA0C7;
 	color: white;
 	margin: 0;
 	font-size: 14px;

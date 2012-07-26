@@ -2,7 +2,6 @@
 import logging
 
 import cherrypy
-import django
 
 import mini_buildd.misc
 import mini_buildd.setup
@@ -67,8 +66,7 @@ def run(bind, wsgi_app):
                        path="/static")
 
     # Django: Add static support for the admin app
-    # Note: Meek workaround to support django < 1.4 (should be removed along with a resp. deb-dep eventually).
-    add_static_handler(directory="static/admin" if int(django.VERSION[1]) >= 4 else "media",
+    add_static_handler(directory="static/admin",
                        root="/usr/share/pyshared/django/contrib/admin",
                        path="/static/admin")
 

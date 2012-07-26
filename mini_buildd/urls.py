@@ -17,3 +17,7 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^repositories/(?P<object_id>.+)/$",
      django.views.generic.list_detail.object_detail,
      {'queryset': mini_buildd.models.repository.Repository.objects.all()}),)
+
+django.conf.urls.handler403 = "mini_buildd.views.http_status_403"
+django.conf.urls.handler404 = "mini_buildd.views.http_status_404"
+django.conf.urls.handler500 = "mini_buildd.views.http_status_500"

@@ -83,3 +83,28 @@ def get_repository_results(request):
         ret = ""
 
     return ret
+
+
+def http_status(code, meaning, description):
+    return django.shortcuts.render_to_response("mini_buildd/error_page.html",
+                                               {"code": code,
+                                                "meaning": meaning,
+                                                "description": description})
+
+
+def http_status_403(_request):
+    meaning = "Forbidden"
+    description = "The request was a valid request, but the server is refusing to respond to it."
+    return http_status(403, meaning, description)
+
+
+def http_status_404(_request):
+    meaning = "Not Found"
+    description = "The requested resource could not be found."
+    return http_status(404, meaning, description)
+
+
+def http_status_500(_request):
+    meaning = "Internal Server Error"
+    description = "Sorry, something went wrong."
+    return http_status(500, meaning, description)

@@ -137,7 +137,7 @@ personality={p}
         shutil.rmtree(self.mbd_get_path())
         self.mbd_msg_info(request, "Chroot {c}: Removed from system".format(c=self))
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         ".. todo:: STUB"
         pass
 

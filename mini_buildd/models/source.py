@@ -153,7 +153,7 @@ class Source(mini_buildd.models.base.StatusModel):
         self.architectures = []
         self.description = ""
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         for a in self.archives.all():
             a.mbd_check_up()
 

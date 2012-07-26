@@ -266,8 +266,8 @@ this would mean losing all packages!
                             # Also run for all status dependencies
                             cls.action_activate(request, o.mbd_get_status_dependencies())
 
-                            # Always check and update once before activation
-                            cls.action_check_and_update(request, (o,))
+                            # Always check before activation
+                            cls.action_check(request, (o,))
 
                             o.mbd_activate(request)
                             o.status = o.STATUS_ACTIVE
@@ -282,32 +282,32 @@ this would mean losing all packages!
         _action_activate.short_description = "[2] Activate selected objects and dependencies"
 
         @classmethod
-        def action_check_and_update(cls, request, queryset):
+        def action_check(cls, request, queryset):
             for o in queryset:
                 if o.mbd_is_prepared():
                     try:
                         # Also run for all status dependencies
-                        cls.action_check_and_update(request, o.mbd_get_status_dependencies())
+                        cls.action_check(request, o.mbd_get_status_dependencies())
 
-                        o.mbd_check_and_update(request)
+                        o.mbd_check(request)
                         o.last_checked = datetime.datetime.now()
                         if o.auto_reactivate:
                             o.status = StatusModel.STATUS_ACTIVE
                             o.auto_reactivate = False
                         o.save()
-                        o.mbd_msg_info(request, "{o}: Check and update successful.".format(o=o))
+                        o.mbd_msg_info(request, "{o}: Check successful.".format(o=o))
                     except Exception as e:
                         # Check failed, auto-deactivate this instance
                         o.status = StatusModel.STATUS_PREPARED
                         o.auto_reactivate = True
                         o.save()
-                        o.mbd_msg_error(request, "{o}: Auto-Deactivating: Check and update FAILED: {e}.".format(o=o, e=str(e)))
+                        o.mbd_msg_error(request, "{o}: Auto-Deactivating: Check FAILED: {e}.".format(o=o, e=str(e)))
                 else:
                     o.mbd_msg_warn(request, "{o}: Skipped -- not prepared.".format(o=o))
 
-        def _action_check_and_update(self, request, queryset):
-            self.__class__.action_check_and_update(request, queryset)
-        _action_check_and_update.short_description = "[5] Check and update selected objects and dependencies"
+        def _action_check(self, request, queryset):
+            self.__class__.action_check(request, queryset)
+        _action_check.short_description = "[5] Check selected objects and dependencies"
 
         def colored_status(self, obj):
             # [avoid pylint R0201]
@@ -317,7 +317,7 @@ this would mean losing all packages!
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
-        actions = [_action_unprepare, _action_deactivate, _action_prepare, _action_activate, _action_check_and_update]
+        actions = [_action_unprepare, _action_deactivate, _action_prepare, _action_activate, _action_check]
         list_display = ('colored_status', '__unicode__')
 
     def mbd_activate(self, request):

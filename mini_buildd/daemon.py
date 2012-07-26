@@ -255,7 +255,7 @@ class Manager():
         if not self.thread:
             self.update_model()
             if run_check:
-                self.model.mbd_check_and_update(request=None)
+                self.model.mbd_check(request=None)
             self.thread = mini_buildd.misc.run_as_thread(run)
             LOG.info("Daemon running")
         else:

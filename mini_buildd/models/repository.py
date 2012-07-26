@@ -567,7 +567,7 @@ gnupghome {h}
             shutil.rmtree(self.mbd_get_path())
             self.mbd_msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         ".. todo:: STUB"
         pass
 

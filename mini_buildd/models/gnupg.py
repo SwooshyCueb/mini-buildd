@@ -62,7 +62,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         if self.key_id:
             self.key = ""
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         pass
 
 
@@ -118,14 +118,14 @@ class Remote(GnuPGPublicKey):
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)
 
-        self.mbd_check_and_update(request)
+        self.mbd_check(request)
 
     def mbd_unprepare(self, request):
         self.key = ""
         self.pickled_state = ""
         self.mbd_msg_info(request, "Remote key and state removed.")
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
         self.pickled_state = urllib.urlopen(url).read()
         state = self.mbd_get_builder_state()

@@ -140,20 +140,20 @@ prevent original package maintainers to be spammed.
         self._mbd_gnupg.unprepare()
         self.mbd_msg_info(request, "Daemon GnuPG key removed")
 
-    def mbd_check_and_update(self, request):
+    def mbd_check(self, request):
         # [avoid pylint R0201]
         if self:
             pass
 
-        mini_buildd.models.repository.Repository.Admin.action_check_and_update(
+        mini_buildd.models.repository.Repository.Admin.action_check(
             request,
             mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate())
 
-        mini_buildd.models.chroot.Chroot.Admin.action_check_and_update(
+        mini_buildd.models.chroot.Chroot.Admin.action_check(
             request,
             mini_buildd.models.chroot.Chroot.mbd_get_active_or_auto_reactivate())
 
-        mini_buildd.models.gnupg.Remote.Admin.action_check_and_update(
+        mini_buildd.models.gnupg.Remote.Admin.action_check(
             request,
             mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate())
 

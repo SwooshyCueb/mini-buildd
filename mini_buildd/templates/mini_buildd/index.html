@@ -7,118 +7,117 @@
 
 <div id="mb_index_status">
 	<div class="box">
-		<h1 class="box-caption">Status: <span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}</span></h1>
+		<h1 class="box-caption"><span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }} </span></h1>
 
-		<h2>Daemon: {{ daemon.tpl.model }}</h2>
+		{{ daemon.tpl.iqs }} changes files pending in incoming.
 
-		<ul>
-			<li>{{ daemon.tpl.iqs }} changes files pending in incoming.</li>
-			<li>{{ daemon.tpl.bqs }} build requests pending in queue.</li>
-		</ul>
+		<div id="mb_index_repositories">
+			<div class="inner-box">
+				<h1 class="inner-box-caption">Repositories</h1>
+				{% if repositories.count > 0 %}
+				<ul>
+					{% for r in repositories %}
+					<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+					{% endfor %}
+				</ul>
 
-		<hr />
+				<hr />
+				<form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
+					<input type="hidden" name="action" value="search" />
+					<table>
+						<tr>
+							<th>Package</th>
+							<th>Repository</th>
+							<th />
+						</tr>
+						<tr>
+							<td><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
+							<td><select name="repository" size="1">
+									{% for r in repositories.all %}
+									<option value="{{ r.identity|urlencode }}">{{ r }}</option>
+									{% endfor %}
+									<option selected="selected" value="">any</option>
+							</select></td>
 
-		<h3>Packager: {{ daemon.tpl.packages|length }} active packages</h3>
-		<ul>
-			{% for p in daemon.tpl.packages %}
-				<li>{{ p }}</li>
-			{% endfor %}
-		</ul>
+							<td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
+						</tr>
+					</table>
+				</form>
 
-		<hr />
+				<hr />
+				<h3>Packager status: {{ daemon.tpl.packages|length }} active packages</h3>
+				<ul>
+					{% for p in daemon.tpl.packages %}
+					<li>{{ p }}</li>
+					{% endfor %}
+				</ul>
 
-		<h3>Builder: {{ daemon.tpl.builder_status.building|length }}/{{ daemon.tpl.builder_status.tpl.max_builds }} active builds (load {{ daemon.tpl.builder_status.tpl.load }})</h3>
+				{% else %}
+				<p>No repositories configured.</p>
+				{% endif %}
+			</div>
+		</div>
 
-		<h4>{{ daemon.tpl.builder_status.building|length }} building:</h4>
-		<ul>
-			{% for b in daemon.tpl.builder_status.building %}
-			<li>{{ b }} [TODO: since timestamp]</li>
-			{% endfor %}
-		</ul>
+		<div id="mb_index_chroots">
+			<div class="inner-box">
+				<h1 class="inner-box-caption">Chroots</h1>
+				{% if chroots.count > 0 %}
+				<ul>
+					{% for c in chroots %}
+					<li>{{ c }}</li>
+					{% endfor %}
+				</ul>
 
-		<h4>{{ daemon.tpl.builder_status.pending|length }} pending:</h4>
-		<ul>
-			{% for b in daemon.tpl.builder_status.pending %}
-			<li>{{ b }}</li>
-			{% endfor %}
-		</ul>
+				<hr />
+				<h3>Builder status: {{ daemon.tpl.builder_status.building|length }}/{{ daemon.tpl.builder_status.tpl.max_builds }} active builds (load {{ daemon.tpl.builder_status.tpl.load }})</h3>
 
-		<hr />
+				{{ daemon.tpl.bqs }} build requests pending in queue.
 
-		<h3>Remotes: {{ daemon.tpl.remotes|length }} active</h3>
-		<ul>
-			{% for r in daemom.tpl.remotes %}
-				<li>{{ r }}</li>
-			{% endfor %}
-		</ul>
+				<h4>{{ daemon.tpl.builder_status.building|length }} building:</h4>
+				<ul>
+					{% for b in daemon.tpl.builder_status.building %}
+					<li>{{ b }} [TODO: since timestamp]</li>
+					{% endfor %}
+				</ul>
 
-	</div>
-</div>
+				<h4>{{ daemon.tpl.builder_status.pending|length }} pending:</h4>
+				<ul>
+					{% for b in daemon.tpl.builder_status.pending %}
+					<li>{{ b }}</li>
+					{% endfor %}
+				</ul>
 
-<div id="mb_index_repositories">
-	<div class="box">
-		<h1 class="box-caption">Repositories</h1>
-		{% if repositories.count > 0 %}
+				{% else %}
+				<p>No chroots configured.</p>
+				{% endif %}
+			</div>
+		</div>
 
-		<form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
-			<input type="hidden" name="action" value="search" />
-			<table>
-				<tr>
-					<th>Package</th>
-					<th>Repository</th>
-					<th />
-				</tr>
-				<tr>
-					<td><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
+		<div id="mb_index_remotes">
+			<div class="inner-box">
+				<h1 class="inner-box-caption">Remotes</h1>
+				{% if remotes.count > 0 %}
+				<ul>
+					{% for r in remotes %}
+					<li>{{ r }}</li>
+					{% endfor %}
+				</ul>
 
-					<td><select name="repository" size="1">
-							{% for r in repositories.all %}
-							<option value="{{ r.identity|urlencode }}">{{ r }}</option>
-							{% endfor %}
-							<option selected="selected" value="">any</option>
-					</select></td>
+				<hr />
+				<h3>Remotes status: {{ daemon.tpl.remotes|length }} active</h3>
+				<ul>
+					{% for r in daemom.tpl.remotes %}
+					<li>{{ r }}</li>
+					{% endfor %}
+				</ul>
 
-					<td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
-				</tr>
-			</table>
-		</form>
 
-		<ul>
-			{% for r in repositories %}
-			<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
-			{% endfor %}
-		</ul>
-		{% else %}
-		<p>No repositories configured.</p>
-		{% endif %}
-	</div>
-</div>
-<div id="mb_index_chroots">
-	<div class="box">
-		<h1 class="box-caption">Chroots</h1>
-		{% if chroots.count > 0 %}
-		<ul>
-			{% for c in chroots %}
-			<li>{{ c }}</li>
-			{% endfor %}
-		</ul>
-		{% else %}
-		<p>No chroots configured.</p>
-		{% endif %}
-	</div>
-</div>
-<div id="mb_index_remotes">
-	<div class="box">
-		<h1 class="box-caption">Remotes</h1>
-		{% if remotes.count > 0 %}
-		<ul>
-			{% for r in remotes %}
-			<li>{{ r }}</li>
-			{% endfor %}
-		</ul>
-		{% else %}
-		<p>No remotes configured.</p>
-		{% endif %}
+				{% else %}
+				<p>No remotes configured.</p>
+				{% endif %}
+			</div>
+		</div>
+
 	</div>
 </div>
 

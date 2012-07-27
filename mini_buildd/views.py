@@ -13,9 +13,9 @@ import mini_buildd.models.gnupg
 def show_index(_request):
     return django.shortcuts.render_to_response("mini_buildd/index.html",
                                                {"daemon": mini_buildd.daemon.get(),
-                                                "repositories": mini_buildd.models.repository.Repository.objects.all(),
-                                                "chroots": mini_buildd.models.chroot.Chroot.objects.all(),
-                                                "remotes": mini_buildd.models.gnupg.Remote.objects.all()})
+                                                "repositories": mini_buildd.models.repository.Repository.mbd_get_prepared(),
+                                                "chroots": mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
+                                                "remotes": mini_buildd.models.gnupg.Remote.mbd_get_prepared()})
 
 
 def get_archive_key(_request):

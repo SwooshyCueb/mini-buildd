@@ -297,7 +297,7 @@ this would mean losing all packages!
 
         def _action_activate(self, request, queryset):
             self.__class__.action_activate(request, queryset)
-        _action_activate.short_description = "[2] Activate selected objects and dependencies"
+        _action_activate.short_description = "[4] Activate selected objects and dependencies"
 
         @classmethod
         def action_check(cls, request, queryset):

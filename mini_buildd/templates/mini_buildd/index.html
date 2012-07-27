@@ -9,7 +9,7 @@
 		<div class="box">
 			<h1 class="box-caption"><span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }} </span></h1>
 
-			{{ daemon.tpl.iqs }} changes files pending in incoming.
+			<p>{{ daemon.tpl.iqs }} changes files pending in incoming.</p>
 
 			<div id="mb_index_repositories">
 				<div class="inner-box">
@@ -71,7 +71,7 @@
 						<hr />
 						<h3>Builder status: {{ daemon.tpl.builder_status.building|length }}/{{ daemon.tpl.builder_status.tpl.max_builds }} active builds (load {{ daemon.tpl.builder_status.tpl.load }})</h3>
 
-						{{ daemon.tpl.bqs }} build requests pending in queue.
+						<p>{{ daemon.tpl.bqs }} build requests pending in queue.</p>
 
 						<h4>{{ daemon.tpl.builder_status.building|length }} building:</h4>
 						<ul>

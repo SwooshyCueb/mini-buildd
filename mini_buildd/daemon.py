@@ -160,7 +160,7 @@ def run():
 class Daemon():
     def __init__(self):
         self.model = None
-        self.update_model()
+        self._update_model()
         self.thread = None
         global _INSTANCE
         _INSTANCE = self
@@ -169,7 +169,7 @@ class Daemon():
         else:
             LOG.info("Daemon NOT started (activate first)")
 
-    def update_model(self):
+    def _update_model(self):
         self.model, created = mini_buildd.models.daemon.Daemon.objects.get_or_create(id=1)
         if created:
             LOG.info("New default Daemon model instance created")
@@ -177,7 +177,7 @@ class Daemon():
 
     def start(self, run_check):
         if not self.thread:
-            self.update_model()
+            self._update_model()
             if run_check:
                 self.model.mbd_check(request=None)
             self.thread = mini_buildd.misc.run_as_thread(run)
@@ -190,7 +190,7 @@ class Daemon():
             self.model.mbd_incoming_queue.put("SHUTDOWN")
             self.thread.join()
             self.thread = None
-            self.update_model()
+            self._update_model()
             LOG.info("Daemon stopped")
         else:
             LOG.info("Daemon already stopped")

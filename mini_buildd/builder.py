@@ -22,13 +22,8 @@ class Status(object):
         self._pending = {}
         self._max_builds = max_builds
 
-    @property
     def building(self):
         return self._building
-
-    @property
-    def pending(self):
-        return self._pending
 
     def load(self):
         return float(len(self._building)) / self._max_builds
@@ -45,12 +40,12 @@ class Status(object):
         del self._pending[key]
 
     @property
-    def tpl_max_builds(self):
-        return self._max_builds
-
-    @property
-    def tpl_load(self):
-        return self.load()
+    def tpl(self):
+        return {
+            "building": self._building,
+            "pending": self._pending,
+            "max_builds": self._max_builds,
+            "load": self.load()}
 
 
 def buildlog_to_buildresult(file_name, bres):
@@ -217,11 +212,10 @@ def run(queue, gnupg, status, build_queue_size, sbuild_jobs):
             break
 
         try:
-            LOG.info("Builder status: {0} active builds, {0} waiting in queue.".
-                     format(0, queue.qsize()))
+            LOG.info("Builder status: {0} active builds, {0} waiting in queue.".format(0, queue.qsize()))
 
-            while len(status.building) >= build_queue_size:
-                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=len(status.building)))
+            while len(status.building()) >= build_queue_size:
+                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=len(status.building())))
                 time.sleep(15)
 
             threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs, status=status))

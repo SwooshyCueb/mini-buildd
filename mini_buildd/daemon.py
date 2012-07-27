@@ -216,36 +216,16 @@ class Daemon():
                                                     get_chroots()])
 
     @property
-    def tpl_model(self):
-        return self.model
-
-    @property
-    def tpl_style(self):
-        return u"running" if self.is_running() else u"stopped"
-
-    @property
-    def tpl_running_text(self):
-        return u"Running" if self.is_running() else u"Stopped"
-
-    @property
-    def tpl_iqs(self):
-        return self.model.mbd_incoming_queue.qsize()
-
-    @property
-    def tpl_bqs(self):
-        return self.model.mbd_build_queue.qsize()
-
-    @property
-    def tpl_packages(self):
-        return self.model.mbd_packages
-
-    @property
-    def tpl_builder_status(self):
-        return self.model.mbd_builder_status
-
-    @property
-    def tpl_remotes(self):
-        return mini_buildd.models.gnupg.Remote.mbd_get_active()
+    def tpl(self):
+        return {
+            "model": self.model,
+            "style": u"running" if self.is_running() else u"stopped",
+            "running_text": u"Running" if self.is_running() else u"Stopped",
+            "iqs": self.model.mbd_incoming_queue.qsize(),
+            "bqs": self.model.mbd_build_queue.qsize(),
+            "packages": self.model.mbd_packages,
+            "builder_status": self.model.mbd_builder_status,
+            "remotes": mini_buildd.models.gnupg.Remote.mbd_get_active()}
 
 _INSTANCE = None
 

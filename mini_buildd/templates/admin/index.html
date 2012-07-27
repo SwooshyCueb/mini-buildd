@@ -10,127 +10,127 @@
 {% block breadcrumbs %}{% endblock %}
 
 {% block content %}
-<div id="content-main">
-	{% if app_list %}
-	{% for app in app_list %}
-	{% if app.name != "Mini_Buildd" %}
-	<div class="module">
-		<table summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}">
-			<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
-			{% for model in app.models %}
-			<tr>
-				{% if model.perms.change %}
-				<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+	<div id="content-main">
+		{% if app_list %}
+			{% for app in app_list %}
+				{% if app.name != "Mini_Buildd" %}
+					<div class="module">
+						<table summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}">
+							<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
+							{% for model in app.models %}
+								<tr>
+									{% if model.perms.change %}
+										<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+									{% else %}
+										<th class="overview" scope="row">{{ model.name }}</th>
+									{% endif %}
+									{% if model.perms.add %}
+										<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
+									{% else %}
+										<td>&nbsp;</td>
+									{% endif %}
+									{% if model.perms.change %}
+										<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+									{% else %}
+										<td>&nbsp;</td>
+									{% endif %}
+								</tr>
+							{% endfor %}
+						</table>
+					</div>
 				{% else %}
-				<th class="overview" scope="row">{{ model.name }}</th>
+					<!-- MINI-BUILDD -->
+					<div class="module mb">
+						<div id="mb_box">
+							<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">Mini-buildd</a></h1>
+							<!-- DAEMON -->
+							<div class="inner-box">
+								<table>
+									<caption>Daemon</caption>
+									{% include "admin/index_mb_row.html" with model_name="Daemon" hide_add="True" %}
+								</table>
+							</div>
+							<!-- ARCHIVES AND SOURCES -->
+							<div class="inner-box">
+								<table>
+									<caption>Archives and Sources</caption>
+									{% include "admin/index_mb_row.html" with model_name="Apt keys" %}
+									{% include "admin/index_mb_row.html" with model_name="Archives" %}
+									{% include "admin/index_mb_row.html" with model_name="Sources" %}
+									{% include "admin/index_mb_row.html" with model_name="Priority sources" %}
+								</table>
+							</div>
+							<!-- SUITES AND LAYOUTS-->
+							<div class="inner-box">
+								<table>
+									<caption>Suites and Layouts</caption>
+									{% include "admin/index_mb_row.html" with model_name="Suites" %}
+									{% include "admin/index_mb_row.html" with model_name="Layouts" %}
+								</table>
+							</div>
+							<!-- DISTRIBUTIONS AND REPOSITORIES -->
+							<div class="inner-box">
+								<table>
+									<caption>Distributions and Repositories</caption>
+									{% include "admin/index_mb_row.html" with model_name="Distributions" %}
+									{% include "admin/index_mb_row.html" with model_name="Repositories" %}
+								</table>
+							</div>
+							<!-- CHROOTS -->
+							<div class="inner-box">
+								<table>
+									<caption>Chroots</caption>
+									{% include "admin/index_mb_row.html" with model_name="File chroots" %}
+									{% include "admin/index_mb_row.html" with model_name="Lvm chroots" %}
+									{% include "admin/index_mb_row.html" with model_name="Loop lvm chroots" %}
+								</table>
+							</div>
+							<!-- UPLOADERS AND REMOTES -->
+							<div class="inner-box">
+								<table>
+									<caption>Uploaders and Remotes</caption>
+									{% include "admin/index_mb_row.html" with model_name="Uploaders" hide_add="True" %}
+									{% include "admin/index_mb_row.html" with model_name="Remotes" %}
+								</table>
+							</div>
+						</div>
+					</div>
 				{% endif %}
-				{% if model.perms.add %}
-				<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
-				{% else %}
-				<td>&nbsp;</td>
-				{% endif %}
-				{% if model.perms.change %}
-				<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
-				{% else %}
-				<td>&nbsp;</td>
-				{% endif %}
-			</tr>
 			{% endfor %}
-		</table>
+		{% else %}
+			<p>{% trans "You don't have permission to edit anything." %}</p>
+		{% endif %}
 	</div>
-	{% else %}
-	<!-- MINI-BUILDD -->
-	<div class="module mb">
-		<div id="mb_box">
-			<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">Mini-buildd</a></h1>
-			<!-- DAEMON -->
-			<div class="inner-box">
-				<table>
-					<caption>Daemon</caption>
-					{% include "admin/index_mb_row.html" with model_name="Daemon" hide_add="True" %}
-				</table>
-			</div>
-			<!-- ARCHIVES AND SOURCES -->
-			<div class="inner-box">
-				<table>
-					<caption>Archives and Sources</caption>
-					{% include "admin/index_mb_row.html" with model_name="Apt keys" %}
-					{% include "admin/index_mb_row.html" with model_name="Archives" %}
-					{% include "admin/index_mb_row.html" with model_name="Sources" %}
-					{% include "admin/index_mb_row.html" with model_name="Priority sources" %}
-				</table>
-			</div>
-			<!-- SUITES AND LAYOUTS-->
-			<div class="inner-box">
-				<table>
-					<caption>Suites and Layouts</caption>
-					{% include "admin/index_mb_row.html" with model_name="Suites" %}
-					{% include "admin/index_mb_row.html" with model_name="Layouts" %}
-				</table>
-			</div>
-			<!-- DISTRIBUTIONS AND REPOSITORIES -->
-			<div class="inner-box">
-				<table>
-					<caption>Distributions and Repositories</caption>
-					{% include "admin/index_mb_row.html" with model_name="Distributions" %}
-					{% include "admin/index_mb_row.html" with model_name="Repositories" %}
-				</table>
-			</div>
-			<!-- CHROOTS -->
-			<div class="inner-box">
-				<table>
-					<caption>Chroots</caption>
-					{% include "admin/index_mb_row.html" with model_name="File chroots" %}
-					{% include "admin/index_mb_row.html" with model_name="Lvm chroots" %}
-					{% include "admin/index_mb_row.html" with model_name="Loop lvm chroots" %}
-				</table>
-			</div>
-			<!-- UPLOADERS AND REMOTES -->
-			<div class="inner-box">
-				<table>
-					<caption>Uploaders and Remotes</caption>
-					{% include "admin/index_mb_row.html" with model_name="Uploaders" hide_add="True" %}
-					{% include "admin/index_mb_row.html" with model_name="Remotes" %}
-				</table>
-			</div>
-		</div>
-	</div>
-	{% endif %}
-	{% endfor %}
-	{% else %}
-	<p>{% trans "You don't have permission to edit anything." %}</p>
-	{% endif %}
-</div>
 {% endblock %}
 
 {% block sidebar %}
-<div id="content-related">
-	<div class="module" id="recent-actions-module">
-		<h2>{% trans 'Recent Actions' %}</h2>
-		<h3>{% trans 'My Actions' %}</h3>
-		{% load log %}
-		{% get_admin_log 10 as admin_log for_user user %}
-		{% if not admin_log %}
-		<p>{% trans 'None available' %}</p>
-		{% else %}
-		<ul class="actionlist">
-			{% for entry in admin_log %}
-			<li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
-				{% if entry.is_deletion or not entry.get_admin_url %}
-				{{ entry.object_repr }}
-				{% else %}
-				<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
-				{% endif %}
-				<br/>
-				{% if entry.content_type %}
-				<span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span>
-				{% else %}
-				<span class="mini quiet">{% trans 'Unknown content' %}</span>
-				{% endif %}
-			</li>
-			{% endfor %}
-		</ul>
-		{% endif %}
+	<div id="content-related">
+		<div class="module" id="recent-actions-module">
+			<h2>{% trans 'Recent Actions' %}</h2>
+			<h3>{% trans 'My Actions' %}</h3>
+			{% load log %}
+			{% get_admin_log 10 as admin_log for_user user %}
+			{% if not admin_log %}
+				<p>{% trans 'None available' %}</p>
+			{% else %}
+				<ul class="actionlist">
+					{% for entry in admin_log %}
+						<li class="{% if entry.is_addition %}addlink{% endif %}{% if entry.is_change %}changelink{% endif %}{% if entry.is_deletion %}deletelink{% endif %}">
+							{% if entry.is_deletion or not entry.get_admin_url %}
+								{{ entry.object_repr }}
+							{% else %}
+								<a href="{{ entry.get_admin_url }}">{{ entry.object_repr }}</a>
+							{% endif %}
+							<br/>
+							{% if entry.content_type %}
+								<span class="mini quiet">{% filter capfirst %}{% trans entry.content_type.name %}{% endfilter %}</span>
+							{% else %}
+								<span class="mini quiet">{% trans 'Unknown content' %}</span>
+							{% endif %}
+						</li>
+					{% endfor %}
+				</ul>
+			{% endif %}
+		</div>
 	</div>
-</div>
 {% endblock %}

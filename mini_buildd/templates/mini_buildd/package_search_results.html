@@ -7,66 +7,66 @@
 
 {% block content %}
 
-<div id="mb_package_search_results">
-	<div class="box">
-		<h1 class="box-caption">Search results</h1>
+	<div id="mb_package_search_results">
+		<div class="box">
+			<h1 class="box-caption">Search results</h1>
 
-		{% if result %}
-		{% for repository, packages in result.items %}
-		<div class="inner-box">
-			<h1 class="inner-box-caption"><a class="inner-box-anchor"
-																			 title="goto repositoroy {{ repository }}"
-																			 href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
+			{% if result %}
+				{% for repository, packages in result.items %}
+					<div class="inner-box">
+						<h1 class="inner-box-caption"><a class="inner-box-anchor"
+																						 title="goto repositoroy {{ repository }}"
+																						 href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
 
-			{% for package, versions in packages.items %}
+						{% for package, versions in packages.items %}
 
-			<div class="inner-inner-box">
-				<h1 class="inner-inner-box-caption">{{ package }}</h1>
+							<div class="inner-inner-box">
+								<h1 class="inner-inner-box-caption">{{ package }}</h1>
 
-				<table>
-					<tr>
-						<th>Version</th>
-						<th>Distributions</th>
-					</tr>
+								<table>
+									<tr>
+										<th>Version</th>
+										<th>Distributions</th>
+									</tr>
 
-					{% for version, distributions in versions.items %}
+									{% for version, distributions in versions.items %}
 
-					<tr>
-						<td>{{ version }}</td>
-						<td>
-							{% for distribution, properties in distributions.items %}
-							|
-							{{ distribution }}
+										<tr>
+											<td>{{ version }}</td>
+											<td>
+												{% for distribution, properties in distributions.items %}
+													|
+													{{ distribution }}
 
-							{% if authenticated %}
-							<a class="remove" title="Remove package from: {{ distribution }}"
-								 href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">remove</a>
-							{% if properties.migrates_to %}
-							<a class="propagate" title="to: {{ properties.migrates_to }}"
-								 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
-							{% endif %}
+													{% if authenticated %}
+														<a class="remove" title="Remove package from: {{ distribution }}"
+															 href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">remove</a>
+														{% if properties.migrates_to %}
+															<a class="propagate" title="to: {{ properties.migrates_to }}"
+																 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
+															 {% endif %}
 
-							{% else %}
-							<a class="propagate" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
-							{% endif %}
-							{% endfor %}
-							|
-						</td>
-					</tr>
+														 {% else %}
+															 <a class="propagate" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
+														 {% endif %}
+													 {% endfor %}
+													 |
+											</td>
+										</tr>
 
+									{% endfor %}
+								</table>
+							</div>
+						{% endfor %}
 					{% endfor %}
-				</table>
-			</div>
-			{% endfor %}
-			{% endfor %}
-			{% else %}
-			<ul>
-				<li><span class="alert">No packages found!</span></li>
-				<li>Back to <a href="javascript: history.back()">search</a>.</li>
-			</ul>
-			{% endif %}
+				{% else %}
+					<ul>
+						<li><span class="alert">No packages found!</span></li>
+						<li>Back to <a href="javascript: history.back()">search</a>.</li>
+					</ul>
+				{% endif %}
+					</div>
 		</div>
 	</div>
-</div>
 
 {% endblock %}

@@ -45,9 +45,17 @@
 						</form>
 
 						<hr />
-						<h3>Packager status: {{ daemon.tpl.packages|length }} active packages</h3>
+						<h3>Packager status</h3>
+						<h4>{{ daemon.tpl.packages|length }} active packages</h4>
 						<ul>
-							{% for p in daemon.tpl.packages %}
+							{% for k, p in daemon.tpl.packages.items %}
+								<li>{{ p }}</li>
+							{% endfor %}
+						</ul>
+
+						<h4>Last packages</h4>
+						<ul>
+							{% for p in daemon.tpl.last_packages %}
 								<li>{{ p }}</li>
 							{% endfor %}
 						</ul>

@@ -14,6 +14,7 @@ class Package(object):
     INCOMPLETE = 1
 
     def __init__(self, daemon, changes, repository, dist, suite):
+        self.done = False
         self.daemon = daemon
         self.changes = changes
         self.repository, self.dist, self.suite = repository, dist, suite
@@ -23,6 +24,14 @@ class Package(object):
         self.failed = {}
         for _key, breq in self.requests.items():
             breq.upload_buildrequest(daemon.mbd_get_http_hopo())
+
+    def __unicode__(self):
+        return u"{s} ({d}): {p} ({f}/{r} arches)".format(
+            s="BUILDING" if not self.done else "FAILED" if self.failed else "BUILD",
+            d=self.changes["Distribution"],
+            p=self.pid,
+            f=len(self.success),
+            r=len(self.requests))
 
     def notify(self):
         results = u""
@@ -37,9 +46,7 @@ class Package(object):
         body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
 
         self.daemon.mbd_notify(
-            "{s}: {p} ({f}/{r} failed)".format(
-                s="Failed" if self.failed else "Build",
-                p=self.pid, f=len(self.failed), r=len(self.requests)),
+            self,
             body,
             self.repository,
             self.changes)
@@ -82,4 +89,6 @@ class Package(object):
             shutil.rmtree(self.changes.get_spool_dir())
 
             self.notify()
+
+        self.done = True
         return self.DONE

@@ -31,6 +31,7 @@
 """
 
 import os
+import collections
 import email.mime.text
 import email.utils
 import logging
@@ -75,6 +76,7 @@ def handle_buildresult(bres):
     pid = bres.get_pkg_id()
     if pid in get().model.mbd_packages:
         if get().model.mbd_packages[pid].update(bres) == mini_buildd.packager.Package.DONE:
+            get().last_packages.append(get().model.mbd_packages[pid])
             del get().model.mbd_packages[pid]
         return True
     return False
@@ -160,6 +162,7 @@ def run():
 class Daemon():
     def __init__(self):
         self.model = None
+        self.last_packages = collections.deque(maxlen=30)
         self._update_model()
         self.thread = None
         global _INSTANCE
@@ -224,6 +227,7 @@ class Daemon():
             "iqs": self.model.mbd_incoming_queue.qsize(),
             "bqs": self.model.mbd_build_queue.qsize(),
             "packages": self.model.mbd_packages,
+            "last_packages": self.last_packages,
             "builder_status": self.model.mbd_builder_status,
             "remotes": mini_buildd.models.gnupg.Remote.mbd_get_active()}
 

@@ -22,8 +22,13 @@ class Status(object):
         self._pending = {}
         self._max_builds = max_builds
 
+    @property
     def building(self):
-        return len(self._building)
+        return self._building
+
+    @property
+    def pending(self):
+        return self._pending
 
     def load(self):
         return float(len(self._building)) / self._max_builds
@@ -39,29 +44,13 @@ class Status(object):
     def done(self, key):
         del self._pending[key]
 
-    def get_html(self):
-        def html_li(items):
-            html = ""
-            for key, value in items.items():
-                start, _done = value
-                html += "<li>{k} ({d})</li>".format(k=key, d=datetime.datetime.fromtimestamp(start).strftime('%Y-%m-%d %H:%M:%S'))
-            return html
+    @property
+    def tpl_max_builds(self):
+        return self._max_builds
 
-        return u"""\
-<h3>Builder: {n}/{m} active builds (load {l})</h3>
-
-<h4>{nb} building:</h4>
-<ul>{b}</ul>
-
-<h4>{np} pending:</h4>
-<ul>{p}</ul>
-""".format(n=len(self._building) + len(self._pending),
-           m=self._max_builds,
-           l=self.load(),
-           nb=len(self._building),
-           b=html_li(self._building),
-           np=len(self._pending),
-           p=html_li(self._pending))
+    @property
+    def tpl_load(self):
+        return self.load()
 
 
 def buildlog_to_buildresult(file_name, bres):
@@ -231,8 +220,8 @@ def run(queue, gnupg, status, build_queue_size, sbuild_jobs):
             LOG.info("Builder status: {0} active builds, {0} waiting in queue.".
                      format(0, queue.qsize()))
 
-            while status.building() >= build_queue_size:
-                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=status.building()))
+            while len(status.building) >= build_queue_size:
+                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=len(status.building)))
                 time.sleep(15)
 
             threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs, status=status))

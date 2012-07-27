@@ -215,57 +215,37 @@ class Daemon():
                                                     self.model.mbd_builder_status.load(),
                                                     get_chroots()])
 
-    def status_as_html(self):
-        """.. todo:: This should be mutex-locked. """
-        def packages():
-            packages = "<ul>"
-            for p in self.model.mbd_packages:
-                packages += "<li>{p}</li>".format(p=p)
-            packages += "</ul>"
-            return packages
+    @property
+    def tpl_model(self):
+        return self.model
 
-        def remotes():
-            remotes = "<ul>"
-            for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
-                remotes += "<li>{r}</li>".format(r=r)
-            remotes += "</ul>"
-            return remotes
+    @property
+    def tpl_style(self):
+        return u"running" if self.is_running() else u"stopped"
 
-        return u'''
-<h1 class="box-caption">Status: <span class="status {style}">{s}</span></h1>
+    @property
+    def tpl_running_text(self):
+        return u"Running" if self.is_running() else u"Stopped"
 
-<h2>Daemon: {id}</h2>
+    @property
+    def tpl_iqs(self):
+        return self.model.mbd_incoming_queue.qsize()
 
-<ul>
-  <li>{c} changes files pending in incoming.</li>
-  <li>{b} build requests pending in queue.</li>
-</ul>
+    @property
+    def tpl_bqs(self):
+        return self.model.mbd_build_queue.qsize()
 
-<hr />
+    @property
+    def tpl_packages(self):
+        return self.model.mbd_packages
 
-<h3>Packager: {p} active packages</h3>
-{packages}
+    @property
+    def tpl_builder_status(self):
+        return self.model.mbd_builder_status
 
-<hr />
-
-{builder_status}
-
-<hr />
-
-<h4>Remotes: {r} active</h3>
-
-{remote_status}
-
-'''.format(style="running" if self.is_running() else "stopped",
-           s="Running" if self.is_running() else "Stopped",
-           id=self.model,
-           c=self.model.mbd_incoming_queue.qsize(),
-           b=self.model.mbd_build_queue.qsize(),
-           p=len(self.model.mbd_packages),
-           packages=packages(),
-           builder_status=self.model.mbd_builder_status.get_html(),
-           r=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
-           remote_status=remotes())
+    @property
+    def tpl_remotes(self):
+        return mini_buildd.models.gnupg.Remote.mbd_get_active()
 
 _INSTANCE = None
 

@@ -7,9 +7,54 @@
 
 <div id="mb_index_status">
 	<div class="box">
-		{% mbd_status %}
+		<h1 class="box-caption">Status: <span class="status {{ daemon.tpl_style }}">{{ daemon.tpl_running_text }}</span></h1>
+
+		<h2>Daemon: {{ daemon.tpl_model }}</h2>
+
+		<ul>
+			<li>{{ daemon.tpl_iqs }} changes files pending in incoming.</li>
+			<li>{{ daemon.tpl_bqs }} build requests pending in queue.</li>
+		</ul>
+
+		<hr />
+
+		<h3>Packager: {{ daemon.tpl_packages|length }} active packages</h3>
+		<ul>
+			{% for p in daemon.tpl_packages %}
+				<li>{{ p }}</li>
+			{% endfor %}
+		</ul>
+
+		<hr />
+
+		<h3>Builder: {{ daemon.tpl_builder_status.building|length }}/{{ daemon.tpl_builder_status.tpl_max_builds }} active builds (load {{ daemon.tpl_builder_status.tpl_load }})</h3>
+
+		<h4>{{ daemon.tpl_builder_status.building|length }} building:</h4>
+		<ul>
+			{% for b in daemon.tpl_builder_status.building %}
+			<li>{{ b }} [TODO: since timestamp]</li>
+			{% endfor %}
+		</ul>
+
+		<h4>{{ daemon.tpl_builder_status.pending|length }} pending:</h4>
+		<ul>
+			{% for b in daemon.tpl_builder_status.pending %}
+			<li>{{ b }}</li>
+			{% endfor %}
+		</ul>
+
+		<hr />
+
+		<h3>Remotes: {{ daemon.tpl_remotes|length }} active</h3>
+		<ul>
+			{% for r in daemom.tpl_remotes %}
+				<li>{{ r }}</li>
+			{% endfor %}
+		</ul>
+
 	</div>
 </div>
+
 <div id="mb_index_repositories">
 	<div class="box">
 		<h1 class="box-caption">Repositories</h1>

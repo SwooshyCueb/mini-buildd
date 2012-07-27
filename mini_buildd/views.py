@@ -12,7 +12,8 @@ import mini_buildd.models.gnupg
 
 def show_index(_request):
     return django.shortcuts.render_to_response("mini_buildd/index.html",
-                                               {"repositories": mini_buildd.models.repository.Repository.objects.all(),
+                                               {"daemon": mini_buildd.daemon.get(),
+                                                "repositories": mini_buildd.models.repository.Repository.objects.all(),
                                                 "chroots": mini_buildd.models.chroot.Chroot.objects.all(),
                                                 "remotes": mini_buildd.models.gnupg.Remote.objects.all()})
 

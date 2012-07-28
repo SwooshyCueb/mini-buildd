@@ -46,14 +46,14 @@
 
 						<hr />
 						<h3>Packager status</h3>
-						<h4>{{ daemon.tpl.packages|length }} active packages</h4>
+						<h4>{{ daemon.tpl.packages|length }} packaging:</h4>
 						<ul>
 							{% for k, p in daemon.tpl.packages.items %}
 								<li>{{ p }}</li>
 							{% endfor %}
 						</ul>
 
-						<h4>Last packages</h4>
+						<h4>Last packages:</h4>
 						<ul>
 							{% for p in daemon.tpl.last_packages %}
 								<li>{{ p }}</li>
@@ -77,20 +77,20 @@
 						</ul>
 
 						<hr />
-						<h3>Builder status: {{ daemon.tpl.builder_status.building|length }}/{{ daemon.tpl.builder_status.tpl.max_builds }} active builds (load {{ daemon.tpl.builder_status.tpl.load }})</h3>
+						<h3>Builder status: {{ daemon.tpl.builder_status.tpl.builds|length }}/{{ daemon.tpl.builder_status.tpl.max_builds }} active builds (load {{ daemon.tpl.builder_status.tpl.load }})</h3>
 
 						<p>{{ daemon.tpl.bqs }} build requests pending in queue.</p>
 
-						<h4>{{ daemon.tpl.builder_status.building|length }} building:</h4>
+						<h4>{{ daemon.tpl.builder_status.tpl.builds|length }} building:</h4>
 						<ul>
-							{% for b in daemon.tpl.builder_status.building %}
-								<li>{{ b }} [TODO: since timestamp]</li>
+							{% for k, b in daemon.tpl.builder_status.tpl.builds.items %}
+								<li>{{ b }}</li>
 							{% endfor %}
 						</ul>
 
-						<h4>{{ daemon.tpl.builder_status.pending|length }} pending:</h4>
+						<h4>Last builds:</h4>
 						<ul>
-							{% for b in daemon.tpl.builder_status.pending %}
+							{% for b in daemon.tpl.builder_status.tpl.last_builds %}
 								<li>{{ b }}</li>
 							{% endfor %}
 						</ul>

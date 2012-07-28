@@ -2,6 +2,7 @@
 import os
 import time
 import datetime
+import collections
 import shutil
 import re
 import subprocess
@@ -14,36 +15,62 @@ import mini_buildd.changes
 LOG = logging.getLogger(__name__)
 
 
+class Build(object):
+    def __init__(self, breq):
+        self._breq = breq
+        self._started = datetime.datetime.now()
+        self._done = None
+        self._uploaded = None
+
+    def __unicode__(self):
+        return u"{s}: {c}: Started {start} ({took}), uploaded {uploaded}".format(
+            s="DONE" if self._done else "BUILDING",
+            c=self._breq,
+            start=self._started,
+            took=self._done - self._started if self._done else "n/a",
+            uploaded=self._uploaded)
+
+    def __str__(self):
+        return self.__unicode__()
+
+    def build(self):
+        self._done = datetime.datetime.now()
+
+    def uploaded(self):
+        self._uploaded = datetime.datetime.now()
+
+
 class Status(object):
     "... todo:: Some of these methods require locking(?)"
 
     def __init__(self, max_builds):
-        self._building = {}
-        self._pending = {}
+        self._builds = {}
+        self._last_builds = collections.deque(maxlen=30)
         self._max_builds = max_builds
 
     def building(self):
-        return self._building
+        return self._builds
 
     def load(self):
-        return float(len(self._building)) / self._max_builds
+        return float(len(self._builds)) / self._max_builds
 
-    def start(self, key):
-        self._building[key] = (time.time(), 0)
+    def start(self, breq):
+        self._builds[breq.get_pkg_id(with_arch=True)] = Build(breq)
 
-    def build(self, key):
-        start, _build = self._building[key]
-        del self._building[key]
-        self._pending[key] = (start, time.time())
+    def build(self, breq):
+        self._builds[breq.get_pkg_id(with_arch=True)].build()
 
-    def done(self, key):
-        del self._pending[key]
+    def uploaded(self, breq):
+        build = self._builds[breq.get_pkg_id(with_arch=True)]
+        build.uploaded()
+        self._last_builds.append(build)
+        del self._builds[breq.get_pkg_id(with_arch=True)]
 
     @property
     def tpl(self):
         return {
-            "building": self._building,
-            "pending": self._pending,
+            "builds": self._builds,
+            "last_builds": self._last_builds,
             "max_builds": self._max_builds,
             "load": self.load()}
 
@@ -103,8 +130,7 @@ def build(breq, gnupg, jobs, status):
     """
     mini_buildd.misc.sbuild_keys_workaround()
 
-    pkg_info = "{s}-{v}:{a}".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])
-    status.start(pkg_info)
+    status.start(breq)
 
     build_dir = breq.get_spool_dir()
 
@@ -149,7 +175,7 @@ def build(breq, gnupg, jobs, status):
             sbuild_cmd.append("{s}_{v}.dsc".format(s=breq["Source"], v=breq["Version"]))
 
             buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
-            LOG.info("{p}: Running sbuild: {c}".format(p=pkg_info, c=sbuild_cmd))
+            LOG.info("{p}: Running sbuild: {c}".format(p=breq.get_pkg_id(with_arch=True), c=sbuild_cmd))
             with open(buildlog, "w") as l:
                 retval = subprocess.call(sbuild_cmd,
                                          cwd=build_dir,
@@ -163,7 +189,7 @@ def build(breq, gnupg, jobs, status):
             bres["Sbuildretval"] = str(retval)
             buildlog_to_buildresult(buildlog, bres)
 
-            LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=pkg_info, r=retval, s=bres["Sbuild-Status"]))
+            LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=breq.get_pkg_id(with_arch=True), r=retval, s=bres["Sbuild-Status"]))
             bres.add_file(buildlog)
             build_changes_file = os.path.join(build_dir,
                                               "{s}_{v}_{a}.changes".
@@ -182,16 +208,16 @@ def build(breq, gnupg, jobs, status):
     else:
         LOG.info("Re-using existing buildresult: {b}".format(b=breq.file_name))
 
-    status.build(pkg_info)
+    status.build(breq)
 
     # Finally, try to upload to requesting mini-buildd; if the
     # upload fails, we keep all data and try later.
     try:
         bres.upload(mini_buildd.misc.HoPo(breq["Upload-Result-To"]))
         build_clean(breq)
-        status.done(pkg_info)
+        status.uploaded(breq)
     except Exception as e:
-        LOG.error("Upload failed (trying later): {e}".format(e=str(e)))
+        LOG.exception("Upload failed (trying later): {e}".format(e=str(e)))
 
 
 def run(queue, gnupg, status, build_queue_size, sbuild_jobs):

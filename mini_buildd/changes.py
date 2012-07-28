@@ -32,6 +32,14 @@ class Changes(debian.deb822.Changes):
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
+    def __unicode__(self):
+        if self.is_buildrequest():
+            return u"Buildrequest from '{h}': {i}".format(h=self.get_or_empty("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
+        elif self.is_buildresult():
+            return u"Buildresult from '{h}': {i}".format(h=self.get_or_empty("Built-By"), i=self.get_pkg_id(with_arch=True))
+        else:
+            return u"User upload: {i}".format(i=self.get_pkg_id())
+
     @property
     def file_name(self):
         return self._file_name

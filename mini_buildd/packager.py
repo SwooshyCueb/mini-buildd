@@ -46,7 +46,7 @@ class Package(object):
         body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
 
         self.daemon.mbd_notify(
-            self,
+            unicode(self),
             body,
             self.repository,
             self.changes)

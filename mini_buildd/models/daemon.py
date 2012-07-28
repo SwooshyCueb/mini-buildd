@@ -56,10 +56,6 @@ Expire-Date: 0
     ftpd_options = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     # Load options
-    incoming_queue_size = django.db.models.IntegerField(
-        default=2 * mini_buildd.misc.get_cpus(),
-        help_text="Maximum number of parallel packages to process.")
-
     build_queue_size = django.db.models.IntegerField(
         default=mini_buildd.misc.get_cpus(),
         help_text="Maximum number of parallel builds.")
@@ -96,7 +92,7 @@ prevent original package maintainers to be spammed.
         fieldsets = (
             ("Archive identity", {"fields": ("identity", "hostname", "email_address", "gnupg_template")}),
             ("FTP (incoming) Options", {"fields": ("ftpd_bind", "ftpd_options")}),
-            ("Load Options", {"fields": ("incoming_queue_size", "build_queue_size", "sbuild_jobs")}),
+            ("Load Options", {"fields": ("build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory")}))
 
@@ -113,10 +109,10 @@ prevent original package maintainers to be spammed.
         self._mbd_fullname = "mini-buildd archive {i}".format(i=self.identity)
         self._mbd_gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template, self._mbd_fullname, self.email_address)
 
-        self.mbd_incoming_queue = Queue.Queue(maxsize=self.incoming_queue_size)
-        self.mbd_build_queue = Queue.Queue(maxsize=self.build_queue_size)
+        self.mbd_incoming_queue = Queue.Queue()
+        self.mbd_build_queue = mini_buildd.misc.BlockQueue(maxsize=self.build_queue_size)
         self.mbd_packages = {}
-        self.mbd_builder_status = mini_buildd.builder.Status(self.build_queue_size)
+        self.mbd_builder_status = mini_buildd.builder.Status()
         self.mbd_stray_buildresults = []
 
     @property

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import os
-import time
 import datetime
 import collections
 import shutil
@@ -43,16 +42,12 @@ class Build(object):
 class Status(object):
     "... todo:: Some of these methods require locking(?)"
 
-    def __init__(self, max_builds):
+    def __init__(self):
         self._builds = {}
         self._last_builds = collections.deque(maxlen=30)
-        self._max_builds = max_builds
 
     def building(self):
         return self._builds
-
-    def load(self):
-        return float(len(self._builds)) / self._max_builds
 
     def start(self, breq):
         self._builds[breq.get_pkg_id(with_arch=True)] = Build(breq)
@@ -70,9 +65,7 @@ class Status(object):
     def tpl(self):
         return {
             "builds": self._builds,
-            "last_builds": self._last_builds,
-            "max_builds": self._max_builds,
-            "load": self.load()}
+            "last_builds": self._last_builds}
 
 
 def buildlog_to_buildresult(file_name, bres):
@@ -118,7 +111,19 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 """)
 
 
-def build(breq, gnupg, jobs, status):
+def build(queue, breq, gnupg, jobs, status):
+    """ .. todo:: To to level error/exception handling here."""
+    try:
+        _build(breq, gnupg, jobs, status)
+    except Exception as e:
+        LOG.error("Unexpected error in build: {e}".format(e=str(e)))
+        if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+            LOG.exception("DEBUG: Builder loop exception")
+    finally:
+        queue.task_done()
+
+
+def _build(breq, gnupg, jobs, status):
     """
     .. todo:: Builder
 
@@ -220,39 +225,15 @@ def build(breq, gnupg, jobs, status):
         LOG.exception("Upload failed (trying later): {e}".format(e=str(e)))
 
 
-def run(queue, gnupg, status, build_queue_size, sbuild_jobs):
-    threads = []
-
-    def threads_cleanup():
-        rm = []
-        for t in threads:
-            if not t.is_alive():
-                t.join()
-                rm.append(t)
-        for t in rm:
-            threads.remove(t)
-
+def run(queue, gnupg, status, sbuild_jobs):
     while True:
         event = queue.get()
         if event == "SHUTDOWN":
             break
 
-        try:
-            LOG.info("Builder status: {0} active builds, {0} waiting in queue.".format(0, queue.qsize()))
+        LOG.info("Builder status: {s}.".format(s=queue))
 
-            while len(status.building()) >= build_queue_size:
-                LOG.info("Max ({b}) builds running, waiting for a free builder slot...".format(b=len(status.building())))
-                time.sleep(15)
-
-            threads.append(mini_buildd.misc.run_as_thread(build, breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs, status=status))
-            threads_cleanup()
-
-        except Exception as e:
-            LOG.error("Unexpected error in builder loop: {e}".format(e=str(e)))
-            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-                LOG.exception("DEBUG: Builder loop exception")
-        finally:
-            queue.task_done()
-
-    for t in threads:
-        t.join()
+        mini_buildd.misc.run_as_thread(
+            build, daemon=True, queue=queue,
+            breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs,
+            status=status)

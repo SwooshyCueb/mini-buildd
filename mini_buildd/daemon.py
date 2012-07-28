@@ -100,7 +100,6 @@ def run():
         gnupg=get().model.mbd_gnupg,
         queue=get().model.mbd_build_queue,
         status=get().model.mbd_builder_status,
-        build_queue_size=get().model.build_queue_size,
         sbuild_jobs=get().model.sbuild_jobs)
 
     while True:
@@ -118,7 +117,10 @@ def run():
 
             if changes.is_buildrequest():
                 remotes_keyring.verify(changes.file_path)
-                get().model.mbd_build_queue.put(event)
+
+                def queue_buildrequest(event):
+                    get().model.mbd_build_queue.put(event)
+                mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
             elif changes.is_buildresult():
                 remotes_keyring.verify(changes.file_path)
                 if not handle_buildresult(changes):
@@ -215,7 +217,7 @@ class Daemon():
 
         return mini_buildd.misc.BuilderState(state=[self.is_running(),
                                                     self.model.mbd_get_ftp_hopo().string,
-                                                    self.model.mbd_builder_status.load(),
+                                                    self.model.mbd_build_queue.load,
                                                     get_chroots()])
 
     @property
@@ -224,8 +226,7 @@ class Daemon():
             "model": self.model,
             "style": u"running" if self.is_running() else u"stopped",
             "running_text": u"Running" if self.is_running() else u"Stopped",
-            "iqs": self.model.mbd_incoming_queue.qsize(),
-            "bqs": self.model.mbd_build_queue.qsize(),
+            "build_queue": self.model.mbd_build_queue,
             "packages": self.model.mbd_packages,
             "last_packages": self.last_packages,
             "builder_status": self.model.mbd_builder_status,

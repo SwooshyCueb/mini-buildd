@@ -46,8 +46,9 @@ class Archive(mini_buildd.models.base.Model):
             release.seek(0)
             return debian.deb822.Release(release)
 
-    def mbd_check_up(self):
+    def mbd_check_up(self, request):
         urllib.urlopen(self.url)
+        self.mbd_msg_info(request, "Archive conectivity ok: {s}".format(s=self))
 
 
 class Architecture(mini_buildd.models.base.Model):
@@ -155,7 +156,7 @@ class Source(mini_buildd.models.base.StatusModel):
 
     def mbd_check(self, request):
         for a in self.archives.all():
-            a.mbd_check_up()
+            a.mbd_check_up(request)
 
     def mbd_get_status_dependencies(self):
         dependencies = []

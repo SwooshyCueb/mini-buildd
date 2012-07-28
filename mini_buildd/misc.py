@@ -5,6 +5,7 @@ import shutil
 import errno
 import subprocess
 import threading
+import Queue
 import multiprocessing
 import tempfile
 import hashlib
@@ -13,6 +14,39 @@ import logging
 import logging.handlers
 
 LOG = logging.getLogger(__name__)
+
+
+class BlockQueue(Queue.Queue):
+    """
+    Wrapper around Queue to get put() block until <= maxsize tasks are actually done.
+    In Queue.Queue, task_done() is only used together with join().
+
+    This way can use the Queue directly to limit the number of
+    actually worked-on items for incoming and builds.
+    """
+    def __init__(self, maxsize):
+        self._maxsize = maxsize
+        self._active = Queue.Queue(maxsize=maxsize)
+        Queue.Queue.__init__(self, maxsize=maxsize)
+
+    def __unicode__(self):
+        return u"{l}: {n}/{m}".format(
+            l=self.load,
+            n=self._active.qsize(),
+            m=self._maxsize)
+
+    @property
+    def load(self):
+        return round(float(self._active.qsize()) / self._maxsize, 2)
+
+    def put(self, item, **kwargs):
+        self._active.put(item)
+        Queue.Queue.put(self, item, **kwargs)
+
+    def task_done(self):
+        self._active.get()
+        self._active.task_done()
+        return Queue.Queue.task_done(self)
 
 
 class HoPo(object):

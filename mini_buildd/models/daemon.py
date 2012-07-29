@@ -83,6 +83,12 @@ prevent original package maintainers to be spammed.
 """)
 
     custom_hooks_directory = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
+    show_last_packages = django.db.models.IntegerField(
+        default=30,
+        help_text="How many last packages to show in status.")
+    show_last_builds = django.db.models.IntegerField(
+        default=30,
+        help_text="How many last builds to show in status.")
 
     class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Daemon"
@@ -93,7 +99,7 @@ prevent original package maintainers to be spammed.
             ("FTP (incoming) Options", {"fields": ("ftpd_bind", "ftpd_options")}),
             ("Load Options", {"fields": ("build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
-            ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory")}))
+            ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
 
     def __unicode__(self):
         return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(

@@ -155,10 +155,6 @@ def run():
 
 class Daemon():
     def __init__(self):
-        # Ringbuffers to hold last (30) 'done' packages or builds
-        self.last_packages = collections.deque(maxlen=30)
-        self.last_builds = collections.deque(maxlen=30)
-
         # Vars that are (re)generated when the daemon model is updated
         self.model = None
         self.incoming_queue = None
@@ -166,6 +162,8 @@ class Daemon():
         self.packages = None
         self.builds = None
         self.upload_pending_builds = None
+        self.last_packages = None
+        self.last_builds = None
         self._update_model()
 
         # When this is not None, daemon is running
@@ -192,6 +190,16 @@ class Daemon():
         self.packages = {}
         self.builds = {}
         self.upload_pending_builds = {}
+        self.last_packages = collections.deque(maxlen=self.model.show_last_packages)
+        self.last_builds = collections.deque(maxlen=self.model.show_last_builds)
+        try:
+            last_packages, last_builds = self.model.mbd_get_pickled_data()
+            for p in last_packages:
+                self.last_packages.append(p)
+            for b in last_builds:
+                self.last_builds.append(b)
+        except Exception as e:
+            LOG.error("Error last builds/packages: {e}".format(e=e))
 
     def start(self, run_check):
         if not self.thread:
@@ -205,6 +213,10 @@ class Daemon():
 
     def stop(self):
         if self.thread:
+            # Try to save some state
+            self.model.mbd_set_pickled_data((self.last_packages, self.last_builds))
+            self.model.save()
+
             self.incoming_queue.put("SHUTDOWN")
             self.thread.join()
             self.thread = None

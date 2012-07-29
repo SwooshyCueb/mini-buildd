@@ -254,3 +254,14 @@ class Changes(debian.deb822.Changes):
             breq_dict[a] = breq
 
         return breq_dict
+
+    def gen_buildresult(self):
+        assert(self.is_buildrequest())
+        bres = mini_buildd.changes.Changes(os.path.join(self.get_spool_dir(),
+                                                        u"{b}.changes".
+                                                        format(b=self.get_pkg_id(with_arch=True, arch_separator="_mini-buildd-buildresult_"))))
+
+        for v in ["Distribution", "Source", "Version", "Architecture"]:
+            bres[v] = self[v]
+
+        return bres

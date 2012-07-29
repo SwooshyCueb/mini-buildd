@@ -100,6 +100,7 @@ def run():
         mini_buildd.builder.run,
         queue=get().build_queue,
         builds=get().builds,
+        upload_pending_builds=get().upload_pending_builds,
         last_builds=get().last_builds,
         gnupg=get().model.mbd_gnupg,
         sbuild_jobs=get().model.sbuild_jobs)
@@ -175,6 +176,7 @@ class Daemon():
         self.build_queue = None
         self.packages = None
         self.builds = None
+        self.upload_pending_builds = None
         self.stray_buildresults = None
         self._update_model()
 
@@ -201,6 +203,7 @@ class Daemon():
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
         self.packages = {}
         self.builds = {}
+        self.upload_pending_builds = {}
         self.stray_buildresults = []
 
     def start(self, run_check):
@@ -253,6 +256,7 @@ class Daemon():
             "last_packages": self.last_packages,
             "build_queue": self.build_queue,
             "builds": self.builds,
+            "upload_pending_builds": self.upload_pending_builds,
             "last_builds": self.last_builds}
 
 _INSTANCE = None

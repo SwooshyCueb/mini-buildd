@@ -82,6 +82,13 @@
 							{% endfor %}
 						</ul>
 
+						<h2>Upload pending:</h2>
+						<ul>
+							{% for k, b in daemon.tpl.upload_pending_builds.items %}
+								<li>{{ b }} [check remote] [retry now] </li>
+							{% endfor %}
+						</ul>
+
 						<h2>Last builds:</h2>
 						<ul>
 							{% for b in daemon.tpl.last_builds %}

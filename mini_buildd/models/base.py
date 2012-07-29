@@ -42,6 +42,8 @@ still keeps the logic where it belongs.
 """
 
 import datetime
+import StringIO
+import pickle
 import logging
 
 import django.db.models
@@ -89,6 +91,9 @@ class Model(django.db.models.Model):
 Free form text that may be used by any real model for any extra
 options to support without changing the database scheme.
 """)
+
+    # May be used by any model for persistent python state
+    pickled_data = django.db.models.TextField(blank=True, editable=False)
 
     class Meta:
         abstract = True
@@ -139,6 +144,15 @@ options to support without changing the database scheme.
     def mbd_check_daemon_stopped(self):
         if self.mbd_get_daemon().is_running():
             raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
+
+    def mbd_get_pickled_data(self, default=None):
+        try:
+            return pickle.load(StringIO.StringIO(self.pickled_data.encode("UTF-8")))
+        except:
+            return default
+
+    def mbd_set_pickled_data(self, data):
+        self.pickled_data = pickle.dumps(data)
 
 
 class StatusModel(Model):

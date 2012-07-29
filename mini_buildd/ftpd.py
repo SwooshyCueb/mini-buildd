@@ -2,6 +2,7 @@
 import os
 import stat
 import glob
+import fnmatch
 import re
 import logging
 
@@ -44,7 +45,9 @@ def handle_incoming_file(queue, file_name):
 
 class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
     def on_file_received(self, file_name):
-        # Make any incoming file read-only as soon as it arrives; avoids multiple user uploads of the same file
+        """
+        Make any incoming file read-only as soon as it arrives; avoids overriding uploads of the same file.
+        """
         os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP)
         handle_incoming_file(self._mini_buildd_queue, file_name)
 
@@ -63,9 +66,13 @@ def run(bind, queue):
     handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
     handler._mini_buildd_queue = queue
 
-    # Re-push all existing files in incoming
-    for f in glob.glob(mini_buildd.setup.INCOMING_DIR + "/*"):
-        handle_incoming_file(queue, f)
+    # Re-feed all existing changes in incoming
+    # We must feed the the user uploads first, so the daemon does not get any yet-unknown build results
+    changes = glob.glob(mini_buildd.setup.INCOMING_DIR + "/*.changes")
+    for f in [c for c in changes if not fnmatch.fnmatch(c, "*mini-buildd-build*")]:
+        queue.put(f)
+    for f in [c for c in changes if fnmatch.fnmatch(c, "*mini-buildd-build*")]:
+        queue.put(f)
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
     LOG.info("Starting ftpd on '{b}'.".format(b=ba.string))

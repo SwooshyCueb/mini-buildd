@@ -73,16 +73,6 @@ def gen_remotes_keyring():
     return keyring
 
 
-def handle_buildresult(bres):
-    pid = bres.get_pkg_id()
-    if pid in get().packages:
-        if get().packages[pid].update(bres) == mini_buildd.packager.Package.DONE:
-            get().last_packages.append(get().packages[pid])
-            del get().packages[pid]
-        return True
-    return False
-
-
 def run():
     """
     mini-buildd 'daemon engine' run.
@@ -126,8 +116,10 @@ def run():
                 mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
             elif changes.is_buildresult():
                 remotes_keyring.verify(changes.file_path)
-                if not handle_buildresult(changes):
-                    get().stray_buildresults.append(changes)
+                if get().packages[changes_pid].update(changes) == mini_buildd.packager.Package.DONE:
+                    get().last_packages.append(get().packages[changes_pid])
+                    del get().packages[changes_pid]
+
             else:
                 repository, dist, suite = changes.get_repository()
                 if repository.allow_unauthenticated_uploads:
@@ -136,9 +128,6 @@ def run():
                     uploader_keyrings[repository.identity].verify(changes.file_path)
 
                 get().packages[changes_pid] = mini_buildd.packager.Package(get().model, changes, repository, dist, suite)
-
-                for bres in get().stray_buildresults:
-                    handle_buildresult(bres)
 
         except Exception as e:
             if changes and changes_pid:
@@ -177,7 +166,6 @@ class Daemon():
         self.packages = None
         self.builds = None
         self.upload_pending_builds = None
-        self.stray_buildresults = None
         self._update_model()
 
         # When this is not None, daemon is running
@@ -204,7 +192,6 @@ class Daemon():
         self.packages = {}
         self.builds = {}
         self.upload_pending_builds = {}
-        self.stray_buildresults = []
 
     def start(self, run_check):
         if not self.thread:

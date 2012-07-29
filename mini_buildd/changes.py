@@ -88,10 +88,10 @@ class Changes(debian.deb822.Changes):
     def get_log_dir(self):
         return os.path.join(mini_buildd.setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
 
-    def get_pkg_id(self, with_arch=False):
+    def get_pkg_id(self, with_arch=False, arch_separator=":"):
         pkg_id = u"{s}_{v}".format(s=self["Source"], v=self["Version"])
         if with_arch:
-            pkg_id += u":{a}".format(a=self["Architecture"])
+            pkg_id += u"{s}{a}".format(s=arch_separator, a=self["Architecture"])
         return pkg_id
 
     def get_files(self):

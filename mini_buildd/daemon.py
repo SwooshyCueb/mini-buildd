@@ -31,6 +31,7 @@
 """
 
 import os
+import Queue
 import collections
 import email.mime.text
 import email.utils
@@ -74,10 +75,10 @@ def gen_remotes_keyring():
 
 def handle_buildresult(bres):
     pid = bres.get_pkg_id()
-    if pid in get().model.mbd_packages:
-        if get().model.mbd_packages[pid].update(bres) == mini_buildd.packager.Package.DONE:
-            get().last_packages.append(get().model.mbd_packages[pid])
-            del get().model.mbd_packages[pid]
+    if pid in get().packages:
+        if get().packages[pid].update(bres) == mini_buildd.packager.Package.DONE:
+            get().last_packages.append(get().packages[pid])
+            del get().packages[pid]
         return True
     return False
 
@@ -93,23 +94,23 @@ def run():
     ftpd_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.ftpd.run,
         bind=get().model.ftpd_bind,
-        queue=get().model.mbd_incoming_queue)
+        queue=get().incoming_queue)
 
     builder_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.builder.run,
         gnupg=get().model.mbd_gnupg,
-        queue=get().model.mbd_build_queue,
-        status=get().model.mbd_builder_status,
+        queue=get().build_queue,
+        status=get().builder_status,
         sbuild_jobs=get().model.sbuild_jobs)
 
     while True:
-        event = get().model.mbd_incoming_queue.get()
+        event = get().incoming_queue.get()
         if event == "SHUTDOWN":
             break
 
         try:
             LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                     format(len(get().model.mbd_packages), get().model.mbd_incoming_queue.qsize()))
+                     format(len(get().packages), get().incoming_queue.qsize()))
 
             changes, changes_pid = None, None
             changes = mini_buildd.changes.Changes(event)
@@ -119,12 +120,12 @@ def run():
                 remotes_keyring.verify(changes.file_path)
 
                 def queue_buildrequest(event):
-                    get().model.mbd_build_queue.put(event)
+                    get().build_queue.put(event)
                 mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
             elif changes.is_buildresult():
                 remotes_keyring.verify(changes.file_path)
                 if not handle_buildresult(changes):
-                    get().model.mbd_stray_buildresults.append(changes)
+                    get().stray_buildresults.append(changes)
             else:
                 repository, dist, suite = changes.get_repository()
                 if repository.allow_unauthenticated_uploads:
@@ -132,9 +133,9 @@ def run():
                 else:
                     uploader_keyrings[repository.identity].verify(changes.file_path)
 
-                get().model.mbd_packages[changes_pid] = mini_buildd.packager.Package(get().model, changes, repository, dist, suite)
+                get().packages[changes_pid] = mini_buildd.packager.Package(get().model, changes, repository, dist, suite)
 
-                for bres in get().model.mbd_stray_buildresults:
+                for bres in get().stray_buildresults:
                     handle_buildresult(bres)
 
         except Exception as e:
@@ -153,9 +154,9 @@ def run():
                 LOG.exception("DEBUG: Daemon loop exception")
 
         finally:
-            get().model.mbd_incoming_queue.task_done()
+            get().incoming_queue.task_done()
 
-    get().model.mbd_build_queue.put("SHUTDOWN")
+    get().build_queue.put("SHUTDOWN")
     mini_buildd.ftpd.shutdown()
     builder_thread.join()
     ftpd_thread.join()
@@ -163,9 +164,16 @@ def run():
 
 class Daemon():
     def __init__(self):
-        self.model = None
         self.last_packages = collections.deque(maxlen=30)
+
+        self.model = None
+        self.incoming_queue = None
+        self.build_queue = None
+        self.packages = None
+        self.builder_status = None
+        self.stray_buildresults = None
         self._update_model()
+
         self.thread = None
         global _INSTANCE
         _INSTANCE = self
@@ -180,6 +188,12 @@ class Daemon():
             LOG.info("New default Daemon model instance created")
         LOG.info("Daemon model instance updated...")
 
+        self.incoming_queue = Queue.Queue()
+        self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
+        self.packages = {}
+        self.builder_status = mini_buildd.builder.Status()
+        self.stray_buildresults = []
+
     def start(self, run_check):
         if not self.thread:
             self._update_model()
@@ -192,7 +206,7 @@ class Daemon():
 
     def stop(self):
         if self.thread:
-            self.model.mbd_incoming_queue.put("SHUTDOWN")
+            self.incoming_queue.put("SHUTDOWN")
             self.thread.join()
             self.thread = None
             self._update_model()
@@ -217,7 +231,7 @@ class Daemon():
 
         return mini_buildd.misc.BuilderState(state=[self.is_running(),
                                                     self.model.mbd_get_ftp_hopo().string,
-                                                    self.model.mbd_build_queue.load,
+                                                    self.build_queue.load,
                                                     get_chroots()])
 
     @property
@@ -226,10 +240,10 @@ class Daemon():
             "model": self.model,
             "style": u"running" if self.is_running() else u"stopped",
             "running_text": u"Running" if self.is_running() else u"Stopped",
-            "build_queue": self.model.mbd_build_queue,
-            "packages": self.model.mbd_packages,
+            "build_queue": self.build_queue,
+            "packages": self.packages,
             "last_packages": self.last_packages,
-            "builder_status": self.model.mbd_builder_status,
+            "builder_status": self.builder_status,
             "remotes": mini_buildd.models.gnupg.Remote.mbd_get_active()}
 
 _INSTANCE = None

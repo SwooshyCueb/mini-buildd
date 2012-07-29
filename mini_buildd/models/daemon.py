@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import re
-import Queue
 import socket
 import smtplib
 import email.mime.text
@@ -108,12 +107,6 @@ prevent original package maintainers to be spammed.
         super(Daemon, self).__init__(*args, **kwargs)
         self._mbd_fullname = "mini-buildd archive {i}".format(i=self.identity)
         self._mbd_gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template, self._mbd_fullname, self.email_address)
-
-        self.mbd_incoming_queue = Queue.Queue()
-        self.mbd_build_queue = mini_buildd.misc.BlockQueue(maxsize=self.build_queue_size)
-        self.mbd_packages = {}
-        self.mbd_builder_status = mini_buildd.builder.Status()
-        self.mbd_stray_buildresults = []
 
     @property
     def mbd_fullname(self):

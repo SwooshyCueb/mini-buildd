@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import urllib
-import StringIO
 
 import django.db.models
 import django.contrib.admin
@@ -91,22 +90,18 @@ django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django
 
 class Remote(GnuPGPublicKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default="")
-    pickled_state = django.db.models.TextField(blank=True, editable=False)
 
     wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     class Admin(GnuPGPublicKey.Admin):
         search_fields = GnuPGPublicKey.Admin.search_fields + ["http"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_state"]
+        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_data"]
 
     def __unicode__(self):
         return "{S} ({s})".format(S=self.mbd_get_builder_state(), s=self.mbd_get_status_display())
 
     def mbd_get_builder_state(self):
-        if self.pickled_state:
-            return mini_buildd.misc.BuilderState(pickled_state=StringIO.StringIO(self.pickled_state.encode("UTF-8")))
-        else:
-            return mini_buildd.misc.BuilderState(state=[False, self.http, 0, {}])
+        return mini_buildd.misc.BuilderState(state=self.mbd_get_pickled_data(default=[False, self.http, 0, {}]))
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
@@ -122,12 +117,12 @@ class Remote(GnuPGPublicKey):
 
     def mbd_unprepare(self, request):
         self.key = ""
-        self.pickled_state = ""
+        self.pickled_data = ""
         self.mbd_msg_info(request, "Remote key and state removed.")
 
     def mbd_check(self, request):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
-        self.pickled_state = urllib.urlopen(url).read()
+        self.pickled_data = urllib.urlopen(url).read()
         state = self.mbd_get_builder_state()
         if not state.is_up():
             raise Exception("Remote builder down")

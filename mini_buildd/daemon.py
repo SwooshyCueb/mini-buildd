@@ -98,9 +98,10 @@ def run():
 
     builder_thread = mini_buildd.misc.run_as_thread(
         mini_buildd.builder.run,
-        gnupg=get().model.mbd_gnupg,
         queue=get().build_queue,
-        status=get().builder_status,
+        builds=get().builds,
+        last_builds=get().last_builds,
+        gnupg=get().model.mbd_gnupg,
         sbuild_jobs=get().model.sbuild_jobs)
 
     while True:
@@ -164,19 +165,27 @@ def run():
 
 class Daemon():
     def __init__(self):
+        # Ringbuffers to hold last (30) 'done' packages or builds
         self.last_packages = collections.deque(maxlen=30)
+        self.last_builds = collections.deque(maxlen=30)
 
+        # Vars that are (re)generated when the daemon model is updated
         self.model = None
         self.incoming_queue = None
         self.build_queue = None
         self.packages = None
-        self.builder_status = None
+        self.builds = None
         self.stray_buildresults = None
         self._update_model()
 
+        # When this is not None, daemon is running
         self.thread = None
+
+        # Set global to ourself
         global _INSTANCE
         _INSTANCE = self
+
+        # Finally, start daemon right now if active
         if self.model.mbd_is_active():
             self.start(run_check=True)
         else:
@@ -191,7 +200,7 @@ class Daemon():
         self.incoming_queue = Queue.Queue()
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
         self.packages = {}
-        self.builder_status = mini_buildd.builder.Status()
+        self.builds = {}
         self.stray_buildresults = []
 
     def start(self, run_check):
@@ -240,11 +249,11 @@ class Daemon():
             "model": self.model,
             "style": u"running" if self.is_running() else u"stopped",
             "running_text": u"Running" if self.is_running() else u"Stopped",
-            "build_queue": self.build_queue,
             "packages": self.packages,
             "last_packages": self.last_packages,
-            "builder_status": self.builder_status,
-            "remotes": mini_buildd.models.gnupg.Remote.mbd_get_active()}
+            "build_queue": self.build_queue,
+            "builds": self.builds,
+            "last_builds": self.last_builds}
 
 _INSTANCE = None
 

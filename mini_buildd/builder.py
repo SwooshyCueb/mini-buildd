@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import os
 import datetime
-import collections
 import shutil
 import re
 import subprocess
@@ -37,35 +36,6 @@ class Build(object):
 
     def uploaded(self):
         self._uploaded = datetime.datetime.now()
-
-
-class Status(object):
-    "... todo:: Some of these methods require locking(?)"
-
-    def __init__(self):
-        self._builds = {}
-        self._last_builds = collections.deque(maxlen=30)
-
-    def building(self):
-        return self._builds
-
-    def start(self, breq):
-        self._builds[breq.get_pkg_id(with_arch=True)] = Build(breq)
-
-    def build(self, breq):
-        self._builds[breq.get_pkg_id(with_arch=True)].build()
-
-    def uploaded(self, breq):
-        build = self._builds[breq.get_pkg_id(with_arch=True)]
-        build.uploaded()
-        self._last_builds.append(build)
-        del self._builds[breq.get_pkg_id(with_arch=True)]
-
-    @property
-    def tpl(self):
-        return {
-            "builds": self._builds,
-            "last_builds": self._last_builds}
 
 
 def buildlog_to_buildresult(file_name, bres):
@@ -111,19 +81,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 """)
 
 
-def build(queue, breq, gnupg, jobs, status):
-    """ .. todo:: To to level error/exception handling here."""
-    try:
-        _build(breq, gnupg, jobs, status)
-    except Exception as e:
-        LOG.error("Unexpected error in build: {e}".format(e=str(e)))
-        if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
-            LOG.exception("DEBUG: Builder loop exception")
-    finally:
-        queue.task_done()
-
-
-def _build(breq, gnupg, jobs, status):
+def _build(breq, gnupg, sbuild_jobs):
     """
     .. todo:: Builder
 
@@ -135,8 +93,6 @@ def _build(breq, gnupg, jobs, status):
     """
     mini_buildd.misc.sbuild_keys_workaround()
 
-    status.start(breq)
-
     build_dir = breq.get_spool_dir()
 
     bres = mini_buildd.changes.Changes(
@@ -145,87 +101,98 @@ def _build(breq, gnupg, jobs, status):
                      format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"])))
 
     if bres.is_new():
-        try:
-            breq.untar(path=build_dir)
+        breq.untar(path=build_dir)
 
-            generate_sbuildrc(build_dir, breq)
+        generate_sbuildrc(build_dir, breq)
 
-            sbuild_cmd = ["sbuild",
-                          "-j{0}".format(jobs),
-                          "--dist={0}".format(breq["Distribution"]),
-                          "--arch={0}".format(breq["Architecture"]),
-                          "--chroot=mini-buildd-{d}-{a}".format(d=breq["Base-Distribution"], a=breq["Architecture"]),
-                          "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=build_dir),
-                          "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=build_dir),
-                          "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=build_dir),
-                          "--chroot-setup-command=sudo apt-get update",
-                          "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=build_dir),
-                          "--build-dep-resolver={r}".format(r=breq["Build-Dep-Resolver"]),
-                          "--nolog", "--log-external-command-output", "--log-external-command-error"]
+        sbuild_cmd = ["sbuild",
+                      "-j{0}".format(sbuild_jobs),
+                      "--dist={0}".format(breq["Distribution"]),
+                      "--arch={0}".format(breq["Architecture"]),
+                      "--chroot=mini-buildd-{d}-{a}".format(d=breq["Base-Distribution"], a=breq["Architecture"]),
+                      "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=build_dir),
+                      "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=build_dir),
+                      "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=build_dir),
+                      "--chroot-setup-command=sudo apt-get update",
+                      "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=build_dir),
+                      "--build-dep-resolver={r}".format(r=breq["Build-Dep-Resolver"]),
+                      "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
-            if "Arch-All" in breq:
-                sbuild_cmd.append("--arch-all")
-                sbuild_cmd.append("--source")
-                sbuild_cmd.append("--debbuildopt=-sa")
+        if "Arch-All" in breq:
+            sbuild_cmd.append("--arch-all")
+            sbuild_cmd.append("--source")
+            sbuild_cmd.append("--debbuildopt=-sa")
 
-            if "Run-Lintian" in breq:
-                sbuild_cmd.append("--run-lintian")
-                sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
-                sbuild_cmd.append("--lintian-opts={o}".format(o=breq["Run-Lintian"]))
+        if "Run-Lintian" in breq:
+            sbuild_cmd.append("--run-lintian")
+            sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
+            sbuild_cmd.append("--lintian-opts={o}".format(o=breq["Run-Lintian"]))
 
-            if "sbuild" in mini_buildd.setup.DEBUG:
-                sbuild_cmd.append("--verbose")
-                sbuild_cmd.append("--debug")
+        if "sbuild" in mini_buildd.setup.DEBUG:
+            sbuild_cmd.append("--verbose")
+            sbuild_cmd.append("--debug")
 
-            sbuild_cmd.append("{s}_{v}.dsc".format(s=breq["Source"], v=breq["Version"]))
+        sbuild_cmd.append("{s}_{v}.dsc".format(s=breq["Source"], v=breq["Version"]))
 
-            buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
-            LOG.info("{p}: Running sbuild: {c}".format(p=breq.get_pkg_id(with_arch=True), c=sbuild_cmd))
-            with open(buildlog, "w") as l:
-                retval = subprocess.call(sbuild_cmd,
-                                         cwd=build_dir,
-                                         env=mini_buildd.misc.taint_env({"HOME": build_dir}),
-                                         stdout=l, stderr=subprocess.STDOUT)
+        buildlog = os.path.join(build_dir, "{s}_{v}_{a}.buildlog".format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
+        LOG.info("{p}: Running sbuild: {c}".format(p=breq.get_pkg_id(with_arch=True), c=sbuild_cmd))
+        with open(buildlog, "w") as l:
+            retval = subprocess.call(sbuild_cmd,
+                                     cwd=build_dir,
+                                     env=mini_buildd.misc.taint_env({"HOME": build_dir}),
+                                     stdout=l, stderr=subprocess.STDOUT)
 
-            for v in ["Distribution", "Source", "Version", "Architecture"]:
-                bres[v] = breq[v]
+        for v in ["Distribution", "Source", "Version", "Architecture"]:
+            bres[v] = breq[v]
 
-            # Add build results to build request object
-            bres["Sbuildretval"] = str(retval)
-            buildlog_to_buildresult(buildlog, bres)
+        # Add build results to build request object
+        bres["Sbuildretval"] = str(retval)
+        buildlog_to_buildresult(buildlog, bres)
 
-            LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=breq.get_pkg_id(with_arch=True), r=retval, s=bres["Sbuild-Status"]))
-            bres.add_file(buildlog)
-            build_changes_file = os.path.join(build_dir,
-                                              "{s}_{v}_{a}.changes".
-                                              format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
-            if os.path.exists(build_changes_file):
-                build_changes = mini_buildd.changes.Changes(build_changes_file)
-                build_changes.tar(tar_path=bres.file_path + ".tar")
-                bres.add_file(bres.file_path + ".tar")
+        LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=breq.get_pkg_id(with_arch=True), r=retval, s=bres["Sbuild-Status"]))
+        bres.add_file(buildlog)
+        build_changes_file = os.path.join(build_dir,
+                                          "{s}_{v}_{a}.changes".
+                                          format(s=breq["Source"], v=breq["Version"], a=breq["Architecture"]))
+        if os.path.exists(build_changes_file):
+            build_changes = mini_buildd.changes.Changes(build_changes_file)
+            build_changes.tar(tar_path=bres.file_path + ".tar")
+            bres.add_file(bres.file_path + ".tar")
 
-            bres.save(gnupg)
-        except Exception as e:
-            LOG.exception("Build internal error: {e}".format(e=str(e)))
-            build_clean(breq)
-            # todo: internal_error.upload(...)
-            return
+        bres.save(gnupg)
     else:
         LOG.info("Re-using existing buildresult: {b}".format(b=breq.file_name))
 
-    status.build(breq)
+    return bres
+
+
+def build(queue, builds, last_builds, gnupg, sbuild_jobs, breq):
+    b = Build(breq)
+    builds[breq.get_pkg_id(with_arch=True)] = b
+    try:
+        bres = _build(breq, gnupg, sbuild_jobs)
+        b.build()
+    except Exception as e:
+        LOG.exception("Build internal error: {e}".format(e=str(e)))
+        build_clean(breq)
+        # todo: internal_error.upload(...)
+    finally:
+        queue.task_done()
 
     # Finally, try to upload to requesting mini-buildd; if the
     # upload fails, we keep all data and try later.
     try:
         bres.upload(mini_buildd.misc.HoPo(breq["Upload-Result-To"]))
         build_clean(breq)
-        status.uploaded(breq)
+
+        b.uploaded()
+        last_builds.append(b)
+        del builds[breq.get_pkg_id(with_arch=True)]
     except Exception as e:
         LOG.exception("Upload failed (trying later): {e}".format(e=str(e)))
 
 
-def run(queue, gnupg, status, sbuild_jobs):
+def run(queue, builds, last_builds, gnupg, sbuild_jobs):
     while True:
         event = queue.get()
         if event == "SHUTDOWN":
@@ -234,6 +201,11 @@ def run(queue, gnupg, status, sbuild_jobs):
         LOG.info("Builder status: {s}.".format(s=queue))
 
         mini_buildd.misc.run_as_thread(
-            build, daemon=True, queue=queue,
-            breq=mini_buildd.changes.Changes(event), gnupg=gnupg, jobs=sbuild_jobs,
-            status=status)
+            build,
+            daemon=True,
+            queue=queue,
+            builds=builds,
+            last_builds=last_builds,
+            gnupg=gnupg,
+            sbuild_jobs=sbuild_jobs,
+            breq=mini_buildd.changes.Changes(event))

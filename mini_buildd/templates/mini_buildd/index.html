@@ -77,14 +77,14 @@
 
 						<h2>Building:</h2>
 						<ul>
-							{% for k, b in daemon.tpl.builder_status.tpl.builds.items %}
+							{% for k, b in daemon.tpl.builds.items %}
 								<li>{{ b }}</li>
 							{% endfor %}
 						</ul>
 
 						<h2>Last builds:</h2>
 						<ul>
-							{% for b in daemon.tpl.builder_status.tpl.last_builds %}
+							{% for b in daemon.tpl.last_builds %}
 								<li>{{ b }}</li>
 							{% endfor %}
 						</ul>

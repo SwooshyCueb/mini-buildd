@@ -46,6 +46,10 @@ class Suite(mini_buildd.models.base.Model):
         "self", blank=True, null=True,
         help_text="Give another suite where packages may migrate to.")
 
+    auto_migrate = django.db.models.IntegerField(
+        default=0,
+        help_text="For future use. Automatically migrate packages after x days.")
+
     not_automatic = django.db.models.BooleanField(default=True)
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 

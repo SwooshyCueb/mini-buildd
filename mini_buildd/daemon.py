@@ -179,11 +179,15 @@ class Daemon():
         else:
             LOG.info("Daemon NOT started (activate first)")
 
-    def _update_model(self):
-        self.model, created = mini_buildd.models.daemon.Daemon.objects.get_or_create(id=1)
+    @classmethod
+    def _new_model_object(cls):
+        model, created = mini_buildd.models.daemon.Daemon.objects.get_or_create(id=1)
         if created:
             LOG.info("New default Daemon model instance created")
-        LOG.info("Daemon model instance updated...")
+        return model
+
+    def _update_model(self):
+        self.model = self._new_model_object()
 
         self.incoming_queue = Queue.Queue()
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
@@ -199,7 +203,7 @@ class Daemon():
             for b in last_builds:
                 self.last_builds.append(b)
         except Exception as e:
-            LOG.error("Error last builds/packages: {e}".format(e=e))
+            LOG.error("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
 
     def start(self, run_check):
         if not self.thread:
@@ -213,9 +217,11 @@ class Daemon():
 
     def stop(self):
         if self.thread:
-            # Try to save some state
-            self.model.mbd_set_pickled_data((self.last_packages, self.last_builds))
-            self.model.save()
+            # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
+            # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
+            model = self._new_model_object()
+            model.mbd_set_pickled_data((self.last_packages, self.last_builds))
+            model.save()
 
             self.incoming_queue.put("SHUTDOWN")
             self.thread.join()

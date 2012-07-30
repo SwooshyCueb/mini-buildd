@@ -83,12 +83,20 @@ prevent original package maintainers to be spammed.
 """)
 
     custom_hooks_directory = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
+
     show_last_packages = django.db.models.IntegerField(
         default=30,
         help_text="How many last packages to show in status.")
     show_last_builds = django.db.models.IntegerField(
         default=30,
         help_text="How many last builds to show in status.")
+
+    wait_for_build_results = django.db.models.IntegerField(
+        default=5,
+        help_text="Future use: How many days to wait for build results until finishing a package.")
+    keep_build_results = django.db.models.IntegerField(
+        default=5,
+        help_text="Future use: How many days to keep build results that cannot be uploaded.")
 
     class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Daemon"

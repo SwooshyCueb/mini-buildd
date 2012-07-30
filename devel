@@ -94,6 +94,7 @@ mbd_pydjangolint()
 			-e "Naive tree structure implementation using ForeignKey('self')" \
 			-e "ForeignKey missing related_name" \
 			-e "URLField uses verify_exists=True default" \
+			-e "Model has too many field" \
 			-e "^\*"
 	)
 }

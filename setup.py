@@ -64,4 +64,5 @@ distutils.core.setup(
                                   "fixtures/*.json",
                                   "static/css/*.css",
                                   "static/images/*.png",
+                                  "static/js/*.js",
                                   "static/*.*"]})

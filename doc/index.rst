@@ -76,6 +76,7 @@ Enter the web application's `configuration section </admin/mini_buildd/>`_.
 5. **Add** at least one repository and **activate**.
 6. **Add** chroot(s) and **activate**.
 7. **Activate** the daemon.
+8. **Generate** keyring packages (as a *first test*; section *repository*).
 
 .. note::
    - *[Un]prepare* and *[de]activate* actions can be called from a model's list view.

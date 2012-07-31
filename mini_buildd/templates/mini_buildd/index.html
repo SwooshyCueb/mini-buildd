@@ -51,8 +51,9 @@
 							{% endfor %}
 						</ul>
 
-						<h2>Last packages:</h2>
-						<ul>
+
+						<h2>Last packages (<div id="mb_lp_click_me"><a id="mb_lp_anchor" href="#">show</a></div>):</h2>
+						<ul id="mb_last_packages">
 							{% for p in daemon.tpl.last_packages %}
 								<li>{{ p }}</li>
 							{% endfor %}
@@ -89,8 +90,8 @@
 							{% endfor %}
 						</ul>
 
-						<h2>Last builds:</h2>
-						<ul>
+						<h2>Last builds (<div id="mb_lb_click_me"><a id="mb_lb_anchor" href="#">show</a></div>):</h2>
+						<ul id="mb_last_builds">
 							{% for b in daemon.tpl.last_builds %}
 								<li>{{ b }}</li>
 							{% endfor %}

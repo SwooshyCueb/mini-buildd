@@ -362,6 +362,36 @@ a:hover
 	margin-left: 0px;
 }
 
+#mb_last_builds
+{
+	display: none;
+}
+
+#mb_lb_click_me
+{
+	display: inline;
+}
+
+#mb_lb_anchor
+{
+	font-size: 12px;
+}
+
+#mb_last_packages
+{
+	display: none;
+}
+
+#mb_lp_click_me
+{
+	display: inline;
+}
+
+#mb_lp_anchor
+{
+	font-size: 12px;
+}
+
 
 /* FOOTER */
 

@@ -392,6 +392,12 @@ a:hover
 	font-size: 12px;
 }
 
+#mb_index_package_search
+{
+	text-align: center;
+	padding: 15px 0px 10px 0px;
+}
+
 
 /* FOOTER */
 

@@ -36,8 +36,11 @@ class EmailAddress(mini_buildd.models.base.Model):
 
 
 class Suite(mini_buildd.models.base.Model):
+    group_label = django.db.models.CharField(
+        max_length=100, default="Default",
+        help_text="Free form group label for this suite. It's recommended to use the name of the Layout it's used for.")
     name = django.db.models.CharField(
-        primary_key=True, max_length=100,
+        max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
     uploadable = django.db.models.BooleanField(default=True)
     experimental = django.db.models.BooleanField(default=False)
@@ -54,7 +57,8 @@ class Suite(mini_buildd.models.base.Model):
     but_automatic_upgrades = django.db.models.BooleanField(default=True)
 
     def __unicode__(self):
-        return u"{e}{n}{e} [{u}]{m}".format(
+        return u"{l}: {e}{n}{e} [{u}]{m}".format(
+            l=self.group_label,
             n=self.name,
             e=u"*" if self.experimental else u"",
             u=u"uploadable" if self.uploadable else u"managed",

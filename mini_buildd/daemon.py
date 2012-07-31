@@ -175,7 +175,10 @@ class Daemon():
 
         # Finally, start daemon right now if active
         if self.model.mbd_is_active():
-            self.start(run_check=True)
+            try:
+                self.start(run_check=True)
+            except Exception as e:
+                LOG.error("Could start daemon: {e}".format(e=e))
         else:
             LOG.info("Daemon NOT started (activate first)")
 
@@ -209,7 +212,10 @@ class Daemon():
         if not self.thread:
             self._update_model()
             if run_check:
-                self.model.mbd_check(request=None)
+                mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check")
+                if not self.model.mbd_is_active():
+                    raise Exception("Daemon auto-deactivated.")
+
             self.thread = mini_buildd.misc.run_as_thread(run)
             LOG.info("Daemon running")
         else:

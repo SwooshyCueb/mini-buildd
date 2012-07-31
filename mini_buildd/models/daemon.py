@@ -148,17 +148,25 @@ prevent original package maintainers to be spammed.
         if self:
             pass
 
-        mini_buildd.models.repository.Repository.Admin.action_check(
+        # Try-run checks on activive and auto-reactivateable repos, chroots and remotes
+        # This possibly auto activate or deactivate objects
+        mini_buildd.models.repository.Repository.Admin.mbd_action(
             request,
-            mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate())
+            mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate(),
+            "check")
 
-        mini_buildd.models.chroot.Chroot.Admin.action_check(
+        mini_buildd.models.chroot.Chroot.Admin.mbd_action(
             request,
-            mini_buildd.models.chroot.Chroot.mbd_get_active_or_auto_reactivate())
+            mini_buildd.models.chroot.Chroot.mbd_get_active_or_auto_reactivate(),
+            "check")
 
-        mini_buildd.models.gnupg.Remote.Admin.action_check(
+        mini_buildd.models.gnupg.Remote.Admin.mbd_action(
             request,
-            mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate())
+            mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate(),
+            "check")
+
+        if not mini_buildd.models.repository.Repository.mbd_get_active() and not mini_buildd.models.chroot.Chroot.mbd_get_active():
+            raise Exception("At least one chroot or repository must be active to start the daemon.")
 
     def mbd_activate(self, request):
         self.mbd_get_daemon().restart(run_check=False)

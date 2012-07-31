@@ -206,23 +206,108 @@ class StatusModel(Model):
 
     class Admin(Model.Admin):
         @classmethod
-        def action_unprepare_without_confirmation(cls, request, queryset):
-            for o in queryset:
-                if not o.mbd_is_prepared():
-                    o.mbd_msg_info(request, "{o}: Already unprepared.".format(o=o))
-                else:
-                    try:
-                        o.mbd_unprepare(request)
-                        o.status = o.STATUS_UNPREPARED
-                        o.save()
-                        o.mbd_msg_info(request, "{o}: Unprepare successful.".format(o=o))
-                    except Exception as e:
-                        o.mbd_msg_error(request, "{o}: Unprepare FAILED: {e}.".format(o=o, e=str(e)))
+        def mbd_prepare(cls, request, obj):
+            if obj.mbd_is_prepared():
+                obj.mbd_msg_info(request, "{o}: Already prepared.".format(o=obj))
+            else:
+                # Also run for all status dependencies
+                cls.mbd_action(request, obj.mbd_get_status_dependencies(), "prepare")
+
+                obj.mbd_prepare(request)
+                obj.status = obj.STATUS_PREPARED
+                obj.save()
+                obj.mbd_msg_info(request, "{o}: Prepare successful.".format(o=obj))
 
         @classmethod
-        def action_unprepare(cls, request, queryset):
+        def mbd_activate(cls, request, obj):
+            if obj.mbd_is_active():
+                obj.mbd_msg_info(request, "{o}: Already active.".format(o=obj))
+            else:
+                # Try to prepare implicitely if neccessary
+                if not obj.mbd_is_prepared():
+                    cls.mbd_prepare(request, obj)
+
+                # Also run for all status dependencies
+                cls.mbd_action(request, obj.mbd_get_status_dependencies(), "activate")
+
+                # Always check before activation
+                cls.mbd_check(request, obj)
+
+                obj.mbd_activate(request)
+                obj.status = obj.STATUS_ACTIVE
+                obj.auto_reactivate = False
+                obj.save()
+                obj.mbd_msg_info(request, "{o}: Activate successful.".format(o=obj))
+
+        @classmethod
+        def mbd_unprepare(cls, request, obj):
+            if not obj.mbd_is_prepared():
+                obj.mbd_msg_info(request, "{o}: Already unprepared.".format(o=obj))
+            else:
+                obj.mbd_unprepare(request)
+                obj.status = obj.STATUS_UNPREPARED
+                obj.save()
+                obj.mbd_msg_info(request, "{o}: Unprepare successful.".format(o=obj))
+
+        @classmethod
+        def mbd_deactivate(cls, request, obj):
+            if not obj.mbd_is_active():
+                obj.mbd_msg_info(request, "{o}: Already deactivated.".format(o=obj))
+            else:
+                obj.mbd_deactivate(request)
+                obj.status = obj.STATUS_PREPARED
+                obj.save()
+                obj.mbd_msg_info(request, "{o}: Deactivate successful.".format(o=obj))
+
+        @classmethod
+        def mbd_check(cls, request, obj):
+            if obj.mbd_is_prepared():
+                try:
+                    # Also run for all status dependencies
+                    for o in obj.mbd_get_status_dependencies():
+                        cls.mbd_check(request, o)
+
+                    obj.mbd_check(request)
+                    obj.last_checked = datetime.datetime.now()
+                    if obj.auto_reactivate:
+                        obj.status = StatusModel.STATUS_ACTIVE
+                        obj.auto_reactivate = False
+                    obj.save()
+                    obj.mbd_msg_info(request, "{o}: Check successful.".format(o=obj))
+                except:
+                    # Check failed, auto-deactivate and re-raise exception
+                    if obj.mbd_is_active():
+                        obj.status = StatusModel.STATUS_PREPARED
+                        obj.auto_reactivate = True
+                        obj.save()
+                        obj.mbd_msg_error(request, "{o}: Automatically deactivated.".format(o=obj))
+                    raise
+            else:
+                raise Exception(u"{o}: Can't check unprepared object.".format(o=obj))
+
+        @classmethod
+        def mbd_action(cls, request, queryset, action):
+            """
+            Try to run action on each object in queryset, and
+            emit error message on failure.
+            """
+            for o in queryset:
+                try:
+                    getattr(cls, "mbd_" + action)(request, o)
+                except Exception as e:
+                    o.mbd_msg_error(request, "{o}: {a} failed: {e}".format(o=o, a=action, e=e))
+
+        def mbd_action_prepare(self, request, queryset):
+            self.mbd_action(request, queryset, "prepare")
+        mbd_action_prepare.short_description = "[3] Prepare selected objects and dependencies"
+
+        def mbd_action_activate(self, request, queryset):
+            self.mbd_action(request, queryset, "activate")
+        mbd_action_activate.short_description = "[4] Activate selected objects and dependencies"
+
+        def mbd_action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
-                cls.action_unprepare_without_confirmation(request, queryset)
+                self.mbd_action(request, queryset, "unprepare")
             else:
                 return django.template.response.TemplateResponse(
                     request,
@@ -230,116 +315,23 @@ class StatusModel(Model):
                     {
                         "title": ("Are you sure?"),
                         "queryset": queryset,
-                        "action": "action_unprepare",
+                        "action": "mbd_action_unprepare",
                         "desc": """\
 Unpreparing means all the data associated by preparation will be
 removed from the system. Especially for repositories,
 this would mean losing all packages!
 """,
                         "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
-                    current_app=cls.admin_site.name)
+                    current_app=self.admin_site.name)
+        mbd_action_unprepare.short_description = "[1] Unprepare selected objects"
 
-        def _action_unprepare(self, request, queryset):
-            self.__class__.action_unprepare(request, queryset)
-        _action_unprepare.short_description = "[1] Unprepare selected objects"
+        def mbd_action_deactivate(self, request, queryset):
+            self.mbd_action(request, queryset, "deactivate")
+        mbd_action_deactivate.short_description = "[2] Deactivate selected objects"
 
-        @classmethod
-        def action_deactivate(cls, request, queryset):
-            for o in queryset:
-                if not o.mbd_is_active():
-                    o.mbd_msg_info(request, "{o}: Already deactivated.".format(o=o))
-                else:
-                    try:
-                        o.mbd_deactivate(request)
-                        o.status = o.STATUS_PREPARED
-                        o.save()
-                        o.mbd_msg_info(request, "{o}: Deactivate successful.".format(o=o))
-                    except Exception as e:
-                        o.mbd_msg_error(request, "{o}: Deactivate FAILED: {e}.".format(o=o, e=str(e)))
-
-        def _action_deactivate(self, request, queryset):
-            self.__class__.action_deactivate(request, queryset)
-        _action_deactivate.short_description = "[2] Deactivate selected objects"
-
-        @classmethod
-        def action_prepare(cls, request, queryset):
-            for o in queryset:
-                if o.mbd_is_prepared():
-                    o.mbd_msg_info(request, "{o}: Already prepared.".format(o=o))
-                else:
-                    try:
-                        # Also run for all status dependencies
-                        cls.action_prepare(request, o.mbd_get_status_dependencies())
-
-                        o.mbd_prepare(request)
-                        o.status = o.STATUS_PREPARED
-                        o.save()
-                        o.mbd_msg_info(request, "{o}: Prepare successful.".format(o=o))
-                    except Exception as e:
-                        o.mbd_msg_error(request, "{o}: Prepare FAILED: {e}.".format(o=o, e=str(e)))
-
-        def _action_prepare(self, request, queryset):
-            self.__class__.action_prepare(request, queryset)
-        _action_prepare.short_description = "[3] Prepare selected objects and dependencies"
-
-        @classmethod
-        def action_activate(cls, request, queryset):
-            for o in queryset:
-                if o.mbd_is_active():
-                    o.mbd_msg_info(request, "{o}: Already active.".format(o=o))
-                else:
-                    # Try to prepare implicitely if neccessary
-                    if not o.mbd_is_prepared():
-                        cls.action_prepare(request, (o,))
-
-                    # Only try to activate if we are in status prepare
-                    if o.mbd_is_prepared():
-                        try:
-                            # Also run for all status dependencies
-                            cls.action_activate(request, o.mbd_get_status_dependencies())
-
-                            # Always check before activation
-                            cls.action_check(request, (o,))
-
-                            o.mbd_activate(request)
-                            o.status = o.STATUS_ACTIVE
-                            o.auto_reactivate = False
-                            o.save()
-                            o.mbd_msg_info(request, "{o}: Activate successful.".format(o=o))
-                        except Exception as e:
-                            o.mbd_msg_error(request, "{o}: Activate FAILED: {e}.".format(o=o, e=str(e)))
-
-        def _action_activate(self, request, queryset):
-            self.__class__.action_activate(request, queryset)
-        _action_activate.short_description = "[4] Activate selected objects and dependencies"
-
-        @classmethod
-        def action_check(cls, request, queryset):
-            for o in queryset:
-                if o.mbd_is_prepared():
-                    try:
-                        # Also run for all status dependencies
-                        cls.action_check(request, o.mbd_get_status_dependencies())
-
-                        o.mbd_check(request)
-                        o.last_checked = datetime.datetime.now()
-                        if o.auto_reactivate:
-                            o.status = StatusModel.STATUS_ACTIVE
-                            o.auto_reactivate = False
-                        o.save()
-                        o.mbd_msg_info(request, "{o}: Check successful.".format(o=o))
-                    except Exception as e:
-                        # Check failed, auto-deactivate this instance
-                        o.status = StatusModel.STATUS_PREPARED
-                        o.auto_reactivate = True
-                        o.save()
-                        o.mbd_msg_error(request, "{o}: Auto-Deactivating: Check FAILED: {e}.".format(o=o, e=str(e)))
-                else:
-                    o.mbd_msg_warn(request, "{o}: Skipped -- not prepared.".format(o=o))
-
-        def _action_check(self, request, queryset):
-            self.__class__.action_check(request, queryset)
-        _action_check.short_description = "[5] Check selected objects and dependencies"
+        def mbd_action_check(self, request, queryset):
+            self.mbd_action(request, queryset, "check")
+        mbd_action_check.short_description = "[5] Check selected objects and dependencies"
 
         def colored_status(self, obj):
             # [avoid pylint R0201]
@@ -349,7 +341,7 @@ this would mean losing all packages!
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
 
-        actions = [_action_unprepare, _action_deactivate, _action_prepare, _action_activate, _action_check]
+        actions = [mbd_action_unprepare, mbd_action_deactivate, mbd_action_prepare, mbd_action_activate, mbd_action_check]
         list_display = ('colored_status', '__unicode__')
 
     def mbd_activate(self, request):

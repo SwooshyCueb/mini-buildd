@@ -100,9 +100,10 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         mini-buildd's home).
         """
         import mini_buildd.models.chroot
-        mini_buildd.models.chroot.Chroot.Admin.action_unprepare_without_confirmation(
+        mini_buildd.models.chroot.Chroot.Admin.mbd_action(
             None,
-            mini_buildd.models.chroot.Chroot.mbd_get_prepared())
+            mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
+            "unprepare")
 
     @classmethod
     def syncdb(cls):

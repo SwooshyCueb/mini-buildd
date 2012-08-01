@@ -36,9 +36,9 @@ class EmailAddress(mini_buildd.models.base.Model):
 
 
 class Suite(mini_buildd.models.base.Model):
-    group_label = django.db.models.CharField(
-        max_length=100, default="Default",
-        help_text="Free form group label for this suite. It's recommended to use the name of the Layout it's used for.")
+    layout = django.db.models.ForeignKey("Layout",
+                                         help_text="Layout this suite belongs to.")
+
     name = django.db.models.CharField(
         max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
@@ -58,7 +58,7 @@ class Suite(mini_buildd.models.base.Model):
 
     def __unicode__(self):
         return u"{l}: {e}{n}{e} [{u}]{m}".format(
-            l=self.group_label,
+            l=self.layout.name,
             n=self.name,
             e=u"*" if self.experimental else u"",
             u=u"uploadable" if self.uploadable else u"managed",
@@ -73,7 +73,8 @@ class Suite(mini_buildd.models.base.Model):
 
 class Layout(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
-    suites = django.db.models.ManyToManyField(Suite)
+    suites = django.db.models.ManyToManyField(Suite, blank=True,
+                                              related_name="layout_suites_set")
     build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="layout_keyring_set")
 
     class Admin(mini_buildd.models.base.Model.Admin):

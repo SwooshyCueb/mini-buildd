@@ -57,14 +57,21 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     @classmethod
     def setup_default_models(cls):
+        """
+        Auto-create default model instances if they do not exist.
+        """
         import mini_buildd.models.repository
 
         default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name="Default")
         if created:
-            stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="stable", uploadable=False)
-            testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="testing", uploadable=False, migrates_to=stable)
-            unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="unstable", migrates_to=testing)
-            experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="experimental", experimental=True)
+            stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(
+                layout=default_layout, name="stable", uploadable=False)
+            testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(
+                layout=default_layout, name="testing", uploadable=False, migrates_to=stable)
+            unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(
+                layout=default_layout, name="unstable", migrates_to=testing)
+            experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(
+                layout=default_layout, name="experimental", experimental=True)
 
             default_layout.suites.add(stable)
             default_layout.suites.add(testing)

@@ -74,8 +74,8 @@ class Package(object):
                 raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
 
             for arch, c in self.success.items():
-                c.untar(path=self.repository.mbd_get_incoming_path())
-                self.repository.mbd_reprepro().processincoming()
+                c.install_buildresult(self.repository, self.dist, self.suite)
+
         except Exception as e:
             LOG.error(str(e))
             # todo Error!

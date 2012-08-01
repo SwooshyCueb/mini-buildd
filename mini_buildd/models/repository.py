@@ -420,9 +420,6 @@ Example:
     def mbd_get_path(self):
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
-    def mbd_get_incoming_path(self):
-        return os.path.join(self.mbd_get_path(), "incoming")
-
     def mbd_get_dist(self, dist, suite):
         return suite.mbd_get_distribution(self, dist)
 
@@ -548,15 +545,7 @@ DscIndices: Sources Release . .gz .bz2
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
-        mini_buildd.misc.mkdirs(self.mbd_get_incoming_path())
         open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
-        open(os.path.join(self.mbd_get_path(), "conf", "incoming"), 'w').write("""\
-Name: INCOMING
-TempDir: /tmp
-IncomingDir: {i}
-Allow: {allow}
-""".format(i=self.mbd_get_incoming_path(), allow=" ".join(self.mbd_uploadable_distributions)))
-
         open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
 """.format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg")))

@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 import os
+import glob
 import stat
+import shutil
 import logging
+import tempfile
 import tarfile
 import ftplib
 import re
@@ -265,3 +268,10 @@ class Changes(debian.deb822.Changes):
             bres[v] = self[v]
 
         return bres
+
+    def install_buildresult(self, repository, distribution, suite):
+        assert(self.is_buildresult())
+        t = tempfile.mkdtemp()
+        self.untar(path=t)
+        repository.mbd_reprepro().include(repository.mbd_get_dist(distribution, suite), u" ".join(glob.glob(os.path.join(t, "*.changes"))))
+        shutil.rmtree(t)

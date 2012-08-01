@@ -12,7 +12,9 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^download/dput.cf$", mini_buildd.views.get_dput_conf),
     (r"^download/builder_state$", mini_buildd.views.get_builder_state),
     (r"^repositories/$", mini_buildd.views.get_repository_results),
+    # pylint: disable=E1120
     (r"^repositories/(?P<pk>.+)/$", django.views.generic.detail.DetailView.as_view(model=mini_buildd.models.repository.Repository)))
+# pylint: enable=E1120
 
 django.conf.urls.handler403 = "mini_buildd.views.http_status_403"
 django.conf.urls.handler404 = "mini_buildd.views.http_status_404"

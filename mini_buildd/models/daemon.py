@@ -143,11 +143,8 @@ prevent original package maintainers to be spammed.
         self._mbd_gnupg.unprepare()
         self.mbd_msg_info(request, "Daemon GnuPG key removed")
 
+# pylint: disable=R0201
     def mbd_check(self, request):
-        # [avoid pylint R0201]
-        if self:
-            pass
-
         # Try-run checks on activive and auto-reactivateable repos, chroots and remotes
         # This possibly auto activate or deactivate objects
         mini_buildd.models.repository.Repository.Admin.mbd_action(
@@ -167,6 +164,7 @@ prevent original package maintainers to be spammed.
 
         if not mini_buildd.models.repository.Repository.mbd_get_active() and not mini_buildd.models.chroot.Chroot.mbd_get_active():
             raise Exception("At least one chroot or repository must be active to start the daemon.")
+# pylint: enable=R0201
 
     def mbd_activate(self, request):
         self.mbd_get_daemon().restart(run_check=False)

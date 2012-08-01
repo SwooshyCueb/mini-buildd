@@ -335,13 +335,11 @@ this would mean losing all packages!
             self.mbd_action(request, queryset, "check")
         mbd_action_check.short_description = "[5] Check selected objects and dependencies"
 
+# pylint: disable=R0201
         def colored_status(self, obj):
-            # [avoid pylint R0201]
-            if self:
-                pass
-
             return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
         colored_status.allow_tags = True
+# pylint: enable=R0201
 
         actions = [mbd_action_unprepare, mbd_action_deactivate, mbd_action_prepare, mbd_action_activate, mbd_action_check]
         list_display = ('colored_status', '__unicode__')

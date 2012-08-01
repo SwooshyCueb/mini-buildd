@@ -95,6 +95,7 @@ mbd_pydjangolint()
 			-e "ForeignKey missing related_name" \
 			-e "URLField uses verify_exists=True default" \
 			-e "Model has too many field" \
+			-e "Bad option value" \
 			-e "^\*"
 	)
 }

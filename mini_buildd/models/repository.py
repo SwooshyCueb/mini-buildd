@@ -312,17 +312,15 @@ Example:
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "reprepro_morguedir", "external_home_url")}),)
 
+# pylint: disable=R0201
         def action_generate_keyring_packages(self, request, queryset):
-            # [avoid pylint R0201]
-            if self:
-                pass
-
             for s in queryset:
                 if s.mbd_is_active():
                     s.mbd_generate_keyring_packages(request)
                 else:
                     s.mbd_msg_warn(request, "Repository not activated: {r}".format(r=s))
         action_generate_keyring_packages.short_description = "[X] Generate keyring packages"
+# pylint: enable=R0201
 
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
 
@@ -474,13 +472,11 @@ Example:
         res += self.mbd_get_apt_line(d, s)
         return res
 
+# pylint: disable=R0201
     def mbd_get_apt_preferences(self):
         ".. todo:: STUB"
-        # [avoid pylint R0201]
-        if self:
-            pass
-
         return ""
+# pylint: enable=R0201
 
     def mbd_get_apt_keys(self, dist):
         d, _s = self.mbd_find_dist(dist)
@@ -502,17 +498,15 @@ Example:
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
+# pylint: disable=R0201
     def mbd_get_sources(self, dist, _suite):
         ".. todo:: STUB/WTF"
-        # [avoid pylint R0201]
-        if self:
-            pass
-
         result = ""
         result += "Base: " + str(dist.base_source) + "\n"
         for e in dist.extra_sources.all():
             result += "Extra: " + str(e) + "\n"
         return result
+# pylint: enable=R0201
 
     def mbd_reprepro_config(self):
         result = StringIO.StringIO()

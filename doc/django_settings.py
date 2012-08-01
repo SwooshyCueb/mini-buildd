@@ -4,3 +4,5 @@ INSTALLED_APPS = (
     "django.contrib.auth",
     "django.contrib.contenttypes",
     "mini_buildd")
+
+SECRET_KEY = "doc has no key. doc needs no key."

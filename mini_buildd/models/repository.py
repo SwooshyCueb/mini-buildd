@@ -533,7 +533,7 @@ DscIndices: Sources Release . .gz .bz2
         return result.getvalue()
 
     def mbd_reprepro(self):
-        return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path(), morguedir=self.reprepro_morguedir)
+        return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
     def mbd_prepare(self, request):
         # Check that the codenames of the distributiosn are unique
@@ -548,7 +548,8 @@ DscIndices: Sources Release . .gz .bz2
         open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
         open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
-""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg")))
+{m}
+""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else ""))
 
         # Update all indices (or create on initial install) via reprepro
         repo = self.mbd_reprepro()
@@ -563,8 +564,7 @@ gnupghome {h}
             self.mbd_msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
 
     def mbd_check(self, request):
-        ".. todo:: STUB"
-        pass
+        self.mbd_prepare(request)
 
     def mbd_package_search(self, package, codename):
         distributions = []

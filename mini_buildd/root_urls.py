@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 import django.conf.urls.defaults
-import django.views.generic.simple
-import django.contrib
-import django.contrib.staticfiles.urls
+import django.views.generic.base
+import django.contrib.admin
 
 django.contrib.admin.autodiscover()
 
 urlpatterns = django.conf.urls.defaults.patterns(
     '',
     # mini_buildd
-    (r"^$", django.views.generic.simple.redirect_to, {'url': "/mini_buildd/", 'permanent': False}),
+    (r"^$", django.views.generic.base.RedirectView.as_view(url="/mini_buildd/", permanent=False)),
     (r"^mini_buildd/", django.conf.urls.defaults.include('mini_buildd.urls')),
     # admin
     django.conf.urls.defaults.url(r"^admin/doc/", django.conf.urls.defaults.include('django.contrib.admindocs.urls')),

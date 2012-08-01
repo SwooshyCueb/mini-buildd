@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import django.views.static
-import django.views.generic
-import django.views.generic.list_detail
+import django.views.generic.detail
 import django.conf.urls.defaults
 
 import mini_buildd.views
@@ -14,9 +12,7 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^download/dput.cf$", mini_buildd.views.get_dput_conf),
     (r"^download/builder_state$", mini_buildd.views.get_builder_state),
     (r"^repositories/$", mini_buildd.views.get_repository_results),
-    (r"^repositories/(?P<object_id>.+)/$",
-     django.views.generic.list_detail.object_detail,
-     {'queryset': mini_buildd.models.repository.Repository.objects.all()}),)
+    (r"^repositories/(?P<pk>.+)/$", django.views.generic.detail.DetailView.as_view(model=mini_buildd.models.repository.Repository)))
 
 django.conf.urls.handler403 = "mini_buildd.views.http_status_403"
 django.conf.urls.handler404 = "mini_buildd.views.http_status_404"

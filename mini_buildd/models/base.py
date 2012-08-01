@@ -211,7 +211,8 @@ class StatusModel(Model):
                 obj.mbd_msg_info(request, "{o}: Already prepared.".format(o=obj))
             else:
                 # Also run for all status dependencies
-                cls.mbd_action(request, obj.mbd_get_status_dependencies(), "prepare")
+                for o in obj.mbd_get_status_dependencies():
+                    cls.mbd_prepare(request, o)
 
                 obj.mbd_prepare(request)
                 obj.status = obj.STATUS_PREPARED
@@ -228,7 +229,8 @@ class StatusModel(Model):
                     cls.mbd_prepare(request, obj)
 
                 # Also run for all status dependencies
-                cls.mbd_action(request, obj.mbd_get_status_dependencies(), "activate")
+                for o in obj.mbd_get_status_dependencies():
+                    cls.mbd_activate(request, o)
 
                 # Always check before activation
                 cls.mbd_check(request, obj)

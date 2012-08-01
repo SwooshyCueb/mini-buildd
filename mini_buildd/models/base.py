@@ -248,6 +248,7 @@ class StatusModel(Model):
             else:
                 obj.mbd_unprepare(request)
                 obj.status = obj.STATUS_UNPREPARED
+                obj.last_checked = datetime.datetime.min
                 obj.save()
                 obj.mbd_msg_info(request, "{o}: Unprepare successful.".format(o=obj))
 

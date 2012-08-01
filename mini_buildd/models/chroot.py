@@ -264,7 +264,6 @@ class LoopLVMChroot(LVMChroot):
         return mini_buildd.misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()
 
     def mbd_get_pre_sequence(self):
-        # todo get_loop_device() must not be dynamic
         loop_device = self.mbd_get_loop_device()
         LOG.debug("Acting on loop device: {d}".format(d=loop_device))
         return [

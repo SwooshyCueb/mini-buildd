@@ -7,8 +7,10 @@ import mini_buildd.misc
 
 
 class Reprepro():
-    def __init__(self, basedir):
+    def __init__(self, basedir, morguedir=False):
         self._cmd = ["reprepro", "--verbose", "--basedir={b}".format(b=basedir)]
+        if morguedir:
+            self._cmd.append("--morguedir=+b/morguedir")
 
     def clearvanished(self):
         mini_buildd.misc.call(self._cmd + ["clearvanished"])

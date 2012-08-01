@@ -298,6 +298,9 @@ Example:
     notify_maintainer = django.db.models.BooleanField(default=False,
                                                       help_text="Notify the address in the 'Maintainer' field of the uploaded changes file.")
 
+    reprepro_morguedir = django.db.models.BooleanField(default=False,
+                                                       help_text="Move files deleted from repo pool to 'morguedir' (see reprepro).")
+
     external_home_url = django.db.models.URLField(blank=True)
 
     class Meta(mini_buildd.models.base.StatusModel.Meta):
@@ -306,7 +309,7 @@ Example:
     class Admin(mini_buildd.models.base.StatusModel.Admin):
         fieldsets = (
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
-            ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "external_home_url")}),)
+            ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "reprepro_morguedir", "external_home_url")}),)
 
         def action_generate_keyring_packages(self, request, queryset):
             # [avoid pylint R0201]
@@ -538,7 +541,7 @@ DscIndices: Sources Release . .gz .bz2
         return result.getvalue()
 
     def mbd_reprepro(self):
-        return mini_buildd.reprepro.Reprepro(self.mbd_get_path())
+        return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path(), morguedir=self.reprepro_morguedir)
 
     def mbd_prepare(self, request):
         # Check that the codenames of the distributiosn are unique

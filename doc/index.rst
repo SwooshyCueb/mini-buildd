@@ -21,7 +21,7 @@ updated with (at least) every uploaded Debian revision.
 Status Desc                                                           Effort Estimation Comments
 ====== ============================================================== ================= ======================================================================
 100%   Dedicated python daemon mini-buildd                            2/3/5             This replaces mini-dinstall incoming daemon.
-100%    New default distribution scheme with (manual) staging via      1/2/3
+100%   New default distribution scheme with (manual) staging via      1/2/3
        reprepro.
 95%    Use reprepro for repository management                         2/3/5             This replaces mini-dinstall repository management, and finally
                                                                                         obsoletes mini-dinstall.
@@ -86,11 +86,11 @@ Enter the web application's `configuration section </admin/mini_buildd/>`_.
 Uploading
 +++++++++
 - Use mini-buildd's `Dput config </mini_buildd/download/dput.cf>`_.
-*...to be continued...*
 
 Using the repository
 ++++++++++++++++++++
-*...to be continued...*
+- Go to the `test repository overview </mini_buildd/repositories/test>`_, and grab the needed apt lines.
+
 
 Manual
 ======

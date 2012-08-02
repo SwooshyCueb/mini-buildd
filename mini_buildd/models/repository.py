@@ -327,14 +327,6 @@ Example:
     def __unicode__(self):
         return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
 
-    def mbd_get_status_dependencies(self):
-        result = []
-        for d in self.distributions.all():
-            result.append(d.base_source)
-            for e in d.extra_sources.all():
-                result.append(e.source)
-        return result
-
     def mbd_check_version(self, version, dist, suite):
         mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, dist, suite)
         if not re.compile(mandatory_regex).search(version):
@@ -535,37 +527,6 @@ DscIndices: Sources Release . .gz .bz2
     def mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_prepare(self, request):
-        # Check that the codenames of the distributiosn are unique
-        codenames = []
-        for d in self.distributions.all():
-            if d.base_source.codename in codenames:
-                raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
-            codenames.append(d.base_source.codename)
-
-        # Reprepro config
-        mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
-        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
-        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
-gnupghome {h}
-{m}
-""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else ""))
-
-        # Update all indices (or create on initial install) via reprepro
-        repo = self.mbd_reprepro()
-        repo.clearvanished()
-        repo.export()
-
-        self.mbd_msg_info(request, "Prepared repository '{i}' in '{b}'".format(i=self.identity, b=self.mbd_get_path()))
-
-    def mbd_unprepare(self, request):
-        if os.path.exists(self.mbd_get_path()):
-            shutil.rmtree(self.mbd_get_path())
-            self.mbd_msg_info(request, "Your repository has been purged, along with all packages: {d}".format(d=self.mbd_get_path()))
-
-    def mbd_check(self, request):
-        self.mbd_prepare(request)
-
     def mbd_package_search(self, package, codename):
         distributions = []
         for d in self.distributions.all():
@@ -586,4 +547,46 @@ gnupghome {h}
                     except:
                         LOG.error("Item failed: {l}".format(l=item))
 
+        return result
+
+    def mbd_prepare(self, request):
+        """
+        Idempotent repository preparation. This may be used as-is as mbd_check.
+        """
+        # Check that the codenames of the distribution are unique
+        codenames = []
+        for d in self.distributions.all():
+            if d.base_source.codename in codenames:
+                raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
+            codenames.append(d.base_source.codename)
+
+        # Reprepro config
+        mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
+        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
+        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
+gnupghome {h}
+{m}
+""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else ""))
+
+        # Update all indices (or create on initial install) via reprepro
+        repo = self.mbd_reprepro()
+        repo.clearvanished()
+        repo.export()
+
+        self.mbd_msg_info(request, "{r}: Reprepro repository checked and updated: {b}".format(r=self, b=self.mbd_get_path()))
+
+    def mbd_unprepare(self, request):
+        if os.path.exists(self.mbd_get_path()):
+            shutil.rmtree(self.mbd_get_path())
+            self.mbd_msg_info(request, "{r}: Reprepro repository has been purged (along with all packages): {b}".format(r=self, b=self.mbd_get_path()))
+
+    def mbd_check(self, request):
+        self.mbd_prepare(request)
+
+    def mbd_get_status_dependencies(self):
+        result = []
+        for d in self.distributions.all():
+            result.append(d.base_source)
+            for e in d.extra_sources.all():
+                result.append(e.source)
         return result

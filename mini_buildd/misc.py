@@ -112,6 +112,13 @@ def nop(*_args, **_kwargs):
     pass
 
 
+def timedelta_total_seconds(delta):
+    """
+    python 2.6 compat for timedelta.total_seconds() from python >= 2.7.
+    """
+    return float(delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * (10 ** 6)) / (10 ** 6)
+
+
 def parse_distribution(dist):
     """Parse a mini-buildd distribution of the form CODENAME-ID-SUITE into a triple in that order.
 

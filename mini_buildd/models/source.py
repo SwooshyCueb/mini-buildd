@@ -158,46 +158,36 @@ class Source(mini_buildd.models.base.StatusModel):
                 codename = release["Codename"]
                 if not (self.origin == origin and self.codename == codename):
                     raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
+
+                self.mbd_msg_info(request, "Archive for us: {m}".format(m=m))
+                self.archives.add(m)
+                self.description = release["Description"]
+
+                # Set codeversion
+                self.codeversion = ""
+                if self.codeversion_override:
+                    self.codeversion = self.codeversion_override
+                else:
+                    try:
+                        version = release["Version"].split(u".")
+                        self.codeversion = version[0] + version[1]
+                    except:
+                        self.codeversion = codename.upper()
+
+                # Set architectures and components (may be auto-added)
+                for a in release["Architectures"].split(" "):
+                    new_arch, created = Architecture.objects.get_or_create(name=a)
+                    if created:
+                        self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                    self.architectures.add(new_arch)
+                for c in release["Components"].split(" "):
+                    new_component, created = Component.objects.get_or_create(name=c)
+                    if created:
+                        self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                    self.components.add(new_component)
             except Exception as e:
                 self.mbd_msg_info(request, "{m}: Not for us: {e}".format(m=m, e=e))
-                break
 
-            self.mbd_msg_info(request, "Archive for us: {m}".format(m=m))
-            self.archives.add(m)
-            self.description = release["Description"]
-
-            # Set codeversion
-            self.codeversion = ""
-            if self.codeversion_override:
-                self.codeversion = self.codeversion_override
-            else:
-                try:
-                    version = release["Version"].split(u".")
-                    self.codeversion = version[0] + version[1]
-                except:
-                    self.codeversion = codename.upper()
-
-            # Set architectures and components (may be auto-added)
-            for a in release["Architectures"].split(" "):
-                new_arch, created = Architecture.objects.get_or_create(name=a)
-                if created:
-                    self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                self.architectures.add(new_arch)
-            for c in release["Components"].split(" "):
-                new_component, created = Component.objects.get_or_create(name=c)
-                if created:
-                    self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
-                self.components.add(new_component)
-
-        self.mbd_check(request)
-
-    def mbd_unprepare(self, _request):
-        self.archives = []
-        self.components = []
-        self.architectures = []
-        self.description = ""
-
-    def mbd_check(self, request):
         # Update ping value for all archives
         for a in self.archives.all():
             # Save will implicitely ping
@@ -206,6 +196,15 @@ class Source(mini_buildd.models.base.StatusModel):
         # Check if we still get an archive
         a = self.mbd_get_archive()
         self.mbd_msg_info(request, "{s}: Fastest archive is: '{a}'".format(s=self, a=a))
+
+    def mbd_unprepare(self, _request):
+        self.archives = []
+        self.components = []
+        self.architectures = []
+        self.description = ""
+
+    def mbd_check(self, request):
+        self.mbd_prepare(request)
 
     def mbd_get_status_dependencies(self):
         dependencies = []

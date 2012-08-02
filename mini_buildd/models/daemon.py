@@ -137,16 +137,18 @@ prevent original package maintainers to be spammed.
 
     def mbd_prepare(self, request):
         self._mbd_gnupg.prepare()
-        self.mbd_msg_info(request, "Daemon GnuPG key generated")
+        self.mbd_msg_info(request, "Daemon GnuPG key generated.")
 
     def mbd_unprepare(self, request):
         self._mbd_gnupg.unprepare()
-        self.mbd_msg_info(request, "Daemon GnuPG key removed")
+        self.mbd_msg_info(request, "Daemon GnuPG key removed.")
 
 # pylint: disable=R0201
     def mbd_check(self, request):
-        # Try-run checks on activive and auto-reactivateable repos, chroots and remotes
-        # This possibly auto activate or deactivate objects
+        """
+        Try-run checks on active and auto-reactivateable repos, chroots and remotes.
+        This possibly automatically (de-)activates objects.
+        """
         mini_buildd.models.repository.Repository.Admin.mbd_action(
             request,
             mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate(),
@@ -164,15 +166,17 @@ prevent original package maintainers to be spammed.
 
         if not mini_buildd.models.repository.Repository.mbd_get_active() and not mini_buildd.models.chroot.Chroot.mbd_get_active():
             raise Exception("At least one chroot or repository must be active to start the daemon.")
+
+        self.mbd_msg_info(request, "Daemon checked.")
 # pylint: enable=R0201
 
     def mbd_activate(self, request):
         self.mbd_get_daemon().restart(run_check=False)
-        self.mbd_msg_info(request, "Daemon restarted")
+        self.mbd_msg_info(request, "Daemon restarted.")
 
     def mbd_deactivate(self, request):
         self.mbd_get_daemon().stop()
-        self.mbd_msg_info(request, "Daemon stopped")
+        self.mbd_msg_info(request, "Daemon stopped.")
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

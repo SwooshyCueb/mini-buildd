@@ -387,7 +387,7 @@ Example:
                 self.mbd_msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
-            self.mbd_msg_error(request, "Some package failed: {e}".format(e=str(e)))
+            self.mbd_msg_error(request, u"Some package failed: {e}".format(e=e))
         finally:
             shutil.rmtree(t)
 
@@ -490,10 +490,10 @@ Example:
 # pylint: disable=R0201
     def mbd_get_sources(self, dist, _suite):
         ".. todo:: STUB/WTF"
-        result = ""
-        result += "Base: " + str(dist.base_source) + "\n"
+        result = u""
+        result += u"Base: " + dist.base_source + u"\n"
         for e in dist.extra_sources.all():
-            result += "Extra: " + str(e) + "\n"
+            result += u"Extra: " + unicode(e) + u"\n"
         return result
 # pylint: enable=R0201
 

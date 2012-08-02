@@ -150,7 +150,7 @@ class Changes(debian.deb822.Changes):
                 if state.is_up() and state.has_chroot(arch, codename):
                     remotes[state.get_load()] = state.get_hopo()
             except Exception as e:
-                LOG.warn("Builder check failed: {e}".format(e=str(e)))
+                LOG.warn(u"Builder check failed: {e}".format(e=e))
 
         # Always checkout our own instance as pseudo remote
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
@@ -167,7 +167,7 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                LOG.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=str(e))
+                LOG.warn(u"Uploading to '{h}' failed: ".format(h=hopo.string), e=e)
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 

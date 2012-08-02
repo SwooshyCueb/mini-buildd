@@ -150,7 +150,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                                      stdout=l, stderr=subprocess.STDOUT)
 
         # Add build results to build request object
-        self._bres["Sbuildretval"] = str(retval)
+        self._bres["Sbuildretval"] = unicode(retval)
         self._buildlog_to_buildresult(buildlog)
 
         LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=self.key, r=retval, s=self._bres["Sbuild-Status"]))

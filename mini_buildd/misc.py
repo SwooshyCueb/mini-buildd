@@ -154,9 +154,9 @@ def run_as_thread(thread_func=None, daemon=False, **kwargs):
             thread_func(**kwargs)
             LOG.info("{i}: Finished.".format(i=tid))
         except Exception as e:
-            LOG.exception("{i}: Exception: {e}".format(i=tid, e=str(e)))
+            LOG.exception(u"{i}: Exception: {e}".format(i=tid, e=e))
         except:
-            LOG.exception("{i}: Non-standard exception".format(i=tid))
+            LOG.exception(u"{i}: Non-standard exception".format(i=tid))
 
     thread = threading.Thread(target=run, kwargs=kwargs)
     thread.setDaemon(daemon)

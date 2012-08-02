@@ -77,7 +77,7 @@ class Package(object):
                 c.install_buildresult(self.repository, self.dist, self.suite)
 
         except Exception as e:
-            LOG.error(str(e))
+            LOG.error(u"{e}".format(e=e))
             # todo Error!
         finally:
             # Archive build results and request

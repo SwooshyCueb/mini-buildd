@@ -131,11 +131,11 @@ def run():
 
         except Exception as e:
             if changes and changes_pid:
-                subject = u"DISCARD: {p}: {e}".format(p=changes_pid, e=str(e))
+                subject = u"DISCARD: {p}: {e}".format(p=changes_pid, e=e)
                 body = email.mime.text.MIMEText(changes.dump(), _charset="UTF-8")
                 changes.remove()
             else:
-                subject = u"INVALID CHANGES: {c}: {e}".format(c=event, e=str(e))
+                subject = u"INVALID CHANGES: {c}: {e}".format(c=event, e=e)
                 body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
                 os.remove(event)
             LOG.warn(subject)

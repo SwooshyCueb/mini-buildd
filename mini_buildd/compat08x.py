@@ -19,7 +19,7 @@ def import_conf(conf_file=os.getenv('HOME') + '/.mini-buildd.conf'):
             o.save()
             LOG.info("IMPORTED '{f}': '{n}'".format(f=func.__name__, n=o.__unicode__()))
         except Exception as e:
-            LOG.warn("{f}: import failed: {e}".format(f=func.__name__, e=str(e)))
+            LOG.warn(u"{f}: import failed: {e}".format(f=func.__name__, e=e))
 
     #try_import(mini_buildd.models.create_default_layout)
 

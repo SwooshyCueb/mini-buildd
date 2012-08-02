@@ -62,7 +62,12 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
             self.key = ""
 
     def mbd_check(self, request):
-        pass
+        """
+        Checks that we actually have the key and long_id. This should always be true after "prepare".
+        """
+        if not self.key and not self.key_long_id:
+            raise Exception("GnuPG key with inconsistent state -- try unprepare,prepare to fix.")
+        self.mbd_msg_info(request, "GnuPG key fine.")
 
 
 class AptKey(GnuPGPublicKey):
@@ -113,10 +118,8 @@ class Remote(GnuPGPublicKey):
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)
 
-        self.mbd_check(request)
-
     def mbd_unprepare(self, request):
-        self.key = ""
+        super(Remote, self).mbd_unprepare(request)
         self.pickled_data = ""
         self.mbd_msg_info(request, "Remote key and state removed.")
 
@@ -125,4 +128,4 @@ class Remote(GnuPGPublicKey):
         self.pickled_data = urllib.urlopen(url).read()
         state = self.mbd_get_builder_state()
         if not state.is_up():
-            raise Exception("Remote builder down")
+            raise Exception("Remote builder down.")

@@ -130,15 +130,16 @@ personality={p}
 """.format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf()))
 
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
-        self.mbd_msg_info(request, "Chroot {c}: Prepared on system".format(c=self))
+        self.mbd_msg_info(request, "Chroot {c}: Prepared on system for schroot.".format(c=self))
 
     def mbd_unprepare(self, request):
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path())
-        self.mbd_msg_info(request, "Chroot {c}: Removed from system".format(c=self))
+        self.mbd_msg_info(request, "Chroot {c}: Removed from system.".format(c=self))
 
-    def mbd_check(self, _request):
+    def mbd_check(self, request):
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--info"])
+        self.mbd_msg_info(request, "Chroot {c}: 'schroot --info' works fine.".format(c=self))
 
     def mbd_get_status_dependencies(self):
         return [self.source]

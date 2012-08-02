@@ -61,7 +61,7 @@ def get_repository_results(request):
                 to_distribution = request.GET.get("to_distribution", None)
 
                 r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
-                result = r.mbd_reprepro().copysrc(to_distribution, from_distribution, package, version)
+                result = r.mbd_package_propagate(to_distribution, from_distribution, package, version)
 
             ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
                                                       {'authenticated': authenticated, 'result': result})
@@ -75,7 +75,7 @@ def get_repository_results(request):
                 distribution = request.GET.get("distribution", None)
 
                 r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
-                result = r.mbd_reprepro().removesrc(distribution, package, version)
+                result = r.mbd_package_remove(distribution, package, version)
 
             ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
                                                       {'authenticated': authenticated, 'result': result})

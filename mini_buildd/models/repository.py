@@ -497,7 +497,7 @@ Example:
         return result
 # pylint: enable=R0201
 
-    def mbd_reprepro_config(self):
+    def _mbd_reprepro_config(self):
         result = StringIO.StringIO()
         for d in self.distributions.all():
             for s in self.layout.suites.all():
@@ -524,15 +524,22 @@ DscIndices: Sources Release . .gz .bz2
 
         return result.getvalue()
 
-    def mbd_reprepro(self):
+    def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_install_buildresult(self, bres, distribution, suite):
-        assert(bres.is_buildresult())
-        t = tempfile.mkdtemp()
-        bres.untar(path=t)
-        self.mbd_reprepro().include(self.mbd_get_dist(distribution, suite), u" ".join(glob.glob(os.path.join(t, "*.changes"))))
-        shutil.rmtree(t)
+    def mbd_package_install(self, package):
+        for arch, bres in package.success.items():
+            t = tempfile.mkdtemp()
+            bres.untar(path=t)
+            self._mbd_reprepro().include(self.mbd_get_dist(package.distribution, package.suite), u" ".join(glob.glob(os.path.join(t, "*.changes"))))
+            shutil.rmtree(t)
+            LOG.info(u"Installed: Arch {a} of package {p}".format(a=arch, p=package))
+
+    def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
+        return self._mbd_reprepro().copysrc(dest_distribution, source_distribution, package, version)
+
+    def mbd_package_remove(self, distribution, package, version):
+        return self._mbd_reprepro().removesrc(distribution, package, version)
 
     def mbd_package_search(self, package, codename):
         distributions = []
@@ -543,7 +550,7 @@ DscIndices: Sources Release . .gz .bz2
         result = {}
         for d in distributions:
             for s in self.layout.suites.all():
-                for item in self.mbd_reprepro().listmatched(package, s.mbd_get_distribution(self, d)).split(";"):
+                for item in self._mbd_reprepro().listmatched(package, s.mbd_get_distribution(self, d)).split(";"):
                     try:
                         name, version, distribution = item.split("|")
                         pck = result.setdefault(name, {})
@@ -569,14 +576,14 @@ DscIndices: Sources Release . .gz .bz2
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
-        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self.mbd_reprepro_config())
+        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self._mbd_reprepro_config())
         open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
 gnupghome {h}
 {m}
 """.format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else ""))
 
         # Update all indices (or create on initial install) via reprepro
-        repo = self.mbd_reprepro()
+        repo = self._mbd_reprepro()
         repo.clearvanished()
         repo.export()
 

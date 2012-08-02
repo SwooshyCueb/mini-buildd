@@ -73,8 +73,7 @@ class Package(object):
             if self.failed:
                 raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
 
-            for arch, c in self.success.items():
-                self.repository.mbd_install_buildresult(c, self.dist, self.suite)
+            self.repository.mbd_package_install(self)
 
         except Exception as e:
             LOG.error(u"{e}".format(e=e))

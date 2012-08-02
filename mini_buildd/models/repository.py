@@ -527,6 +527,13 @@ DscIndices: Sources Release . .gz .bz2
     def mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
+    def mbd_install_buildresult(self, bres, distribution, suite):
+        assert(bres.is_buildresult())
+        t = tempfile.mkdtemp()
+        bres.untar(path=t)
+        self.mbd_reprepro().include(self.mbd_get_dist(distribution, suite), u" ".join(glob.glob(os.path.join(t, "*.changes"))))
+        shutil.rmtree(t)
+
     def mbd_package_search(self, package, codename):
         distributions = []
         for d in self.distributions.all():

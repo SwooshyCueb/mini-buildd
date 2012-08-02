@@ -2,6 +2,7 @@
 import tempfile
 import urllib
 import logging
+import datetime
 
 import django.db.models
 import django.contrib.admin
@@ -21,6 +22,7 @@ class Archive(mini_buildd.models.base.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
                                     default="http://ftp.debian.org/debian",
                                     help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
+    ping = django.db.models.FloatField(default=-1.0, editable=False)
 
     class Meta(mini_buildd.models.base.Model.Meta):
         ordering = ["url"]
@@ -29,10 +31,17 @@ class Archive(mini_buildd.models.base.Model):
         search_fields = ["url"]
 
     def __unicode__(self):
-        return self.url
+        return u"{u} (ping {p} ms)".format(u=self.url, p=self.ping)
+
+    def save(self, *args, **kwargs):
+        """
+        Custom save(). Implicitely sets the ping value.
+        """
+        self.mbd_ping(None)
+        super(Archive, self).save(*args, **kwargs)
 
     def mbd_download_release(self, dist, gnupg):
-        url = self.url + "/dists/" + dist + "/Release"
+        url = u"{u}/dists/{d}/Release".format(u=self.url, d=dist)
         with tempfile.NamedTemporaryFile() as release:
             LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
@@ -46,9 +55,21 @@ class Archive(mini_buildd.models.base.Model):
             release.seek(0)
             return debian.deb822.Release(release)
 
-    def mbd_check_up(self, request):
-        urllib.urlopen(self.url)
-        self.mbd_msg_info(request, "Archive conectivity ok: {s}".format(s=self))
+    def mbd_ping(self, request):
+        """
+        Ping and set the ping value.
+        """
+        try:
+            t0 = datetime.datetime.now()
+            urllib.urlopen(self.url)
+            delta = datetime.datetime.now() - t0
+            self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
+            self.mbd_msg_info(request, u"{s}: Ping!".format(s=self))
+        except:
+            self.ping = -1.0
+            self.mbd_msg_error(request, u"{s}: Does not ping.".format(s=self))
+
+        return self.ping
 
 
 class Architecture(mini_buildd.models.base.Model):
@@ -102,72 +123,15 @@ class Source(mini_buildd.models.base.StatusModel):
     def mbd_id(self):
         return "{o} '{c}'".format(o=self.origin, c=self.codename)
 
-    def mbd_prepare(self, request):
-        self.archives = []
-        gpg = mini_buildd.gnupg.TmpGnuPG() if self.apt_keys.all() else None
-        for k in self.apt_keys.all():
-            gpg.add_pub_key(k.key)
-
-        for m in Archive.objects.all():
-            try:
-                self.mbd_msg_info(request, "Scanning archive: {m}".format(m=m))
-                release = m.mbd_download_release(self.codename, gpg)
-                origin = release["Origin"]
-                codename = release["Codename"]
-
-                if self.origin == origin and self.codename == codename:
-                    self.mbd_msg_info(request, "Archive found: {m}".format(m=m))
-                    self.archives.add(m)
-                    self.description = release["Description"]
-
-                    # Set codeversion
-                    self.codeversion = ""
-                    if self.codeversion_override:
-                        self.codeversion = self.codeversion_override
-                    else:
-                        try:
-                            version = release["Version"].split(u".")
-                            self.codeversion = version[0] + version[1]
-                        except:
-                            self.codeversion = codename.upper()
-
-                    # Set architectures and components (may be auto-added)
-                    for a in release["Architectures"].split(" "):
-                        new_arch, created = Architecture.objects.get_or_create(name=a)
-                        if created:
-                            self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                        self.architectures.add(new_arch)
-                    for c in release["Components"].split(" "):
-                        new_component, created = Component.objects.get_or_create(name=c)
-                        if created:
-                            self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
-                        self.components.add(new_component)
-            except Exception as e:
-                self.mbd_msg_warn(request, "Archive '{m}' error (ignoring): {e}".format(m=m, e=str(e)))
-
-        if not len(self.archives.all()):
-            raise Exception("{s}: No archives found (please add at least one)".format(s=self))
-
-    def mbd_unprepare(self, _request):
-        self.archives = []
-        self.components = []
-        self.architectures = []
-        self.description = ""
-
-    def mbd_check(self, request):
-        for a in self.archives.all():
-            a.mbd_check_up(request)
-
-    def mbd_get_status_dependencies(self):
-        dependencies = []
-        for k in self.apt_keys.all():
-            dependencies.append(k)
-        return dependencies
-
     def mbd_get_archive(self):
-        ".. todo:: Returning first archive only. Should return preferred one from archive list, and fail if no archives found."
-        for m in self.archives.all():
-            return m
+        """
+        Returns the fastest archive.
+        """
+        oa_list = self.archives.all().filter(ping__gte=0.0).order_by("ping")
+        if oa_list:
+            return oa_list[0]
+        else:
+            raise Exception(u"No (pinging) archive found. Please add appr. archive, or check network setup.")
 
     def mbd_get_apt_line(self):
         ".. todo:: Merge components as configured per repo."
@@ -179,6 +143,75 @@ class Source(mini_buildd.models.base.StatusModel):
 
     def mbd_get_apt_pin(self):
         return "release n=" + self.codename + ", o=" + self.origin
+
+    def mbd_prepare(self, request):
+        self.archives = []
+        gpg = mini_buildd.gnupg.TmpGnuPG() if self.apt_keys.all() else None
+        for k in self.apt_keys.all():
+            gpg.add_pub_key(k.key)
+
+        for m in Archive.objects.all():
+            self.mbd_msg_info(request, "Scanning archive: {m}".format(m=m))
+            try:
+                release = m.mbd_download_release(self.codename, gpg)
+                origin = release["Origin"]
+                codename = release["Codename"]
+                if not (self.origin == origin and self.codename == codename):
+                    raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
+            except Exception as e:
+                self.mbd_msg_info(request, "{m}: Not for us: {e}".format(m=m, e=e))
+                break
+
+            self.mbd_msg_info(request, "Archive for us: {m}".format(m=m))
+            self.archives.add(m)
+            self.description = release["Description"]
+
+            # Set codeversion
+            self.codeversion = ""
+            if self.codeversion_override:
+                self.codeversion = self.codeversion_override
+            else:
+                try:
+                    version = release["Version"].split(u".")
+                    self.codeversion = version[0] + version[1]
+                except:
+                    self.codeversion = codename.upper()
+
+            # Set architectures and components (may be auto-added)
+            for a in release["Architectures"].split(" "):
+                new_arch, created = Architecture.objects.get_or_create(name=a)
+                if created:
+                    self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                self.architectures.add(new_arch)
+            for c in release["Components"].split(" "):
+                new_component, created = Component.objects.get_or_create(name=c)
+                if created:
+                    self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                self.components.add(new_component)
+
+        self.mbd_check(request)
+
+    def mbd_unprepare(self, _request):
+        self.archives = []
+        self.components = []
+        self.architectures = []
+        self.description = ""
+
+    def mbd_check(self, request):
+        # Update ping value for all archives
+        for a in self.archives.all():
+            # Save will implicitely ping
+            a.save()
+
+        # Check if we still get an archive
+        a = self.mbd_get_archive()
+        self.mbd_msg_info(request, "{s}: Fastest archive is: '{a}'".format(s=self, a=a))
+
+    def mbd_get_status_dependencies(self):
+        dependencies = []
+        for k in self.apt_keys.all():
+            dependencies.append(k)
+        return dependencies
 
 
 class PrioritySource(mini_buildd.models.base.Model):

@@ -541,7 +541,12 @@ DscIndices: Sources Release . .gz .bz2
     def mbd_package_remove(self, distribution, package, version):
         return self._mbd_reprepro().removesrc(distribution, package, version)
 
-    def mbd_package_search(self, package, codename):
+    def mbd_package_search(self, codename, pattern):
+        """
+        Result if of the form:
+
+        { PACKAGE: { VERSION: { DISTRIBUTION: { PROPKEY: PROPVAL }}}}
+        """
         distributions = []
         for d in self.distributions.all():
             if not codename or codename == d.base_source.codename:
@@ -550,7 +555,7 @@ DscIndices: Sources Release . .gz .bz2
         result = {}
         for d in distributions:
             for s in self.layout.suites.all():
-                for item in self._mbd_reprepro().listmatched(package, s.mbd_get_distribution(self, d)).split(";"):
+                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution(self, d), pattern).split(";"):
                     try:
                         name, version, distribution = item.split("|")
                         pck = result.setdefault(name, {})

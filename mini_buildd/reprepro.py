@@ -30,11 +30,11 @@ class Reprepro():
         return mini_buildd.misc.call(
             self._cmd + ["removesrc", distribution, package, version])
 
-    def listmatched(self, pattern, dist):
+    def listmatched(self, distribution, pattern):
         return mini_buildd.misc.call(
             self._cmd +
             ["--type=dsc",
              "--list-format=${$source}|${$sourceversion}|${$codename};",
              "listmatched",
-             dist,
+             distribution,
              pattern])

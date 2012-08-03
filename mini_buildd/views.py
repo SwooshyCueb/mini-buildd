@@ -47,7 +47,7 @@ def get_repository_results(request):
 
             result = {}
             for r in search_repos:
-                result[r.identity] = r.mbd_package_search(package, codename)
+                result[r.identity] = r.mbd_package_search(codename, package)
 
             ret = django.shortcuts.render_to_response("mini_buildd/package_search_results.html",
                                                       {'authenticated': authenticated, 'result': result})

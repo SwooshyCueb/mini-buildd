@@ -48,26 +48,6 @@ MBD_TMP_SCP="scp -o StrictHostKeyChecking=no -P ${mbd_sshport}"
 #  Check functions must deliver 0 (fine), 1 (warn) or 2 (fail) return status.
 #  Note that all checks are run "set +e".
 
-# Check that source package is not in repo yet
-mbdQACheckNew()
-{
-	local retval=0
-	local info="${mbdParseCF_package}"
-
-	# Always check normal and experimental dist
-	local dist
-	for dist in $(mbdExpandDists "${mbdParseCF_dist}"); do
-		if [ -e "${MBD_HOME}/rep/${dist}/${MBD_TMP_CF}" ]; then
-			echo "E: ${info}: Already installed in ${dist}."
-			echo "I: Maybe you have accidentially re-uploaded the same package, or forgot to create a new debian changelog entry."
-			retval=2
-		else
-			echo "I: ${info}: New for ${dist}."
-		fi
-	done
-	return ${retval}
-}
-
 # Check that no conflicting orig tarball is uploaded
 mbdQACheckOrig()
 {

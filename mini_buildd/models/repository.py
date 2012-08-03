@@ -527,6 +527,13 @@ DscIndices: Sources Release . .gz .bz2
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
+    def mbd_package_precheck(self, package):
+        result = self.mbd_package_search(None, package.changes["Source"])
+        for _p, versions in result.items():
+            for v, _distributions in versions.items():
+                if v == package.changes["Version"]:
+                    raise Exception("Already in repository")
+
     def mbd_package_install(self, package):
         for arch, bres in package.success.items():
             t = tempfile.mkdtemp()

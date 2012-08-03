@@ -17,9 +17,12 @@ class Package(object):
         self.done = False
         self.daemon = daemon
         self.changes = changes
-        self.repository, self.dist, self.suite = repository, dist, suite
+        self.repository, self.distribution, self.suite = repository, dist, suite
         self.pid = changes.get_pkg_id()
-        self.requests = self.changes.gen_buildrequests(daemon, self.repository, self.dist)
+
+        self.repository.mbd_package_precheck(self)
+
+        self.requests = self.changes.gen_buildrequests(daemon, self.repository, self.distribution)
         self.success = {}
         self.failed = {}
         for _key, breq in self.requests.items():

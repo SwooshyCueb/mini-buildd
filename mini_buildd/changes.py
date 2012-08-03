@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import os
 import stat
+import glob
 import logging
 import tarfile
 import ftplib
@@ -94,8 +95,11 @@ class Changes(debian.deb822.Changes):
             pkg_id += u"{s}{a}".format(s=arch_separator, a=self["Architecture"])
         return pkg_id
 
-    def get_files(self):
-        return self["Files"] if "Files" in self else []
+    def get_files(self, key=None):
+        result = []
+        for f in self["Files"]:
+            result.append(f[key] if key else f)
+        return result
 
     def add_file(self, file_name):
         if not "Files" in self:
@@ -204,7 +208,27 @@ class Changes(debian.deb822.Changes):
             os.remove(f)
 
     def gen_buildrequests(self, daemon, repository, dist):
-        # Build buildrequest files for all architectures
+        """
+        Build buildrequest files for all architectures.
+        """
+
+        # Extra check if all files from the dsc (f.e., uploads without orig.tar.gz)
+        files_from_pool = []
+        dsc_file = os.path.join(os.path.dirname(self._file_path), u"{p}_{v}.dsc".format(p=self["Source"], v=self["Version"]))
+        dsc = debian.deb822.Dsc(file(dsc_file))
+        for f in dsc["Files"]:
+            if not f["name"] in self.get_files(key="name"):
+                added = False
+                for p in glob.glob(os.path.join(repository.mbd_get_path(), u"pool", u"*", u"*", self["Source"], f["name"])):
+                    if f["md5sum"] == mini_buildd.misc.md5_of_file(p):
+                        files_from_pool.append(p)
+                        added = True
+                        LOG.info(u"Buildrequest: File added from pool: {f}".format(f=p))
+                    else:
+                        raise Exception("MD5 mismatch in uploaded dsc vs. pool: {f}".format(f=f["name"]))
+                if not added:
+                    raise Exception("File needed to build neither in upload nor pool (try '-sa'): {f}".format(f=f["name"]))
+
         breq_dict = {}
         for a in dist.mbd_get_all_architectures():
             path = os.path.join(self.get_spool_dir(), a)
@@ -229,7 +253,7 @@ class Changes(debian.deb822.Changes):
                                     os.path.join(path, "apt_preferences"),
                                     os.path.join(path, "apt_keys"),
                                     chroot_setup_script,
-                                    os.path.join(path, "sbuildrc_snippet")])
+                                    os.path.join(path, "sbuildrc_snippet")] + files_from_pool)
                 breq.add_file(breq.file_path + ".tar")
 
                 breq["Upload-Result-To"] = daemon.mbd_get_ftp_hopo().string

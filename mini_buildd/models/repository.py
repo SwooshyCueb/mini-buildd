@@ -126,14 +126,32 @@ class Layout(mini_buildd.models.base.Model):
             repository, dist)
 
 
+class ArchitectureOption(mini_buildd.models.base.Model):
+    architecture = django.db.models.ForeignKey("Architecture")
+    distribution = django.db.models.ForeignKey("Distribution")
+
+    optional = django.db.models.BooleanField(default=False)
+    build_architecture_all = django.db.models.BooleanField(default=False)
+
+    class Meta(mini_buildd.models.base.Model.Meta):
+        unique_together = ("architecture", "distribution")
+
+    def clean(self, *args, **kwargs):
+        if self.build_architecture_all and self.optional:
+            raise django.core.exceptions.ValidationError("Optional architectures must not be architecture all!")
+        super(ArchitectureOption, self).clean(*args, **kwargs)
+
+
+class ArchitectureOptionInline(django.contrib.admin.TabularInline):
+    model = ArchitectureOption
+
+
 class Distribution(mini_buildd.models.base.Model):
     base_source = django.db.models.ForeignKey(mini_buildd.models.source.Source)
     extra_sources = django.db.models.ManyToManyField(mini_buildd.models.source.PrioritySource, blank=True)
     components = django.db.models.ManyToManyField(mini_buildd.models.source.Component)
 
-    mandatory_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture)
-    optional_architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture, blank=True, related_name="distribution_optional_set")
-    architecture_all = django.db.models.ForeignKey(mini_buildd.models.source.Architecture, related_name="distribution_all_set")
+    architectures = django.db.models.ManyToManyField(mini_buildd.models.source.Architecture, through=ArchitectureOption)
 
     RESOLVER_APT = 0
     RESOLVER_APTITUDE = 1
@@ -212,9 +230,9 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
     class Admin(mini_buildd.models.base.Model.Admin):
         fieldsets = (
             ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
-            ("Architectures", {"fields": ("mandatory_architectures", "optional_architectures", "architecture_all")}),
             ("Build options", {"fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")}),
             ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
+        inlines = (ArchitectureOptionInline,)
 
     def __unicode__(self):
         def xtra():
@@ -224,36 +242,6 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             return result
 
         return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=u" ".join(self.mbd_get_components()))
-
-    def _mbd_clean_architectures(self):
-        ".. todo:: Not enabled in clean() as code does not work there: ManyToMany fields keep old values until actually saved (??)."
-        if not self.architecture_all in self.mandatory_architectures.all():
-            raise django.core.exceptions.ValidationError("Architecture-All must be a mandatory architecture!")
-        for ma in self.mandatory_architectures.all():
-            for oa in self.optional_architectures.all():
-                if ma.name == oa.name:
-                    raise django.core.exceptions.ValidationError(u"Architecture {a} is in both, mandatory and optional architectures!".format(a=ma.name))
-
-    def clean(self, *args, **kwargs):
-        # self._mbd_clean_architectures()
-        super(Distribution, self).clean(*args, **kwargs)
-
-    @classmethod
-    def _mbd_get_architectures(cls, m2m_objects):
-        architectures = []
-        for o in m2m_objects:
-            for a in o.all():
-                architectures.append(a.name)
-        return architectures
-
-    def mbd_get_mandatory_architectures(self):
-        return self._mbd_get_architectures([self.mandatory_architectures])
-
-    def mbd_get_optional_architectures(self):
-        return self._mbd_get_architectures([self.optional_architectures])
-
-    def mbd_get_all_architectures(self):
-        return self._mbd_get_architectures([self.mandatory_architectures, self.optional_architectures])
 
     def mbd_get_components(self):
         result = []
@@ -517,7 +505,7 @@ DscIndices: Sources Release . .gz .bz2
 """.format(dist=self.mbd_get_dist(d, s),
            origin=self.mbd_get_origin(),
            components=u" ".join(d.mbd_get_components()),
-           architectures=" ".join(d.mbd_get_all_architectures()),
+           architectures=" ".join([x.name for x in d.architectures.all()]),
            desc=self.mbd_get_desc(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no"))
@@ -579,6 +567,13 @@ DscIndices: Sources Release . .gz .bz2
         """
         Idempotent repository preparation. This may be used as-is as mbd_check.
         """
+        # Architecture sanity checks
+        for d in self.distributions.all():
+            if not d.architectureoption_set.all().filter(optional=False):
+                raise Exception("{d}: There must be at least one mandatory architecture!".format(d=d))
+            if len(d.architectureoption_set.all().filter(optional=False, build_architecture_all=True)) != 1:
+                raise Exception("{d}: There must be exactly one one arch-all architecture!".format(d=d))
+
         # Check that the codenames of the distribution are unique
         codenames = []
         for d in self.distributions.all():

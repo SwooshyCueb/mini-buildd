@@ -230,10 +230,10 @@ class Changes(debian.deb822.Changes):
                     raise Exception("File needed to build neither in upload nor pool (try '-sa'): {f}".format(f=f["name"]))
 
         breq_dict = {}
-        for a in dist.mbd_get_all_architectures():
-            path = os.path.join(self.get_spool_dir(), a)
+        for ao in dist.architectureoption_set.all():
+            path = os.path.join(self.get_spool_dir(), ao.architecture.name)
 
-            breq = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=a)))
+            breq = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=ao.architecture.name)))
             if breq.is_new():
                 for v in ["Distribution", "Source", "Version"]:
                     breq[v] = self[v]
@@ -245,7 +245,7 @@ class Changes(debian.deb822.Changes):
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
                 os.chmod(chroot_setup_script, stat.S_IRWXU)
-                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], a))
+                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], ao.architecture.name))
 
                 # Generate tar from original changes
                 self.tar(tar_path=breq.file_path + ".tar",
@@ -258,8 +258,8 @@ class Changes(debian.deb822.Changes):
 
                 breq["Upload-Result-To"] = daemon.mbd_get_ftp_hopo().string
                 breq["Base-Distribution"] = dist.base_source.codename
-                breq["Architecture"] = a
-                if a == dist.architecture_all.name:
+                breq["Architecture"] = ao.architecture.name
+                if ao.build_architecture_all:
                     breq["Arch-All"] = "Yes"
                 breq["Build-Dep-Resolver"] = dist.get_build_dep_resolver_display()
                 breq["Apt-Allow-Unauthenticated"] = "1" if dist.apt_allow_unauthenticated else "0"
@@ -275,7 +275,7 @@ class Changes(debian.deb822.Changes):
                 breq.save(daemon.mbd_gnupg)
             else:
                 LOG.info("Re-using existing buildrequest: {b}".format(b=breq.file_name))
-            breq_dict[a] = breq
+            breq_dict[ao.architecture.name] = breq
 
         return breq_dict
 

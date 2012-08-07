@@ -58,28 +58,44 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     @classmethod
     def setup_default_models(cls):
         """
-        Auto-create default model instances if they do not exist.
+        Auto-create some default model instances if they do not exist.
         """
         import mini_buildd.models.repository
 
+        stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="stable")
+        testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="testing")
+        unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="unstable")
+        experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="experimental")
+
         default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name="Default")
         if created:
-            stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(
-                layout=default_layout, name="stable", uploadable=False)
-            testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(
-                layout=default_layout, name="testing", uploadable=False, migrates_to=stable)
-            unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(
-                layout=default_layout, name="unstable", migrates_to=testing)
-            experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(
-                layout=default_layout, name="experimental", experimental=True)
+            so_stable = mini_buildd.models.repository.SuiteOption(
+                layout=default_layout,
+                suite=stable,
+                uploadable=False)
+            so_stable.save()
 
-            default_layout.suites.add(stable)
-            default_layout.suites.add(testing)
-            default_layout.suites.add(unstable)
-            default_layout.suites.add(experimental)
+            so_testing = mini_buildd.models.repository.SuiteOption(
+                layout=default_layout,
+                suite=testing,
+                uploadable=False,
+                migrates_to=so_stable)
+            so_testing.save()
 
-            default_layout.build_keyring_package_for.add(unstable)
-            default_layout.save()
+            so_unstable = mini_buildd.models.repository.SuiteOption(
+                layout=default_layout,
+                suite=unstable,
+                migrates_to=so_testing,
+                build_keyring_package=True)
+            so_unstable.save()
+
+            so_experimental = mini_buildd.models.repository.SuiteOption(
+                layout=default_layout,
+                suite=experimental,
+                uploadable=True,
+                experimental=True,
+                but_automatic_upgrades=False)
+            so_experimental.save()
 
     @classmethod
     def set_admin_password(cls, password):

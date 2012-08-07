@@ -71,7 +71,7 @@ class Changes(debian.deb822.Changes):
         # Get repository for identity; django exceptions will suite quite well as-is
         repository = mini_buildd.models.repository.Repository.objects.get(identity=repository_identity)
         distribution = repository.distributions.all().get(base_source__codename__exact=distribution_codename)
-        suite = repository.layout.suites.all().get(name=suite_name)
+        suite = repository.layout.suiteoption_set.all().get(suite__name=suite_name)
 
         if not suite.uploadable:
             raise Exception("Suite '{s}' is not uploadable".format(s=suite))

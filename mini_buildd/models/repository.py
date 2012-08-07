@@ -36,53 +36,88 @@ class EmailAddress(mini_buildd.models.base.Model):
 
 
 class Suite(mini_buildd.models.base.Model):
-    layout = django.db.models.ForeignKey("Layout",
-                                         help_text="Layout this suite belongs to.")
-
     name = django.db.models.CharField(
         max_length=100,
-        help_text="A suite to support, usually s.th. like 'experimental', 'unstable','testing' or 'stable'.")
-    uploadable = django.db.models.BooleanField(default=True)
-    experimental = django.db.models.BooleanField(default=False)
+        help_text="A suite to support, usually s.th. like 'experimental', 'unstable', 'testing' or 'stable'.")
+
+    def __unicode__(self):
+        return self.name
+
+
+class SuiteOption(mini_buildd.models.base.Model):
+    layout = django.db.models.ForeignKey("Layout")
+    suite = django.db.models.ForeignKey("Suite")
+
+    uploadable = django.db.models.BooleanField(
+        default=True,
+        help_text="Whether this suite should accept user uploads.")
+
+    experimental = django.db.models.BooleanField(
+        default=False,
+        help_text="Whether this suite is experimental; must be uploadable and must not migrate.")
 
     migrates_to = django.db.models.ForeignKey(
         "self", blank=True, null=True,
-        help_text="Give another suite where packages may migrate to.")
+        help_text="Give another suite where packages may migrate to (you may need to save this 'blank' first before you see choices here).")
 
-    auto_migrate = django.db.models.IntegerField(
+    build_keyring_package = django.db.models.BooleanField(
+        default=False,
+        help_text="Build keyring package for this suite (i.e., when the resp. Repository action is called).")
+
+    auto_migrate_after = django.db.models.IntegerField(
         default=0,
         help_text="For future use. Automatically migrate packages after x days.")
 
-    not_automatic = django.db.models.BooleanField(default=True)
-    but_automatic_upgrades = django.db.models.BooleanField(default=True)
+    not_automatic = django.db.models.BooleanField(
+        default=True,
+        help_text="Include 'NotAutomatic' in the Release file.")
+
+    but_automatic_upgrades = django.db.models.BooleanField(
+        default=True,
+        help_text="Include 'ButAutomaticUpgrades' in the Release file.")
+
+    class Meta(mini_buildd.models.base.Model.Meta):
+        unique_together = ("suite", "layout")
 
     def __unicode__(self):
         return u"{l}: {e}{n}{e} [{u}]{m}".format(
             l=self.layout.name,
-            n=self.name,
+            n=self.suite.name,
             e=u"*" if self.experimental else u"",
             u=u"uploadable" if self.uploadable else u"managed",
-            m=u" => {m}".format(m=self.migrates_to.name) if self.migrates_to else u"")
+            m=u" => {m}".format(m=self.migrates_to.suite.name) if self.migrates_to else u"")
 
-    def mbd_get_distribution(self, repository, dist):
+    def clean(self, *args, **kwargs):
+        if self.build_keyring_package and not self.uploadable:
+            raise django.core.exceptions.ValidationError("You can only build keyring packages on uploadable suites!")
+        if self.experimental and self.migrates_to:
+            raise django.core.exceptions.ValidationError("Experimental suites may not migrate!")
+        if self.experimental and not self.uploadable:
+            raise django.core.exceptions.ValidationError("Experimental suites must be uploadable!")
+        if self.migrates_to and self.migrates_to.layout != self.layout:
+            raise django.core.exceptions.ValidationError("Migrating suites must be in the same layout (you need to save once to make new suites visible).")
+        if self.migrates_to and self.migrates_to.uploadable:
+            raise django.core.exceptions.ValidationError("You may not migrate to an uploadable suite.")
+
+        LOG.info(self.migrates_to)
+        super(SuiteOption, self).clean(*args, **kwargs)
+
+    def mbd_get_distribution_string(self, repository, distribution):
         return u"{c}-{i}-{s}".format(
-            c=dist.base_source.codename,
+            c=distribution.base_source.codename,
             i=repository.identity,
-            s=self.name)
+            s=self.suite.name)
+
+
+class SuiteOptionInline(django.contrib.admin.TabularInline):
+    model = SuiteOption
+    extra = 1
 
 
 class Layout(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=100)
-    suites = django.db.models.ManyToManyField(Suite, blank=True,
-                                              related_name="layout_suites_set")
-    build_keyring_package_for = django.db.models.ManyToManyField(Suite, blank=True, related_name="layout_keyring_set")
 
-    class Admin(mini_buildd.models.base.Model.Admin):
-        fieldsets = (
-            ("Basics", {"fields": ("name", "suites", "build_keyring_package_for")}),
-            ("Extra", {"classes": ("collapse",),
-                       "fields": ("default_version", "mandatory_version_regex",
-                                  "experimental_default_version", "experimental_mandatory_version_regex")}),)
+    suites = django.db.models.ManyToManyField(Suite, through=SuiteOption)
 
     # Version magic
     default_version = django.db.models.CharField(
@@ -105,25 +140,33 @@ class Layout(mini_buildd.models.base.Model):
         max_length=100, default="~%IDENTITY%%CODEVERSION%\+0",
         help_text="Like 'mandatory version', but for suites flagged 'experimental'.")
 
+    class Admin(mini_buildd.models.base.Model.Admin):
+        fieldsets = (
+            ("Basics", {"fields": ("name",)}),
+            ("Version Options", {"classes": ("collapse",),
+                                 "fields": ("default_version", "mandatory_version_regex",
+                                            "experimental_default_version", "experimental_mandatory_version_regex")}),)
+        inlines = (SuiteOptionInline,)
+
     def __unicode__(self):
         return self.name
 
     @classmethod
-    def _mbd_subst_placeholders(cls, value, repository, dist):
+    def _mbd_subst_placeholders(cls, value, repository, distribution):
         return mini_buildd.misc.subst_placeholders(
             value,
             {"IDENTITY": repository.identity,
-             "CODEVERSION": dist.base_source.codeversion})
+             "CODEVERSION": distribution.base_source.codeversion})
 
-    def mbd_get_mandatory_version_regex(self, repository, dist, suite):
+    def mbd_get_mandatory_version_regex(self, repository, distribution, suite_option):
         return self._mbd_subst_placeholders(
-            self.experimental_mandatory_version_regex if suite.experimental else self.mandatory_version_regex,
-            repository, dist)
+            self.experimental_mandatory_version_regex if suite_option.experimental else self.mandatory_version_regex,
+            repository, distribution)
 
-    def mbd_get_default_version(self, repository, dist, suite):
+    def mbd_get_default_version(self, repository, distribution, suite_option):
         return self._mbd_subst_placeholders(
-            self.experimental_default_version if suite.experimental else self.default_version,
-            repository, dist)
+            self.experimental_default_version if suite_option.experimental else self.default_version,
+            repository, distribution)
 
 
 class ArchitectureOption(mini_buildd.models.base.Model):
@@ -144,6 +187,7 @@ class ArchitectureOption(mini_buildd.models.base.Model):
 
 class ArchitectureOptionInline(django.contrib.admin.TabularInline):
     model = ArchitectureOption
+    extra = 1
 
 
 class Distribution(mini_buildd.models.base.Model):
@@ -315,10 +359,10 @@ Example:
     def __unicode__(self):
         return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
 
-    def mbd_check_version(self, version, dist, suite):
-        mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, dist, suite)
+    def mbd_check_version(self, version, distribution, suite_option):
+        mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, distribution, suite_option)
         if not re.compile(mandatory_regex).search(version):
-            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite.name, m=mandatory_regex, v=version))
+            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite_option.suite.name, m=mandatory_regex, v=version))
 
     def mbd_generate_keyring_packages(self, request):
         t = tempfile.mkdtemp()
@@ -357,12 +401,12 @@ Example:
                                   env=env)
 
             for d in self.distributions.all():
-                for s in self.layout.build_keyring_package_for.all():
+                for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
                     mini_buildd.misc.call(["debchange",
                                            "--newversion={v}{m}".format(v=version, m=self.layout.mbd_get_default_version(self, d, s)),
                                            "--force-distribution",
                                            "--force-bad-version",
-                                           "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.name),
+                                           "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.suite.name),
                                            "Automated build for via mini-buildd."],
                                           cwd=p,
                                           env=env)
@@ -400,29 +444,17 @@ Example:
     def mbd_get_path(self):
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
-    def mbd_get_dist(self, dist, suite):
-        return suite.mbd_get_distribution(self, dist)
-
-    @property
-    def mbd_uploadable_distributions(self):
-        result = []
-        for d in self.distributions.all():
-            for s in self.layout.suites.all():
-                if s.uploadable:
-                    result.append(self.mbd_get_dist(d, s))
-        return result
-
     def mbd_get_origin(self):
         return "mini-buildd" + self.identity
 
-    def mbd_get_desc(self, dist, suite):
-        return "{d} {s} packages for {identity}".format(identity=self.identity, d=dist.base_source.codename, s=suite.name)
+    def mbd_get_desc(self, distribution, suite_option):
+        return "{d} {s} packages for {identity}".format(identity=self.identity, d=distribution.base_source.codename, s=suite_option.suite.name)
 
-    def mbd_get_apt_line(self, dist, suite):
+    def mbd_get_apt_line(self, distribution, suite_option):
         return "deb {u}/{r}/{i}/ {d} {c}".format(
             u=self.mbd_get_daemon().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=self.identity, d=self.mbd_get_dist(dist, suite), c=u" ".join(dist.mbd_get_components()))
+            i=self.identity, d=suite_option.mbd_get_distribution_string(self, distribution), c=u" ".join(distribution.mbd_get_components()))
 
     def mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
@@ -431,8 +463,8 @@ Example:
         if identity == self.identity:
             for d in self.distributions.all():
                 if d.base_source.codename == base:
-                    for s in self.layout.suites.all():
-                        if s.name == suite:
+                    for s in self.layout.suiteoption_set.all():
+                        if s.suite.name == suite:
                             return d, s
         raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=dist))
 
@@ -488,10 +520,10 @@ Example:
     def _mbd_reprepro_config(self):
         result = StringIO.StringIO()
         for d in self.distributions.all():
-            for s in self.layout.suites.all():
+            for s in self.layout.suiteoption_set.all():
                 result.write("""
 Codename: {dist}
-Suite:  {dist}
+Suite: {dist}
 Label: {dist}
 Origin: {origin}
 Components: {components}
@@ -502,7 +534,7 @@ NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
 DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
-""".format(dist=self.mbd_get_dist(d, s),
+""".format(dist=s.mbd_get_distribution_string(self, d),
            origin=self.mbd_get_origin(),
            components=u" ".join(d.mbd_get_components()),
            architectures=" ".join([x.name for x in d.architectures.all()]),
@@ -526,7 +558,9 @@ DscIndices: Sources Release . .gz .bz2
         for arch, bres in package.success.items():
             t = tempfile.mkdtemp()
             bres.untar(path=t)
-            self._mbd_reprepro().include(self.mbd_get_dist(package.distribution, package.suite), u" ".join(glob.glob(os.path.join(t, "*.changes"))))
+            self._mbd_reprepro().include(
+                package.suite.mbd_get_distribution_string(self, package.distribution),
+                u" ".join(glob.glob(os.path.join(t, "*.changes"))))
             shutil.rmtree(t)
             LOG.info(u"Installed: Arch {a} of package {p}".format(a=arch, p=package))
 
@@ -549,15 +583,15 @@ DscIndices: Sources Release . .gz .bz2
 
         result = {}
         for d in distributions:
-            for s in self.layout.suites.all():
-                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution(self, d), pattern).split(";"):
+            for s in self.layout.suiteoption_set.all():
+                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern).split(";"):
                     try:
                         name, version, distribution = item.split("|")
                         pck = result.setdefault(name, {})
                         ver = pck.setdefault(version, {})
                         dis = ver.setdefault(distribution, {})
                         if s.migrates_to:
-                            dis["migrates_to"] = s.migrates_to.mbd_get_distribution(self, d)
+                            dis["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
                     except:
                         LOG.error("Item failed: {l}".format(l=item))
 

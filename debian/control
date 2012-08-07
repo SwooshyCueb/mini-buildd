@@ -5,8 +5,8 @@ Maintainer: Stephan Sürken <absurd@debian.org>
 X-Python-Version: >=2.6
 Build-Depends: debhelper (>= 8.1.0~), man-db (>= 2.5.1), po-debconf,
                python (>= 2.6.6-3~), python-debian (>= 0.1.18~), python-setuptools,
-               python-sphinx, python-pygraphviz, python-django (>= 1.3), python-django-extensions (>= 0.4),
-               python-pyftpdlib
+               python-django (>= 1.4), python-django-extensions (>= 0.4),
+               python-sphinx, python-pygraphviz
 Standards-Version: 3.9.1
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
@@ -14,17 +14,17 @@ Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 Package: mini-buildd
 Architecture: all
 Pre-Depends: ${misc:Pre-Depends}
-Depends: ${misc:Depends}, python (>= 2.6), python-argparse, bash (>= 4), adduser, bsd-mailx | mailx,
-         sudo, openssh-client, gnupg, wget,
-         python-daemon (>= 1.5.5), python-pyinotify (>= 0.8.9),
-         python-cherrypy3, python-pyftpdlib,
+Depends: ${misc:Depends},
+         python (>= 2.6), python-argparse, python-daemon (>= 1.5.5),
          python-debian (>= 0.1.18~),
-         python-django (>= 1.3), python-django-extensions (>= 0.4),
-         reprepro (>= 4.2), procps,
-         adduser, debootstrap (>= 1.0.24~),
-         lvm2, schroot (>= 1.4.22), sbuild (>= 0.62.4),
-         dput, dpkg-dev, fakeroot, debhelper, cdbs, lintian, devscripts (>= 2.10.15)
-Recommends: dwww, python-pygraphviz, apache2-mpm-worker | httpd
+         python-cherrypy3, python-pyftpdlib,
+         python-django (>= 1.4), python-django-extensions (>= 0.4),
+         adduser, sudo, gnupg,
+         reprepro (>= 4.2),
+         debootstrap (>= 1.0.24~),
+         schroot (>= 1.4.22), sbuild (>= 0.62.4),
+         dpkg-dev, fakeroot, debhelper, cdbs, lintian, devscripts (>= 2.10.15)
+Suggests: lvm2
 Description: Minimal Debian build daemon
  Mini-buildd is an easy-to-configure Debian autobuilder and
  repository.

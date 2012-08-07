@@ -290,7 +290,7 @@ a:hover
 	font-weight: bold;
 }
 
-#mb_content a.propagate:link, #mb_content a.propagate:visited
+#mb_content a.button:link, #mb_content a.button:visited
 {
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
@@ -304,7 +304,7 @@ a:hover
 	background-color: #e7e7e7;
 }
 
-#mb_content a.propagate:hover
+#mb_content a.button:hover
 {
 	background-color: #f7f7f7;
 }
@@ -338,6 +338,12 @@ a:hover
 {
 	font-family: monospace;
 	font-style: italic;
+}
+
+#mb_content span.separator
+{
+	font-size: 14px;
+	color: #bbbbbb;
 }
 
 #mb_repository_misc ul

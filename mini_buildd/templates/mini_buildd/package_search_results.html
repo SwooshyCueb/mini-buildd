@@ -4,6 +4,61 @@
 {% block mbd_page_title %} - search results{% endblock %}
 {% block mbd_page_footer %} &raquo; search results{% endblock %}
 
+{% block localscript %}
+	{% if authenticated %}
+		{% if result %}
+			{% for repository, packages in result.items %}
+				{% for package, versions in packages.items %}
+					{% for version, distributions in versions.items %}
+						{% for distribution, properties in distributions.items %}
+// {{ repository }} -> {{ package }} -> {{ version }} -> {{ distribution }}
+function toggle_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}()
+{
+	$('#remove_before_confirmation_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').click(
+		function()
+		{
+			$('#remove_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+			$('#remove_before_confirmation_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+							{% if properties.migrates_to %}
+			$('#propagate_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+							{% endif %}
+		}
+	);
+	$('#cancel_removal_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').click(
+		function()
+		{
+			$('#remove_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+			$('#remove_before_confirmation_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+							{% if properties.migrates_to %}
+			$('#propagate_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}').toggle();
+							{% endif %}
+		}
+	);
+}
+						{% endfor %}
+					{% endfor %}
+				{% endfor %}
+			{% endfor %}
+
+$(document).ready(
+	function()
+	{
+			{% for repository, packages in result.items %}
+				{% for package, versions in packages.items %}
+					{% for version, distributions in versions.items %}
+						{% for distribution, properties in distributions.items %}
+		// {{ repository }} -> {{ package }} -> {{ version }} -> {{ distribution }}
+		toggle_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}();
+						{% endfor %}
+					{% endfor %}
+				{% endfor %}
+			{% endfor %}
+	}
+);
+		{% endif %}
+	{% endif %}
+{% endblock %}
+
 
 {% block content %}
 
@@ -35,38 +90,38 @@
 											<td>{{ version }}</td>
 											<td>
 												{% for distribution, properties in distributions.items %}
-													|
+													<span class="separator">|</span>
 													{{ distribution }}
 
 													{% if authenticated %}
-														<a class="remove" title="Remove package from: {{ distribution }}"
-															 href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">remove</a>
+														<a id="remove_before_confirmation_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" class="remove" title="Remove package from: {{ distribution }}" href="#">remove</a>
+														<span id="remove_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" style="display: none; color: red; font-weight: bold">Are you sure?
+															<a class="button" title="Yes, remove package!"	href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">yes</a>
+															<a id="cancel_removal_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" class="button" title="No, keep package!" href="#">no</a></span>
 														{% if properties.migrates_to %}
-															<a class="propagate" title="to: {{ properties.migrates_to }}"
-																 href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
-															 {% endif %}
+															<a id="propagate_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" class="button" title="to: {{ properties.migrates_to }}" href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">propagate</a>
+														{% endif %}
 
-														 {% else %}
-															 <a class="propagate" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
-														 {% endif %}
-													 {% endfor %}
-													 |
+													{% else %}
+														<a class="button" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
+													{% endif %}
+												{% endfor %}
 											</td>
 										</tr>
 
 									{% endfor %}
 								</table>
-							</div>
+							</div><!-- end inner-inner-box -->
 						{% endfor %}
-					{% endfor %}
-				{% else %}
-					<ul>
-						<li><span class="alert">No packages found!</span></li>
-						<li>Back to <a href="javascript: history.back()">search</a>.</li>
-					</ul>
-				{% endif %}
-					</div>
-		</div>
+					</div><!-- end "inner-box" -->
+				{% endfor %}
+			{% else %}
+				<ul>
+					<li><span class="alert">No packages found!</span></li>
+					<li>Back to <a href="javascript: history.back()">search</a>.</li>
+				</ul>
+			{% endif %}
+		</div><!-- end "box" -->
 	</div>
 
 {% endblock %}

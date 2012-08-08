@@ -104,7 +104,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
         if self._args.foreground:
             loggers.append("console")
 
-        log_format = "%(name)-22s(%(lineno)03d): %(levelname)-8s: %(message)s"
+        log_format = "%(name)-29s(%(lineno)03d): %(levelname)-8s: %(message)s"
 
         # Clear all loggers now; this will remove the
         # preliminary console logger

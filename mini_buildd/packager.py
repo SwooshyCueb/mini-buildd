@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-import os
 import shutil
-import re
 import email.mime.text
 import email.utils
 import logging
@@ -29,7 +27,7 @@ class Package(object):
             breq.upload_buildrequest(daemon.mbd_get_http_hopo())
 
     def __unicode__(self):
-        return u"{s} ({d}): {p} ({f}/{r} arches)".format(
+        return u"{s} ({d}): {p} ({f}/{r} arches built)".format(
             s="BUILDING" if not self.done else "FAILED" if self.failed else "BUILD",
             d=self.changes["Distribution"],
             p=self.pid,
@@ -38,12 +36,11 @@ class Package(object):
 
     def notify(self):
         results = u""
-        for arch, c in self.failed.items() + self.success.items():
-            for fd in c.get_files():
-                f = fd["name"]
-                if re.compile("^.*\.buildlog$").match(f):
-                    results += u"{s}({a}): {b}\n".format(s=c["Sbuild-Status"], a=arch, b=self.daemon.mbd_get_http_url() + "/" +
-                                                         os.path.join(u"log", c["Distribution"], c["Source"], c["Version"], arch, f))
+        for arch, bres in self.failed.items() + self.success.items():
+            results += u"{s}({a}): {b}\n".format(
+                s=bres["Sbuild-Status"],
+                a=arch,
+                b=self.daemon.mbd_get_http_url() + "/log/" + bres.archive_dir + "/" + bres.buildlog_name)
 
         results += u"\n"
         body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
@@ -54,16 +51,16 @@ class Package(object):
             self.repository,
             self.changes)
 
-    def update(self, result):
-        arch = result["Architecture"]
-        status = result["Sbuild-Status"]
-        retval = int(result["Sbuildretval"])
+    def update(self, bres):
+        arch = bres["Architecture"]
+        status = bres["Sbuild-Status"]
+        retval = int(bres["Sbuildretval"])
         LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
 
         if retval == 0:
-            self.success[arch] = result
+            self.success[arch] = bres
         else:
-            self.failed[arch] = result
+            self.failed[arch] = bres
 
         missing = len(self.requests) - len(self.success) - len(self.failed)
         if missing > 0:
@@ -71,6 +68,7 @@ class Package(object):
             return self.INCOMPLETE
 
         # Finish up
+        self.done = True
         LOG.info("{p}: All build results received".format(p=self.pid))
         try:
             if self.failed:
@@ -92,5 +90,4 @@ class Package(object):
 
             self.notify()
 
-        self.done = True
         return self.DONE

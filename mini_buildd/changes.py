@@ -49,6 +49,18 @@ class Changes(debian.deb822.Changes):
     def file_path(self):
         return self._file_path
 
+    @property
+    def dsc_name(self):
+        return u"{s}_{v}.dsc".format(s=self["Source"], v=self["Version"])
+
+    @property
+    def buildlog_name(self):
+        return u"{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
+
+    @property
+    def archive_dir(self):
+        return os.path.join(self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+
     def is_new(self):
         return self._new
 
@@ -87,7 +99,7 @@ class Changes(debian.deb822.Changes):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
 
     def get_log_dir(self):
-        return os.path.join(mini_buildd.setup.LOG_DIR, self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+        return os.path.join(mini_buildd.setup.LOG_DIR, self.archive_dir)
 
     def get_pkg_id(self, with_arch=False, arch_separator=":"):
         pkg_id = u"{s}_{v}".format(s=self["Source"], v=self["Version"])

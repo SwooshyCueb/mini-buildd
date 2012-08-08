@@ -137,11 +137,11 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--verbose")
             sbuild_cmd.append("--debug")
 
-        sbuild_cmd.append("{s}_{v}.dsc".format(s=self._breq["Source"], v=self._breq["Version"]))
+        sbuild_cmd.append(self._breq.dsc_name)
 
         # Actually run sbuild
         mini_buildd.misc.sbuild_keys_workaround()
-        buildlog = os.path.join(self._build_dir, "{s}_{v}_{a}.buildlog".format(s=self._breq["Source"], v=self._breq["Version"], a=self._breq["Architecture"]))
+        buildlog = os.path.join(self._build_dir, self._breq.buildlog_name)
         LOG.info("{p}: Running sbuild: {c}".format(p=self.key, c=sbuild_cmd))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,

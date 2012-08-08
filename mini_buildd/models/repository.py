@@ -549,8 +549,8 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_package_precheck(self, package):
         result = self.mbd_package_search(None, package.changes["Source"])
-        for _p, versions in result.items():
-            for v, _distributions in versions.items():
+        for _d, distributions in result.items():
+            for v, _versions in distributions.items():
                 if v == package.changes["Version"]:
                     raise Exception("Already in repository")
 
@@ -574,7 +574,7 @@ DscIndices: Sources Release . .gz .bz2
         """
         Result if of the form:
 
-        { PACKAGE: { VERSION: { DISTRIBUTION: { PROPKEY: PROPVAL }}}}
+        { PACKAGE: { DISTRIBUTION: { VERSION: { PROPKEY: PROPVAL }}}}
         """
         distributions = []
         for d in self.distributions.all():
@@ -585,12 +585,12 @@ DscIndices: Sources Release . .gz .bz2
         for d in distributions:
             for s in self.layout.suiteoption_set.all():
                 for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern):
-                    name, version, distribution = item
-                    pck = result.setdefault(name, {})
-                    ver = pck.setdefault(version, {})
-                    dis = ver.setdefault(distribution, {})
+                    package, distribution, version = item
+                    pkg = result.setdefault(package, {})
+                    dis = pkg.setdefault(distribution, {})
+                    ver = dis.setdefault(version, {})
                     if s.migrates_to:
-                        dis["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
+                        ver["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
 
         return result
 

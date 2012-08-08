@@ -8,9 +8,9 @@
 	{% if authenticated %}
 		{% if result %}
 			{% for repository, packages in result.items %}
-				{% for package, versions in packages.items %}
-					{% for version, distributions in versions.items %}
-						{% for distribution, properties in distributions.items %}
+				{% for package, distributions in packages.items %}
+					{% for distribution, versions in distributions.items %}
+						{% for version, properties in versions.items %}
 // {{ repository }} -> {{ package }} -> {{ version }} -> {{ distribution }}
 function toggle_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}()
 {
@@ -44,9 +44,9 @@ $(document).ready(
 	function()
 	{
 			{% for repository, packages in result.items %}
-				{% for package, versions in packages.items %}
-					{% for version, distributions in versions.items %}
-						{% for distribution, properties in distributions.items %}
+				{% for package, distributions in packages.items %}
+					{% for distribution, versions in distributions.items %}
+						{% for version, properties in versions.items %}
 		// {{ repository }} -> {{ package }} -> {{ version }} -> {{ distribution }}
 		toggle_confirmation_dialog_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}();
 						{% endfor %}
@@ -73,25 +73,24 @@ $(document).ready(
 																						 title="goto repositoroy {{ repository }}"
 																						 href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}</a></h1>
 
-						{% for package, versions in packages.items %}
+						{% for package, distributions in packages.items %}
 
 							<div class="inner-inner-box">
 								<h1 class="inner-inner-box-caption">{{ package }}</h1>
 
 								<table>
 									<tr>
+										<th>Distribution</th>
 										<th>Version</th>
-										<th>Distributions</th>
 									</tr>
 
-									{% for version, distributions in versions.items %}
+									{% for distribution, versions in distributions.items %}
 
 										<tr>
-											<td>{{ version }}</td>
+											<td>{{ distribution }}</td>
 											<td>
-												{% for distribution, properties in distributions.items %}
-													<span class="separator">|</span>
-													{{ distribution }}
+												{% for version, properties in versions.items %}
+													{{ version }}
 
 													{% if authenticated %}
 														<a id="remove_before_confirmation_{{ forloop.parentloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.parentloop.counter0 }}_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}" class="remove" title="Remove package from: {{ distribution }}" href="#">remove</a>

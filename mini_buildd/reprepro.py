@@ -34,7 +34,7 @@ class Reprepro():
         result = []
         for item in mini_buildd.misc.call(self._cmd +
                                           ["--type=dsc",
-                                           "--list-format=${$source}|${$sourceversion}|${$codename};",
+                                           "--list-format=${$source}|${$codename}|${$sourceversion};",
                                            "listmatched",
                                            distribution,
                                            pattern]).split(";"):

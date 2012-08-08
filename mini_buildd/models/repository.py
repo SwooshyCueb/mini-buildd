@@ -584,16 +584,13 @@ DscIndices: Sources Release . .gz .bz2
         result = {}
         for d in distributions:
             for s in self.layout.suiteoption_set.all():
-                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern).split(";"):
-                    try:
-                        name, version, distribution = item.split("|")
-                        pck = result.setdefault(name, {})
-                        ver = pck.setdefault(version, {})
-                        dis = ver.setdefault(distribution, {})
-                        if s.migrates_to:
-                            dis["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
-                    except:
-                        LOG.error("Item failed: {l}".format(l=item))
+                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern):
+                    name, version, distribution = item
+                    pck = result.setdefault(name, {})
+                    ver = pck.setdefault(version, {})
+                    dis = ver.setdefault(distribution, {})
+                    if s.migrates_to:
+                        dis["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
 
         return result
 

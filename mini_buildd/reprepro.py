@@ -31,10 +31,13 @@ class Reprepro():
             self._cmd + ["removesrc", distribution, package, version])
 
     def listmatched(self, distribution, pattern):
-        return mini_buildd.misc.call(
-            self._cmd +
-            ["--type=dsc",
-             "--list-format=${$source}|${$sourceversion}|${$codename};",
-             "listmatched",
-             distribution,
-             pattern])
+        result = []
+        for item in mini_buildd.misc.call(self._cmd +
+                                          ["--type=dsc",
+                                           "--list-format=${$source}|${$sourceversion}|${$codename};",
+                                           "listmatched",
+                                           distribution,
+                                           pattern]).split(";"):
+            if item:
+                result.append(item.split("|"))
+        return result

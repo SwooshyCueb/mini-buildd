@@ -112,7 +112,7 @@ prevent original package maintainers to be spammed.
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
 
     def __unicode__(self):
-        return u"{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
+        return "{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
             i=self.identity,
             r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
             c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
@@ -181,16 +181,16 @@ prevent original package maintainers to be spammed.
         self.mbd_msg_info(request, "Daemon stopped.")
 
     def mbd_get_ftp_hopo(self):
-        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))
+        return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))
 
     def mbd_get_ftp_url(self):
-        return u"ftp://{h}".format(h=self.mbd_get_ftp_hopo().string)
+        return "ftp://{h}".format(h=self.mbd_get_ftp_hopo().string)
 
     def mbd_get_http_hopo(self):
-        return mini_buildd.misc.HoPo(u"{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(mini_buildd.setup.HTTPD_BIND).port))
+        return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(mini_buildd.setup.HTTPD_BIND).port))
 
     def mbd_get_http_url(self):
-        return u"http://{h}".format(h=self.mbd_get_http_hopo().string)
+        return "http://{h}".format(h=self.mbd_get_http_hopo().string)
 
     def mbd_get_pub_key(self):
         return self._mbd_gnupg.get_pub_key()
@@ -212,9 +212,9 @@ incoming = /incoming
             if address and m_to_allow.search(address):
                 m_to.append(address)
             else:
-                LOG.warn(u"EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
+                LOG.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
 
-        m_from = u"{u}@{h}".format(u="mini-buildd", h=self.hostname)
+        m_from = "{u}@{h}".format(u="mini-buildd", h=self.hostname)
 
         for m in self.notify.all():
             add_to(m.address)
@@ -237,8 +237,8 @@ incoming = /incoming
                 s = smtplib.SMTP(hopo.host, hopo.port)
                 s.sendmail(m_from, m_to, body.as_string())
                 s.quit()
-                LOG.info(u"Sent: Mail '{s}' to '{r}'".format(s=subject, r=m_to))
+                LOG.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=m_to))
             except Exception as e:
-                LOG.error(u"Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=m_to, e=e))
+                LOG.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=m_to, e=e))
         else:
             LOG.warn("No email addresses found, skipping: {s}".format(s=subject))

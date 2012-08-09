@@ -114,14 +114,14 @@ go to the default mapping.
 
         mini_buildd.misc.ConfFile(
             self.mbd_get_sudoers_workaround_file(),
-            u"""\
+            """\
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
 """.format(u=os.getenv("USER"))).save()
 
         mini_buildd.misc.ConfFile(
             self.mbd_get_schroot_conf_file(),
-            u"""\
+            """\
 [{n}]
 description=Mini-Buildd chroot {n}
 groups=sbuild

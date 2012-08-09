@@ -33,7 +33,7 @@ class Archive(mini_buildd.models.base.Model):
         search_fields = ["url"]
 
     def __unicode__(self):
-        return u"{u} (ping {p} ms)".format(u=self.url, p=self.ping)
+        return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
     def save(self, *args, **kwargs):
         """
@@ -43,7 +43,7 @@ class Archive(mini_buildd.models.base.Model):
         super(Archive, self).save(*args, **kwargs)
 
     def mbd_download_release(self, dist, gnupg):
-        url = u"{u}/dists/{d}/Release".format(u=self.url, d=dist)
+        url = "{u}/dists/{d}/Release".format(u=self.url, d=dist)
         with tempfile.NamedTemporaryFile() as release:
             LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
@@ -66,10 +66,10 @@ class Archive(mini_buildd.models.base.Model):
             urllib.urlopen(self.url)
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
-            self.mbd_msg_info(request, u"{s}: Ping!".format(s=self))
+            self.mbd_msg_info(request, "{s}: Ping!".format(s=self))
         except:
             self.ping = -1.0
-            self.mbd_msg_error(request, u"{s}: Does not ping.".format(s=self))
+            self.mbd_msg_error(request, "{s}: Does not ping.".format(s=self))
 
         return self.ping
 
@@ -120,7 +120,7 @@ class Source(mini_buildd.models.base.StatusModel):
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
 
     def __unicode__(self):
-        return u"{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
+        return "{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
 
     def mbd_id(self):
         return "{o} '{c}'".format(o=self.origin, c=self.codename)
@@ -133,7 +133,7 @@ class Source(mini_buildd.models.base.StatusModel):
         if oa_list:
             return oa_list[0]
         else:
-            raise Exception(u"No (pinging) archive found. Please add appr. archive, or check network setup.")
+            raise Exception("No (pinging) archive found. Please add appr. archive, or check network setup.")
 
     def mbd_get_apt_line(self):
         ".. todo:: Merge components as configured per repo."
@@ -171,7 +171,7 @@ class Source(mini_buildd.models.base.StatusModel):
                     self.codeversion = self.codeversion_override
                 else:
                     try:
-                        version = release["Version"].split(u".")
+                        version = release["Version"].split(".")
                         self.codeversion = version[0] + version[1]
                     except:
                         self.codeversion = codename.upper()
@@ -225,7 +225,7 @@ class PrioritySource(mini_buildd.models.base.Model):
         unique_together = ('source', 'priority')
 
     def __unicode__(self):
-        return u"{i}: Priority={p}".format(i=self.source, p=self.priority)
+        return "{i}: Priority={p}".format(i=self.source, p=self.priority)
 
     def mbd_id(self):
-        return u"{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
+        return "{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)

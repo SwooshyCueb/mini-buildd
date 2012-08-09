@@ -70,7 +70,7 @@ def action_delete(_model, request, queryset):
         try:
             o.delete()
         except Exception as e:
-            o.mbd_msg_error(request, u"Deletion failed for '{o}': {e}".format(o=o, e=e))
+            o.mbd_msg_error(request, "Deletion failed for '{o}': {e}".format(o=o, e=e))
 
 action_delete.short_description = "[0] Delete selected objects"
 
@@ -111,7 +111,7 @@ options to support without changing the database scheme.
 
         is_prepared_func = getattr(self, "mbd_is_prepared", None)
         if is_prepared_func and is_prepared_func():
-            raise Exception(u"Unprepare first.")
+            raise Exception("Unprepare first.")
 
         super(Model, self).delete(*args, **kwargs)
 
@@ -144,7 +144,7 @@ options to support without changing the database scheme.
 
     def mbd_check_daemon_stopped(self):
         if self.mbd_get_daemon().is_running():
-            raise django.core.exceptions.ValidationError(u"Please stop the Daemon first!")
+            raise django.core.exceptions.ValidationError("Please stop the Daemon first!")
 
     def mbd_get_pickled_data(self, default=None):
         try:
@@ -287,7 +287,7 @@ class StatusModel(Model):
                         obj.mbd_msg_error(request, "{o}: Automatically deactivated.".format(o=obj))
                     raise
             else:
-                raise Exception(u"{o}: Can't check unprepared object.".format(o=obj))
+                raise Exception("{o}: Can't check unprepared object.".format(o=obj))
 
         @classmethod
         def mbd_action(cls, request, queryset, action):
@@ -373,7 +373,7 @@ this would mean losing all packages!
         return cls.objects.filter(status__gte=cls.STATUS_PREPARED)
 
     def mbd_get_status_display(self):
-        return u"{s} [{c}]".format(s=self.get_status_display(), c=self.last_checked)
+        return "{s} [{c}]".format(s=self.get_status_display(), c=self.last_checked)
 
     def mbd_get_status_dependencies(self):
         LOG.debug("No status dependencies for {o}".format(o=self))

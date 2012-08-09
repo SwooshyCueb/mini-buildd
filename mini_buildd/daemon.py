@@ -70,7 +70,7 @@ def gen_remotes_keyring():
     keyring.add_pub_key(get().model.mbd_get_pub_key())
     for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
         keyring.add_pub_key(r.key)
-        LOG.info(u"Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
+        LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
     return keyring
 
 
@@ -132,11 +132,11 @@ def run():
 
         except Exception as e:
             if changes and changes_pid:
-                subject = u"DISCARD: {p}: {e}".format(p=changes_pid, e=e)
+                subject = "DISCARD: {p}: {e}".format(p=changes_pid, e=e)
                 body = email.mime.text.MIMEText(changes.dump(), _charset="UTF-8")
                 changes.remove()
             else:
-                subject = u"INVALID CHANGES: {c}: {e}".format(c=event, e=e)
+                subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
                 body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
                 os.remove(event)
             LOG.warn(subject)
@@ -262,8 +262,8 @@ class Daemon():
     def tpl(self):
         return {
             "model": self.model,
-            "style": u"running" if self.is_running() else u"stopped",
-            "running_text": u"Running" if self.is_running() else u"Stopped",
+            "style": "running" if self.is_running() else "stopped",
+            "running_text": "Running" if self.is_running() else "Stopped",
             "packages": self.packages,
             "last_packages": self.last_packages,
             "build_queue": self.build_queue,

@@ -203,7 +203,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
 try:
     Main().run()
 except Exception as e:
-    ERR_STRING = u"mini-buildd FAILED: {e}".format(e=e)
+    ERR_STRING = "mini-buildd FAILED: {e}".format(e=e)
     if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
         LOG.exception(ERR_STRING)
     else:

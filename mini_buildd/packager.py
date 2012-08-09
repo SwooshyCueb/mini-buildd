@@ -29,7 +29,7 @@ class Package(object):
             breq.upload_buildrequest(daemon.mbd_get_http_hopo())
 
     def __unicode__(self):
-        return u"{s} ({d}): {p} ({f}/{r} arches built)".format(
+        return "{s} ({d}): {p} ({f}/{r} arches built)".format(
             s="BUILDING" if not self.done else "FAILED" if self.failed else "BUILD",
             d=self.changes["Distribution"],
             p=self.pid,
@@ -37,18 +37,18 @@ class Package(object):
             r=len(self.requests))
 
     def notify(self):
-        results = u""
+        results = ""
         for arch, bres in self.failed.items() + self.success.items():
-            results += u"{s}({a}): {b}\n".format(
+            results += "{s}({a}): {b}\n".format(
                 s=bres["Sbuild-Status"],
                 a=arch,
                 b=self.daemon.mbd_get_http_url() + "/log/" + bres.archive_dir + "/" + bres.buildlog_name)
 
-        results += u"\n"
+        results += "\n"
         body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
 
         self.daemon.mbd_notify(
-            unicode(self),
+            self.__unicode__(),
             body,
             self.repository,
             self.changes)
@@ -79,7 +79,7 @@ class Package(object):
             self.repository.mbd_package_install(self)
 
         except Exception as e:
-            LOG.error(u"{e}".format(e=e))
+            LOG.error("{e}".format(e=e))
             # todo Error!
         finally:
             # Archive build results and request

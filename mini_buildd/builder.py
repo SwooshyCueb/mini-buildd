@@ -31,7 +31,7 @@ class Build(object):
         self.upload_error = "None"
 
     def __unicode__(self):
-        return u"{s}: {k}: Started {start} ({took}), uploaded {uploaded}".format(
+        return "{s}: {k}: Started {start} ({took}), uploaded {uploaded}".format(
             s=self.status,
             k=self.key,
             start=self.started,
@@ -45,9 +45,9 @@ class Build(object):
     @property
     def status(self):
         if self.uploaded:
-            return u"DONE"
+            return "DONE"
         elif self.built:
-            return u"UPLOAD PENDING"
+            return "UPLOAD PENDING"
         else:
             return "BUILDING"
 
@@ -69,7 +69,7 @@ class Build(object):
         """
         mini_buildd.misc.ConfFile(
             self.sbuildrc_path,
-            u"""\
+            """\
 # We update sources.list on the fly via chroot-setup commands;
 # this update occurs before, so we don't need it.
 $apt_update = 0;
@@ -173,7 +173,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             self.uploaded = datetime.datetime.now()
             return True
         except Exception as e:
-            self.upload_error = u"Upload to '{h}' failed: {e}".format(h=hopo.string, e=unicode(e))
+            self.upload_error = "Upload to '{h}' failed: {e}".format(h=hopo.string, e=e)
             LOG.error(self.upload_error)
 
     def clean(self):

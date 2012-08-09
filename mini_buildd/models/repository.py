@@ -33,7 +33,7 @@ class EmailAddress(mini_buildd.models.base.Model):
         verbose_name_plural = "Email addresses"
 
     def __unicode__(self):
-        return u"{n} <{a}>".format(n=self.name, a=self.address)
+        return "{n} <{a}>".format(n=self.name, a=self.address)
 
 
 class Suite(mini_buildd.models.base.Model):
@@ -81,12 +81,12 @@ class SuiteOption(mini_buildd.models.base.Model):
         unique_together = ("suite", "layout")
 
     def __unicode__(self):
-        return u"{l}: {e}{n}{e} [{u}]{m}".format(
+        return "{l}: {e}{n}{e} [{u}]{m}".format(
             l=self.layout.name,
             n=self.suite.name,
-            e=u"*" if self.experimental else u"",
-            u=u"uploadable" if self.uploadable else u"managed",
-            m=u" => {m}".format(m=self.migrates_to.suite.name) if self.migrates_to else u"")
+            e="*" if self.experimental else "",
+            u="uploadable" if self.uploadable else "managed",
+            m=" => {m}".format(m=self.migrates_to.suite.name) if self.migrates_to else "")
 
     def clean(self, *args, **kwargs):
         if self.build_keyring_package and not self.uploadable:
@@ -104,7 +104,7 @@ class SuiteOption(mini_buildd.models.base.Model):
         super(SuiteOption, self).clean(*args, **kwargs)
 
     def mbd_get_distribution_string(self, repository, distribution):
-        return u"{c}-{i}-{s}".format(
+        return "{c}-{i}-{s}".format(
             c=distribution.base_source.codename,
             i=repository.identity,
             s=self.suite.name)
@@ -281,12 +281,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     def __unicode__(self):
         def xtra():
-            result = u""
+            result = ""
             for e in self.extra_sources.all():
                 result += "+ " + e.mbd_id()
             return result
 
-        return u"{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=u" ".join(self.mbd_get_components()))
+        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=" ".join(self.mbd_get_components()))
 
     def mbd_get_components(self):
         result = []
@@ -358,7 +358,7 @@ Example:
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
 
     def __unicode__(self):
-        return u"{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
+        return "{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
 
     def mbd_check_version(self, version, distribution, suite_option):
         mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, distribution, suite_option)
@@ -420,7 +420,7 @@ Example:
                 self.mbd_msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
-            self.mbd_msg_error(request, u"Some package failed: {e}".format(e=e))
+            self.mbd_msg_error(request, "Some package failed: {e}".format(e=e))
         finally:
             shutil.rmtree(t)
 
@@ -433,7 +433,7 @@ Example:
                 for r in p.may_upload_to.all():
                     if r.identity == self.identity:
                         gpg.add_pub_key(p.key)
-                        LOG.info(u"Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+                        LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()
@@ -455,7 +455,7 @@ Example:
         return "deb {u}/{r}/{i}/ {d} {c}".format(
             u=self.mbd_get_daemon().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=self.identity, d=suite_option.mbd_get_distribution_string(self, distribution), c=u" ".join(distribution.mbd_get_components()))
+            i=self.identity, d=suite_option.mbd_get_distribution_string(self, distribution), c=" ".join(distribution.mbd_get_components()))
 
     def mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
@@ -511,18 +511,18 @@ Example:
 # pylint: disable=R0201
     def mbd_get_sources(self, dist, _suite):
         ".. todo:: STUB/WTF"
-        result = u""
-        result += u"Base: " + dist.base_source + u"\n"
+        result = ""
+        result += "Base: " + dist.base_source + "\n"
         for e in dist.extra_sources.all():
-            result += u"Extra: " + unicode(e) + u"\n"
+            result += "Extra: " + e.__unicode__() + "\n"
         return result
 # pylint: enable=R0201
 
     def _mbd_reprepro_config(self):
-        result = u""
+        result = ""
         for d in self.distributions.all():
             for s in self.layout.suiteoption_set.all():
-                result += u"""
+                result += """
 Codename: {dist}
 Suite: {dist}
 Label: {dist}
@@ -537,11 +537,11 @@ DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
 """.format(dist=s.mbd_get_distribution_string(self, d),
            origin=self.mbd_get_origin(),
-           components=u" ".join(d.mbd_get_components()),
+           components=" ".join(d.mbd_get_components()),
            architectures=" ".join([x.name for x in d.architectures.all()]),
            desc=self.mbd_get_desc(d, s),
-           na=u"yes" if s.not_automatic else u"no",
-           bau=u"yes" if s.but_automatic_upgrades else u"no")
+           na="yes" if s.not_automatic else "no",
+           bau="yes" if s.but_automatic_upgrades else "no")
 
         return result
 
@@ -561,9 +561,9 @@ DscIndices: Sources Release . .gz .bz2
             bres.untar(path=t)
             self._mbd_reprepro().include(
                 package.suite.mbd_get_distribution_string(self, package.distribution),
-                u" ".join(glob.glob(os.path.join(t, "*.changes"))))
+                " ".join(glob.glob(os.path.join(t, "*.changes"))))
             shutil.rmtree(t)
-            LOG.info(u"Installed: Arch {a} of package {p}".format(a=arch, p=package))
+            LOG.info("Installed: Arch {a} of package {p}".format(a=arch, p=package))
 
     def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
         return self._mbd_reprepro().copysrc(dest_distribution, source_distribution, package, version)
@@ -620,10 +620,10 @@ DscIndices: Sources Release . .gz .bz2
             self._mbd_reprepro_config()).save()
         mini_buildd.misc.ConfFile(
             os.path.join(self.mbd_get_path(), "conf", "options"),
-            u"""\
+            """\
 gnupghome {h}
 {m}
-""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else u"")).save()
+""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m="morguedir +b/morguedir" if self.reprepro_morguedir else "")).save()
 
         # Update all indices (or create on initial install) via reprepro
         repo = self._mbd_reprepro()

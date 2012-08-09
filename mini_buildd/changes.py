@@ -37,11 +37,11 @@ class Changes(debian.deb822.Changes):
 
     def __unicode__(self):
         if self.is_buildrequest():
-            return u"Buildrequest from '{h}': {i}".format(h=self.get_or_empty("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
+            return "Buildrequest from '{h}': {i}".format(h=self.get_or_empty("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
         elif self.is_buildresult():
-            return u"Buildresult from '{h}': {i}".format(h=self.get_or_empty("Built-By"), i=self.get_pkg_id(with_arch=True))
+            return "Buildresult from '{h}': {i}".format(h=self.get_or_empty("Built-By"), i=self.get_pkg_id(with_arch=True))
         else:
-            return u"User upload: {i}".format(i=self.get_pkg_id())
+            return "User upload: {i}".format(i=self.get_pkg_id())
 
     @property
     def file_name(self):
@@ -53,11 +53,11 @@ class Changes(debian.deb822.Changes):
 
     @property
     def dsc_name(self):
-        return u"{s}_{v}.dsc".format(s=self["Source"], v=self["Version"])
+        return "{s}_{v}.dsc".format(s=self["Source"], v=self["Version"])
 
     @property
     def buildlog_name(self):
-        return u"{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
+        return "{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
 
     @property
     def archive_dir(self):
@@ -104,9 +104,9 @@ class Changes(debian.deb822.Changes):
         return os.path.join(mini_buildd.setup.LOG_DIR, self.archive_dir)
 
     def get_pkg_id(self, with_arch=False, arch_separator=":"):
-        pkg_id = u"{s}_{v}".format(s=self["Source"], v=self["Version"])
+        pkg_id = "{s}_{v}".format(s=self["Source"], v=self["Version"])
         if with_arch:
-            pkg_id += u"{s}{a}".format(s=arch_separator, a=self["Architecture"])
+            pkg_id += "{s}{a}".format(s=arch_separator, a=self["Architecture"])
         return pkg_id
 
     def get_files(self, key=None):
@@ -165,7 +165,7 @@ class Changes(debian.deb822.Changes):
                 if state.is_up() and state.has_chroot(arch, codename):
                     remotes[state.get_load()] = state.get_hopo()
             except Exception as e:
-                LOG.warn(u"Builder check failed: {e}".format(e=e))
+                LOG.warn("Builder check failed: {e}".format(e=e))
 
         # Always checkout our own instance as pseudo remote
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
@@ -182,7 +182,7 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                LOG.warn(u"Uploading to '{h}' failed: ".format(h=hopo.string), e=e)
+                LOG.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=e)
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 
@@ -228,16 +228,16 @@ class Changes(debian.deb822.Changes):
 
         # Extra check if all files from the dsc (f.e., uploads without orig.tar.gz)
         files_from_pool = []
-        dsc_file = os.path.join(os.path.dirname(self._file_path), u"{p}_{v}.dsc".format(p=self["Source"], v=self["Version"]))
+        dsc_file = os.path.join(os.path.dirname(self._file_path), "{p}_{v}.dsc".format(p=self["Source"], v=self["Version"]))
         dsc = debian.deb822.Dsc(file(dsc_file))
         for f in dsc["Files"]:
             if not f["name"] in self.get_files(key="name"):
                 added = False
-                for p in glob.glob(os.path.join(repository.mbd_get_path(), u"pool", u"*", u"*", self["Source"], f["name"])):
+                for p in glob.glob(os.path.join(repository.mbd_get_path(), "pool", "*", "*", self["Source"], f["name"])):
                     if f["md5sum"] == mini_buildd.misc.md5_of_file(p):
                         files_from_pool.append(p)
                         added = True
-                        LOG.info(u"Buildrequest: File added from pool: {f}".format(f=p))
+                        LOG.info("Buildrequest: File added from pool: {f}".format(f=p))
                     else:
                         raise Exception("MD5 mismatch in uploaded dsc vs. pool: {f}".format(f=f["name"]))
                 if not added:
@@ -284,7 +284,7 @@ class Changes(debian.deb822.Changes):
                         dist.LINTIAN_RUN_ONLY: "",
                         dist.LINTIAN_FAIL_ON_ERROR: "",
                         dist.LINTIAN_FAIL_ON_WARNING: "--fail-on-warning"}
-                    breq["Run-Lintian"] = modeargs[dist.lintian_mode] + u" " + dist.lintian_extra_options
+                    breq["Run-Lintian"] = modeargs[dist.lintian_mode] + " " + dist.lintian_extra_options
 
                 breq.save(daemon.mbd_gnupg)
             else:
@@ -296,7 +296,7 @@ class Changes(debian.deb822.Changes):
     def gen_buildresult(self):
         assert(self.is_buildrequest())
         bres = mini_buildd.changes.Changes(os.path.join(self.get_spool_dir(),
-                                                        u"{b}.changes".
+                                                        "{b}.changes".
                                                         format(b=self.get_pkg_id(with_arch=True, arch_separator="_mini-buildd-buildresult_"))))
 
         for v in ["Distribution", "Source", "Version", "Architecture"]:

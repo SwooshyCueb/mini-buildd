@@ -340,12 +340,6 @@ a:hover
 	font-style: italic;
 }
 
-#mb_content span.separator
-{
-	font-size: 14px;
-	color: #bbbbbb;
-}
-
 #mb_repository_misc ul
 {
 	list-style: none;

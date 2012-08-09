@@ -109,48 +109,46 @@
 						{% for package, distributions in packages.items %}
 
 							<div class="inner-inner-box">
-								<h1 class="inner-inner-box-caption">{{ package }}</h1>
+								<h1 class="inner-inner-box-caption">Package: {{ package }}</h1>
 
 								<table>
 									<tr>
-										<th>Distribution</th>
-										<th>Version</th>
+										<th class="distribution">Distribution</th>
+										<th colspan="2" class="version">Version</th>
 									</tr>
 
 									{% for distribution, versions in distributions.items %}
-
-										<tr>
-											<td>{{ distribution }}</td>
-											<td>
-												{% for version, properties in versions.items %}
-													{{ version }}
-
+										{% for version, properties in versions.items %}
+											<tr>
+												<td class="distribution">{{ distribution }}</td>
+												<td class="version">{{ version }}</td>
+												<td>
 													{% if authenticated %}
 
 														{# ID-determination for JavaScript functions #}
 														{% with id_r=forloop.parentloop.parentloop.parentloop.counter0|stringformat:"s" id_p=forloop.parentloop.parentloop.counter0|stringformat:"s" id_d=forloop.parentloop.counter0|stringformat:"s" id_v=forloop.counter0|stringformat:"s" %}{% with id_r|add:"_"|add:id_p|add:"_"|add:id_d|add:"_"|add:id_v as identifier %}
 															<a id="remove_before_confirmation_{{ identifier }}" class="remove" title="Remove package from: {{ distribution }}" href="#">remove</a>
-															<span id="remove_confirmation_dialog_{{ identifier }}" style="display: none; color: red; font-weight: bold">Are you sure?
+															<span id="remove_confirmation_dialog_{{ identifier }}" class="removal-confirmation">Are you sure you want to remove?
 																<a class="button" title="Yes, remove package!" href="/mini_buildd/repositories/?action=remove&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;distribution={{ distribution|urlencode }}&amp;">yes</a>
 																<a id="cancel_removal_{{ identifier }}" class="button" title="No, keep package!" href="#">no</a>
 															</span>
 															{% if properties.migrates_to %}
-															<a id="propagate_before_confirmation_{{ identifier }}" class="button" title="Propagate packageto: {{ properties.migrates_to }}" href="#">propagate</a>
-															<span id="propagate_confirmation_dialog_{{ identifier }}" style="display: none; color: gray; font-weight: bold">Are you sure?
-																<a class="button" title="Yes, propagate package!" href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">yes</a>
-																<a id="cancel_propagation_{{ identifier }}" class="button" title="No, do not propagate!" href="#">no</a>
-															</span>
+																<a id="propagate_before_confirmation_{{ identifier }}" class="button" title="Propagate packageto: {{ properties.migrates_to }}" href="#">propagate</a>
+																<span id="propagate_confirmation_dialog_{{ identifier }}" class="propagation-confirmation">PROPAGATE: Are you sure you want to propagate?
+																	<a class="button" title="Yes, propagate package!" href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">yes</a>
+																	<a id="cancel_propagation_{{ identifier }}" class="button" title="No, do not propagate!" href="#">no</a>
+																</span>
 															{% endif %}
 														{% endwith %}{% endwith %} {# end ID-using #}
 
 													{% else %} {# not authenticated #}
 														<a class="button" title="You need superuser rights!" href="/admin/">log in to manage repositories</a>
-													{% endif %}
-												{% endfor %}
-											</td>
-										</tr>
+													{% endif %}{# end if authenticated #}
+												</td>
+											</tr>
+											{% endfor %}{# end for version, properties #}
+										{% endfor %}{# end for distribution, versions #}
 
-									{% endfor %}
 								</table>
 							</div>{# end inner-inner-box #}
 						{% endfor %}

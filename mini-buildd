@@ -117,7 +117,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
             LOG.addHandler(handler)
 
         if "syslog" in loggers:
-            handler = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+            handler = logging.handlers.SysLogHandler(address="/dev/log".encode("UTF-8"), facility=logging.handlers.SysLogHandler.LOG_USER)
             handler.setFormatter(logging.Formatter(log_format))
             LOG.addHandler(handler)
 

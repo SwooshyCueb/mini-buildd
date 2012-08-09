@@ -22,7 +22,7 @@ LOG = logging.getLogger(__name__)
 class ConfFile(object):
     """ ConfFile generation helper.
 
-    >>> ConfFile(u"/tmp/mini_buildd_test_conf_file", u"my_option=7").add(u"my_2nd_option=42").save()
+    >>> ConfFile("/tmp/mini_buildd_test_conf_file", "my_option=7").add("my_2nd_option=42").save()
     """
     def __init__(self, file_path, snippet="", comment="#", encoding="UTF-8"):
         self._file_path = file_path
@@ -94,7 +94,7 @@ class HoPo(object):
 class BuilderState(object):
     """ Builder status (de)serializer.
 
-    >>> s = BuilderState(state=[True, u"host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
+    >>> s = BuilderState(state=[True, "host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
     >>> s.is_up(), s.get_hopo().port, s.get_load(), s.has_chroot("amd64", "squeeze"), s.has_chroot("i386", "squeeze")
     (True, 324, 66, False, True)
     """

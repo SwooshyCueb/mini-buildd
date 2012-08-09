@@ -44,12 +44,18 @@ mbd_pymisc()
 	local f regex
 	for f in mini-buildd setup.py $(find mini_buildd -type f -name "*.py"); do
 		for regex in \
-			from\ __future__\ import\ unicode_literals \
-			\#\ -\\*-\ coding:\ utf-8\ -\\*-; do
+			^from\ __future__\ import\ unicode_literals \
+			^\#\ -\\*-\ coding:\ utf-8\ -\\*-; do
 			printf "Checking '${f}' for '${regex}'..."
 			grep --quiet "${regex}" "${f}"
 			printf "OK.\n"
 		done
+		printf "Checking '${f}' for wrong explicit unicode string literals..."
+		if ! grep 'u"' "${f}"; then
+			printf "OK.\n"
+		else
+			return 1
+		fi
 	done
 }
 

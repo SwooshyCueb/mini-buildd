@@ -2,6 +2,8 @@
 """
 Run reprepro commands.
 """
+from __future__ import unicode_literals
+
 import logging
 
 import mini_buildd.misc

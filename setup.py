@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import os
 import sys
 import shutil
@@ -43,6 +45,8 @@ __version__ = str(debian.changelog.Changelog(file=open("./debian/changelog", "rb
 with open("./mini_buildd/__init__.py", "wb") as version_py:
     version_py.write("""\
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 __version__ = '{version}'
 """.format(version=__version__))
 print "I: Got version from changelog: {v}".format(v=__version__)

@@ -29,6 +29,7 @@
     "Repository" -> "User" [label="apt"];
   }
 """
+from __future__ import unicode_literals
 
 import os
 import Queue

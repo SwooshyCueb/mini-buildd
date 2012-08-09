@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
 import pprint
 import os
 import datetime
@@ -150,7 +152,7 @@ def parse_distribution(dist):
     """Parse a mini-buildd distribution of the form CODENAME-ID-SUITE into a triple in that order.
 
     >>> parse_distribution("squeeze-test-unstable")
-    ('squeeze', 'test', 'unstable')
+    (u'squeeze', u'test', u'unstable')
     """
     dsplit = dist.split("-")
     if len(dsplit) != 3 or not dsplit[0] or not dsplit[1] or not dsplit[2]:
@@ -162,7 +164,7 @@ def subst_placeholders(template, placeholders):
     """Substitue placeholders in string from a dict.
 
     >>> subst_placeholders("Repoversionstring: %IDENTITY%%CODEVERSION%", { "IDENTITY": "test", "CODEVERSION": "60" })
-    'Repoversionstring: test60'
+    u'Repoversionstring: test60'
     """
     for key, value in placeholders.items():
         template = template.replace("%{p}%".format(p=key), value)
@@ -244,7 +246,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
     >>> call(["echo", "-n", "hallo"])
     'hallo'
     >>> call(["id", "-syntax-error"], value_on_error="Kapott")
-    'Kapott'
+    u'Kapott'
     """
 
     if run_as_root:

@@ -42,7 +42,7 @@ mbd_pep8()
 mbd_pymisc()
 {
 	local f regex
-	for f in mini-buildd setup.py $(find mini_buildd -type f -name "*.py"); do
+	for f in mini-buildd $(find mini_buildd -type f -name "*.py"); do
 		for regex in \
 			^from\ __future__\ import\ unicode_literals \
 			^\#\ -\\*-\ coding:\ utf-8\ -\\*-; do

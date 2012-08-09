@@ -39,11 +39,13 @@ mbd_pep8()
 	)
 }
 
-mbd_pyfuture()
+mbd_pymisc()
 {
-	local f regex answer
+	local f regex
 	for f in mini-buildd setup.py $(find mini_buildd -type f -name "*.py"); do
-		for regex in from\ __future__\ import\ unicode_literals; do
+		for regex in \
+			from\ __future__\ import\ unicode_literals \
+			\#\ -\\*-\ coding:\ utf-8\ -\\*-; do
 			printf "Checking '${f}' for '${regex}'..."
 			grep --quiet "${regex}" "${f}"
 			printf "OK.\n"
@@ -114,7 +116,7 @@ mbd_pydjangolint()
 
 mbd_check()
 {
-	local tests="pep8 pyfuture pydoctests pyflakes pylint pydjangolint"
+	local tests="pep8 pymisc pydoctests pyflakes pylint pydjangolint"
 	for t in ${tests}; do
 		echo "=> mbd_${t}"
 		mbd_${t}

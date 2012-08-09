@@ -17,3 +17,11 @@ CHROOTS_DIR = None
 CHROOT_LIBDIR = None
 
 MANUAL_DIR = None
+
+
+def log_exception(log, message, exception):
+    msg = "{m}: {e}".format(m=message, e=exception)
+    if "exception" in DEBUG:
+        log.exception(msg)
+    else:
+        log.error(msg)

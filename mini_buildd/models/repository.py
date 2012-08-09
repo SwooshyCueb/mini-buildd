@@ -417,7 +417,8 @@ Example:
                 self.mbd_msg_info(request, "Keyring package uploaded: {c}".format(c=c))
 
         except Exception as e:
-            self.mbd_msg_error(request, "Some package failed: {e}".format(e=e))
+            self.mbd_msg_exception(request, "Some package failed", e)
+
         finally:
             shutil.rmtree(t)
 

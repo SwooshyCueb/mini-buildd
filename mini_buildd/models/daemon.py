@@ -239,6 +239,6 @@ incoming = /incoming
                 s.quit()
                 LOG.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=m_to))
             except Exception as e:
-                LOG.error("Mail sending failed: '{s}' to '{r}': {e}".format(s=subject, r=m_to, e=e))
+                mini_buildd.setup.log_exception(LOG, "Mail sending failed: '{s}' to '{r}'".format(s=subject, r=m_to), e)
         else:
             LOG.warn("No email addresses found, skipping: {s}".format(s=subject))

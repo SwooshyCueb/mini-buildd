@@ -6,6 +6,8 @@ import email.mime.text
 import email.utils
 import logging
 
+import mini_buildd.setup
+
 LOG = logging.getLogger(__name__)
 
 
@@ -54,6 +56,7 @@ class Package(object):
             self.changes)
 
     def update(self, bres):
+        ".. todo:: proper error handling, states."
         arch = bres["Architecture"]
         status = bres["Sbuild-Status"]
         retval = int(bres["Sbuildretval"])
@@ -75,12 +78,11 @@ class Package(object):
         try:
             if self.failed:
                 raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
-
             self.repository.mbd_package_install(self)
 
         except Exception as e:
-            LOG.error("{e}".format(e=e))
-            # todo Error!
+            mini_buildd.setup.log_exception(LOG, "Package failed", e)
+
         finally:
             # Archive build results and request
             for arch, c in self.success.items() + self.failed.items() + self.requests.items():

@@ -142,8 +142,7 @@ def run():
             LOG.warn(subject)
             get().model.mbd_notify(subject, body)
 
-            if "main" in mini_buildd.setup.DEBUG:
-                LOG.exception("DEBUG: Daemon loop exception")
+            mini_buildd.setup.log_exception(LOG, "Package failed", e)
 
         finally:
             get().incoming_queue.task_done()
@@ -179,7 +178,7 @@ class Daemon():
             try:
                 self.start(run_check=True)
             except Exception as e:
-                LOG.error("Could start daemon: {e}".format(e=e))
+                mini_buildd.setup.log_exception(LOG, "Could not start daemon", e)
         else:
             LOG.info("Daemon NOT started (activate first)")
 
@@ -207,7 +206,7 @@ class Daemon():
             for b in last_builds:
                 self.last_builds.append(b)
         except Exception as e:
-            LOG.error("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
+            LOG.warn("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
 
     def start(self, run_check):
         if not self.thread:

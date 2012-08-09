@@ -55,6 +55,8 @@ import django.db.models.signals
 import django.core.exceptions
 import django.template.response
 
+import mini_buildd.setup
+
 LOG = logging.getLogger(__name__)
 
 
@@ -70,7 +72,7 @@ def action_delete(_model, request, queryset):
         try:
             o.delete()
         except Exception as e:
-            o.mbd_msg_error(request, "Deletion failed for '{o}': {e}".format(o=o, e=e))
+            o.mbd_msg_exception(request, "Deletion failed for '{o}'".format(o=o), e)
 
 action_delete.short_description = "[0] Delete selected objects"
 
@@ -126,16 +128,22 @@ options to support without changing the database scheme.
         LOG.info(msg)
 
     @classmethod
+    def mbd_msg_warn(cls, request, msg):
+        if request:
+            django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
+        LOG.warn(msg)
+
+    @classmethod
     def mbd_msg_error(cls, request, msg):
         if request:
             django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
         LOG.error(msg)
 
     @classmethod
-    def mbd_msg_warn(cls, request, msg):
+    def mbd_msg_exception(cls, request, msg, exception):
         if request:
-            django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
-        LOG.warn(msg)
+            django.contrib.messages.add_message(request, django.contrib.messages.ERROR, "{m}: {e}".format(m=msg, e=exception))
+        mini_buildd.setup.log_exception(LOG, msg, exception)
 
     @classmethod
     def mbd_get_daemon(cls):
@@ -299,7 +307,7 @@ class StatusModel(Model):
                 try:
                     getattr(cls, "mbd_" + action)(request, o)
                 except Exception as e:
-                    o.mbd_msg_error(request, "{o}: {a} failed: {e}".format(o=o, a=action, e=e))
+                    o.mbd_msg_exception(request, "{o}: {a} failed".format(o=o, a=action), e)
 
         def mbd_action_prepare(self, request, queryset):
             self.mbd_action(request, queryset, "prepare")

@@ -172,8 +172,7 @@ mbd_install()
 	_head "Installing snapshot..."
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
-#mini-buildd mini-buildd/options string --verbose --verbose --debug
-mini-buildd mini-buildd/options string --verbose --debug=main,django,repository
+mini-buildd mini-buildd/options string --verbose --debug=exception,django
 EOF
 	sudo debi
 }

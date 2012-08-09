@@ -133,9 +133,8 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._breq["Run-Lintian"]))
 
-        if "sbuild" in mini_buildd.setup.DEBUG:
+        if "builder" in mini_buildd.setup.DEBUG:
             sbuild_cmd.append("--verbose")
-            sbuild_cmd.append("--debug")
 
         sbuild_cmd.append(self._breq.dsc_name)
 
@@ -173,12 +172,12 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             self.uploaded = datetime.datetime.now()
             return True
         except Exception as e:
-            self.upload_error = "Upload to '{h}' failed: {e}".format(h=hopo.string, e=e)
-            LOG.error(self.upload_error)
+            self.upload_error = "{e}".format(e=e)
+            mini_buildd.setup.log_exception(LOG, "Upload to '{h}' failed".format(h=hopo.string), e)
 
     def clean(self):
-        if "build" in mini_buildd.setup.DEBUG:
-            LOG.warn("Build DEBUG mode -- not removing build spool dir {d}".format(d=self._breq.get_spool_dir()))
+        if "builder" in mini_buildd.setup.DEBUG:
+            LOG.warn("BUILDER DEBUG MODE: Not removing build spool dir {d}".format(d=self._breq.get_spool_dir()))
         else:
             shutil.rmtree(self._breq.get_spool_dir())
         self._breq.remove()

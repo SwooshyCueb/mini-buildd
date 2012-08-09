@@ -40,8 +40,12 @@ class Main():
         group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
                                help="Tighten log level. Give twice for min logs.")
         group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
-                               help="Comma-separated list of parts to put in 'debug mode'. Available parts: \
-main,django,ftpd,build,sbuild")
+                               help="""\
+Comma-separated list of parts to put in 'debug mode'. Available parts:
+exception (log tracebacks in master exception handlers),
+django (put django app in debug mode),
+packager (don't delete spool directories),
+builder (don't delete spool directories)""")
         group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
                                help="Comma-separated list of loggers (file,syslog,console) to use.")
 
@@ -190,7 +194,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
                         try:
                             daemon.restart(run_check=True)
                         except Exception as e:
-                            LOG.error("Could not restart daemon: {e}".format(e=e))
+                            mini_buildd.setup.log_exception(LOG, "Could not restart daemon", e)
                     else:
                         LOG.warn("Daemon not active (not restarted).")
                 else:
@@ -203,10 +207,7 @@ absolute path /PATH/*.conf for an old 0.8.x-style config.")
 try:
     Main().run()
 except Exception as e:
-    ERR_STRING = "mini-buildd FAILED: {e}".format(e=e)
-    if "main" in mini_buildd.setup.DEBUG:
-        LOG.exception(ERR_STRING)
-    else:
-        sys.exit(ERR_STRING)
+    mini_buildd.setup.log_exception(LOG, "mini-buildd FAILED", e)
+    sys.exit(1)
 except SystemExit as e:
     sys.exit(e.code)

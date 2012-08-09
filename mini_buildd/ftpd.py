@@ -29,8 +29,8 @@ def log_init():
      As pyftpd "logline" really spews lot of lines, this is only
      enabled in debug mode.
     """
-    pyftpdlib.ftpserver.log = LOG.debug
-    pyftpdlib.ftpserver.logline = LOG.debug if "ftpd" in mini_buildd.setup.DEBUG else mini_buildd.misc.nop
+    pyftpdlib.ftpserver.log = LOG.info
+    pyftpdlib.ftpserver.logline = LOG.debug
     pyftpdlib.ftpserver.logerror = LOG.error
 
 

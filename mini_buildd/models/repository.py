@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import StringIO
 import os
 import tempfile
 import time
@@ -518,10 +517,10 @@ Example:
 # pylint: enable=R0201
 
     def _mbd_reprepro_config(self):
-        result = StringIO.StringIO()
+        result = u""
         for d in self.distributions.all():
             for s in self.layout.suiteoption_set.all():
-                result.write("""
+                result += u"""
 Codename: {dist}
 Suite: {dist}
 Label: {dist}
@@ -539,10 +538,10 @@ DscIndices: Sources Release . .gz .bz2
            components=u" ".join(d.mbd_get_components()),
            architectures=" ".join([x.name for x in d.architectures.all()]),
            desc=self.mbd_get_desc(d, s),
-           na="yes" if s.not_automatic else "no",
-           bau="yes" if s.but_automatic_upgrades else "no"))
+           na=u"yes" if s.not_automatic else u"no",
+           bau=u"yes" if s.but_automatic_upgrades else u"no")
 
-        return result.getvalue()
+        return result
 
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
@@ -614,11 +613,15 @@ DscIndices: Sources Release . .gz .bz2
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
-        open(os.path.join(self.mbd_get_path(), "conf", "distributions"), 'w').write(self._mbd_reprepro_config())
-        open(os.path.join(self.mbd_get_path(), "conf", "options"), 'w').write("""\
+        mini_buildd.misc.ConfFile(
+            os.path.join(self.mbd_get_path(), "conf", "distributions"),
+            self._mbd_reprepro_config()).save()
+        mini_buildd.misc.ConfFile(
+            os.path.join(self.mbd_get_path(), "conf", "options"),
+            u"""\
 gnupghome {h}
 {m}
-""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else ""))
+""".format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m=u"morguedir +b/morguedir" if self.reprepro_morguedir else u"")).save()
 
         # Update all indices (or create on initial install) via reprepro
         repo = self._mbd_reprepro()

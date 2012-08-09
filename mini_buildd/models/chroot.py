@@ -110,12 +110,16 @@ go to the default mapping.
             except:
                 self.personality = "linux"
 
-        open(self.mbd_get_sudoers_workaround_file(), 'w').write("""
+        mini_buildd.misc.ConfFile(
+            self.mbd_get_sudoers_workaround_file(),
+            u"""\
 {u} ALL=(ALL) ALL
 {u} ALL=NOPASSWD: ALL
-""".format(u=os.getenv("USER")))
+""".format(u=os.getenv("USER"))).save()
 
-        open(self.mbd_get_schroot_conf_file(), 'w').write("""
+        mini_buildd.misc.ConfFile(
+            self.mbd_get_schroot_conf_file(),
+            u"""\
 [{n}]
 description=Mini-Buildd chroot {n}
 groups=sbuild
@@ -127,7 +131,7 @@ personality={p}
 
 # Backend specific config
 {b}
-""".format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf()))
+""".format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf())).save()
 
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
         self.mbd_msg_info(request, "Chroot {c}: Prepared on system for schroot.".format(c=self))

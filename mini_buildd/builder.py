@@ -65,10 +65,9 @@ class Build(object):
         """
         Generate .sbuildrc for a build request (not all is configurable via switches, unfortunately).
         """
-
-        with open(self.sbuildrc_path, 'w') as f:
-            # Automatic part
-            f.write("""\
+        mini_buildd.misc.ConfFile(
+            self.sbuildrc_path,
+            u"""\
 # We update sources.list on the fly via chroot-setup commands;
 # this update occurs before, so we don't need it.
 $apt_update = 0;
@@ -78,14 +77,13 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
 # Builder identity
 $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
-""".format(apt_allow_unauthenticated=self._breq["Apt-Allow-Unauthenticated"]))
 
-            # Copy the custom snippet
-            shutil.copyfileobj(open(os.path.join(self._build_dir, "sbuildrc_snippet"), 'rb'), f)
-            f.write("""
+{custom_snippet}
+
 # don't remove this, Perl needs it:
 1;
-""")
+""".format(apt_allow_unauthenticated=self._breq["Apt-Allow-Unauthenticated"],
+           custom_snippet=open(os.path.join(self._build_dir, "sbuildrc_snippet"), 'rb').read())).save()
 
     def _buildlog_to_buildresult(self, buildlog):
         regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")

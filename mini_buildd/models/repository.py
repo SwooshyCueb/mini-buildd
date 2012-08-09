@@ -289,10 +289,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=" ".join(self.mbd_get_components()))
 
     def mbd_get_components(self):
-        result = []
-        for c in self.components.all():
-            result.append(c.name)
-        return result
+        return [c.name for c in self.components.all()]
 
     def mbd_get_apt_sources_list(self):
         res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
@@ -446,9 +443,11 @@ Example:
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
     def mbd_get_origin(self):
-        return "mini-buildd" + self.identity
+        ".. todo:: add daemon id "
+        return "mini-buildd " + self.identity
 
     def mbd_get_desc(self, distribution, suite_option):
+        ".. todo:: add daemon id, improve"
         return "{d} {s} packages for {identity}".format(identity=self.identity, d=distribution.base_source.codename, s=suite_option.suite.name)
 
     def mbd_get_apt_line(self, distribution, suite_option):
@@ -457,7 +456,7 @@ Example:
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
             i=self.identity, d=suite_option.mbd_get_distribution_string(self, distribution), c=" ".join(distribution.mbd_get_components()))
 
-    def mbd_find_dist(self, dist):
+    def _mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
         LOG.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
 
@@ -475,7 +474,7 @@ Example:
 
         - get_apt_sources_list(): decide what other mini-buildd suites are to be included automatically
         """
-        d, s = self.mbd_find_dist(dist)
+        d, s = self._mbd_find_dist(dist)
         res = d.mbd_get_apt_sources_list()
         res += "\n"
         res += "# Mini-Buildd: {d}\n".format(d=dist)
@@ -489,7 +488,7 @@ Example:
 # pylint: enable=R0201
 
     def mbd_get_apt_keys(self, dist):
-        d, _s = self.mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(dist)
         result = self.mbd_get_daemon().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             for k in e.source.apt_keys.all():
@@ -497,12 +496,12 @@ Example:
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
-        d, _s = self.mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(dist)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d, _s = self.mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(dist)
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.

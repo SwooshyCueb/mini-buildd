@@ -204,7 +204,7 @@ try:
     Main().run()
 except Exception as e:
     ERR_STRING = "mini-buildd FAILED: {e}".format(e=e)
-    if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+    if "main" in mini_buildd.setup.DEBUG:
         LOG.exception(ERR_STRING)
     else:
         sys.exit(ERR_STRING)

@@ -142,7 +142,7 @@ def run():
             LOG.warn(subject)
             get().model.mbd_notify(subject, body)
 
-            if mini_buildd.setup.DEBUG is not None and "main" in mini_buildd.setup.DEBUG:
+            if "main" in mini_buildd.setup.DEBUG:
                 LOG.exception("DEBUG: Daemon loop exception")
 
         finally:

@@ -34,6 +34,18 @@
 	font-weight: bold;
 }
 
+#mb_django_admin_daemon_status a:link, #mb_django_admin_daemon_status a:visited
+{
+	font-size: 11px;
+	color: #5b80b2;
+}
+
+#mb_django_admin_daemon_status a:hover
+{
+	color: #003366;
+	text-decoration: none;
+}
+
 #mb_box h1.mini-buildd
 {
 	background: url("/static/admin/img/default-bg.gif") repeat-x scroll left top #7CA0C7;

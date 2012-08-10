@@ -360,6 +360,12 @@ a:hover
 	font-style: italic;
 }
 
+#mb_content li.idle
+{
+	color: #888888;
+	font-style: italic;
+}
+
 #mb_repository_misc ul
 {
 	list-style: none;
@@ -374,7 +380,7 @@ a:hover
 
 #mb_package_propagation_results pre
 {
-	margin: 0px 15px;
+	margin: 15px 15px;
 }
 
 #mb_package_propagation_results ul
@@ -461,7 +467,7 @@ a:hover
 #mb_index_package_search
 {
 	text-align: center;
-	padding: 15px 0px 10px 0px;
+	padding: 20px 15px 15px 15px;
 }
 
 /* FOOTER */

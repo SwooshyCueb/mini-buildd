@@ -6,33 +6,48 @@
 {% block localscript %}
 function toggleLastBuilds()
 {
-		$('#mb_lb_click_me').click(
-				function()
-				{
-						$('#mb_last_builds').toggle();
-						$('#mb_last_builds').is(":visible") ?  $('#mb_lb_anchor').html("hide") : $('#mb_lb_anchor').html("show");
-				}
-		);
+	$('#mb_lb_click_me').click(
+		function()
+		{
+			$('#mb_last_builds').toggle();
+			$('#mb_last_builds').is(":visible") ?  $('#mb_lb_anchor').html("hide") : $('#mb_lb_anchor').html("show");
+		}
+	);
 }
 
 
 function toggleLastPackages()
 {
-		$('#mb_lp_click_me').click(
-				function()
-				{
-						$('#mb_last_packages').toggle();
-						$('#mb_last_packages').is(":visible") ?  $('#mb_lp_anchor').html("hide") : $('#mb_lp_anchor').html("show");
-				}
-		);
-}
-
-$(document).ready(
+	$('#mb_lp_click_me').click(
 		function()
 		{
-				toggleLastBuilds();
-				toggleLastPackages();
+			$('#mb_last_packages').toggle();
+			$('#mb_last_packages').is(":visible") ?  $('#mb_lp_anchor').html("hide") : $('#mb_lp_anchor').html("show");
 		}
+	);
+}
+
+
+function updateLastBuildsCount()
+{
+	$('#mb_lb_count').html($('#mb_last_builds li').size());
+}
+
+
+function updateLastPackagesCount()
+{
+	$('#mb_lp_count').html($('#mb_last_packages li').size());
+}
+
+
+$(document).ready(
+	function()
+	{
+		toggleLastBuilds();
+		toggleLastPackages();
+		updateLastBuildsCount();
+		updateLastPackagesCount();
+	}
 );
 {% endblock %}
 
@@ -43,8 +58,7 @@ $(document).ready(
 			<h1 class="box-caption"><span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }} </span></h1>
 
 			<div id="mb_index_package_search">
-				<form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
-					<input type="hidden" name="action" value="search" />
+				<form id="mb_repository_search_form" action="/mini_buildd/repositories/" method="get">
 					<table style="display: inline">
 						<tr>
 							<th>Package</th>
@@ -52,7 +66,7 @@ $(document).ready(
 							<th />
 						</tr>
 						<tr>
-							<td><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
+							<td><input type="hidden" name="action" value="search" /><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
 							<td><select name="repository" size="1">
 									{% for r in repositories.all %}
 										<option value="{{ r.identity|urlencode }}">{{ r }}</option>
@@ -78,16 +92,22 @@ $(document).ready(
 
 						<hr />
 						<h2>Packaging:</h2>
-						<ul>
-							{% for k, p in daemon.tpl.packages.items %}
-								<li>{{ p }}</li>
-							{% endfor %}
-						</ul>
+						{% if daemon.tpl.packages.items %}
+							<ul>
+								{% for k, p in daemon.tpl.packages.items %}
+									<li>{{ p }}</li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							<ul>
+								<li class="idle">currently nothing to do</li>
+							</ul>
+						{% endif %}
 
-						<h2>Last packages (<div id="mb_lp_click_me"><a id="mb_lp_anchor" href="#">show</a></div>):</h2>
+						<h2>Last packages: <span id="mb_lp_count">0</span> (<span id="mb_lp_click_me"><a id="mb_lp_anchor" href="#">show</a></span>)</h2>
 						<ul id="mb_last_packages">
 							{% for p in daemon.tpl.last_packages %}
-								<li>{{ p }}</li>
+								<li>{{ p }}<br />
 								[Success:
 								{% for arch, bres in p.success.items %}
 									<a href="../log/{{ bres.archive_dir }}/{{ bres.buildlog_name }}">{{ arch }}</a>
@@ -97,7 +117,7 @@ $(document).ready(
 								{% for arch, bres in p.failed.items %}
 									<a href="../log/{{ bres.archive_dir }}/{{ bres.buildlog_name }}">{{ arch }}</a>
 								{% endfor %}
-								]
+								]</li>
 							{% endfor %}
 						</ul>
 
@@ -110,6 +130,7 @@ $(document).ready(
 			<div id="mb_index_chroots">
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Builder: {{ daemon.tpl.build_queue }}</h1>
+
 					{% if chroots.count > 0 %}
 						<h2>Chroots:</h2>
 						<ul>
@@ -119,20 +140,32 @@ $(document).ready(
 						</ul>
 
 						<h2>Building:</h2>
-						<ul>
-							{% for k, b in daemon.tpl.builds.items %}
-								<li>{{ b }}</li>
-							{% endfor %}
-						</ul>
+						{% if daemon.tpl.packages.items %}
+							<ul>
+								{% for k, b in daemon.tpl.builds.items %}
+									<li>{{ b }}</li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							<ul>
+								<li class="idle">currently nothing to do</li>
+							</ul>
+						{% endif %}
 
 						<h2>Upload pending:</h2>
-						<ul>
-							{% for k, b in daemon.tpl.upload_pending_builds.items %}
-								<li>{{ b }} [CHECK REMOTE] [RETRY NOW]  [REMOVE] </li>
-							{% endfor %}
-						</ul>
+						{% if daemon.tpl.packages.items %}
+							<ul>
+								{% for k, b in daemon.tpl.upload_pending_builds.items %}
+									<li>{{ b }} [CHECK REMOTE] [RETRY NOW]  [REMOVE] </li>
+								{% endfor %}
+							</ul>
+						{% else %}
+							<ul>
+								<li class="idle">currently nothing to do</li>
+							</ul>
+						{% endif %}
 
-						<h2>Last builds (<div id="mb_lb_click_me"><a id="mb_lb_anchor" href="#">show</a></div>):</h2>
+						<h2>Last builds: <span id="mb_lb_count">0</span>  (<span id="mb_lb_click_me"><a id="mb_lb_anchor" href="#">show</a></span>)</h2>
 						<ul id="mb_last_builds">
 							{% for b in daemon.tpl.last_builds %}
 								<li>{{ b }}</li>

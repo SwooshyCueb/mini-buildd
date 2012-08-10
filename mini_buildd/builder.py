@@ -199,7 +199,7 @@ def build(queue, builds, upload_pending_builds, last_builds, gnupg, sbuild_jobs,
     b.try_upload()
     if b.uploaded:
         b.clean()
-        last_builds.append(b)
+        last_builds.appendleft(b)
         del upload_pending_builds[b.key]
 
 

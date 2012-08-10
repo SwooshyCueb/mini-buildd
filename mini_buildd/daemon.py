@@ -118,7 +118,7 @@ def run():
             elif changes.is_buildresult():
                 remotes_keyring.verify(changes.file_path)
                 if get().packages[changes_pid].update(changes) == mini_buildd.packager.Package.DONE:
-                    get().last_packages.append(get().packages[changes_pid])
+                    get().last_packages.appendleft(get().packages[changes_pid])
                     del get().packages[changes_pid]
 
             else:

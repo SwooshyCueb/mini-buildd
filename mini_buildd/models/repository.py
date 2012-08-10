@@ -548,13 +548,6 @@ DscIndices: Sources Release . .gz .bz2
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_package_precheck(self, package):
-        result = self.mbd_package_search(None, package.changes["Source"])
-        for _d, distributions in result.items():
-            for v, _versions in distributions.items():
-                if v == package.changes["Version"]:
-                    raise Exception("Already in repository")
-
     def mbd_package_install(self, package):
         for arch, bres in package.success.items():
             t = tempfile.mkdtemp()
@@ -571,7 +564,10 @@ DscIndices: Sources Release . .gz .bz2
     def mbd_package_remove(self, distribution, package, version):
         return self._mbd_reprepro().removesrc(distribution, package, version)
 
-    def mbd_package_search(self, codename, pattern):
+    MBD_SEARCH_FMT_STANDARD = 0
+    MBD_SEARCH_FMT_VERSIONS = 1
+
+    def mbd_package_search(self, codename, pattern, fmt=MBD_SEARCH_FMT_STANDARD):
         """
         Result if of the form:
 
@@ -582,18 +578,19 @@ DscIndices: Sources Release . .gz .bz2
             if not codename or codename == d.base_source.codename:
                 distributions.append(d)
 
-        result = {}
+        result = [{}, []]
         for d in distributions:
             for s in self.layout.suiteoption_set.all():
                 for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern):
                     package, distribution, version = item
-                    pkg = result.setdefault(package, {})
+                    pkg = result[self.MBD_SEARCH_FMT_STANDARD].setdefault(package, {})
                     dis = pkg.setdefault(distribution, {})
                     ver = dis.setdefault(version, {})
+                    result[self.MBD_SEARCH_FMT_VERSIONS].append(version)
                     if s.migrates_to:
                         ver["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
 
-        return result
+        return result[fmt]
 
     def mbd_prepare(self, request):
         """

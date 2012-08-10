@@ -22,6 +22,9 @@ class Package(object):
         self.repository, self.distribution, self.suite = repository, dist, suite
         self.pid = changes.get_pkg_id()
 
+        if self.changes["Version"] in repository.mbd_package_search(None, self.changes["Source"], fmt=repository.MBD_SEARCH_FMT_VERSIONS):
+            raise Exception("Version already in repository")
+
         self.repository.mbd_package_precheck(self)
 
         self.requests = self.changes.gen_buildrequests(daemon, self.repository, self.distribution)

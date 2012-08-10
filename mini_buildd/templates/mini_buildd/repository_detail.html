@@ -22,8 +22,7 @@
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Search</h1>
 
-					<form id="mb_repository_search_form" action="/mini_buildd/repositories/" name="repository-search-form" method="get">
-						<input type="hidden" name="action" value="search" />
+					<form id="mb_repository_search_form" action="/mini_buildd/repositories/" method="get">
 						<table>
 							<tr>
 								<th>Package Name</th>
@@ -31,9 +30,11 @@
 								<th />
 							</tr>
 							<tr>
-								<input type="hidden" name="repository" value="{{ object.identity|urlencode }}" />
-								<td><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
-
+								<td>
+									<input type="hidden" name="repository" value="{{ object.identity|urlencode }}" />
+									<input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" />
+									<input type="hidden" name="action" value="search" />
+								</td>
 								<td><select name="codename" size="1">
 										{% for d in object.distributions.all %}
 											<option value="{{ d.base_source.codename|urlencode }}">{{ d }}</option>
@@ -51,32 +52,26 @@
 			{% for d in object.distributions.all %}
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Distribution: {{ d }}</h1>
-					<h2>Mandatory Architectures</h2>
+					<h2>Architectures</h2>
 					<ul>
-						{% for a in d.mandatory_architectures.all  %}
-							<li>{{ a.name }}</li>
+						{% for a in d.architectureoption_set.all  %}
+							<li>{{ a.architecture.name }}
+								{% if a.optional %}
+									(o)
+								{% endif %}
+							</li>
 						{% endfor %}
 					</ul>
-					<h2>Optional Architectures</h2>
-					{% if d.optional_architectures.all.count > 0  %}
-						<ul>
-							{% for a in d.optional_architectures.all  %}
-								<li>{{ a.name }}</li>
-							{% endfor %}
-						</ul>
-					{% else %}
-						<p>No optional architectures configured.</p>
-					{% endif %}
 					<hr />
-					{% for s in object.layout.suites.all %}
-						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.name }}: <span class="emphasize-headline">{% repository_desc object d s %}</span></h2>
+					{% for s in object.layout.suiteoption_set.all %}
+						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% repository_desc object d s %}</span></h2>
 						<ul>
 							<li>Mandatory version part: <pre class="pre-inline">{% repository_mandatory_version object d s %}</pre></li>
 							<li>Apt source line: <pre class="pre-inline">{% repository_apt_line object d s %}</pre></li>
-							{% if s.migrates_to %}
-								<li>Migrates to: <span class="emphasize-migrates-from">{{ s.migrates_to.name }}</span></li>
+							{% if s.suite.migrates_to %}
+								<li>Migrates to: <span class="emphasize-migrates-from">{{ s.suite.migrates_to.name }}</span></li>
 							{% endif %}
-							{% if s.uploadable %}
+							{% if s.suite.uploadable %}
 								<li>Uploadable.</li>
 							<li>Sources:<div class="pre-block"><pre>{% repository_sources object d s %}</pre></div></li>
 						{% endif %}

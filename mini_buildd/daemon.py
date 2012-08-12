@@ -117,7 +117,7 @@ def run():
                 mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
             elif changes.is_buildresult():
                 remotes_keyring.verify(changes.file_path)
-                if get().packages[changes_pid].update(changes) == mini_buildd.packager.Package.DONE:
+                if get().packages[changes_pid].update(changes):
                     get().last_packages.appendleft(get().packages[changes_pid])
                     del get().packages[changes_pid]
 

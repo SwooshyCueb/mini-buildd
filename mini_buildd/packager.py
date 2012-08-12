@@ -12,9 +12,6 @@ LOG = logging.getLogger(__name__)
 
 
 class Package(object):
-    DONE = 0
-    INCOMPLETE = 1
-
     def __init__(self, daemon, changes, repository, dist, suite):
         self.done = False
         self.daemon = daemon
@@ -73,7 +70,7 @@ class Package(object):
         missing = len(self.requests) - len(self.success) - len(self.failed)
         if missing > 0:
             LOG.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
-            return self.INCOMPLETE
+            return self.done
 
         # Finish up
         self.done = True
@@ -97,4 +94,4 @@ class Package(object):
 
             self.notify()
 
-        return self.DONE
+        return self.done

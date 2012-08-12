@@ -44,8 +44,7 @@ class Main():
 Comma-separated list of parts to put in 'debug mode'. Available parts:
 exception (log tracebacks in master exception handlers),
 django (put django app in debug mode),
-packager (don't delete spool directories),
-builder (don't delete spool directories)""")
+builder (don't delete builder spool directories)""")
         group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
                                help="Comma-separated list of loggers (file,syslog,console) to use.")
 

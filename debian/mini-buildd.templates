@@ -11,7 +11,7 @@ _Description: Data purge warning
 
 Template: mini-buildd/home
 Type: string
-Default: /home/mini-buildd
+Default: /var/lib/mini-buildd
 _Description: Home path:
  This is mini-buildd's UNIX user home, and the place where all
  data is kept. This path should have enough space for all

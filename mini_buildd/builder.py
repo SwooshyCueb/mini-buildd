@@ -133,9 +133,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
             sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._breq["Run-Lintian"]))
 
-        if "builder" in mini_buildd.setup.DEBUG:
-            sbuild_cmd.append("--verbose")
-
         sbuild_cmd.append(self._breq.dsc_name)
 
         # Actually run sbuild

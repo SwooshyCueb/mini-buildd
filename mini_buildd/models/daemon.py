@@ -39,8 +39,8 @@ class Daemon(mini_buildd.models.base.StatusModel):
 
     # GnuPG options
     gnupg_template = django.db.models.TextField(default="""
-Key-Type: DSA
-Key-Length: 2048
+Key-Type: RSA
+Key-Length: 4096
 Expire-Date: 0
 """)
 

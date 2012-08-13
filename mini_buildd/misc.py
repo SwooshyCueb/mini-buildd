@@ -244,7 +244,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
     """Wrapper around subprocess.call().
 
     >>> call(["echo", "-n", "hallo"])
-    'hallo'
+    u'hallo'
     >>> call(["id", "-syntax-error"], value_on_error="Kapott")
     u'Kapott'
     """
@@ -267,10 +267,10 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             if log_output:
                 stdout.seek(0)
                 for line in stdout:
-                    olog("Call stdout: {l}".format(l=line.rstrip('\n')))
+                    olog("Call stdout: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
                 stderr.seek(0)
                 for line in stderr:
-                    olog("Call stderr: {l}".format(l=line.rstrip('\n')))
+                    olog("Call stderr: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
     except:
         LOG.error("Call failed: {a}".format(a=args))
         if value_on_error is not None:
@@ -279,7 +279,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             raise
     LOG.info("Call successful: {a}".format(a=args))
     stdout.seek(0)
-    return stdout.read()
+    return stdout.read().decode("UTF-8")
 
 
 def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, rollback_only=False, **kwargs):

@@ -23,7 +23,7 @@ class BaseGnuPG(object):
 
     def gen_secret_key(self, template):
         with tempfile.TemporaryFile() as t:
-            t.write(template)
+            t.write(template.encode("UTF-8"))
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
 
@@ -45,7 +45,7 @@ class BaseGnuPG(object):
 
     def add_pub_key(self, key):
         with tempfile.TemporaryFile() as t:
-            t.write(key)
+            t.write(key.encode("UTF-8"))
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
@@ -98,7 +98,7 @@ Name-Email: {e}
 class TmpGnuPG(BaseGnuPG):
     """
     >>> gnupg = TmpGnuPG()
-    >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Email: test@key.org")
+    >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Real: Üdo Ümlaut\\nName-Email: test@key.org")
     >>> t = tempfile.NamedTemporaryFile()
     >>> t.write("A test file")
     >>> gnupg.sign(file_name=t.name, identity="test@key.org")

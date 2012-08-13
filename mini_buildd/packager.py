@@ -6,35 +6,90 @@ import email.mime.text
 import email.utils
 import logging
 
-import mini_buildd.setup
-
 LOG = logging.getLogger(__name__)
 
 
 class Package(object):
-    def __init__(self, daemon, changes, repository, dist, suite):
-        self.done = False
+    CHECKING = "CHECKING"
+    REJECTED = "REJECTED"
+    BUILDING = "BUILDING"
+    FAILED = "FAILED"
+    INSTALLED = "INSTALLED"
+
+    def __init__(self, daemon, changes):
+        self._status = self.CHECKING
+        self._status_desc = "."
+
         self.daemon = daemon
         self.changes = changes
-        self.repository, self.distribution, self.suite = repository, dist, suite
         self.pid = changes.get_pkg_id()
-
-        if self.changes["Version"] in repository.mbd_package_search(None, self.changes["Source"], fmt=repository.MBD_SEARCH_FMT_VERSIONS):
-            raise Exception("Version already in repository")
-
-        self.requests = self.changes.gen_buildrequests(daemon, self.repository, self.distribution)
-        self.success = {}
-        self.failed = {}
-        for _key, breq in self.requests.items():
-            breq.upload_buildrequest(daemon.mbd_get_http_hopo())
+        self.repository, self.distribution, self.suite = None, None, None
+        self.requests, self.success, self.failed = {}, {}, {}
 
     def __unicode__(self):
-        return "{s} ({d}): {p} ({f}/{r} arches built)".format(
-            s="BUILDING" if not self.done else "FAILED" if self.failed else "BUILD",
+        return "{s} ({d}): {p} ({f}/{r} arches built): {desc}".format(
+            s=self._status,
             d=self.changes["Distribution"],
             p=self.pid,
             f=len(self.success),
-            r=len(self.requests))
+            r=len(self.requests),
+            desc=self._status_desc)
+
+    def set_status(self, status, desc="."):
+        self._status = status
+        self._status_desc = desc
+
+    def precheck(self, uploader_keyrings):
+        # Get/check repository, distribution and suite for changes
+        self.repository, self.distribution, self.suite = self.changes.get_repository()
+
+        # Authenticate
+        if self.repository.allow_unauthenticated_uploads:
+            LOG.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self.changes.file_name))
+        else:
+            uploader_keyrings[self.repository.identity].verify(self.changes.file_path)
+
+        # Check if this version is already in repository
+        if self.changes["Version"] in self.repository.mbd_package_search(None, self.changes["Source"], fmt=self.repository.MBD_SEARCH_FMT_VERSIONS):
+            raise Exception("Version already in repository")
+
+        # Generate build requests
+        self.requests = self.changes.gen_buildrequests(self.daemon, self.repository, self.distribution)
+
+        # Upload buildrequests
+        for _key, breq in self.requests.items():
+            breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
+
+    def add_buildresult(self, bres, remotes_keyring):
+        ".. todo:: proper error handling, states."
+        remotes_keyring.verify(bres.file_path)
+
+        arch = bres["Architecture"]
+        status = bres["Sbuild-Status"]
+        retval = int(bres["Sbuildretval"])
+        LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
+
+        if retval == 0:
+            self.success[arch] = bres
+        else:
+            self.failed[arch] = bres
+
+        missing = len(self.requests) - len(self.success) - len(self.failed)
+        return missing <= 0
+
+    def install(self):
+        if self.failed:
+            raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
+        self.repository.mbd_package_install(self)
+
+    def archive(self):
+        # Archive build results and request
+        for _arch, c in self.success.items() + self.failed.items() + self.requests.items():
+            c.archive()
+        # Archive incoming changes
+        self.changes.archive()
+        # Purge complete package dir (if precheck failed, spool dir will not be present)
+        shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
     def notify(self):
         results = ""
@@ -52,44 +107,3 @@ class Package(object):
             body,
             self.repository,
             self.changes)
-
-    def update(self, bres):
-        ".. todo:: proper error handling, states."
-        arch = bres["Architecture"]
-        status = bres["Sbuild-Status"]
-        retval = int(bres["Sbuildretval"])
-        LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
-
-        if retval == 0:
-            self.success[arch] = bres
-        else:
-            self.failed[arch] = bres
-
-        missing = len(self.requests) - len(self.success) - len(self.failed)
-        if missing > 0:
-            LOG.debug("{p}: {n} arches still missing.".format(p=self.pid, n=missing))
-            return self.done
-
-        # Finish up
-        self.done = True
-        LOG.info("{p}: All build results received".format(p=self.pid))
-        try:
-            if self.failed:
-                raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
-            self.repository.mbd_package_install(self)
-
-        except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Package failed", e)
-
-        finally:
-            # Archive build results and request
-            for arch, c in self.success.items() + self.failed.items() + self.requests.items():
-                c.archive()
-            # Archive incoming changes
-            self.changes.archive()
-            # Purge complete package dir
-            shutil.rmtree(self.changes.get_spool_dir())
-
-            self.notify()
-
-        return self.done

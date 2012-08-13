@@ -115,22 +115,46 @@ def run():
                 def queue_buildrequest(event):
                     get().build_queue.put(event)
                 mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
+
             elif changes.is_buildresult():
-                remotes_keyring.verify(changes.file_path)
-                if get().packages[changes_pid].update(changes):
-                    get().last_packages.appendleft(get().packages[changes_pid])
+                if not changes_pid in get().packages:
+                    raise Exception("No active package for that build result.")
+
+                package = get().packages[changes_pid]
+                try:
+                    if package.add_buildresult(changes, remotes_keyring):
+                        package.install()
+                        package.set_status(package.INSTALLED)
+                        package.archive()
+                        package.notify()
+                        get().last_packages.appendleft(package)
+                        del get().packages[changes_pid]
+                except Exception as e:
+                    package.set_status(package.FAILED, unicode(e))
+                    package.archive()
+                    package.notify()
+                    get().last_packages.appendleft(package)
                     del get().packages[changes_pid]
 
-            else:
-                repository, dist, suite = changes.get_repository()
-                if repository.allow_unauthenticated_uploads:
-                    LOG.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=changes.file_name))
-                else:
-                    uploader_keyrings[repository.identity].verify(changes.file_path)
+            else:  # User upload
+                if changes_pid in get().packages:
+                    raise Exception("Internal error: Uploaded package already in packages list.")
 
-                get().packages[changes_pid] = mini_buildd.packager.Package(get().model, changes, repository, dist, suite)
+                package = mini_buildd.packager.Package(get().model, changes)
+                get().packages[changes_pid] = package
+                try:
+                    package.precheck(uploader_keyrings)
+                    package.set_status(package.BUILDING)
+                except Exception as e:
+                    package.set_status(package.REJECTED, unicode(e))
+                    package.archive()
+                    package.notify()
+                    get().last_packages.appendleft(package)
+                    del get().packages[changes_pid]
 
         except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "Package failed", e)
+
             if changes and changes_pid:
                 subject = "DISCARD: {p}: {e}".format(p=changes_pid, e=e)
                 body = email.mime.text.MIMEText(changes.dump(), _charset="UTF-8")

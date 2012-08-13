@@ -18,6 +18,7 @@ class BaseGnuPG(object):
         self.home = home
         self.gpg_cmd = ["gpg",
                         "--homedir={h}".format(h=home),
+                        "--display-charset=utf-8",
                         "--batch"]
 
     def gen_secret_key(self, template):

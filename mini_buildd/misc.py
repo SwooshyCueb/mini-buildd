@@ -330,7 +330,7 @@ def sbuild_keys_workaround():
 
 def setup_test_logging(syslog=True):
     if syslog:
-        sh = logging.handlers.SysLogHandler(address="/dev/log", facility=logging.handlers.SysLogHandler.LOG_USER)
+        sh = logging.handlers.SysLogHandler(address="/dev/log".encode("UTF-8"), facility=logging.handlers.SysLogHandler.LOG_USER)
         sh.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
         LOG.addHandler(sh)
 

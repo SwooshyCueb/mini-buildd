@@ -33,6 +33,20 @@ fi
 # Always (re-)add to group sbuild
 addgroup mini-buildd sbuild
 
+# Always (re-)write mini-buildd's fstab to use with schroot We
+# need mini-buildd's spool (dependent on HOME) always
+# bind-mounted for the way we call sbuild.
+cat <<EOF >/etc/schroot/mini-buildd/fstab
+# fstab: static file system information for chroots.
+# Note that the mount point will be prefixed by the chroot path
+# (CHROOT_PATH)
+#
+# <file system>	<mount point>	<type>	<options>	<dump>	<pass>
+/proc		/proc		none    rw,bind        0       0
+/sys		/sys		none    rw,bind        0       0
+${MINI_BUILDD_HOME}/var/spool		${MINI_BUILDD_HOME}/var/spool		none    rw,bind        0       0
+EOF
+
 #
 # Handle password
 #

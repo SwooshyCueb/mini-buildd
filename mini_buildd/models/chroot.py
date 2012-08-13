@@ -124,6 +124,7 @@ go to the default mapping.
             """\
 [{n}]
 description=Mini-Buildd chroot {n}
+setup.fstab=mini-buildd/fstab
 groups=sbuild
 users=mini-buildd
 root-groups=sbuild

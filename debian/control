@@ -22,7 +22,7 @@ Depends: ${misc:Depends},
          adduser, sudo, gnupg,
          reprepro (>= 4.2),
          debootstrap (>= 1.0.24~),
-         schroot (>= 1.4.22), sbuild (>= 0.62.4),
+         schroot (>= 1.6.3), sbuild (>= 0.63.1),
          dpkg-dev, fakeroot, debhelper, cdbs, lintian, devscripts (>= 2.10.15)
 Suggests: lvm2
 Description: Minimal Debian build daemon

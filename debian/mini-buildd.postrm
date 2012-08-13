@@ -2,6 +2,7 @@
 
 case ${1} in
 	purge)
+		rm -f /etc/schroot/mini-buildd/fstab
 		# On purge, force-remove user mini-buildd along with all files.
 		# Be sure to give the user a warning, though, as he might
 		# lose valuable data like repositories

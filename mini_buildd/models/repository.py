@@ -431,7 +431,7 @@ Example:
                 for r in p.may_upload_to.all():
                     if r.identity == self.identity:
                         gpg.add_pub_key(p.key)
-                        LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name).encode("UTF-8"))
+                        LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name))
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()

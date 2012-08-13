@@ -264,13 +264,16 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             olog = LOG.error
             raise
         finally:
-            if log_output:
-                stdout.seek(0)
-                for line in stdout:
-                    olog("Call stdout: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
-                stderr.seek(0)
-                for line in stderr:
-                    olog("Call stderr: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
+            try:
+                if log_output:
+                    stdout.seek(0)
+                    for line in stdout:
+                        olog("Call stdout: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
+                    stderr.seek(0)
+                    for line in stderr:
+                        olog("Call stderr: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
+            except Exception as e:
+                LOG.error("Output logging failed (char enc?): {e}".format(e=e))
     except:
         LOG.error("Call failed: {a}".format(a=args))
         if value_on_error is not None:

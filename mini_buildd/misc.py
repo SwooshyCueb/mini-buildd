@@ -240,7 +240,7 @@ def mkdirs(path):
             LOG.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 
-def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs):
+def call(args, run_as_root=False, value_on_error=None, log_output=True, error_log_on_fail=True, **kwargs):
     """Wrapper around subprocess.call().
 
     >>> call(["echo", "-n", "hallo"])
@@ -261,7 +261,8 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
         try:
             subprocess.check_call(args, stdout=stdout, stderr=stderr, **kwargs)
         except:
-            olog = LOG.error
+            if error_log_on_fail:
+                olog = LOG.error
             raise
         finally:
             try:
@@ -275,7 +276,8 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, **kwargs
             except Exception as e:
                 LOG.error("Output logging failed (char enc?): {e}".format(e=e))
     except:
-        LOG.error("Call failed: {a}".format(a=args))
+        if error_log_on_fail:
+            LOG.error("Call failed: {a}".format(a=args))
         if value_on_error is not None:
             return value_on_error
         else:

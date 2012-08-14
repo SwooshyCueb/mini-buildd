@@ -55,9 +55,9 @@ class BaseGnuPG(object):
     def verify(self, signature, data=None):
         try:
             xtra_opts = [data] if data else []
-            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signature] + xtra_opts)
+            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signature] + xtra_opts, error_log_on_fail=False)
         except:
-            raise Exception("GnuPG authorization failed on '{c}'".format(c=signature))
+            raise Exception("GnuPG authorization failed on '{c}'.".format(c=signature))
 
     def sign(self, file_name, identity=None):
         xtra_opts = ["--local-user={i}".format(i=identity)] if identity else []

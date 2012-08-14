@@ -19,6 +19,21 @@ import logging.handlers
 LOG = logging.getLogger(__name__)
 
 
+class API(object):
+    """
+    Helper class to implement an API check. Inheriting classes
+    must define an __API__ class attribute that should be
+    increased in incompatible changes.
+    """
+    __API__ = -1
+
+    def __init__(self):
+        self.__api__ = self.__API__
+
+    def api_check(self):
+        return self.__api__ == self.__API__
+
+
 class ConfFile(object):
     """ ConfFile generation helper.
 

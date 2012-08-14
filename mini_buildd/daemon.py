@@ -223,12 +223,21 @@ class Daemon():
         self.upload_pending_builds = {}
         self.last_packages = collections.deque(maxlen=self.model.show_last_packages)
         self.last_builds = collections.deque(maxlen=self.model.show_last_builds)
+
+        # Try to unpickle last_* from persistent storage.
+        # Objects must match API, and we don't care if it fails.
         try:
             last_packages, last_builds = self.model.mbd_get_pickled_data()
             for p in last_packages:
-                self.last_packages.append(p)
+                if p.api_check():
+                    self.last_packages.append(p)
+                else:
+                    LOG.warn("Removing (new API) from last package info: {p}".format(p=p))
             for b in last_builds:
-                self.last_builds.append(b)
+                if b.api_check():
+                    self.last_builds.append(b)
+                else:
+                    LOG.warn("Removing (new API) from last builds info: {b}".format(b=b))
         except Exception as e:
             LOG.warn("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
 

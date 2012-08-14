@@ -6,10 +6,14 @@ import email.mime.text
 import email.utils
 import logging
 
+import mini_buildd.misc
+
 LOG = logging.getLogger(__name__)
 
 
-class Package(object):
+class Package(mini_buildd.misc.API):
+    __API__ = 1
+
     CHECKING = "CHECKING"
     REJECTED = "REJECTED"
     BUILDING = "BUILDING"
@@ -17,6 +21,8 @@ class Package(object):
     INSTALLED = "INSTALLED"
 
     def __init__(self, daemon, changes):
+        super(Package, self).__init__()
+
         self._status = self.CHECKING
         self._status_desc = "."
 

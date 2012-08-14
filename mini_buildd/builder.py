@@ -16,7 +16,11 @@ LOG = logging.getLogger(__name__)
 
 
 class Build(object):
+    __API__ = 1
+
     def __init__(self, breq, gnupg, sbuild_jobs):
+        super(Build, self).__init__()
+
         self._breq = breq
         self._gnupg = gnupg
         self._sbuild_jobs = sbuild_jobs

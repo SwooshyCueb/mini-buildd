@@ -200,7 +200,7 @@ class Daemon():
         # Finally, start daemon right now if active
         if self.model.mbd_is_active():
             try:
-                self.start(run_check=True)
+                self.start(run_check=True, update_model=False)
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Could not start daemon", e)
         else:
@@ -241,9 +241,10 @@ class Daemon():
         except Exception as e:
             LOG.warn("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
 
-    def start(self, run_check):
+    def start(self, run_check, update_model=True):
         if not self.thread:
-            self._update_model()
+            if update_model:
+                self._update_model()
             if run_check:
                 mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check")
                 if not self.model.mbd_is_active():

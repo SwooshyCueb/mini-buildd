@@ -15,66 +15,71 @@ import mini_buildd.changes
 LOG = logging.getLogger(__name__)
 
 
-class Build(object):
+class Build(mini_buildd.misc.API):
     __API__ = 0
-# pylint: disable=R0801
-    CHECKING = "CHECKING"
-    REJECTED = "REJECTED"
-    BUILDING = "BUILDING"
-    FAILED = "FAILED"
-    BUILT = "BUILT"
-    UPLOADED = "UPLOADED"
-# pylint: enable=R0801
+
+    FAILED = -1
+    CHECKING = 0
+    BUILDING = 1
+    UPLOADING = 2
+    UPLOADED = 10
+
+    _STATUS = {
+        FAILED: "FAILED",
+        CHECKING: "CHECKING",
+        BUILDING: "BUILDING",
+        UPLOADING: "UPLOADING",
+        UPLOADED: "UPLOADED"}
 
     def __init__(self, breq, gnupg, sbuild_jobs):
         super(Build, self).__init__()
 
-        self._status = self.CHECKING
-        self._status_desc = "."
+        self._status, self._status_desc = self.CHECKING, ""
 
         self._breq = breq
         self._gnupg = gnupg
         self._sbuild_jobs = sbuild_jobs
 
         self._build_dir = self._breq.get_spool_dir()
+        self._chroot = "mini-buildd-{d}-{a}".format(d=self._breq["Base-Distribution"], a=self._breq["Architecture"])
 
         self._bres = breq.gen_buildresult()
 
         self.started = self._get_started_stamp()
         if self.started:
             self._status = self.BUILDING
+
         self.built = self._get_built_stamp()
         if self.built:
-            self._status = self.BUILT
+            self._status = self.UPLOADING
 
         self.uploaded = None
         self.upload_error = "None"
 
     def __unicode__(self):
-        return "{s}: {k}: Started {start} ({took}), uploaded {uploaded}: {desc}".format(
-            s=self._status,
+        return "{k} ({c}): {s}: Started {start} ({took}), uploaded {uploaded}".format(
             k=self.key,
+            c=self._chroot,
+            s=self.status,
             start=self.started,
             took=self.built - self.started if self.built else "n/a",
-            uploaded=self.uploaded if self.uploaded else self.upload_error,
-            desc=self._status_desc)
+            uploaded=self.uploaded if self.uploaded else "n/a")
 
-    def set_status(self, status, desc="."):
-        self._status = status
-        self._status_desc = desc
+# pylint: disable=R0801
+    @property
+    def status(self):
+        if self._status_desc:
+            return "{s}: {d}".format(s=self._STATUS[self._status], d=self._status_desc)
+        else:
+            return self._STATUS[self._status]
+
+    def set_status(self, status, desc=""):
+        self._status, self._status_desc = status, desc
+# pylint: enable=R0801
 
     @property
     def key(self):
         return self._breq.get_pkg_id(with_arch=True)
-
-    @property
-    def status(self):
-        if self.uploaded:
-            return "DONE"
-        elif self.built:
-            return "UPLOAD PENDING"
-        else:
-            return "BUILDING"
 
     @property
     def sbuildrc_path(self):
@@ -139,7 +144,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                       "-j{0}".format(self._sbuild_jobs),
                       "--dist={0}".format(self._breq["Distribution"]),
                       "--arch={0}".format(self._breq["Architecture"]),
-                      "--chroot=mini-buildd-{d}-{a}".format(d=self._breq["Base-Distribution"], a=self._breq["Architecture"]),
+                      "--chroot={c}".format(c=self._chroot),
                       "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=self._build_dir),
                       "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=self._build_dir),
                       "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=self._build_dir),
@@ -187,15 +192,10 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         self._bres.save(self._gnupg)
         self.built = self._get_built_stamp()
 
-    def try_upload(self):
+    def upload(self):
         hopo = mini_buildd.misc.HoPo(self._breq["Upload-Result-To"])
-        try:
-            self._bres.upload(hopo)
-            self.uploaded = datetime.datetime.now()
-            return True
-        except Exception as e:
-            self.upload_error = "{e}".format(e=e)
-            mini_buildd.setup.log_exception(LOG, "Upload to '{h}' failed".format(h=hopo.string), e)
+        self._bres.upload(hopo)
+        self.uploaded = datetime.datetime.now()
 
     def clean(self):
         if "builder" in mini_buildd.setup.DEBUG:
@@ -206,23 +206,36 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
 
 def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq):
-    remotes_keyring.verify(breq.file_path)
+    try:
+        # Always authorize the file first
+        remotes_keyring.verify(breq.file_path)
 
-    # Get build object
-    b = Build(breq, gnupg, sbuild_jobs)
-
-    # Build if needed (may be just an upload-pending build)
-    if not b.built:
+        # First, get build object. This will automagically set the status right.
+        b = Build(breq, gnupg, sbuild_jobs)
         builds[b.key] = b
-        b.build()
-    queue.task_done()
 
-    # Try upload
-    b.try_upload()
-    if b.uploaded:
-        b.clean()
-        last_builds.appendleft(b)
-        del builds[b.key]
+        LOG.info(b.status)
+
+        # Build if needed (may be just an upload-pending build)
+        if b._status < b.BUILDING:
+            b.set_status(b.BUILDING)
+            b.build()
+            b.set_status(b.UPLOADING)
+
+        # Try upload
+        try:
+            b.upload()
+            b.set_status(b.UPLOADED)
+            last_builds.appendleft(b)
+            del builds[b.key]
+            b.clean()
+        except Exception as e:
+            b.set_status(b.UPLOADING, unicode(e))
+    except Exception as e:
+        # todo: upload error result
+        pass
+    finally:
+        queue.task_done()
 
 
 def run(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs):

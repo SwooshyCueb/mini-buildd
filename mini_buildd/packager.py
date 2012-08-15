@@ -100,7 +100,8 @@ class Package(mini_buildd.misc.APIStatus):
         """
         if self.failed:
             raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
-        self.repository.mbd_package_install(self)
+        for _arch, bres in self.success.items():
+            self.repository.mbd_package_install(bres)
 
     def archive(self):
         # Archive build results and request

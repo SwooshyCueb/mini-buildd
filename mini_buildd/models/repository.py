@@ -548,15 +548,14 @@ DscIndices: Sources Release . .gz .bz2
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_package_install(self, package):
-        for arch, bres in package.success.items():
-            t = tempfile.mkdtemp()
-            bres.untar(path=t)
-            self._mbd_reprepro().include(
-                package.suite.mbd_get_distribution_string(self, package.distribution),
-                " ".join(glob.glob(os.path.join(t, "*.changes"))))
-            shutil.rmtree(t)
-            LOG.info("Installed: Arch {a} of package {p}".format(a=arch, p=package))
+    def mbd_package_install(self, bres):
+        t = tempfile.mkdtemp()
+        bres.untar(path=t)
+        self._mbd_reprepro().include(
+            bres["Distribution"],
+            " ".join(glob.glob(os.path.join(t, "*.changes"))))
+        shutil.rmtree(t)
+        LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
 
     def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
         return self._mbd_reprepro().copysrc(dest_distribution, source_distribution, package, version)

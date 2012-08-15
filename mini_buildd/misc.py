@@ -19,19 +19,48 @@ import logging.handlers
 LOG = logging.getLogger(__name__)
 
 
-class API(object):
+class APIStatus(object):
     """
-    Helper class to implement an API check. Inheriting classes
-    must define an __API__ class attribute that should be
-    increased in incompatible changes.
+    Helper class to implement an API check plus an internal
+    status.
+
+    For the API chekc support, inheriting classes must define an
+    __API__ class attribute that should be increased in
+    incompatible changes.
+
+    For the status support, inheriting classes must give a stati
+    dict to init.
     """
     __API__ = -1
 
-    def __init__(self):
+    def __init__(self, stati=None):
         self.__api__ = self.__API__
+        self.__status__, self.__status_desc__, self.__stati__ = 0, "", stati
 
     def api_check(self):
         return self.__api__ == self.__API__
+
+    @property
+    def status(self):
+        """
+        Human readable status string.
+        """
+        if self.__status_desc__:
+            return "{s}: {d}".format(s=self.__stati__[self.__status__], d=self.__status_desc__)
+        else:
+            return self.__stati__[self.__status__]
+
+    def set_status(self, status, desc=""):
+        """
+        Set status with optional description.
+        """
+        self.__status__, self.__status_desc__ = status, desc
+
+    def get_status(self):
+        """
+        Get raw (integer) status.
+        """
+        return self.__status__
 
 
 class ConfFile(object):

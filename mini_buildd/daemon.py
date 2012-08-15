@@ -91,8 +91,8 @@ def run():
         mini_buildd.builder.run,
         queue=get().build_queue,
         builds=get().builds,
-        upload_pending_builds=get().upload_pending_builds,
         last_builds=get().last_builds,
+        remotes_keyring=remotes_keyring,
         gnupg=get().model.mbd_gnupg,
         sbuild_jobs=get().model.sbuild_jobs)
 
@@ -110,7 +110,6 @@ def run():
             changes_pid = changes.get_pkg_id()
 
             if changes.is_buildrequest():
-                remotes_keyring.verify(changes.file_path)
 
                 def queue_buildrequest(event):
                     get().build_queue.put(event)
@@ -185,7 +184,6 @@ class Daemon():
         self.build_queue = None
         self.packages = None
         self.builds = None
-        self.upload_pending_builds = None
         self.last_packages = None
         self.last_builds = None
         self._update_model()
@@ -220,7 +218,6 @@ class Daemon():
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
         self.packages = {}
         self.builds = {}
-        self.upload_pending_builds = {}
         self.last_packages = collections.deque(maxlen=self.model.show_last_packages)
         self.last_builds = collections.deque(maxlen=self.model.show_last_builds)
 
@@ -301,7 +298,6 @@ class Daemon():
             "last_packages": self.last_packages,
             "build_queue": self.build_queue,
             "builds": self.builds,
-            "upload_pending_builds": self.upload_pending_builds,
             "last_builds": self.last_builds}
 
 _INSTANCE = None

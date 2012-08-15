@@ -17,9 +17,20 @@ LOG = logging.getLogger(__name__)
 
 class Build(object):
     __API__ = 1
+# pylint: disable=R0801
+    CHECKING = "CHECKING"
+    REJECTED = "REJECTED"
+    BUILDING = "BUILDING"
+    FAILED = "FAILED"
+    BUILT = "BUILT"
+    UPLOADED = "UPLOADED"
+# pylint: enable=R0801
 
     def __init__(self, breq, gnupg, sbuild_jobs):
         super(Build, self).__init__()
+
+        self._status = self.CHECKING
+        self._status_desc = "."
 
         self._breq = breq
         self._gnupg = gnupg
@@ -30,17 +41,27 @@ class Build(object):
         self._bres = breq.gen_buildresult()
 
         self.started = self._get_started_stamp()
+        if self.started:
+            self._status = self.BUILDING
         self.built = self._get_built_stamp()
+        if self.built:
+            self._status = self.BUILT
+
         self.uploaded = None
         self.upload_error = "None"
 
     def __unicode__(self):
-        return "{s}: {k}: Started {start} ({took}), uploaded {uploaded}".format(
-            s=self.status,
+        return "{s}: {k}: Started {start} ({took}), uploaded {uploaded}: {desc}".format(
+            s=self._status,
             k=self.key,
             start=self.started,
             took=self.built - self.started if self.built else "n/a",
-            uploaded=self.uploaded if self.uploaded else self.upload_error)
+            uploaded=self.uploaded if self.uploaded else self.upload_error,
+            desc=self._status_desc)
+
+    def set_status(self, status, desc="."):
+        self._status = status
+        self._status_desc = desc
 
     @property
     def key(self):
@@ -184,7 +205,9 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         self._breq.remove()
 
 
-def build(queue, builds, upload_pending_builds, last_builds, gnupg, sbuild_jobs, breq):
+def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq):
+    remotes_keyring.verify(breq.file_path)
+
     # Get build object
     b = Build(breq, gnupg, sbuild_jobs)
 
@@ -192,19 +215,17 @@ def build(queue, builds, upload_pending_builds, last_builds, gnupg, sbuild_jobs,
     if not b.built:
         builds[b.key] = b
         b.build()
-        del builds[b.key]
     queue.task_done()
-    upload_pending_builds[b.key] = b
 
     # Try upload
     b.try_upload()
     if b.uploaded:
         b.clean()
         last_builds.appendleft(b)
-        del upload_pending_builds[b.key]
+        del builds[b.key]
 
 
-def run(queue, builds, upload_pending_builds, last_builds, gnupg, sbuild_jobs):
+def run(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs):
     while True:
         event = queue.get()
         if event == "SHUTDOWN":
@@ -217,8 +238,8 @@ def run(queue, builds, upload_pending_builds, last_builds, gnupg, sbuild_jobs):
             daemon=True,
             queue=queue,
             builds=builds,
-            upload_pending_builds=upload_pending_builds,
             last_builds=last_builds,
+            remotes_keyring=remotes_keyring,
             gnupg=gnupg,
             sbuild_jobs=sbuild_jobs,
             breq=mini_buildd.changes.Changes(event))

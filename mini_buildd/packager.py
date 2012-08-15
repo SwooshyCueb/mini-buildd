@@ -14,11 +14,13 @@ LOG = logging.getLogger(__name__)
 class Package(mini_buildd.misc.API):
     __API__ = 1
 
+# pylint: disable=R0801
     CHECKING = "CHECKING"
     REJECTED = "REJECTED"
     BUILDING = "BUILDING"
     FAILED = "FAILED"
     INSTALLED = "INSTALLED"
+# pylint: enable=R0801
 
     def __init__(self, daemon, changes):
         super(Package, self).__init__()

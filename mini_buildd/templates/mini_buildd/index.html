@@ -152,19 +152,6 @@ $(document).ready(
 							</ul>
 						{% endif %}
 
-						<h2>Upload pending:</h2>
-						{% if daemon.tpl.packages.items %}
-							<ul>
-								{% for k, b in daemon.tpl.upload_pending_builds.items %}
-									<li>{{ b }} [CHECK REMOTE] [RETRY NOW]  [REMOVE] </li>
-								{% endfor %}
-							</ul>
-						{% else %}
-							<ul>
-								<li class="idle">currently nothing to do</li>
-							</ul>
-						{% endif %}
-
 						<h2>Last builds: <span id="mb_lb_count">0</span>  (<span id="mb_lb_click_me"><a id="mb_lb_anchor" href="#">show</a></span>)</h2>
 						<ul id="mb_last_builds">
 							{% for b in daemon.tpl.last_builds %}

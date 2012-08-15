@@ -15,8 +15,8 @@ import mini_buildd.changes
 LOG = logging.getLogger(__name__)
 
 
-class Build(mini_buildd.misc.API):
-    __API__ = 0
+class Build(mini_buildd.misc.APIStatus):
+    __API__ = -1
 
     FAILED = -1
     CHECKING = 0
@@ -24,17 +24,13 @@ class Build(mini_buildd.misc.API):
     UPLOADING = 2
     UPLOADED = 10
 
-    _STATUS = {
-        FAILED: "FAILED",
-        CHECKING: "CHECKING",
-        BUILDING: "BUILDING",
-        UPLOADING: "UPLOADING",
-        UPLOADED: "UPLOADED"}
-
     def __init__(self, breq, gnupg, sbuild_jobs):
-        super(Build, self).__init__()
-
-        self._status, self._status_desc = self.CHECKING, ""
+        super(Build, self).__init__(
+            stati={self.FAILED: "FAILED",
+                   self.CHECKING: "CHECKING",
+                   self.BUILDING: "BUILDING",
+                   self.UPLOADING: "UPLOADING",
+                   self.UPLOADED: "UPLOADED"})
 
         self._breq = breq
         self._gnupg = gnupg
@@ -47,35 +43,24 @@ class Build(mini_buildd.misc.API):
 
         self.started = self._get_started_stamp()
         if self.started:
-            self._status = self.BUILDING
+            self.set_status(self.BUILDING)
 
         self.built = self._get_built_stamp()
         if self.built:
-            self._status = self.UPLOADING
+            self.set_status(self.UPLOADING)
 
         self.uploaded = None
-        self.upload_error = "None"
 
     def __unicode__(self):
-        return "{k} ({c}): {s}: Started {start} ({took}), uploaded {uploaded}".format(
+        date_format = "%Y-%b-%d %H:%M:%S"
+        return "[{h}] {k} ({c}): {s}: Started {start} ({took} seconds), uploaded {uploaded}.".format(
+            h=self._breq["Upload-Result-To"],
             k=self.key,
             c=self._chroot,
             s=self.status,
-            start=self.started,
-            took=self.built - self.started if self.built else "n/a",
-            uploaded=self.uploaded if self.uploaded else "n/a")
-
-# pylint: disable=R0801
-    @property
-    def status(self):
-        if self._status_desc:
-            return "{s}: {d}".format(s=self._STATUS[self._status], d=self._status_desc)
-        else:
-            return self._STATUS[self._status]
-
-    def set_status(self, status, desc=""):
-        self._status, self._status_desc = status, desc
-# pylint: enable=R0801
+            start=self.started.strftime(date_format),
+            took=round(mini_buildd.misc.timedelta_total_seconds(self.built - self.started), 1) if self.built else "n/a",
+            uploaded=self.uploaded.strftime(date_format) if self.uploaded else "n/a")
 
     @property
     def key(self):
@@ -214,10 +199,8 @@ def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq)
         b = Build(breq, gnupg, sbuild_jobs)
         builds[b.key] = b
 
-        LOG.info(b.status)
-
         # Build if needed (may be just an upload-pending build)
-        if b._status < b.BUILDING:
+        if b.get_status() < b.BUILDING:
             b.set_status(b.BUILDING)
             b.build()
             b.set_status(b.UPLOADING)

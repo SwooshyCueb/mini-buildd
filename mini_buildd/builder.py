@@ -16,7 +16,7 @@ LOG = logging.getLogger(__name__)
 
 
 class Build(object):
-    __API__ = 1
+    __API__ = 0
 # pylint: disable=R0801
     CHECKING = "CHECKING"
     REJECTED = "REJECTED"

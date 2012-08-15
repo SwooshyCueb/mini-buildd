@@ -12,21 +12,27 @@ LOG = logging.getLogger(__name__)
 
 
 class Package(mini_buildd.misc.API):
-    __API__ = 1
+    __API__ = 0
 
-# pylint: disable=R0801
-    CHECKING = "CHECKING"
-    REJECTED = "REJECTED"
-    BUILDING = "BUILDING"
-    FAILED = "FAILED"
-    INSTALLED = "INSTALLED"
-# pylint: enable=R0801
+    FAILED = -2
+    REJECTED = -1
+    CHECKING = 0
+    BUILDING = 1
+    INSTALLING = 2
+    INSTALLED = 10
+
+    _STATUS = {
+        FAILED: "FAILED",
+        REJECTED: "REJECTED",
+        CHECKING: "CHECKING",
+        BUILDING: "BUILDING",
+        INSTALLING: "INSTALLING",
+        INSTALLED: "INSTALLED"}
 
     def __init__(self, daemon, changes):
         super(Package, self).__init__()
 
-        self._status = self.CHECKING
-        self._status_desc = "."
+        self._status, self._status_desc = self.CHECKING, ""
 
         self.daemon = daemon
         self.changes = changes
@@ -35,17 +41,32 @@ class Package(mini_buildd.misc.API):
         self.requests, self.success, self.failed = {}, {}, {}
 
     def __unicode__(self):
-        return "{s} ({d}): {p} ({f}/{r} arches built): {desc}".format(
-            s=self._status,
-            d=self.changes["Distribution"],
-            p=self.pid,
-            f=len(self.success),
-            r=len(self.requests),
-            desc=self._status_desc)
+        def arch_status():
+            result = []
+            for key, _r in self.requests.items():
+                p = ""
+                if key in self.success:
+                    p = "+"
+                elif key in self.failed:
+                    p = "-"
+                result.append("{p}{a}".format(p=p, a=key))
+            return result
 
-    def set_status(self, status, desc="."):
-        self._status = status
-        self._status_desc = desc
+        return "{p} ({d}): {s} ({a})".format(
+            p=self.pid,
+            d=self.changes["Distribution"],
+            s=self.status,
+            a=" ".join(arch_status()))
+
+    @property
+    def status(self):
+        if self._status_desc:
+            return "{s}: {d}".format(s=self._STATUS[self._status], d=self._status_desc)
+        else:
+            return self._STATUS[self._status]
+
+    def set_status(self, status, desc=""):
+        self._status, self._status_desc = status, desc
 
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes

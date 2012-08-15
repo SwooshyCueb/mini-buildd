@@ -11,8 +11,8 @@ import mini_buildd.misc
 LOG = logging.getLogger(__name__)
 
 
-class Package(mini_buildd.misc.API):
-    __API__ = 0
+class Package(mini_buildd.misc.APIStatus):
+    __API__ = -1
 
     FAILED = -2
     REJECTED = -1
@@ -21,18 +21,14 @@ class Package(mini_buildd.misc.API):
     INSTALLING = 2
     INSTALLED = 10
 
-    _STATUS = {
-        FAILED: "FAILED",
-        REJECTED: "REJECTED",
-        CHECKING: "CHECKING",
-        BUILDING: "BUILDING",
-        INSTALLING: "INSTALLING",
-        INSTALLED: "INSTALLED"}
-
     def __init__(self, daemon, changes):
-        super(Package, self).__init__()
-
-        self._status, self._status_desc = self.CHECKING, ""
+        super(Package, self).__init__(
+            stati={self.FAILED: "FAILED",
+                   self.REJECTED: "REJECTED",
+                   self.CHECKING: "CHECKING",
+                   self.BUILDING: "BUILDING",
+                   self.INSTALLING: "INSTALLING",
+                   self.INSTALLED: "INSTALLED"})
 
         self.daemon = daemon
         self.changes = changes
@@ -52,21 +48,11 @@ class Package(mini_buildd.misc.API):
                 result.append("{p}{a}".format(p=p, a=key))
             return result
 
-        return "{p} ({d}): {s} ({a})".format(
+        return "{p} ({d}): {s} ({a}).".format(
             p=self.pid,
             d=self.changes["Distribution"],
             s=self.status,
             a=" ".join(arch_status()))
-
-    @property
-    def status(self):
-        if self._status_desc:
-            return "{s}: {d}".format(s=self._STATUS[self._status], d=self._status_desc)
-        else:
-            return self._STATUS[self._status]
-
-    def set_status(self, status, desc=""):
-        self._status, self._status_desc = status, desc
 
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes

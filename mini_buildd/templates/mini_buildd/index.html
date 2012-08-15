@@ -91,7 +91,7 @@ $(document).ready(
 						</ul>
 
 						<hr />
-						<h2>Packaging:</h2>
+						<h2>Active:</h2>
 						{% if daemon.tpl.packages.items %}
 							<ul>
 								{% for k, p in daemon.tpl.packages.items %}
@@ -137,8 +137,8 @@ $(document).ready(
 							{% endfor %}
 						</ul>
 
-						<h2>Building:</h2>
-						{% if daemon.tpl.packages.items %}
+						<h2>Active:</h2>
+						{% if daemon.tpl.builds.items %}
 							<ul>
 								{% for k, b in daemon.tpl.builds.items %}
 									<li>{{ b }}</li>

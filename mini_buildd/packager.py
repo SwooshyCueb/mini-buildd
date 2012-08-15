@@ -90,7 +90,9 @@ class Package(mini_buildd.misc.API):
             breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
 
     def add_buildresult(self, bres, remotes_keyring):
-        ".. todo:: proper error handling, states."
+        """
+        .. todo:: Better inspect bres fail status: lintian, rejected, etc...
+        """
         remotes_keyring.verify(bres.file_path)
 
         arch = bres["Architecture"]
@@ -107,6 +109,9 @@ class Package(mini_buildd.misc.API):
         return missing <= 0
 
     def install(self):
+        """
+        .. todo:: Ignore optional arch failures.
+        """
         if self.failed:
             raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
         self.repository.mbd_package_install(self)
@@ -117,7 +122,7 @@ class Package(mini_buildd.misc.API):
             c.archive()
         # Archive incoming changes
         self.changes.archive()
-        # Purge complete package dir (if precheck failed, spool dir will not be present)
+        # Purge complete package dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
     def notify(self):

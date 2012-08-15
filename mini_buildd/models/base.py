@@ -381,7 +381,7 @@ this would mean losing all packages!
         return cls.objects.filter(status__gte=cls.STATUS_PREPARED)
 
     def mbd_get_status_display(self):
-        return "{s} [{c}]".format(s=self.get_status_display(), c=self.last_checked)
+        return "{s}, last check {c}".format(s=self.get_status_display(), c=self.last_checked)
 
     def mbd_get_status_dependencies(self):
         LOG.debug("No status dependencies for {o}".format(o=self))

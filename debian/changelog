@@ -1,8 +1,1229 @@
-mini-buildd (1.0.0~0prealpha.1) UNRELEASED; urgency=low
+mini-buildd (1.0.0~alpha.0) experimental; urgency=low
 
-  * 1.0.0 pre-alpha release.
+  [ Stephan Sürken ]
+  * [9c5b6ac] debian/mini-buildd-bld|common postinst/postrm: Use adduser (not sbuild-adduser), and userdel (not deluser).
+    (Closes: 632957)
+  * [2f6760a] .gitignore: Update for setup.py and debian/.
+  * [aca22db] debian/mini-buildd-bld.postinst: Avoid adduser output conflict with debconf.
+  * [1ef9c9a] shellconf2python: Add coding && symlink to 'shell style' shell config to make it importable in python.
+  * [fa1afd0] examples/testbuild: Dont check sig with dput for testbuilds.
+  * [6e62d4e] daemon: Add a webserver thread running a django app.
+  * [e018ced] Add initial django models.
+  * [73081ed] Add initial urls for django webapp.
+  * [4c2fdb1] Add initial views for django webapp.
+  * [e9c9101] Add webapp settings, and embed in build system.
+  * [6ebe074] webapp: updatess, and directory layout change
+  * [35709b5] webapp: various changes.
+  * [46c02bd] mini_buildd/options.py: Add option: '--home'
+  * [b8e0fe7] We don't need extra python symlink for old config.
+  * [6d1ccfe] mini_buildd/fixtures: Add initial set of fixtures.
+  * [d0cc191] mini-buildd: Use --home option for iwatcher.
+  * [857902e] mini_buildd/models.py: Several smaller model fixes.
+  * [f39a94a] Add support to import/export old 08x config with the admin interface.
+  * [e40d9b5] debian/control: Add djange dep for -rep.
+  * [c0a1574] setup.py: Also install fixtures && templates.
+  * [4d49e65] mini_buildd/options.py: Add --instdir option.
+  * [c1637fb] mini_buildd/options.py: Add database --import/export options.
+  * [560047a] mini_buildd/options.py: console_log not used, removed.
+  * [252a91b] mini_buildd/options.py: optparse: Use "count" for -v, -q.
+  * [fe0bc23] mini_buildd/webserver.py: Diverse in webserver and django class.
+  * [7f5d2a4] mini_buildd/webserver.py: django: Add some preliminary admin commands methods.
+  * [859a9f9] mini_buildd/options.py: Remove support for daemon config file (we won't need this).
+  * [0258efb]  mini_buildd/webserver.py: Use 'debug' for django class only.
+  * [9965eb5] mini_buildd/options.py: Don't use extra setDefaults call.
+  * [5db831b] mini-buildd: Actual code for --import-db and --export-db.
+  * [b330ccf] mini-buildd: Rename --*-db to --loaddata, --dumpdata like in django admin; really complety implement them, and remove obsolste models.
+  * [f52d01b] mini_buildd/admin.py: Obsoleted: import/export 08x models.
+  * [c6c1c6f] mini_buildd/__init__.py: Add package import list to __init__.py.
+  * [ffb5725] mini-buildd: Update py code to new __init__.py.
+  * [cefab3e] mini_buildd/options.py: Some options fixes.
+  * [3e187f7] mini_buildd/options.py: Simplify logging code, put it all to options.
+  * [5c3c930] mini_buildd/options.py: Add --bind option, and set default port to 8066 (iana-unassigned).
+  * [97edd75] mini_buildd/webserver.py: Django: Always run syncdb on init.
+  * [ed9d748] mini_buildd/views.py: Add a /graph_models/ view (using django-extensions).
+  * [523cbe4] mini_buildd/*.py: Quoting fixes.
+  * [2a2da85] mini_buildd/webapp.py: Separate webserver && django app (webapp).
+  * [23050cb] .gitignore: Ignore devel-home/
+  * [c5d6f1b] setup.py/version: Automagically get version from debian changelog.
+  * [0eca403] *.py: Update all py code to encoding utf-8 according to PEP-0263, emacs style.
+  * [1903c45] *.py: py cleanup: Fix all imports to be qualified.
+  * [49e5ce9] mini_buildd/webapp.py: Fix: verbose=0 for syncdb.
+  * [c0a2f37] mini_buildd/root_urls.py: Add workaround for squeeze/django 1.2
+  * [ba16288] mini_buildd/options.py: Force django logging to user our logger config.
+  * [05034ad] mini_buildd/webapp.py: WebApp: Use inheritance, not has_a.
+  * [56510fe] setup.py: Update for qualified imports.
+  * [6377267] debian/*: Upgrade to dh_python2.
+  * [7797187] debian/control: Assorted fixes to dependencies.
+  * [7225005] mini_buildd/webserver.py: Add Django dev web server.
+  * [952a254] mini_buildd/fixtures/mini_buildd.default.json: Don supply a default fixture for now.
+  * [2db7e34] debian/control: b-d: Add missing python-debian (now used in setup.py).
+  * [d1ecba3] mini_buildd/webapp.py: Put config to rep/, no need for extra web/ directory.
+  * [b350d61] lib/mbd-update-rep: bassh2py: Subdir prep.
+  * [c827ff6] lib/mbd-update-rep: bash2py: .mini-buildd/README.
+  * [208261e] lib/mbd-update-rep: bash2py: reprepro config.
+  * [9a5e4b5] mini_buildd/templates/mini_buildd/repository_detail.html: Fix for model change.
+  * [4b75ea4] mini_buildd/models.py: Some more helpers.
+  * [60806f0] lib/mbd-update-common: bash2py: GnuPG key generation.
+  * [9a68ae2] mini_buildd/models.py: No longer limit Repository to one object.
+  * [5163894] mini-buildd: Re-enable reprepro signing.
+  * [5949168] lib/mbd-update-common: bash2py: dput.cf generation.
+  * [c8fc3ac] lib/mbd-update-common: We won be needing (even convenience) .profile patching support any more.
+  * [bdbc963] lib/mbd-update-common: bash2py: GnuPG pub key.
+  * [a54b127] lib/mbd-update-rep: bash2py: Make setup dirs per-repo, and gen pub key auto key file.
+  * [9ba1e90] mini_buildd/misc.py: bash2py: Add codename2Version (not yet deleted from bash lib).
+  * [ef66530] mini_buildd/models.py: Add "mandatory_version" template field for suite.
+  * [cf014fb] model.py: Add repository.prepare(), move code from Main.
+  * [115f5bd] lib/mbd-update-rep-html: lib/mbd-update-rep-html: Remove converted/ no longer needed.
+  * [433b9f0] mini_buildd/templates/mini_buildd/base.html: Add "Home"-Link to base template.
+  * [30e000c] mini_buildd/templates/mini_buildd/repository_*.html: Remove some obsolete items, cleanups.
+  * [78998ab] bash2py: mbd-update-rep-html.
+  * [c8dcc28] mini_buildd/webapp.py: Fix: make sure db path always exists.
+  * [f88510b] mini_buildd/models.py: Put ye-olde README to models, and fix path.
+  * [1834182] mini-buildd: Update watcht/installer to cope with multiple repos.
+  * [440447d] mini_buildd/models.py: Fix incoming path for reprepro.
+  * [33fd786] mini_buildd/reprepro.py: Add initial reprepro abstraction.
+  * [eba73d6] Add development test runner script.
+  * [f0b3fb3] devel: Number of smaller fixes; add "generic" 08x.conf to import.
+  * [297a4df] control: Add python-pygraphviz as rec-dep.
+  * [cac6282] reprepro: Initial support to create reprepro repo automatically.
+  * [2e73ab0] control, *: Initial update to use one binary package only; take *-common as template first.
+  * [6fa0bf5] Blind-Merge old binary package -rep into mini-buildd.
+  * [af1c1a6] Blind-merge old binary package -bld into mini-buildd.
+  * [4db698f] Update .gitignore for one binary package.
+  * [41a0bf3] Initial fixups: Make the package build again.
+  * [70c773b] Obsolete cron, and fixup some dependencies.
+  * [296cd76] debian/*: Mass-fixes: debconf, package installation, reconfiguring.
+  * [28cc7d6] Put config into top-level $HOME.
+  * [de417eb] [cosmetics]
+  * [09aa3c0] base.html: Template fixes.
+  * [fa34543] Set up handling for initial 'admin' user and password updates.
+  * [b0efdbb] fix: -v -v should not be default, but no options.
+  * [0ecc07a] devel: Print command so we can just cnp it for debugging.
+  * [f5381d4] models: Update to the concept of Remotes, and local Builders.
+  * [1ce96d9] Add support to create a default config on the fly.
+  * [4d10698] devel: Some more fixes to the devel script.
+  * [2451ddd] Improce create_default function.
+  * [6b02ca5] Add support for CherryPy as internal web server, and make CherryPy default.
+  * [24665e2] some more debug log...
+  * [5a84301] path, incoming_path: Use get()ers, not attributes.
+  * [d8f6de8] schroot: Initial schroot impl; incorporate script mbd-setup-lvm.
+  * [c6cac63] debian/*: Remove now-obsolete lvm loop support.
+  * [38daf8d] Docs: Move all existing (old) docs to dir 08x/.
+  * [cb9823c] setup-chroots: Initial conversion of shell script.
+  * [be7cd93] install: Remove converted setup-chroots script, cleanups.
+  * [724f0be] devel: Put test home to '..' to avoid problems with large files in the Debian Source Tree.
+  * [812501c] python: Switch from optparse to argparse.
+  * [a64b994] Initail support for ftpd thread.
+  * [c214054] [cosmetic]
+  * [9b4f9ce] gitignore: Clean up and fix for test package upload cruft.
+  * [f34a9f9] ftpd: Switch incoming queue to ftpd.
+  * [8395a54] ftpserver: Add forgotten file for ftpd.
+  * [7f75102] misc.run_cmd: Fix to throw exception on error, and update calling code.
+  * [d8e5d53] lvm_loop, get_loop_dev: Fix to use realpath() on paths.
+  * [efff0df] Remove support for --no-act argument.
+  * [a2c6ccb] Style cleanup: Don't use global "args." nearly anywhere (still left: models.py).
+  * [003fbd2] models: Fix: Don't use global args any more.
+  * [6601585] arguments: Move to mini-buildd main script completely.
+  * [b7f2b9a] Put log code to main, and use own loggers per module.
+  * [36d4388] views: Fix wrong logging code.
+  * [3176c4e] Main() code cleanup.
+  * [fa6145f] Add explicit "debug" mode.
+  * [a1e60af] Don't try to configure django's logging for now (maybe good ;).
+  * [74e8e57] python module/class name cleanups.
+  * [8d6ee4d] ftpd: Coinfigure pyftpdlib to use mini_buildd logging.
+  * [0ce5992] fix: Remove left-over debug print call.
+  * [0eaac85] logging: Make formatter fit better after log renewal.
+  * [76807c8] ftpd: Make files RO as soon as they arrive.
+  * [b29c590] misc: Add little helper class to bind args, update http, ftpd.
+  * [58ae3d0] ftp: Rename to IncomingFtpD, and fix default port.
+  * [6736da2] ftpd: Use one ftpd on home with different perms for /incoming && /repositories.
+  * [e10f5fe] Obsolete installer+iwatcher in facvor of dispatcher / ftpd.
+  * [76062f6] main, dispatcher: Initial support to gen build requests from source uploads.
+  * [fbf947c] incoming: Also queue *.buildrequest and *.buildresult files.
+  * [d276f1f] ftp upload support, builder stubs, update changes file handling.
+  * [91e7d2e] obsolete two more scripts
+  * [1ef057a] Various code fixes in dispatcher.
+  * [df71e1d] dispatcher: Imporove spool_path handling. Add untar for build requests.
+  * [851a1ad] test package: Simplify, make work w/o ui-auto macros, run w/ DH_VERBOSE.
+  * [f98fd8d] test build script: Upload to current base dist per default.
+  * [22cb104] test packages: Move to subdir examples/packages/.
+  * [271d545] testbuild script: automaticall chose fitting auto-backport dist.
+  * [d31ffdd] devel script: Put default debug/test home to /tmp/.
+  * [c9a73fd] Cleanup and improve the test builder script.
+  * [22a8b13] test build script: Always purge, add option to re-upload.
+  * [6535b8f] It builds again.
+  * [8b0a73d] sbuild: Use subprocess directly.
+  * [0ac5e35] models: Add lintian configuration options.
+  * [5ff01f6] buildrequest: Support lintina mode.
+  * [cb6adb1] builder: Add configured lintian support, and more builder clean ups.
+  * [5700e6d] Add globals.py. Use it for global DEBUG flag only initially.
+  * [be9dd7f] builder: Create build results, and many other fixups.
+  * [c75a7d3] Add new test package: mbd-test-archall.
+  * [b7f0776] builder: Gracefully handle skipped packages.
+  * [4e283d3] builder: Clean up sbuildrc. Add conf option Build-Dep-Resolver.
+  * [ead093f] models, builder: Make build dep resolver configurable per repository.
+  * [b7669b2] builder, models: Support arch_all setting.
 
- -- Stephan Sürken <absurd@debian.org>  Mon, 16 Jul 2012 12:01:36 +0200
+  [ Gerhard A. Dittes ]
+  * [6d71a90] mini_buildd/webapp.py, mini_buildd/schroot.py: add some documentation in order to be prepared for the introduction of Sphinx.
+  * [98ab2b5] Added (customized) base files for Sphinx.
+  * [bc8448a] Add Makefile created by 'sphinx-quickstart' -- for convenience.
+  * [8f36088] After years of searching... finally, we need 'python-setuptools' to build Sphinx-documentation in a comfortable way.
+  * [68a8334] Sphinx: show mini-buildd logo.
+  * [26c3ac1] Sphinx: show mini-buildd favicon.
+
+  [ Stephan Sürken ]
+  * [821e217] devel script: Add 'clear', and rename 'reset' to 'purge'
+  * [61de022] devel: Fix: Forgot to update call for reset.
+  * [bd9e2fe] dispatcher: "Changes" refactor, buildrequest && buildresult file name fix ups.
+  * [32bbf6c] buildresult: Only try to attach .tar when there is an arch.changes (fixes ftbfs).
+  * [df10091] test packages: Add "FTBFS" test package.
+  * [53109b4] dispatcher: Fix path for repository spool dir.
+
+  [ Gerhard A. Dittes ]
+  * [a478e36] doc/conf.py: use version provided by "mini_buildd/__version__.py".
+
+  [ Stephan Sürken ]
+  * [c4cdb5c] schroot: workaround for sbuild bug #608840: Get root via sudo.
+  * [6624023] changes.tar(): Support to add arbitary files to tar.
+  * [a0b7f13] dispatcher: Initial support to bundle sources.list and preferences into build request.
+  * [092cff4] typo fix.
+  * [6ca7ba9] models.py: Fix/impl. initial sources.list generation.
+  * [884f0d9] sbuild: Update sources.list+preferences via chroot-setup-commands.
+  * [2b5324f] compat08x.py: Fix call to new get_apt_line().
+  * [067a6c0] Obsoleted.
+  * [79f1fad] mini-buildd: Fix: Set global vars as early as possible.
+  * [7e65533] misc: Add nop func.
+  * [da3802f] ftpd.py: Clean up log init code; log: DEBUG level; logline: Ignore unless in debug mode.
+  * [c368a75] devel: Run --verbose (not --debug) per default; mbd command line option may be given now.
+  * [5736385] misc.py: logs: Be less noisy.
+  * [a3cf988] dispatcher.py: Remove some obsoleted methods.
+  * [3c8c794] changes: Add untar() method.
+  * [bb889d3] reprepro.py: prcessincoming(): No need for CF file, just process all.
+  * [96c7bde] models.repository: Add reprepro object in constr., so it's always available.
+  * [65b5f02] dispatcher.py: Initially implement the actual repository install of buildresults.
+  * [2c7248e] misc.py: Fix Bind argument parser to work for IPv6 IP notation.
+  * [2884fdd] devel: Also remove repositories dir on clear now we actually install.
+  * [822df05] reprepro: Add prepare() method, and some minor cleanups.
+  * [e225d36] Produce source package on arch-all host.
+  * [d830280] dispatcher: Some cosmetic and log fixes.
+
+  [ Gerhard A. Dittes ]
+  * [392c79f] Documentation: improved structure of 'index.rst'; "customized" use of 'apidoc' (what is part of sphinx >= 1.1) to automatically generate sphinx documentation (from files not containing dedicated documentation).
+  * [5f85a8a] doc/conf.py: changed author name: "Stephano Vandamme" => "Mini-buildd Maintainers".
+
+  [ Stephan Sürken ]
+  * [1f36ef7] devel: Update (my) default mirror.
+  * [293555f] changes: Don't prefix "Buildresult-" and "Buildrequest-".
+  * [8ef49be] changes: Use "with" with tarfile in 2.6 using context module.
+  * [ad4231e] changes: Simplify upload(), remove check for file existence.
+  * [05b41c1] globals: Add set of global directory paths.
+  * [a764583] ftpd.py: Update to new global dirs.
+  * [5bd7236] main: Setup globals before log, and cleanup method names.
+  * [5387baf] main: Clean up logging code; per default, log to 'file,syslog' now.
+  * [d60d066] logs: Fix up daemon log file location.
+  * [cc5e99e] dispatcher et.al: Update to new globals.
+  * [0fdfed8] models: Rename "Builder" to "Chroot".
+  * [1459c84] ftpd.py: Allow read-only access to "logs" dir.
+  * [3ce48fa] ftpd: Make changes regex build-in as class attr.
+  * [3b05a26] models: New "Builder" model, update to schroot.
+  * [a5e85b0] Add a "workarounds" setup to main, and add the sbuild key workaround there.
+  * [d97edf9] Integrate manual link.
+  * [b792174] Manual: Add TODO list to first page.
+  * [5cdbe76] devel: Also re-generate sphinx doc in each run.
+  * [cfcacaa] debian/mini-buildd.install: mbd-update-common, mbd-lintian, mbd-update-rep are no more.
+  * [5e9a435] debian/rules: Integrate sphinx manual in Debian package.
+  * [5774c7a] debian/rules: Improve clean target.
+  * [019966d] debian/mini-buildd.postinst: Always add mini-buildd to group sbuild.
+  * [b8175c7] mini_buildd/compat08x.py: No need at all for an export-to-08x function. removing.
+  * [8111aa1] dispatcher.py: Update todos.
+  * [21187ef] webapp.py: Update todos.
+  * [6611b3d] mini_buildd/urls.py: Remove (already comented) compat 08x "public_html" static view for good.
+  * [102b402] mini_buildd/templates/mini_buildd/repository_detail.html: Update dput.cf.
+  * [491e69a] schroot.py: Update todos.
+  * [89de1e4] mini_buildd/root_urls.py: Update todos.
+  * [f6781c5] models.py: Update todos.
+  * [63697c1] doc: Add high level roadmap to top level manual.
+  * [13fab94] mini-buildd: Running system workarounds in parallel.
+  * [4fd7476] doc: More status/roadmap updates.
+  * [0ee36fa] misc.py: Add helper to get md5 hexdigest from file.
+  * [0d87836] changes: Add add_file() method.
+  * [a673638] devel: Update "clear" for new paths.
+  * [333fe19] debian/mini-buildd.install: Fix: Skip installing ye ole 08x schroot setup file.
+  * [cacb2c9] mini-buildd: Put builder thread handling to main.
+  * [27708e8] mini_buildd/*: Separate changes, builder and dispatcher into different modules.
+  * [0c27d88] devel: Add "clean" target.
+  * [91a06ca] schroot: Fix: Move schroot logik to class Chroot, remove schroot.py.
+  * [85a83e9] chroot: Use inheritance for chroot "backends".
+  * [e0a62ee] devel: Make --debug --verbose --verbose default (again ;).
+  * [2024294] devel: Don't remove chroots on clear (this might remove active chroots).
+  * [9d597bd] mini_buildd/__init__.py: Don't implicitly import classes any more.
+  * [15d740f] setup.py: Instead of __version__.py, generate __init__.py instead.
+  * [897b411] setup.py: Only __version__ in __init__; update all imports.
+  * [2f01e9c] misc/noop: Use std convention args,kwargs.
+  * [4713e00] misc.start_thread: Add support for args on run().
+  * [21713bc] models, webapp: Move default creation completely to webapp.
+  * [3bf5e0c] devel: Add pre-code to purge that tries hard to remove lvm leftovers before actually purging dir.
+  * [c2e2a66] builder.py: Move builder logic to builder.py.
+  * [014a04f] mini-buildd: Actually use existing builder instances to start builder threads.
+  * [c0c3eb0] chroot: Single code out in own module.
+  * [8727b5f] repository: Single code out in own module.
+  * [e743ca1] chroot, models, repository: Clean up imports.
+  * [145234f] repository: Major bug fix: Plural.
+  * [4b93a9e] chroot: Make filesystem configurable.
+  * [ebec43e] debian/control: python-setuptools must be b-d, not p-d.
+  * [0d35bd3] debian/control: Add python-sphinx to b-d.
+  * [9c8e1a5] chroot: Add FileChroot stub, and impl get_backend.
+  * [47503ae] chroot: Initial class cleanups.
+  * [3dfed4a] chroot: Add generic prepare_schroot_conf method.
+  * [8306f53] chroot.py: Personalities as class attr.
+  * [cc1fb84] chroot: LVMLoopChroot: Add loop_size.
+  * [41e576d] chroot: Cosmetics.
+  * [9ae0991] chroot: Initial impl of FileChroot.
+  * [1d6d8e7] doc: Add dummy django settings.
+  * [f8cf51a] models.py: Cleanup some imports sphinx/autodoc seems to have problems with.
+  * [6f619ac] chroot: Move schroot.conf code from backends to Chroot.
+  * [d2fa2b4] file chroot: Make compression configurable.
+  * [10b6ae8] chroot: Fix: filesystem is an option for lvmloop only.
+  * [bba9e7d] chroot: Make dist,arch unique, so we cannot generate a duplicate chroot.
+  * [533203e] chroot: Add tmpdir function, and purge temp chroot for FileChroot.
+  * [635e900] builder: Put teh sbuild key workaround to the correct place.
+  * [edbdf4b] builder: Put chroot prepare to correct place: The builder thread.
+  * [786121f] builder: Builder model does not need a list of chroots (we just use all existing chroots found).
+  * [d0a9576] builder: Forbid creating more than one instance.
+  * [abb6331] devel: Use rm -rf on purge.
+  * [7668ec3] mini_buildd/builder.py: Cosmetics.
+  * [bf35344] dispatcher: Make this a proper model, and handle like builder.
+  * [0138c7b] debian/mini-buildd-sudoers: Add support for sudoers config.
+  * [d1435d4] daemon: Daemonize early.
+  * [65fa497] chroot: Fix uid name for sudo workaround.
+  * [512dcc8] .gitignore: Ignore egg-info dir create in Debian package run.
+  * [097d01e] .gitignore: test upload script does not produce cruft any more.
+  * [116aedc] base view: Remove deprecated broken browse repo link.
+  * [19e8488] graphviz: dont break if praphviz is not installed.
+
+  [ Gerhard A. Dittes ]
+  * [80dbb82] Sphinx: layout improvements; let apidoc create output beneath "build/sphinx" and let sphinx use it from there.
+
+  [ Stephan Sürken ]
+  * [fef417b] mini-buildd: Set up for new mini_buildd import style: "from mini_buildd import MODULE".
+  * [18b8d17] mini-buildd: Add temporary "startup" console log handler.
+  * [e48cc70] gnupg: Inital new gpg impl with "subprocess" only (not used yet).
+  * [d418e5b] mini_buildd/*: Update to new import scheme.
+  * [d44faa9] misc.py: Add initial new call() and call_sequence() (with rollback) functions.
+  * [b867d05] misc.py: Obsolete get_cmd_output().
+  * [c5b9ddb] misc: call() wrappers: Loop arbitrary kwargs through.
+  * [fcc14e7] builder.py: Update sbuild workaround to misc.call().
+  * [cf48cc2] builder: Update debootstrap to misc.call().
+  * [b2fa0ee] chroot.py: Update FileChroot to misc.call().
+  * [830a5b3] chroot.py: LVMLoopChroot: Make snapshot size configurable.
+  * [70312f4] reprepro.py: Update to use misc.call().
+  * [2df9399] misc.py: call(): Improve logs.
+  * [45913ca] devel: Add --one-file-system to rm -rf.
+  * [ea4a2f8] misc.py: call(): Fix/renice multiline logging.
+  * [66b168f] chroot.py: LoopLVMChroot: fix get_lvm_device func.
+  * [7349e9f] chroot.py: Use call_sequence for lv creation and mount.
+  * [75a386e] misc.py: Add support for empty sequents.
+  * [4a2bf33] webapp.py: Simplify in-code selection of default chrot class.
+  * [65017e9] devel: Purge should also remove any mini-buildd*.conf in /etc/schroot/chroot.d/
+  * [4fb1199] chroot.py: FileChroot: Update to new sequence-only scheme.
+  * [74816a8] misc.py: call_sequence(): Support for rollback_only call.
+  * [c0c255e] misc.py: Add taint_env helper.
+  * [710b624] builder.py: Update to misc.taint_env().
+  * [c7445b5] builder.py: Better startup messages for builder.
+  * [05db1b8] mini-buildd: Clean up impports.
+  * [0adfbf8] threads: Properly join dispatcher, builder, and build threads.
+  * [798ff6b] chroot.py: FileChroot: Correctly implement purge() with sequence rollback.
+  * [3d2160b] builder.py: Clean up logs; purge chroots on shutdown (for now).
+  * [a263c60] misc.py: call(): Renoice log level for output log.
+  * [06bced6] chroot.py: LVMLoopChroot: Completely update to new sequence calls.
+  * [47c4021] misc.py: Obsoleting ye ole run_cmd helper.
+  * [2d8c8a6] chroot.py: Properly subclass LVMChroot + LoopLVMChroot.
+  * [d7bfeee] chroot.py: Update all call paths to absolute path names.
+  * [f936c55] debian/mini-buildd-sudoers: Harden to just the commands chroot.py actually needs.
+  * [6897250] chroot.py: Use long options wherever possible; fix mkfs call for sudoers.
+  * [6fc3c2a] misc.py: Add helper for to cinfigure logging for local modules tests.
+  * [627edc1] gnupg.py: Fix up and simplify with new misc.call().
+  * [8f18a22] repository: Update to new gnupg class.
+  * [31e29bd] misc.py: call(): Log stderr to 'debug', not 'error'.
+  * [e9bb108] python: Use one-line imports for one context.
+  * [3f90a7b] mini-buildd.templates: Per default, start mini-buildd with --verbose (log level INFO).
+  * [b26e0f0] webapp.py: Depend on django 1.3, and fix up static files handling.
+  * [86e9a71] devel: Remove as root.
+  * [3fc94c3] mini-buildd-sudoers: Fix: /bin/tar was missing.
+  * [6af64a5] setup.py: Fix: Install templatetags.
+  * [f4b25b5] devel: Guess mirror from apt sources.
+  * [7d54b26] mini-buildd.postinst: Renice output when admin password is updated.
+  * [782ac3a] devel: Rewrite this to test with installed Debian snaphot packages only.
+  * [13ff1c3] mini-buildd: Fix call order for httpd+ftpd; several cleanups.
+  * [5db259e] mini-buildd: More Main() cleanups.
+  * [0824e50] mini-buildd: ..more.. cleanups. Put daemonizer where it should be naturally.
+  * [4fe9d09] Rename module "globals" to "setup".
+  * [052d9b9] builder.py: [indent fix]
+  * [f6fa916] debconf, MINI_BUILDD_OPTIONS: Fix: Only set from defaults file if configured there (and use commented default in default defaults file).
+  * [3076051] mini-buildd: Fix daemon run (again ;).
+  * [86764d7] changes.py: save() does not need an extra file_path paramter.
+  * [b435a2e] devel: temporary workaround fpr purge.
+  * [89c796e] devel: Also pre-seed options (--verbose --verbose --debug for now).
+  * [d41b1d9] devel: Another workaround; add a handy "testall" target.
+  * [cf1e49d] Rename "dispatcher"->"manager".
+  * [5f67e0d] devel: extra func for default (may be used w/o git, just any mini-buildd installation).
+  * [b74c75d] packages.testbuild: Fix backort dis for sid.
+  * [81bd80d] builder.py: Bugix: changes values must always be string.
+  * [64196ea] Move models graphic to documentation.
+  * [7c2a31d] control: Add lintian to deps (currently needed until it can be run in chroots).
+  * [073f450] repository.py: Temporary fix to see the gnupg pub key.
+  * [d7d27f1] doc/index.rst: Update status.
+  * [588ea1f] doc/index.rst: Add 0.8.x package migration task so we dont forget.
+  * [cb5d4c3] mini-buildd: Add todo-bug: umask/daemon.
+  * [feee524] devel: Fix magic mirror grep typo.
+  * [3344cfa] templates/mini_buildd/base.html: Show mini-buildd version.
+  * [d70246b] Move gnupg handling to manager model.
+  * [c66b59d] models.py: Simplify name: PrioritisedSource->PrioSource.
+  * [7e64fc7] devel: Add install_clean target.
+  * [bcc4e3b] models.py: New-style Architecture, Components (new) and Source models.
+
+  [ Gerhard A. Dittes ]
+  * [2e83bac] devel: allow arbitrary branch to be used by 'mbd_build_install()' (not only master).
+  * [0194b6f] mini_buildd/changes.py: fix strange logging behavior (using unicode).
+
+  [ Stephan Sürken ]
+  * [413818f] models.py: Introduce messages, and fix up arch/component adding.
+  * [492e4d2] index.rst: Add db schema upgrade todo.
+  * [fea3e00] models.py: Indent/cosmetic fixes.
+  * [87ffcd5] chroot.py: Implement chroot prepare/purge as admin action.
+  * [b6e9977] webapp.py: Update defaults for new models.
+  * [482a836] admin.py: Register models where they are defined; obsoletes admin.py.
+  * [66714d2] models: Prefix all mini-buildd methods with "mbd_".
+  * [5c45b86] repository.py: Simplify import line.
+  * [5da60cc] repository.py: Fix lintian mode descriptions.
+  * [fd541a6] repository.py: Add initial field set.
+  * [d206be1] chroot.py: Use common action_activate and decactivate for objects that need it.
+  * [e23bf40] webapp.py: fix old method name.
+  * [16f7241] misc.py: Add new function run_as_thread().
+  * [5fe9739] misc.py: Add syslog support for test log setup helper.
+  * [389c680] misc.py: Add more thread test code.
+  * [2bded30] misc.py: run_as_thread(): Fix: Allow kwargs only.
+  * [7225dd9] mini-buildd: Upgrade manager to start_as_thread().
+  * [e71c531] mini-buildd: Upgrade builder to start_as_thread().
+  * [89e1381] mini-buildd: Don't enable verbose logging on --debug.
+  * [a046001] mini-buildd: Upgrade ftpd to start_as_thread().
+  * [16628ac] mini-buildd: Upgrade httpd to start_as_thread().
+  * [62968e5] misc: Better impl. of the sbuild workaround in misc: Add thread lock and work in temporary dir.
+  * [95420ff] mini-buildd: Upgrade build runs to start_as_thread().
+  * [57e14c8] changes.py: Update workaround to encode unicode to utf-8 (str() fails on real unicode chars).
+  * [55b4842] Merge Manager and Builder into Daemon.
+  * [102ac3b] devel: More fine changes ,,,, )
+  * [e06b0c8] models.py: Initial generic status model.
+  * [72c8a3d] source.py: Add source module with all models related to sources.
+
+  [ Gerhard A. Dittes ]
+  * [265c9cc] Manual: add link "mini-buildd home" to our (Shinx) documentation.
+
+  [ Stephan Sürken ]
+  * [939ec66] models.py: New generic status handling and sctions.
+  * [0ab0ff6] chroot.py: Update to new generic status model.
+  * [f8d7990] models.py: Implement model action functions as ModelAdmin methods.
+
+  [ Gerhard A. Dittes ]
+  * [ab16133] webapp.py: do not explicitly set 'SITE_ID' -- as we provide only _one_ site, the default value (undefined) should be sufficient.
+
+  [ Stephan Sürken ]
+  * [2660145] models.py: StatusModel: Generic impl. of activate/deactivate.
+  * [484ecd6] models.py: StatusModel: Add colored status display.
+  * [a195dbb] repository.py: Update to StatusModel.
+  * [291c87c] mini-buildd: webapp.py: Implicit idempotent default model creation.
+  * [9ffd87f] source.py: mbd_prepare(): Fix: Fail when no mirrors could be found (plus some log fixes).
+  * [91c29c9] mini-buildd: Remove obsolete/misleading arg "--instdir".
+  * [d5ba036] daemon.py, repository.py: Move hostname as "fqdn" to daemon.
+  * [ae2ed10] daemon: Add a view for 'dput.cf'.
+
+  [ Gerhard A. Dittes ]
+  * [ebfd174] webapp.py: Determine django's SECRET_KEY (once) instead of using a constant string (viewable by the public).
+
+  [ Stephan Sürken ]
+  * [8e79577] mini-buildd: As HOME_DIR is in setup as global now, use it.
+  * [1d32186] models: "Implement" ordering on the admin site by using lexically ordered verbose names.
+  * [4192312] gnupg.py: Add generic base class, and a TmpGnuPG class.
+  * [7cbd615] chroot.py: Fix: Remove chroot superclass from admin.
+  * [61faed8] source.py: Add gnupg/apt key automated download support.
+  * [d5bcd74] Distribution model: Add 'components' part, and fixup __unicode__.
+  * [0a605ef] repository.py: Fix: apt_allow_unauthenticated field was missing from config fields.
+  * [83ad989] builder, changes: Add support to deliver configured source's apt-key through to builds.
+  * [326d0de] repository.py: Initial (wooden) support to deliver apt keys.
+  * [31816d4] models: Move Suite, Layout and Distribution to module repository.
+  * [3a3b184] source.py: Source model: Structure, add some help strings, allow manual apt key.
+  * [174ded9] repository.py: Remove now-obsoleted old 08x-style apt-secure config dirs.
+  * [a6c0a32] repository, builder: Add support for debconf_preseed.
+  * [3ad9eca] packages.testbuild: Update to host-based dput target, default repo=test.
+  * [e8cc498] Implement custom setup script support.
+  * [1cc8e28] repository.py: Add example how to install additional packages.
+  * [93aaed6] main: Thread cleanup, part 1: Put queue to daemon model instance.
+  * [fbf6128] misc.py: Add get_cpus() helper.
+  * [dcae6d5] builder: Upgrade renice daemon model, use builder thread, implement sbuild --jobs=N.
+  * [cb17643] views.py: Use daemon.get() and clean up.
+  * [39831fc] source.py: key retrieval: Use configured keyserver.
+  * [b33b9bc] repository.py: Use daemon.get().
+  * [e9003b5] daemon.py: Mark private object vars with "_".
+
+  [ Gerhard A. Dittes ]
+  * [25a43fd] httpd.py: Switch from CherryPyWSGIServer (standalone WSGI server) to CherryPy and pickup CherryPy's logging.
+
+  [ Stephan Sürken ]
+  * [3a3199e] repository.py: fix gnupg call.
+
+  [ Gerhard A. Dittes ]
+  * [ddc542c] WebApp: Enable processing of "static" files; Show "favicon.ico".
+
+  [ Stephan Sürken ]
+  * [44987ab] daemon.py: Initial impl. of Packager logic.
+  * [a221dae] packages.testbuild: Be able to test-build any package that is available via apt-get source.
+  * [a3494e0] chroot model: Fix: Use Source, not Distribution.
+  * [0a1659d] source.py: [some cosmetics]
+  * [988ccd0] daemon.py: Success is when sbuildretval == 0 (no need to evaluate sbuild status).
+  * [95c6c0d] mini_buildd/*: Name convention update: Don't use abbrevs in model field names.
+  * [1b2b44c] daemon.py: Fix: convert retval to int.
+
+  [ Gerhard A. Dittes ]
+  * [7c35043] httpd.py: Log HTTP errors (status codes: 4xx-5xx).
+  * [ef15d57] WebApp: Let CherryPy handle static files (also for django admin).
+
+  [ Stephan Sürken ]
+  * [ca407a4] mini-buildd.init: Add "reload" target, which send SIGHUP to mini-buildd.
+  * [a4eadd1] ftpd.py: Add ability to shutdown ftpd at will.
+  * [5fed4c1] daemon.py: Support for a global daemon instance called "runner".
+  * [718c935] mini-buildd: Add support for reloading (via SIGHUP).
+  * [f933f33] daemon.py: Move ftpd thread to daemon.
+
+  [ Gerhard A. Dittes ]
+  * [3dfff8f] Manual/Sphinx: Use the "global favicon" (/static/favicon.ico) instead of an own (separate) one.
+
+  [ Stephan Sürken ]
+  * [b9ff594] devel: Add new default target.
+  * [5c3ca18] models, repository: Add EmailAddress models.
+  * [45b88dc] mini-buildd: Set umask on daemonize.
+  * [5433d34] daemon.py: Initial smtp and email notification support.
+  * [6b2cbd2] mail: Alllow notificatio lists to be empty.
+  * [90877ec] daemon.py: Initial pre-qa  testing, email updates.
+  * [8d717b3] daemon.py: mail/notify: Name all mail functions "notify" and put base notify to daemon.
+
+  [ Gerhard A. Dittes ]
+  * [3834c21] Static-files: Restructuring; Admin: Add link to mini-buildd's 'home' (show icon, etc.);
+
+  [ Stephan Sürken ]
+  * [8c06408] changes.py: Implement incoming QA-Checks: codename, id, dist, uploadable.
+  * [c016403] builder.py: Only sbuild --verbose when DEBUG is enabled.
+
+  [ Gerhard A. Dittes ]
+  * [795e92e] Website (mini-buildd): improve layout -- fulfill _valid_ "XHTML 1.0 Transitional" and "CSS level 3".
+
+  [ Stephan Sürken ]
+  * [446b95b] Implement incoming QA-Checks: mandatory version.
+
+  [ Gerhard A. Dittes ]
+  * [c20871c] Manual: Let CherryPy deliver it _statically_ (instead of taking a circuit via Django);  Cosmetics.
+
+  [ Stephan Sürken ]
+  * [61aed5d] suites/sources: Add support for automated "codeversions" (lenny=50, squeeze=60) from the Release file.
+  * [0977840] daemon.py: Implement email allow regex.
+  * [467d23c] packages.testbuild: Set DEBEMAIL explicitly to protect against possible spam.
+  * [bdd3f41] models.py: Add module doc including naming convention for fields.
+  * [e0dc9fa] Rename: PrioSource->PrioritySource.
+  * [8fd9601] Rename: PrioritySource.prio -> .priority.
+  * [162fbf0] models.py: Dox: Add method convention.
+  * [d68b1a6] models.py: Cosmetic: Add plural for email adrresses.
+  * [acb748f] Rename: extdocurl->external_home_url.
+  * [38728d8] repository.py: build dep resolver field: Use small integer choices field.
+  * [e0f8c96] repository.py: lintian mode field: Use small integer choices field.
+  * [143c2e9] repository.py: Add field placeholder for piuparts.
+  * [295a7b5] models.py: [cosmetics]
+  * [f4c173c] chroot.py: FileChroot: Cleanup, use "compression" shortint choice field, not tar_suffix.
+  * [b9aaec8] chroot.py: Nameing conventions: Rename "vgname"->volume_group.
+  * [a049607] models.py: Misc cosmetic changes.
+  * [c9e45e6] daemon.py: Rename mail_smtpserver -> smtp_server, and use BindArgs to parse host:port string.
+  * [cdc800f] source.py: Fox priority source verbose name.
+  * [2f5d04c] repository.py: Impl. mail notification for repositories, including "maintainer" and "changed-by" notifying.
+  * [8fb9f59] repository: Rename field id->identity (following naming conventions).
+  * [003c40e] daemon: Rename field fqdn->hostname (naming conventions).
+  * [422d6a9] changes.py: Fix get() method.
+  * [80a56f1] daemon.py: misc notify fixes.
+  * [0b292d1] models.py: EmailAddress: Add name part.
+  * [5c39013] daemon.py: Fix email sending of maintainer and changed-by fields.
+  * [b4e9e57] models: __unicode__(): Actually use unicode everywhere, update all to .format().
+  * [94406de] Change file layout: "~/var/spool/builds|packages".
+
+  [ Gerhard A. Dittes ]
+  * [88590bd] mini-buildd (/CherryPy): Fix segfault on shutdown.
+  * [562475d] httpd.py: Turn stderr/stdout logging _off_.
+
+  [ Stephan Sürken ]
+  * [6382d50] changes.py: Use flat directories for builds and packages.
+  * [97b7f96] changes.py: Add remove() method.
+  * [772ab1a] builder.py: Implement build cleanup.
+  * [3ab2248] /builder.py: Fix: Build result changes should carry 'Architecture'.
+  * [628f72c] daemon, changes: Implement package archiving to log dir.
+  * [6f4728b] Rename "var/logs" -> "var/log".
+  * [ea135ca] Make log dir accessible per http, and update repositor templatetags to 'mbd_' method prefix.
+  * [f27128b] daemon, repo: Fix ftp url creation.
+  * [dcc3012] daemon.py: Add buildlog links to notify mail.
+  * [4cbde6f] repository.py: Fix call to ftp_url.
+  * [3444694] doc/index.rst: Update todo index.
+  * [ed85822] Some fixes to make sphinx build work in debian package under sid.
+  * [12d881c] httpd.py: Fix path for static admin in django 1.4.
+  * [9995aa5] daemon.py: Fix: Architecture, not Sbuild-Architecture.
+  * [c5309f8] mbd-qa-check: qa lintian is implemented --removing.
+  * [3707809] mbd-qa-check: qa build check is implemented --removing.
+  * [7ba5365] mbd-qa-check: generic qa code is implemented --removing.
+  * [df16073] mbd-qa-check: qa dbp upload is implemented --removing.
+  * [c95a0e5] mbd-qa-check: qa dsp upload is implemented --removing.
+  * [c5d1b04] builder.py: log fixes.
+  * [8939e89] misc.py: taint_env(): Add support to remove envs (via value=None).
+
+  [ Gerhard A. Dittes ]
+  * [d2ea92b] Improved (I hope so) and unified layout of "mini-buildd", "django admin" and "sphinx documentation".
+
+  [ Stephan Sürken ]
+  * [c36eb5d] builder.py: Show env in build on DEBUG.
+  * [c2d11d6] Migrate mbdAptEnv() to python, and use it for debootstrap.
+  * [3489276] chroot.py: Don't include "apt" on deboostrap.
+  * [1d72d39] misc.py: call(): Log to error on failure.
+  * [549bca4] builder.py: For arch-all builds, also always include the orig.tar.gz (-sa).
+
+  [ Gerhard A. Dittes ]
+  * [5459193] Website: Use mini-buildd icon (as "fast-link") to get home (from everywhere).
+
+  [ Stephan Sürken ]
+  * [a882fd3] misc.py: Add sha1 hash from file function.
+  * [dbab5b8] Switch to using only one spool dir, with tasks imaged as sha1 dirs of the resp. changes file.
+  * [e68a904] main: On daemonize, set working_directory to --home.
+  * [86ca6fb] main: Always clear environment, and only set some HOME, USER, LOGNAME, and PATH to sane values.
+  * [a7cf532] Update all calls() with env=.
+  * [6f08855] setup.py: sphinx workaround: Commenting copy for doc/_static.
+  * [aeaf2ca] css/mini-buildd.css: Minimal cosmetics.
+  * [e65cd0a] ftpd.py: Add support to re-push left-over changes in incoming on startup.
+  * [8feb7cc] builder.py: sbuild_mode: Don't explicitely set the default.
+  * [eddefb0] misc.py: Add new string helper funcs: fromdos() and subst_placeholders().
+  * [4338e94] misc.py: Update this module to use doctest.
+  * [57a9521] Add support for a custom "sbuildrc snippet" configuration.
+  * [f0aeb66] repository.py: Update example for chroot_setup_script.
+  * [354c1c1] devel: Yet again, update default options: just '--verbose'.
+  * [a59a0d4] misc.py: Add helper functions to parse a distribution string.
+  * [a29dd6e] repository.py: Add mbd_find_dist() member, remove redundancies, more checks.
+  * [3cfbb8c] repository.py: Use new fromdos() utility func.
+  * [62240cf] repository.py: Update "mandatory_version" regex to use new placeholders setup.
+  * [659fcd6] repository.py: sbuildrc_snippet: Introduce placeholder %LIBDIR%.
+  * [c371245] builder.py: Don't clean build dirs in DEBUG mode.
+  * [8613285] daemon.py: Initial handling of stray results.
+  * [3b02d6a] repository.py: Rename: architectures -> mandatory_architectures.
+
+  [ Gerhard A. Dittes ]
+  * [1054295] Admin: Website structuring & cosmetics.
+
+  [ Stephan Sürken ]
+  * [20ddca2] builder.py: ups.
+
+  [ Gerhard A. Dittes ]
+  * [370b0ed] Stylesheets (css): Fixed to pass "CSS level 3" (W3C Validator); Cosmetics.
+  * [2599344] Admin-Template: Some renamings (of model names).
+
+  [ Stephan Sürken ]
+  * [000f4aa] repository.py: Add optional architectures field.
+
+  [ Gerhard A. Dittes ]
+  * [b486be2] Admin-Template: Remove "Suites" (from overview).
+
+  [ Stephan Sürken ]
+  * [f43bf44] repository.py: Move archs, build, apt, lintian etc. opts to dist.
+
+  [ Gerhard A. Dittes ]
+  * [80422c0] Admin-Template: tiny cosmetics.
+
+  [ Stephan Sürken ]
+  * [ad56c9a] repository.py: Bette get_arch* methods, add clean() impl. (not active).
+  * [8d7ebd2] mini-buildd: Shwoi incoming signbal in level info.
+  * [c3cc7de] mini-buildd: daemon: Implement arbitrary daemon start/stop for daemon model.
+  * [4a07dd7] daemon.py: Fix up daemon __unicode__().
+  * [3804e08] repository.py: Typo syntax error fix.
+  * [9547192] models.py: Add abstract father class for all models.
+  * [75d9c5e] models: Protect _all_ models against changes while the daemon is running.
+  * [26cdf41] daemon.py: Fix dput.cf (fqdn, not hostname).
+  * [e8b4120] daemon.py: Fix up Daemon start/stop/restart coupling to actual model state.
+  * [098d28a] repository.py: Bug fix in get_pubkey().
+  * [5e68912] devel: Add arg for test.
+  * [8c85a6c] daemon.py: Initial statis display support.
+  * [e8d168e] daemon.py: Mail fix: Only display buildlogs.
+  * [c9542f8] root_urls.py: remove obsoleted static files support.
+  * [413d9fa] changes.py: Fix Arch-All tag.
+  * [5ebf5a7] models.py: Revert back to changing status when we actually succeeded.
+  * [9eef581] daemon.py: Don't rely on model status in Daemon object.
+
+  [ Gerhard A. Dittes ]
+  * [023e242] Documentation: Add 'Quickstart' section.
+  * [f52e3e6] Documentation: Tiny cosmetics.
+
+  [ Stephan Sürken ]
+  * [8c4ba20] devel: genaralize default argument.
+  * [256a444] daemon.py: status_as_html: Use functions to prepare builds and packages.
+  * [e0fd3e3] --debug: Make this comma-separated list of parts to enable debug mode.
+  * [9776f18] mini-buildd: rm obsoleted commented code.
+  * [08e18d9] mini-buildd: Renice main error handling; add "main" part for debug.
+  * [0585d3a] builder.py: Fix build_clean call.
+  * [5620c71] changes.upload(): Save upload status in *.upload; don't re-upload if already uploaded.
+  * [cad0877] devel: Update default options for new --debug=x,y option.
+  * [31a2dd6] changes, builder: Don't generate a build requests or build results (resp.) again if already done.
+  * [45c0baa] builder, changes: Convenience convention: "breq" for build request, "bres" for build result changes variables.
+  * [6384012] chroot.py: Make personality an automated model field with manual override feature.
+  * [bbd8387] conf.py: Enable graphviz extension, and add initial graphic for daemon.
+  * [afb2e60] builder.py: Introduce builder status class.
+  * [a4925db] builder.py: Fix builder status display, and max_parallel_builds option.
+  * [e125f1d] repository.py: Move repo prepare code to repository && enable repo purge in debug mode "repository".
+  * [732e5f1] repository.py: mbd_prepare: Cleanup, remove obsoleted cruft.
+  * [d5e912f] Status models: Add confirmation support for admin action "unprepare".
+  * [6ef1d89] repository.py: "normal" impl of repository unprepare now we have confirmation support.
+  * [3a185c2] gnupg.py: Add gnupg.unprepare, renice messaging, and add daemon.unprepare.
+  * [3a50d29] gnupg.py: Add features: add_pub_key, sign, verify.
+  * [6ed4b66] daemon.py: Cleanup up repositoiry prepare, fix daemon reprepro call.
+
+  [ Gerhard A. Dittes ]
+  * [26eb9f0] Admin: Extend table style (-- bugfix for 'Debian Sid'/'Django').
+  * [d223baa] Admin-Template: Move 'Daemon' from the bottom to the top.
+  * [a38bce0] Documentation: Extend Quickstart (administration section).
+
+  [ Stephan Sürken ]
+  * [a17ee87] doc/index.rst: Update Roadmap status.
+  * [6088dfe] remove two done todos, update one.
+  * [bc6dece] doc/index.rst: Add some more hints for the quickstart.
+  * [66e2b9e] webapp.py: Don't implicitely set up a source.
+  * [ee95a99] httpd.py: Explicitely set content type to 'text/plain' for '*.log' and '*.buildlog'.
+  * [13e2d6f] doc/index.rst: More status updates.
+  * [847fa68] gnupg.py: verify(): Add option to give file to check for detchaed sigs.
+  * [7d06873] builder: Indent fixes.
+  * [d7bea3d] todo update: custom hook idea (C), ftpd options.
+
+  [ Gerhard A. Dittes ]
+  * [3fa0e41] Website: Improve (~>appearance), extend (~>index.html) and clean-up (~>here and there).
+
+  [ Stephan Sürken ]
+  * [b3a6aea] gnupg.py: Add new abstract GnuPGPublicKey model.
+  * [47d893f] models.py: Add AptKey and UserKey models based on gnu pg model.
+  * [3c1c361] chroot.py: Add debottsrap todo.
+  * [44492e9] source.py: Update to use AptKey (Many2Many), and add initial verifying of release files on prepare.
+  * [9e2fa3a] templates/admin/index.html: Add "Apt keys" to "Mirrors and Sources" section.
+  * [e168e7e] templates/admin/index.html: Omit "add" from "Daemon".
+  * [1aee692] models.py: Add support for UserProfile (GnuPG key and repo-list bound to each user).
+  * [c1aa8fa] source.py: Fix: Delete temporary release files (was left in from debugging).
+  * [5dc8214] gnupg.py: Fix: add_pub_key, not add_key.
+  * [eb921c9] models.py: Add proper Remotes model support.
+  * [45f5916] Rename: "Mirror" -> "Archive".
+  * [900bb66] repository.py: Add allow_unauthenticated_upload flag.
+  * [ac93f33] changes.py: Initil user upload auth support.
+  * [2ca7ee1] daemon.py: Cleanups, add todo.
+  * [55b6a6b] devel: Add some python code checker calls.
+  * [cb001ff] code qa 'pyflakes': Remove all issues.
+  * [68ae366] misc.py: code qa 'pychecker': Remove all issues.
+  * [79b96b3] *.py: Update all external imports according to PEP 8.
+  * [a71329f] *.py: Code qa: Add/fix coding hint for all python files.
+  * [a2d16ba] .gitignore: Ignore fixtures starting with "local."
+  * [6af6016] devel: set py env only when needed; make pypath absolute.
+  * [cec4844] python code qa: Use absolute imports for mini_buildd imports.
+  * [f230f01] builder.py: Add build auth code (commented).
+  * [ae4af5a] devel: pychecks: Add doctests checks (where available), add only currently working to general target.
+  * [b902688] models.py: Cosmetics for user profile.
+  * [f7cfef3] doc/django_settings.py: Add auth and contenttypes admin apps -- needed ate least for sphinx under sid.
+  * [886c7ed] devel: Run working checks befor build && run alls checks in subshell, so env is not tainted.
+  * [ccf2b95] devel: Checker: Add django-lint, and some exceptions for pylint.
+  * [40a24e5] mini-buildd: Several pylint warning fixes.
+  * [da460d5] daemon.py: Rename _Daemon class -> Manager.
+  * [d15fcc3] pylint: Fixing many pylint issues.
+  * [bbe9432] devel: Add pep8 checker.
+  * [6934a16] pep8: Many fixes for pep8 complience.
+  * [423d216] devel: Add pep8 to stanndard checks.
+  * [7e32864] models.py: UserKey model is obsoleted by UserProfile.
+  * [dd3ba32] mini-buildd: More cleanups and pylint fixes.
+
+  [ Gerhard A. Dittes ]
+  * [392765d] Website: Improve design (and usability); fix repository details.
+  * [988841a] Documentation: fix 'Quickstart' (renaming mirror -> archive).
+
+  [ Stephan Sürken ]
+  * [6a55816] mini_buildd/daemon.py: Code cleanups; remove done Gnupg todo.
+  * [f7f9af0] user auth: Gen per-repository keyring per daemon run, and verify in Package().init().
+  * [21d5065] gnupg.py: verify(): Better exception for auth failure.
+  * [8dde835] daemon.py: Add verification for buildresult and buildrequest (and put all changes verification to daemon loop).
+  * [8478528] daemon.py: Put incoming exception handling in daemon main loop (and several code cleanups).
+  * [2066a96] daemon.py: uploader keyring: Always add our own key.
+
+  [ Gerhard A. Dittes ]
+  * [a0a1ea6] mini_buildd/templatetags/index.py: Check for existing repositories before trying to list them.
+
+  [ Stephan Sürken ]
+  * [eb123fa] repository.py: Add new field: extra_uploader_keyrings.
+  * [83049b8] devel: Error exit workaround for the squeeze version of pep8.
+  * [9c3f1e1] fix three new pep8 style glitches.
+  * [18e142f] gnupg, repository: Implement support for extra keyrings field.
+  * [ff99763] daemon.py: Add daemon identity field.
+  * [737d07a] debian/mini-buildd.examples: Install examples from examples/* dir.
+
+  [ Gerhard A. Dittes ]
+  * [7fdf27d] Website: Add package search functionality; Improve page footer (and overall appearance).
+
+  [ Stephan Sürken ]
+  * [55399b8] repository.py: Add "build_keyring_package" flag for suites.
+  * [26d78e0] gnupg.py: Add export() method.
+
+  [ Gerhard A. Dittes ]
+  * [a9e165d] Website: Fix search form (layout).
+
+  [ Stephan Sürken ]
+  * [4a2c0d8] Add archive keyring package template.
+  * [126b70f] gnupg.py: init(): Fix: Give name and email as argument, don't invent them.
+  * [c7237ec] daemon.py: Add support for auto-generated archive-keyring packages.
+  * [5b6454d] templatetags/repository.py: Make pep8 compliant.
+  * [bb6b061] reprepro: Indices: Produce plain, gz and bz2.
+  * [6955d53] httpd.py: Add a shortcut function to add static handlers.
+  * [69453b1] httpd.py: Support serving '/repositories'. Some code cleanups.
+  * [b462442] daemon.py: mbd_get_http_url(): Get http port right.
+  * [8a92fc2] ftpd, repository: Remove serving log and repositories via ftp, and switch to http in source generation.
+
+  [ Gerhard A. Dittes ]
+  * [35a0a7f] Webapp: Implemented search functionality using dummy function (first try -- to be improved!).
+
+  [ Stephan Sürken ]
+  * [9863a2e] misc: Rename "BindArgs" to "HoPo".
+  * [d4bf2f6] builder, daemon: Add builder load() to status.
+  * [cc71cd5] misc.py: Add BuilderState class to abstract the builder status.
+  * [6cd7e71] dameon, http: Add support to create a current builder state, and get it via web server uri.
+  * [6f6ca3c] daemon.py: Show traceback in main loop when DEBUG on main is enabled.
+  * [802b5ca] builder.py: Protect builder loop main run with master try/catch, and add debug option.
+  * [2c1933e] models: Remote: Add support to dowload the builder state from remote mini-buildd.
+  * [a9f611a] builder, daemon, changes: Implement Remote support.
+  * [ff70231] misc, daemon: Just use bool for builder up/down state.
+  * [88553ec] mini_buildd/views.py: pep8 fix.
+
+  [ Gerhard A. Dittes ]
+  * [2aff99e] Website: Improved package search stuff using new "search result structure".
+
+  [ Stephan Sürken ]
+  * [b22c87f] builder, changes: auhenticate_aginst_remotes() method is obsolete.
+  * [1adbe46] packages.testbuild: Add magic not to build template package; auto-detect sign mode.
+  * [ef4605b] daemon, repository: Move archive key package generator to repository.
+  * [52f443e] daemon.py (Manager::status_as_html): so.
+  * [4972ba0] misc.py: Add __unicode__() for builder state.
+  * [966fd6a] models.py: Remote: Put the builder state into __unicode__.
+  * [2f47a5b] daemon.py: Add initial remote status.
+  * [eff43b3] debian/changelog: Restoring 0.9.6 changelog.
+  * [74d0579] debian/changelog: Add unreleased skeltion for 1.0.0 pre alpha.
+  * [0576c64] repository: Put "keyring suites" chooser to Layout.
+  * [4c014fc] repository.py: Suite model: Don't use name as primary key.
+  * [2fa9dc3] repository.py: Add auto version support to Suite.
+
+  [ Gerhard A. Dittes ]
+  * [d30aecf] Website: Add dummy-propagation-functionality (first step).
+
+  [ Stephan Sürken ]
+  * [1641784] repository.py: Improve Layout and Suite models
+  * [95713bc] mini-buildd: Fix: Don't restart daemon on SIGHUP if not already active.
+  * [b76439f] doc/index.rst: Update status.
+  * [d83bec0] repository.py: auto keyring packages: Use --force-bad-version, not --allow-lower-version.
+
+  [ Gerhard A. Dittes ]
+  * [e0304bc] Website: Only allow superuser to propagate.
+  * [68b3cce] mini_buildd/views.py: Fix "dummy package search" function.
+
+  [ Stephan Sürken ]
+  * [416b86a] models: Add some more checks to avoid config errors.
+  * [3d8270a] daemon.py: Only show active repos and chroots in daemon display.
+  * [48d328b] repository.py (Suite): Make name primary key again, and fix default for "but automatic upgrades".
+  * [e2e6f4e] templatetags/repository.py: Show repo model's defined description, not identity.
+  * [ee69258] repository.py: Pimp repo instance name.
+  * [83fbf63] repository.py: prepare: Fix check in daemon instance.
+  * [0460638] daemon.py: Pimp up daemon name display.
+  * [08b8201] templatetags/repository.py: Add tag to show all chroots.
+  * [9aba1d2] index.html, templatetags: Also show remotes in own box.
+  * [53ba6c5] daemon.py: Show # remotes in daemon desc.
+  * [13c79b4] chroot.py: Shwo status in chroot desc.
+  * [4cc8601] changes.py: Don't handle packages for repositories that are not active.
+  * [944b6fe] models.py: Remote: Use warn, not info, to inform that the key should be checked.
+  * [e36960c] models.py: Ensure no mini-buildd model is deleted when the daemon is running.
+  * [f121d32] models.py: Custom actions: Pimp names and order.
+
+  [ Gerhard A. Dittes ]
+  * [8205d07] Website: Get rid of template tag "repository_list_all()"; Another fix for function "tmp_dummy_package_search()"; Remove unused function "handle_login()".
+  * [fdb7c1e] Website: get rid of template tags "chroot_list_all" and "remotes_list_all".
+
+  [ Stephan Sürken ]
+  * [346e82e] models.py: Make delete actions safe for status models.
+  * [522397d] repository.py: Add status deps for repository.
+  * [d579204] models.py: Add suport to check the dependecy status.
+  * [ebd0990] daemon.py: Check dependcy status (for all active repos) on start.
+  * [952410c] models.py: Use max/min to calc correct status.
+  * [ade3292] models.py: actions prepare, activate: Implicitely call for all status dependencies.
+  * [bb1e4a7] models.py: StatusModel: Fix: Make action() a class method.
+
+  [ Gerhard A. Dittes ]
+  * [eef38e6] Website: Use tabs instead of spaces for (html) templates.
+
+  [ Stephan Sürken ]
+  * [a1132b4] mini-buildd, webapp: Add bulk-unprepare option (for internal use).
+  * [78193a7] debian/mini-buildd.prerm: Call --unprepare=Chroot on "remove".
+  * [35fd60c] repository.py: Add check against multiple dist with dame codename in one repo.
+  * [e9ef783] misc.py: Improve dist parser.
+  * [28b5658] repository.py: Suite model: Add uploadable flag, and change 'migrate_from' to 'migrate_to'.
+  * [b62566d] repository.py: Suite: Ads suite.mbd_get_distribution().
+  * [942ecf3] reprepro.py: Add listmatched() method.
+  * [a0c3cf5] repository.py: Add package search method.
+  * [227383c] web, django: Add proper package search.
+
+  [ Gerhard A. Dittes ]
+  * [9102fed] Website/Admin: Restructuring (of template).
+  * [8d0f711] Website: Reduce count of "template-tags" files -- use only "base.py" from now on.
+
+  [ Stephan Sürken ]
+  * [70c49c7] package search: Need one more layer (dist) in package result.
+  * [76f4ba0] reprepro.py: Add copyrsc() method.
+  * [a49aa70] views.py: Implement propagation.
+  * [dc6d4b9] reprepro.py: Add removesrc() method.
+  * [fcb0290] Implement "package removal".
+  * [b64557a] package_propagation_results.html: Put results in pre tag.
+  * [cdd6cef] mini_buildd/index.html: Remove distribution from top level package search.
+  * [2fa1fde] package_search_results.html: Cosmetics.
+  * [0c8587a] models.py: Remote: Add a wake_command field for later use.
+  * [985dc1b] .pylintrc: QA: Move pylint conf to rc file, and check for errors only.
+  * [d2346fa] misc.py: [pylint]: Use hashlib.new('algo').
+  * [02a9f64] webapp.py: [pylint]: export08xConf support is gone.
+  * [46e7410] mini-buildd: Some usage fixes.
+  * [f41185a] source: [pylint]: Don't call use __unicode__ directly.
+  * [97662ec] devel, .pylintrc: Add helper to find potential "no member" false-positives, and update .pylintrc.
+  * [1d8c9c9] repository.py: pep8/sid fix.
+  * [81bd1c7] .pylintrc: No need to disable E1101.
+  * [38cf69e] .pylintrc: Fix: disable does not work line-by-line, as advertised ;(.
+  * [20c65ce] devel,.pylintrc, setup.py: Add pylint to standard check.
+  * [f5ae623] doc/*.py: PEP8 fixes, and add files to standard pep8 test.
+  * [3f4febf] pylint: Add and conform: C0103 (naming conventions), C0112 (empty docstring).
+  * [f747ca1] doc/conf.py: More PEP8 fixes (squeeze pep8, this time...).
+  * [c6f2279] pylint: Add and conform: R0201 (Method could be a function).
+  * [a43756e] pylint: Add and conform: R0801 (code duplication).
+  * [ae43e98] pylint: Add and conform: R0902 (Too many instance attributes), R0904 (Too many public methods).
+  * [eca22b0] pylint: Add and conform: R0914 (Too many local variables), R0915 (Too many statements).
+  * [a678e20] pylint: Add and conform: R0903 (Too few public methods).
+  * [79e2be3] pylint: Add and conform: W0102 (Dangerous default value as argument), W0107 (Unnecessary pass statement).
+  * [ae80c84] pylint: Add and conform: W0201 (Attribute defined outside __init_).
+  * [1a2b79a] pylint: Add and conform: W0221 (Arguments number differs from xx method)
+  * [9249098] pylint: Add and conform: W0404 (Reimport), W0511 (warning notes in code comments), W0601 (Global variable undefined at the module level), W0602 (Using global for %r but no assigment is done).
+  * [2b74405] pylint: Add and conform: W0612 (Unused variables).
+  * [7c3520c] pylint: Add and conform: W0613 (Unused arguments).
+  * [5432e0d] uploader and remote keyrings: Only use objects with active state.
+  * [49aabba] pylint: Renice in-code workaround for R0201.
+  * [99cdd72] pylint: Add and conform: W0622 (Redefining built-in).
+  * [42bf31a] pylint: Ignore W0702, W0703 for now.
+  * [5eb68cb] pylint: Add and conform: W0631 (Using possibly undefined loop variable).
+  * [b0e311c] pylint: Add and conform: W0212 (Access to a protected member of a client class).
+  * [c14788d] source file layout: Switch to "models in multiple files" layout with subpackage "models".
+  * [a932478] models/source.py: Move to models/.
+  * [e4df7f2] models/repository.py: Move to models/.
+  * [5e23c51] models/repository,source: Some Meta/Admin inheritance fixes.
+  * [5264e11] models/chroot.py: Move to models/.
+  * [c635535] models/gnupg.py: Move/diverse to models/.
+  * [8b6bbca] models/daemon.py: Move/diverse to models/.
+  * [fb07a3e] daemon.py: Move some django code to model only.
+  * [e2be34e] models/__init__.py: Import fixes.
+  * [86126ca] devel: Rename pychecks->check; remove pylint extra handling for squeeze; build: be interactive when check fails
+
+  [ Gerhard A. Dittes ]
+  * [2f30c5f] Website/Admin: Warn if daemon is running (and give hint to stop it in order to make changes).
+  * [cbb9069] Website/Admin: Fix outline "Suites+Layouts/Distributions+Repositories".
+
+  [ Stephan Sürken ]
+  * [959ff36] keyring-package: Omit the keyrings/ extra dir in source package (fixes automated keyring package).
+
+  [ Gerhard A. Dittes ]
+  * [9f8d7c2] Website/Admin: Get rid of hard coded model names (in template).
+
+  [ Stephan Sürken ]
+  * [92a7459] models: Add "base" module, so we dont have actual code in __init__.py.
+  * [b1e3151] models: Rename "UserProfile" to "Uploader".
+  * [3c806c5] models/__init__.py: Stop delivering model classes redundantly here.
+  * [e824437] .pylintrc: Adjust max-locals for compat08x.
+  * [998710a] daemon.py: Make all imports absolute, and on top of module.
+  * [f579fbe] changes.py: Make all imports absolute, and on top of module.
+  * [aaec789] gnupg.py: Add note about in-method import.
+  * [7ae2a04] urls.py: Make all imports absolute, and on top of module.
+  * [6f611dd] views.py: Make all imports absolute, and on top of module.
+  * [3e27e8a] changes.py: Make all imports absolute.
+  * [679a30a] .pylintrc: Yet another exception for django.
+  * [b3fb574] models: Include 'Admin' meta class for all model registrations.
+  * [dec45f0] models/repository.py: Make most import absolute.
+  * [e352084] models/repository.py, Layout: Fix: Inherit from mini-buildd's Model.Admin.
+  * [1b16a23] models/base.py: Fix naming of helper func.
+  * [66452d0] models/base.py: Add msg_* methods to base model class.
+  * [f2ae9a9] models/*.py: Mass-use self.mbd_msg_* instead of global func, and remove them.
+  * [0c8984f] models/chroot.py: Make all imports absolute, and on-top.
+  * [d4231d6] models/daemon.py: Make all imports abolute.
+  * [53c1594] models/gnupg.py: Make all imports abolute.
+  * [798f74e] models/source.py: Make all imports absolute.
+  * [064baec] pylintrc: Enable the last two ought-to-be-fixed checks (can't fix them yet, though).
+  * [db7e2ff] devel: Add shorctut for snakefood dependency graoh creation.
+  * [0e5d325] changes.py: Remove dependency on daemon.
+  * [6aace0b] builder.py: Remove dependency on daemon.
+  * [33a7bc4] models/*: Make all accesses to the daemon instance via one base class method.
+
+  [ Gerhard A. Dittes ]
+  * [953d237] Website/Admin: Refactor mini-buildd specific part of 'index'-template (using new "include"-template 'index_mb_row').
+
+  [ Stephan Sürken ]
+  * [c925d43] models/base.py: Add and use "is_prepared" and "is_active" shortcuts on base StatusModel.
+  * [4e279db] webapp.py: Argl: Add tod reminders ro update to new model scheme.
+  * [d6909ee] models/base.py: Add active filter shortcut, and update all code.
+  * [3d217fa] models/gnupg.py: Fix: We cna now put the gnupg import top.
+  * [9fbdc03] devel: Fix sfood target.
+
+  [ Gerhard A. Dittes ]
+  * [cebd740] Website/Admin: Extend css to work also for sid.
+
+  [ Stephan Sürken ]
+  * [c5e3c9c] misc.py: Fix another pylint warning.
+  * [b378814] .pylintrc: R0401,W0621: We don't get all the issues fixed, ignoring again.
+
+  [ Gerhard A. Dittes ]
+  * [be326b8] Website: Get things done without the use of template tag "repository_list".
+  * [f262796] Website: Fix template "package_propagation_results".
+
+  [ Stephan Sürken ]
+  * [5425064] models: Use IntegerField, not SmallIntegerField (more portable).
+
+  [ Gerhard A. Dittes ]
+  * [4e3ee00] Website: Fix layout of "package_search_results".
+
+  [ Stephan Sürken ]
+  * [6b5d32f] models/source.py: Use blank=True, not null=True (django-pylint warnings).
+
+  [ Gerhard A. Dittes ]
+  * [9dc952a] Website: Improve remove button/link of "package_search_results".
+  * [9742caf] Website: Add link to previous page ("package_search_results").
+
+  [ Stephan Sürken ]
+  * [c07f5d8] models/repository.py: Omit model prepare check on daemon (too unstable); remove __init__ and make uploadable_dists a property.
+  * [dd494f6] models/repository.py: M2M: Understanding "related_name", and set it to more conventional names.
+  * [8805057] models/daemon.py: Fix method ordering as hinted by django-pylint.
+  * [a548eb5] devel: django-lint: Dont write reports.
+  * [4a6905f] webapp, models: Fix syncdb after the model layout change.
+  * [75be8c3] models/__init__.py: Add import func to subpackage models; this also takes care to automatically register with the admin site.
+  * [617359a] webapp.py: Rename '--unprepare=MODEL...' to '--remove-system-artifacts', and make it work for new model setup.
+  * [f6f73fd] models/daemon.py: Add field ftpd_options (for future use).
+  * [e32841c] models/daemon.py: Add custom_hooks_directory field (for future use).
+  * [e4b70e2] devel: Again: Skip pylint for squeeze.
+  * [1ab5334] models/base.py: Add generic "extra options" fields (for future use in selected models without schema change).
+  * [12466e7] debian/mini-buildd.prerm: Don't fail removal in artifact removal fails.
+
+  [ Gerhard A. Dittes ]
+  * [e7b2548] Website/Admin: Fix style.
+
+  [ Stephan Sürken ]
+  * [9b7345a] models: Stati: Don't re-run action if status is already reached.
+  * [bea31b6] models/base.py: Re-arrange action order.
+  * [d122019] models/base.py: Add last_checked time field to base StatusModel.
+  * [df64d8a] models/base.py: StatusModel: Add "check_and_update" action.
+  * [9e124ff] models: Update all __unicode__ of all StatusModels to show mbd_status_display().
+  * [baca258] models/base.py: Custom delete protection: put all checks to delete() method.
+  * [7f3f5ba] models/base.py: djang 1.4: Omit search_field and readonly_fields on status base model.
+  * [e5a5959] models/base.py: Base status model: Add auto_reactivate bool field.
+  * [bbf0c73] models: Add (stub) impls for mbd_check_and_update.
+  * [00b3704] models/gnupg.py: Update remote to new check_and_update scheme.
+  * [a66081f] devel: Customize django-lint, and add to standard test.
+  * [1907f05] changes.py: Greatly simplify get_repository() using db queries.
+  * [f1887d4] views.py: Search: Only consider prepared repositories.
+  * [3ea8c60] misc.py: Run __unicode__ for __str__().
+  * [c5e57cd] models/base.py: Remove check_and_update default method.
+
+  [ Gerhard A. Dittes ]
+  * [a5e20be] Website: Add view to handle HTTP errors (403, 404 and 500).
+
+  [ Stephan Sürken ]
+  * [661e4f5] models/base.py: Rewrite all actions; cls + self variants.
+  * [d59a59a] webapp.py: Update --remove-system-artifacts.
+  * [94c7295] models/source: Add proper check_and_update() method.
+  * [aa1641e] models/gnupg.py: No check_and_update func needed.
+
+  [ Gerhard A. Dittes ]
+  * [abaad1d] httpd.py: Get rid of "special treatments" for 'Django < 1.4'.
+
+  [ Stephan Sürken ]
+  * [1187cac] models/daemon.py: Add check_and_update for daemon.
+
+  [ Gerhard A. Dittes ]
+  * [65b284e] Website/Admin: fix "static URLs" in "admin.css".
+
+  [ Stephan Sürken ]
+  * [8487d34] mini-buildd: Run the check on daemon model on startup, too.
+  * [6c660d3] Mass-renaming "check and update" => "check".
+  * [f76c2ef] models/base.py: Update status docs.
+  * [628648d] daemon.py: Rename Manager->Daemon.
+  * [6d518ca] packager.py: Diverse daemon and packager code into packager module.
+  * [c8a5bd8] tpl/status: Move all HTMl to templates, and give values via properties.
+  * [da2ce37] tpl/status: Invent property "tpl", giving dict of values ("template api").
+  * [f748943] models/base.py: Fix pseudo-number is activate action text.
+  * [fab98e8] mini_buildd/index.html: Fix up base layout.
+  * [b8fda72] Fix indenting for (nearly) all templates.
+  * [0fd0205] views.py, home: Only show prepared chroots/repos/remotes.
+  * [3119b60] daemon.py: Protect update_model() method.
+  * [998ffd3] mini_buildd/index.html: Cosmetics.
+  * [2d15d11] daemon status: Add support for "last packages" display.
+  * [b975d13] changes.py: Update pkg_id to optionally add architecture.
+  * [03dda23] packager.py: Fix mail sending due to __unicode__() fix.
+  * [d52110e] builder.py: Add Build class (analog. packager), an add last_builds support.
+  * [95d6852] misc.py: Add BlockQueue, wrapper for Queue.Queue.
+  * [c988c66] builder: Use new BlockQueue to handle proper max_builds handling.
+  * [8eb592a] models/source.py: Add some more check messages (and pylint warn).
+  * [d280e2c] mini_buildd/index.html: Some more index style fixes.
+  * [56d7297] daemon.py: Move daemon run vars to non-model Daemon.
+  * [09b783c] builder.py: Obsolete builder.Status (all via builds, last_builds).
+  * [ff91995] builder.py: Ref: Move all build code to Build class.
+  * [20f0362] changes.py: get_pkg_id(): Add separator support.
+  * [83d73a7] changes.py: Add gen_buildresult analogous to gen_buildrequest.
+  * [bba36f8] builder.py: Add "upload pending" support, plus massive refacturing.
+  * [23ab5e6] daemon,ftp.py: Obsolete "stray_buildresult" extra handling by ordered re-pushing of incoming.
+  * [efe71a5] models/base.py: Add support for pickled state for all models.
+  * [275c926] mini_buildd/index.html: Add all possible (STUB) options for pending build results.
+  * [85c32cf] models/gnupg.py: Remote: Update to generic Model pickled data support.
+  * [a201dfc] daemon.py: Load "last_packages|builds" from persistent storage, and make it configurable.
+
+  [ Gerhard A. Dittes ]
+  * [1929dfd] Documentation: Update 'quickstart'.
+
+  [ Stephan Sürken ]
+  * [63581bd] models/repository: Add auto_migrate flag for later use.
+  * [9b736b9] daemon.py: Fix: The persistent state save overrides the whole object data (with maybe old data); workaround to act on fresh data.
+  * [b4a8bfa] models/daemon.py: Add two more future fields: wait_for_build_results and keep_build_results.
+
+  [ Gerhard A. Dittes ]
+  * [5a9ea26] Website: Add possibility to show/hide stuff on index page.
+
+  [ Stephan Sürken ]
+  * [52ddddd] models/base.py: Yet another status handling change.
+
+  [ Gerhard A. Dittes ]
+  * [50be367] Website: Avoid using (legacy) HTML tags for layout purposes -- instead use CSS.
+
+  [ Stephan Sürken ]
+  * [806d3b7] models/repository.py: Add a "group label" to suites, and allow differnet configs of same suite name.
+  * [939bcf6] models/base.py: Fix: prepare, activate: Replace two wrong calls to *action* (non-failing) calls.
+  * [250cca5] models/repository.py, reprepro: Add "morguedir" support.
+  * [36cd47f] models/repository.py: Suites: Bind a suite to one layout.
+  * [0a0fea1] doc/django_settings.py: Add pseudo SECRET_KEY setting to avoid depcrecaton warnings.
+  * [c39f4a9] doc: Fix some documentation warnings.
+  * [5fed798] views: Upgarde from generic views functions (deprecated since 1.3) to class based views.
+  * [403509b] pylint: Disable/enable some pylint messages in-code (fixes dummy code workarounds).
+  * [2395c84] reprepro: Install via "include" command. Obsolete incoming directory.
+  * [1be0e8b] repository/reprepro: Put morguedir option to options file.
+  * [eaa9fec] models/chroot.py: Implement mbd_check (run schroot --info).
+  * [16fc5d3] models/base.py: Reset last_checked value on unprepare.
+  * [8cd7540] models/chroot.py: Remove todo that is imho obesolete.
+  * [10958f7] models/source.py: Implement archive ping and select "fastest archive".
+  * [d34d243] models/repository.py: Cleanup status hooks.
+  * [a2a036c] models/source.py: check() now just calls prepare().
+  * [e202e72] models/gnupg.py: Cleanup status hooks.
+  * [fc38f33] models/daemon.py: Cleanup status hooks.
+  * [a086afb] models/chroot.py: Cleanup status hooks.
+  * [c1ac8ea] misc.py: Add total_seconds helper functions.
+  * [5cdc7bb] *.py: Mass-fix some wrong str() usage.
+  * [48f43f8] models/repository.py: Move install method here.
+  * [c177e9e] models/repository.py: Add dedicated package_* methods, and hide reprepro.
+  * [801726a] package search: Fix argument conventions.
+  * [12b6a38] packager,repository: Add pre-check. Pre-check whether the package_version is already installed (ye-olde "NEW" check).
+  * [f9f1273] changes.py: gen buildrequests: Add support to add files from pool that are not in upload (read: orig.tar.gz and friends).
+  * [4f2cbfd] models/repository.py: Use intermediate table for architecture options.
+  * [7069aef] models/repository.py: Fixing Suite+Layout models using intermediary model.
+
+  [ Gerhard A. Dittes ]
+  * [7fd524d] Website: Ask for confirmation when deleting packages; Refresh "Search results" page after package removal/propagation; Some JavaScript restructuring.
+
+  [ Stephan Sürken ]
+  * [87eddd8] .pylintrc: Some new django exceptions.
+  * [21c4d24] debian/control: Clean up dependencies for 1.0.
+  * [8b1b91a] Make log format look better for (now longer) module names.
+  * [c1f38b8] httpd.py: Use charset=UTF-8 for *.log and *.buildlog files.
+  * [fb71dff] Add buildlog links to status page.
+  * [fae0b87] package search: Let reprepro.listmatched() return a list (so all the call syntax in encapsed only there).
+  * [9742014] package search: Fix search results (first dist, then version).
+  * [1ce2d1e] Add and use ConfFile generator class for all generated config files.
+
+  [ Gerhard A. Dittes ]
+  * [3565415] Website: Refactoring of "package_search_results" template (JavaScript- and Template-Code).
+  * [858d865] Website: Remove unused style class (from mini-buildd.css).
+  * [6af70a6] Website: Add confirmation dialog for propagation (to template "package_search_results").
+
+  [ Stephan Sürken ]
+  * [c06fcad] Project wide: Use future:unicode_literals from python3.
+  * [6a36e9e] devel: Add standard check for correct src "coding" flag (utf-8) in each file.
+  * [d004226] Project wide: Mass fix u"" -> "" strings (which are now all unicode per default).
+  * [88dfae0] devel: Add standard check against explicit unicode string literals.
+
+  [ Gerhard A. Dittes ]
+  * [a547c86] Website: Improve layout ("package search results").
+
+  [ Stephan Sürken ]
+  * [ad2ffdb] unicode change: Don't apply on ./setup.py (does not work, and is not needed).
+  * [83de7b6] mini-buildd: unicode change: Make syslog handler work again.
+
+  [ Gerhard A. Dittes ]
+  * [3886b69] Website: Introduce new image for propagation button (~>"package search results").
+
+  [ Stephan Sürken ]
+  * [eaa96b5] models/repository.py: Some more refac+cleanup.
+
+  [ Gerhard A. Dittes ]
+  * [8f66918] New: Add "mini-buildd-graphics" SVG file to version control.
+
+  [ Stephan Sürken ]
+  * [264dfb0] setup: Fix: Set DEBUG to empty list initially, not None.
+  * [adadafc] *.py: Properly implement --debug=exception.
+  * [b6c1221] last_builds, last_packages: Make last appear first.
+
+  [ Gerhard A. Dittes ]
+  * [45e4e41] Website: Achieve "XHTML 1.0 Strict" compliance; Improve index page; Fix HTML stuff; Cosmetics.
+  * [9194463] Website/Configuration: Add link to "daemon section" in order to stop the daemon more conveniently.
+
+  [ Stephan Sürken ]
+  * [91c2485] package search: Support (two) different ouput formats for search, and move version precheck to package.
+  * [d846a0a] repository_detail.html: Fix for arch+suite model update, and w3c fixes.
+  * [fb1132d] debian/mini-buildd.templates: Change default path for home to /var/lib/mini-buildd.
+  * [9d39e54] builder.py: Don't add --verbose to sbuild on builder DEBUG.
+  * [83985c0] mini-buildd: Remove "package" from --debug description as it's mot impl.
+  * [3f6abba] Packager: Only use status done false/true.
+  * [8500178] packager.py: Remove forgotten obsoleted call.
+  * [a8a59d9] models/daemon.py: Update default gpg template to RSA/4096.
+  * [35a4d00] misc.py: Fix raw/unicode issues for subprocess call()s.
+  * [90d9ea2] Use own fstab for schroot (fixes builds when home is not configured under /home)
+  * [1421fb0] misc.py: Fix debug logger syslog for unicode setup.
+  * [5ee4c37] gnupg.py: Always use UTF-8, no matter what the locale says.
+  * [484e50f] misc.py: call(): Protect/dont fail for human-readable output logging (may fail as we cannot be sure to really have utf-8 encoding).
+  * [cd647ea] .pylintrc: Bent pylint once again, a little bit...
+  * [a8dd903] gnupg.py: Add umlaut name test, and do two more conversions from assumed UTF-8.
+  * [4ca437f] models/repository.py: Fix another wrong encode() after unicode update.
+  * [2f8b6e2] packager: Put all package info into Package, add proper status, put top-level logik to daemon.
+  * [fc94294] gnupg/misc: Avoid confusing error logs for verify() calls.
+  * [3645864] Add API support for Build and Package objects.
+  * [f3305d1] daemon.py: Avoid update_model() being run twice on startup.
+  * [68e5868] builder.py: Build: Initial update to proper status support.
+  * [e419955] models/base.py: Cosetic display chenge for last check time.
+  * [ed0ecf5] gnupg.py: Trim verify exception.
+  * [5d90e1c] packager.py: Package(): Renice status handling, finalize __unicode__() with better status.
+  * [1414fdb] packager.py: Some more doc fixes.
+  * [4cd8ef4] builder.py: Apply basic status mech like on Package.
+  * [8728e7d] templates/mini_buildd/index.html: Fix wrong guard, and rename "current" header to "Active".
+  * [24a00fe] misc.py: Pimp up API class to APIStatus (to encap status used in both, Package and Build).
+  * [05e9b86] builder.py: Build: Update to APIStatus.
+  * [81ec7d7] packager.py: Packeg: Update to APIStatus.
+  * [c088962] packager, models/repository: Let package_install only install one bres.
+  * [35c7095] doc/index.rst: Update status and quickstart.
+  * [3f9f8e9] debian/control: Fix: Depend on libjs-jquery (django-extensions need them as we use it, but it's only recommends there).
+  * [192e3b5] models/repository.py: Rm obsolete log.
+  * [5c59e52] changes.py: Clean up and fix pool check.
+  * [cd4a005] packager.py: Install archall arch first, and fail only on mandatory archs.
+  * [202d343] mbd-qa-check: orig check is now fully impl.
+  * [b62b015] debian/mini-buildd.config: Add a final note hinting to mini-buildd's local web page.
+
+ -- Stephan Sürken <absurd@debian.org>  Thu, 16 Aug 2012 19:14:40 +0200
 
 mini-buildd (0.9.6) experimental; urgency=low
 

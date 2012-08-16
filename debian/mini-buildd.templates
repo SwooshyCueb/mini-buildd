@@ -38,3 +38,14 @@ _Description: Extra options:
  However, the only really recommended option to give here is to
  increase/decrease the log level via '-v, --verbose' or '-q,
  --quiet', respectively.
+
+Template: mini-buildd/note
+Type: note
+Description: Package configuration complete
+ After the package installation is complete, visit the new home
+ of your local mini-build instance. Unless you changed the
+ defaults, this should be reachable via:
+ .
+ http://localhost:8066
+ .
+ A good starting point is the online manual's Quickstart.

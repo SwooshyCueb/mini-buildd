@@ -226,22 +226,18 @@ class Changes(debian.deb822.Changes):
         Build buildrequest files for all architectures.
         """
 
-        # Extra check if all files from the dsc (f.e., uploads without orig.tar.gz)
+        # Extra check on all files from the dsc: Check md5 against possible pool files, add missing from pool (orig.tar.gz).
         files_from_pool = []
         dsc_file = os.path.join(os.path.dirname(self._file_path), "{p}_{v}.dsc".format(p=self["Source"], v=self["Version"]))
         dsc = debian.deb822.Dsc(file(dsc_file))
         for f in dsc["Files"]:
-            if not f["name"] in self.get_files(key="name"):
-                added = False
-                for p in glob.glob(os.path.join(repository.mbd_get_path(), "pool", "*", "*", self["Source"], f["name"])):
-                    if f["md5sum"] == mini_buildd.misc.md5_of_file(p):
+            for p in glob.glob(os.path.join(repository.mbd_get_path(), "pool", "*", "*", self["Source"], f["name"])):
+                if f["md5sum"] == mini_buildd.misc.md5_of_file(p):
+                    if not f["name"] in self.get_files(key="name"):
                         files_from_pool.append(p)
-                        added = True
                         LOG.info("Buildrequest: File added from pool: {f}".format(f=p))
-                    else:
-                        raise Exception("MD5 mismatch in uploaded dsc vs. pool: {f}".format(f=f["name"]))
-                if not added:
-                    raise Exception("File needed to build neither in upload nor pool (try '-sa'): {f}".format(f=f["name"]))
+                else:
+                    raise Exception("MD5 mismatch in uploaded dsc vs. pool: {f}".format(f=f["name"]))
 
         breq_dict = {}
         for ao in dist.architectureoption_set.all():

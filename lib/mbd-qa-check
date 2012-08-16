@@ -37,48 +37,6 @@ fi
 MBD_TMP_SSH="ssh -o StrictHostKeyChecking=no -p ${mbd_sshport}"
 MBD_TMP_SCP="scp -o StrictHostKeyChecking=no -P ${mbd_sshport}"
 
-# Check funtions must be named mbdQACheck<CHECKNAME>.
-#
-# Pre-conditions:
-#  - Variables MBD_TMP_CF[A], MBD_TMP_DIR, MBD_TMP_ARCH.
-#  - All variables produced by mbdParseCF (on MBD_TMP_CFA).
-# Output:
-#  - All output (stdout or stderr) goes to the respective test's log file.
-# Retval:
-#  Check functions must deliver 0 (fine), 1 (warn) or 2 (fail) return status.
-#  Note that all checks are run "set +e".
-
-# Check that no conflicting orig tarball is uploaded
-mbdQACheckOrig()
-{
-	local retval=0
-	local info="Orig tarball: ${mbdParseCF_orig_tarball}"
-
-	local dist
-	if [ -e "${mbdParseCF_orig_tarball}" ]; then
-		# Always check normal and experimental dist
-		local dist
-		for dist in $(mbdExpandDists "${mbdParseCF_dist}"); do
-			local repOrig="${MBD_HOME}/rep/${dist}/${mbdParseCF_orig_tarball}"
-			if [ -e "${repOrig}" ]; then
-				if cmp "${mbdParseCF_orig_tarball}" "${repOrig}"; then
-					echo "W: ${info}: Already uploaded to ${dist}."
-					retval=1
-				else
-					echo "E: ${info}: Re-upload with a different file in ${dist} (uploader should be punished hard)."
-					retval=2
-					break
-				fi
-			else
-				echo "I: Upload with NEW orig tarball for ${dist}: ${mbdParseCF_orig_tarball}."
-			fi
-		done
-	else
-		echo "I: Upload without orig tarball: ${mbdParseCF_orig_tarball}."
-	fi
-	return ${retval}
-}
-
 mbdQACheckBackports()
 {
 	local retval=0

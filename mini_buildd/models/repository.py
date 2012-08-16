@@ -100,7 +100,6 @@ class SuiteOption(mini_buildd.models.base.Model):
         if self.migrates_to and self.migrates_to.uploadable:
             raise django.core.exceptions.ValidationError("You may not migrate to an uploadable suite.")
 
-        LOG.info(self.migrates_to)
         super(SuiteOption, self).clean(*args, **kwargs)
 
     def mbd_get_distribution_string(self, repository, distribution):

@@ -96,11 +96,26 @@ class Package(mini_buildd.misc.APIStatus):
 
     def install(self):
         """
-        .. todo:: Ignore optional arch failures.
+        Install package to repository.
+
+        This may throw on error, and if so, no changes should be
+        done to the repo.
         """
-        if self.failed:
-            raise Exception("{p}: {n} mandatory architecture(s) failed".format(p=self.pid, n=len(self.failed)))
-        for _arch, bres in self.success.items():
+        archall = [a.architecture.name for a in self.distribution.architectureoption_set.all() if a.build_architecture_all]
+        archman = [a.architecture.name for a in self.distribution.architectureoption_set.all() if not a.optional]
+        LOG.debug("Found archall={a}".format(a=archall))
+        LOG.debug("Found archman={a}".format(a=archman))
+
+        mandatory_fails = [arch for arch in self.failed.keys() if arch in archman]
+        if mandatory_fails:
+            raise Exception("{n} mandatory architecture(s) failed: {a}".format(n=len(mandatory_fails), a=" ".join(mandatory_fails)))
+
+        # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
+        for bres in [s for a, s in self.success.items() if a in archall]:
+            self.repository.mbd_package_install(bres)
+
+        # Second, install all other archs
+        for bres in [s for a, s in self.success.items() if not a in archall]:
             self.repository.mbd_package_install(bres)
 
     def archive(self):

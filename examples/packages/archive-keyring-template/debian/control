@@ -2,10 +2,10 @@ Source: %ID%-archive-keyring
 Section: misc
 Priority: optional
 Maintainer: %MAINT%
-Standards-Version: 3.8.0
+Standards-Version: 3.9.1
 
 Package: %ID%-archive-keyring
 Architecture: all
 Depends: gnupg, apt
 Description: mini-buildd archive keys for %ID%
- mini-buildd archive keys for %ID%.
+ Automatic archive keys for mini-buildd instance id %ID%.

@@ -398,17 +398,11 @@ Example:
             env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
 
             version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
-            mini_buildd.misc.call(["debchange",
-                                   "--create",
-                                   "--package={p}".format(p=package_name),
-                                   "--newversion={v}".format(v=version),
-                                   "Archive key automated build"],
-                                  cwd=p,
-                                  env=env)
-
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
                     mini_buildd.misc.call(["debchange",
+                                           "--create",
+                                           "--package={p}".format(p=package_name),
                                            "--newversion={v}{m}".format(v=version, m=self.layout.mbd_get_default_version(self, d, s)),
                                            "--force-distribution",
                                            "--force-bad-version",
@@ -419,6 +413,8 @@ Example:
                     mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
                                           cwd=p,
                                           env=env)
+                    # Remove changelog for next package build
+                    os.remove(os.path.join(p, "debian", "changelog"))
 
             for c in glob.glob(os.path.join(t, "*.changes")):
                 mini_buildd.changes.Changes(c).upload(hopo)

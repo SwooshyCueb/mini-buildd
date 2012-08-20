@@ -1,5 +1,31 @@
-FIXME.
+Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Maintainer: Stephan Sürken <absurd@debian.org>
+Source: http://ftp.debian.org/debian/pool/main/m/mini-buildd/
+Comment:
+ Inspired by the debian-edu keyring package. This sources from a general
+ template to generate keyring packages under
+ .
+ /usr/share/doc/mini-buildd/examples/packages/archive-keyring-template/
+ .
+ when mini-buildd is installed.
 
-(c) copyright mini-buildd maintainers.
-
-GPL.
+Files: *
+Copyright: © 2012- Stephan Sürken <absurd@debian.org>
+License: GPL-2+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 2 of the License, or (at
+ your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful, but
+ WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ General Public License for more details.
+ .
+ You should have received a copy of the GNU General Public License
+ along with this program; if not, write to the Free Software
+ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
+ 02110-1301, USA.
+ .
+ On Debian systems, the complete text of the GNU General Public
+ License can be found in '/usr/share/common-licenses/GPL-2' file.

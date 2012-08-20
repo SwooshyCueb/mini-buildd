@@ -37,9 +37,9 @@ class Changes(debian.deb822.Changes):
 
     def __unicode__(self):
         if self.is_buildrequest():
-            return "Buildrequest from '{h}': {i}".format(h=self.get_or_empty("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
+            return "Buildrequest from '{h}': {i}".format(h=self.get("Upload-Result-To", "n/a"), i=self.get_pkg_id(with_arch=True))
         elif self.is_buildresult():
-            return "Buildresult from '{h}': {i}".format(h=self.get_or_empty("Built-By"), i=self.get_pkg_id(with_arch=True))
+            return "Buildresult from '{h}': {i}".format(h=self.get("Built-By", "n/a"), i=self.get_pkg_id(with_arch=True))
         else:
             return "User upload: {i}".format(i=self.get_pkg_id())
 
@@ -71,12 +71,6 @@ class Changes(debian.deb822.Changes):
 
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
-
-    def get_or_empty(self, key):
-        try:
-            return self[key]
-        except:
-            return ""
 
     def get_repository(self):
         # Check and parse changes distribution string

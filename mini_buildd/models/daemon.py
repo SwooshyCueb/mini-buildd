@@ -222,10 +222,12 @@ incoming = /incoming
             for m in repository.notify.all():
                 add_to(m.address)
             if changes:
-                if repository.notify_maintainer:
-                    add_to(email.utils.parseaddr(changes.get_or_empty("Maintainer"))[1])
-                if repository.notify_changed_by:
-                    add_to(email.utils.parseaddr(changes.get_or_empty("Changed-By"))[1])
+                maintainer = changes.get("Maintainer")
+                if repository.notify_maintainer and maintainer:
+                    add_to(email.utils.parseaddr(maintainer)[1])
+                changed_by = changes.get("Changed-By")
+                if repository.notify_changed_by and changed_by:
+                    add_to(email.utils.parseaddr(changed_by)[1])
 
         if m_to:
             try:

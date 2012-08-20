@@ -56,7 +56,11 @@ class SuiteOption(mini_buildd.models.base.Model):
 
     experimental = django.db.models.BooleanField(
         default=False,
-        help_text="Whether this suite is experimental; must be uploadable and must not migrate.")
+        help_text="""
+Experimental suites must be uploadable and must not
+migrate. Also, the packager treats failing extra QA checks (like
+lintian) as non-lethal, and will install anyway.
+""")
 
     migrates_to = django.db.models.ForeignKey(
         "self", blank=True, null=True,
@@ -218,7 +222,11 @@ class Distribution(mini_buildd.models.base.Model):
         (LINTIAN_RUN_ONLY, "Run lintian"),
         (LINTIAN_FAIL_ON_ERROR, "Run lintian and fail on errors"),
         (LINTIAN_FAIL_ON_WARNING, "Run lintian and fail on warnings"))
-    lintian_mode = django.db.models.IntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR)
+    lintian_mode = django.db.models.IntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR,
+                                                 help_text="""\
+Control whether to do lintian checks (via sbuild), and if they
+should be prevent package installation (for non-experimental suites).
+""")
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
     # piuparts not used atm; placeholder for later

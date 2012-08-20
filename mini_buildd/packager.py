@@ -82,11 +82,16 @@ class Package(mini_buildd.misc.APIStatus):
         remotes_keyring.verify(bres.file_path)
 
         arch = bres["Architecture"]
-        status = bres["Sbuild-Status"]
-        retval = int(bres["Sbuildretval"])
-        LOG.info("{p}: Got build result for '{a}': {r} ({s})".format(p=self.pid, a=arch, r=retval, s=status))
 
-        if retval == 0:
+        # Retval and status must be the same with sbuild in mode user, so status is not really needed
+        # status may also be none in case some non-sbuild build error occured
+        retval = int(bres["Sbuildretval"])
+        status = bres.get("Sbuild-Status")
+        lintian = bres.get("Sbuild-Lintian")
+
+        LOG.info("{p}: Got build result for '{a}': {r}={s}, lintian={l}".format(p=self.pid, a=arch, r=retval, s=status, l=lintian))
+
+        if retval == 0 and (lintian == "pass" or self.suite.experimental or self.distribution.lintian_mode < self.distribution.LINTIAN_FAIL_ON_ERROR):
             self.success[arch] = bres
         else:
             self.failed[arch] = bres

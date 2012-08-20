@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import codecs
 import tempfile
 import time
 import shutil
@@ -376,9 +377,9 @@ Example:
                 for f in files:
                     old_file = os.path.join(root, f)
                     new_file = old_file + ".new"
-                    open(new_file, "w").write(
+                    codecs.open(new_file, "w", encoding="UTF-8").write(
                         mini_buildd.misc.subst_placeholders(
-                            open(old_file, "r").read(),
+                            codecs.open(old_file, "r", encoding="UTF-8").read(),
                             {"ID": identity,
                              "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
                     os.rename(new_file, old_file)

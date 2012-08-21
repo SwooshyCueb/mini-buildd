@@ -133,7 +133,7 @@
 																<a id="cancel_removal_{{ identifier }}" class="button" title="No, keep package!" href="#">no</a>
 															</span>
 															{% if properties.migrates_to %}
-																<a id="propagate_before_confirmation_{{ identifier }}" class="button-propagate" title="Propagate packageto: {{ properties.migrates_to }}" href="#">propagate</a>
+																<a id="propagate_before_confirmation_{{ identifier }}" class="button-propagate" title="Propagate package to: {{ properties.migrates_to }}" href="#">propagate</a>
 																<span id="propagate_confirmation_dialog_{{ identifier }}" class="propagation-confirmation">Are you sure you want to propagate?
 																	<a class="button" title="Yes, propagate package!" href="/mini_buildd/repositories/?action=propagate&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}&amp;from_distribution={{ distribution|urlencode }}&amp;to_distribution={{ properties.migrates_to|urlencode }}">yes</a>
 																	<a id="cancel_propagation_{{ identifier }}" class="button" title="No, do not propagate!" href="#">no</a>

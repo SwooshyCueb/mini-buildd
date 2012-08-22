@@ -133,15 +133,34 @@ class Package(mini_buildd.misc.APIStatus):
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
     def notify(self):
-        results = ""
-        for arch, bres in self.failed.items() + self.success.items():
-            results += "{s}({a}): {b}\n".format(
-                s=bres["Sbuild-Status"],
+        def header(title, underline="-"):
+            return "{t}:\n{u}\n".format(t=title, u=underline * (1 + len(title)))
+
+        def bres_result(arch, bres):
+            return "{a} ({s}): {b}\n".format(
                 a=arch,
+                s=bres.bres_stat,
                 b=self.daemon.mbd_get_http_url() + "/log/" + bres.archive_dir + "/" + bres.buildlog_name)
 
+        results = header(self.__unicode__(), "=")
         results += "\n"
-        body = email.mime.text.MIMEText(results + self.changes.dump(), _charset="UTF-8")
+
+        if self.failed:
+            results += header("Failed builds")
+            for arch, bres in self.failed.items():
+                results += bres_result(arch, bres)
+            results += "\n"
+
+        if self.success:
+            results += header("Successful builds")
+            for arch, bres in self.success.items():
+                results += bres_result(arch, bres)
+            results += "\n"
+
+        results += header("Changes")
+        results += self.changes.dump()
+
+        body = email.mime.text.MIMEText(results, _charset="UTF-8")
 
         self.daemon.mbd_notify(
             self.__unicode__(),

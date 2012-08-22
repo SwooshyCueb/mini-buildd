@@ -44,6 +44,10 @@ class Changes(debian.deb822.Changes):
             return "User upload: {i}".format(i=self.get_pkg_id())
 
     @property
+    def bres_stat(self):
+        return "Build={b}, Lintian={l}".format(b=self.get("Sbuild-Status", "n/a"), l=self.get("Sbuild-Lintian", "n/a"))
+
+    @property
     def file_name(self):
         return self._file_name
 

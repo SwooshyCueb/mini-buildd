@@ -5,9 +5,13 @@
 
 # Debian package
 /mini_buildd.egg-info/
+/debian/tmp/*
 /debian/mini-buildd/*
-/debian/mini-buildd.*.debhelper
-/debian/mini-buildd.debhelper.log
-/debian/mini-buildd.substvars
+/debian/mini-buildd-common/*
+/debian/mini-buildd*.*.debhelper
+/debian/mini-buildd*.debhelper.log
+/debian/mini-buildd*.substvars
 /debian/files
+
+# Misc
 /mini_buildd/fixtures/local.*.json

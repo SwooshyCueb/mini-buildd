@@ -25,6 +25,16 @@ Depends: ${misc:Depends},
          schroot (>= 1.6.3), sbuild (>= 0.63.1),
          dpkg-dev, fakeroot, debhelper, cdbs, lintian, devscripts (>= 2.10.15)
 Suggests: lvm2
+Breaks: mini-buildd-rep (<< 1.0.0~), mini-buildd-bld (<< 1.0.0~)
+Replaces: mini-buildd-rep, mini-buildd-bld
 Description: Minimal Debian build daemon
  Mini-buildd is an easy-to-configure Debian autobuilder and
  repository.
+
+Package: mini-buildd-common
+Architecture: all
+Depends: ${misc:Depends}, mini-buildd (= ${binary:Version})
+Description: minimal Debian build daemon 0.8.x - common files (transitional dummy package)
+ This is a transitional dummy package for upgrading to
+ mini-buildd 1.0. It's now obsolete, and may be removed from the
+ system.

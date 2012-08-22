@@ -1,0 +1,15 @@
+mini-buildd (1.0.0~alpha.1) experimental; urgency=low
+
+  * An 0.8.x (mini-dinstall/flat/multipackage) repository cannot be (automatically)
+  migrated into a new 1.0 (reprepro/pool/migration one). If you have upgraded from
+  0.8.x, your complete "old" repository will still be accessible like before (you
+  can not build for it anymore, though).
+
+  It's recommendend to just keep the old repository (located in '$HOME/rep/*') as-is,
+  and use it as "Source" in your new (replacing) 1.0.0 setup (located in
+  '$HOME/repositories/*').
+
+  Advanced users or purists may think about manually migrating packages to the new
+  1.0 setup manually using reprepro at some point.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 22 Aug 2012 18:55:39 +0200

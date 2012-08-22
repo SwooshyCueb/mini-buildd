@@ -105,67 +105,46 @@ def run():
             LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
                      format(len(get().packages), get().incoming_queue.qsize()))
 
-            changes, changes_pid = None, None
+            changes = None
             changes = mini_buildd.changes.Changes(event)
-            changes_pid = changes.get_pkg_id()
 
             if changes.is_buildrequest():
+                # Build request: builder
 
                 def queue_buildrequest(event):
+                    "Queue in extra thread so we don't block here in case builder is busy."
                     get().build_queue.put(event)
                 mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
 
-            elif changes.is_buildresult():
-                if not changes_pid in get().packages:
-                    raise Exception("No active package for that build result.")
-
-                package = get().packages[changes_pid]
-                try:
-                    if package.add_buildresult(changes, remotes_keyring):
-                        package.install()
-                        package.set_status(package.INSTALLED)
-                        package.archive()
-                        package.notify()
-                        del get().packages[changes_pid]
-                        get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
-                except Exception as e:
-                    package.set_status(package.FAILED, unicode(e))
-                    package.archive()
-                    package.notify()
-                    del get().packages[changes_pid]
-                    get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
-
-            else:  # User upload
-                if changes_pid in get().packages:
-                    raise Exception("Internal error: Uploaded package already in packages list.")
-
-                package = mini_buildd.packager.Package(get().model, changes)
-                get().packages[changes_pid] = package
-                try:
-                    package.precheck(uploader_keyrings)
-                    package.set_status(package.BUILDING)
-                except Exception as e:
-                    package.set_status(package.REJECTED, unicode(e))
-                    package.archive()
-                    package.notify()
-                    del get().packages[changes_pid]
-                    get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+            else:
+                # User upload or build result: packager
+                mini_buildd.packager.run(
+                    get().model,
+                    changes,
+                    get().packages,
+                    get().last_packages,
+                    remotes_keyring,
+                    uploader_keyrings)
 
         except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Package failed", e)
+            mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
 
-            if changes and changes_pid:
-                subject = "DISCARD: {p}: {e}".format(p=changes_pid, e=e)
-                body = email.mime.text.MIMEText(changes.dump(), _charset="UTF-8")
-                changes.remove()
-            else:
+            # Try to notify
+            try:
                 subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
                 body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
-                os.remove(event)
-            LOG.warn(subject)
-            get().model.mbd_notify(subject, body)
+                get().model.mbd_notify(subject, body)
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
 
-            mini_buildd.setup.log_exception(LOG, "Package failed", e)
+            # Try to clean up
+            try:
+                if changes:
+                    changes.remove()
+                else:
+                    os.remove(event)
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Invalid changes cleanup failed", e)
 
         finally:
             get().incoming_queue.task_done()

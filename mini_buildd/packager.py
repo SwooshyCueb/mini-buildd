@@ -190,3 +190,41 @@ class LastPackage(mini_buildd.misc.API):
 
     def __unicode__(self):
         return self.identity
+
+
+def run(daemon, changes, packages, last_packages, remotes_keyring, uploader_keyrings):
+    if changes.is_buildresult():
+        if not changes.get_pkg_id() in packages:
+            raise Exception("No active package for that build result.")
+
+        package = packages[changes.get_pkg_id()]
+        try:
+            if package.add_buildresult(changes, remotes_keyring):
+                package.install()
+                package.set_status(package.INSTALLED)
+                package.archive()
+                package.notify()
+                del packages[changes.get_pkg_id()]
+                last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+        except Exception as e:
+            package.set_status(package.FAILED, unicode(e))
+            package.archive()
+            package.notify()
+            del packages[changes.get_pkg_id()]
+            last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+
+    else:  # User upload
+        if changes.get_pkg_id() in packages:
+            raise Exception("Internal error: Uploaded package already in packages list.")
+
+        package = mini_buildd.packager.Package(daemon, changes)
+        packages[changes.get_pkg_id()] = package
+        try:
+            package.precheck(uploader_keyrings)
+            package.set_status(package.BUILDING)
+        except Exception as e:
+            package.set_status(package.REJECTED, unicode(e))
+            package.archive()
+            package.notify()
+            del packages[changes.get_pkg_id()]
+            last_packages.appendleft(mini_buildd.packager.LastPackage(package))

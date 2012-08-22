@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import os
 import shutil
 import email.mime.text
 import email.utils
@@ -11,9 +12,7 @@ import mini_buildd.misc
 LOG = logging.getLogger(__name__)
 
 
-class Package(mini_buildd.misc.APIStatus):
-    __API__ = -1
-
+class Package(mini_buildd.misc.Status):
     FAILED = -2
     REJECTED = -1
     CHECKING = 0
@@ -167,3 +166,27 @@ class Package(mini_buildd.misc.APIStatus):
             body,
             self.repository,
             self.changes)
+
+
+class LastPackage(mini_buildd.misc.API):
+    __API__ = -100
+
+    def __init__(self, package):
+        super(LastPackage, self).__init__()
+
+        self.identity = package.__unicode__()
+
+        self.success = {}
+        for arch, bres in package.success.items():
+            self.success[arch] = {
+                "log": os.path.join(bres.archive_dir, bres.buildlog_name),
+                "stat": bres.bres_stat}
+
+        self.failed = {}
+        for arch, bres in package.failed.items():
+            self.failed[arch] = {
+                "log": os.path.join(bres.archive_dir, bres.buildlog_name),
+                "stat": bres.bres_stat}
+
+    def __unicode__(self):
+        return self.identity

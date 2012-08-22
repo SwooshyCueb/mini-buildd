@@ -110,10 +110,10 @@ $(document).ready(
 								<li>{{ p }}<br />
 									Build results:
 									{% for arch, bres in p.success.items %}
-										<a href="../log/{{ bres.archive_dir }}/{{ bres.buildlog_name }}">+{{ arch }}</a> ({{ bres.bres_stat }})
+										<a href="../log/{{ bres.log }}">+{{ arch }}</a> ({{ bres.stat }})
 									{% endfor %}
 									{% for arch, bres in p.failed.items %}
-										<a href="../log/{{ bres.archive_dir }}/{{ bres.buildlog_name }}">-{{ arch }}</a> ({{ bres.bres_stat }})
+										<a href="../log/{{ bres.log }}">-{{ arch }}</a> ({{ bres.stat }})
 									{% endfor %}
 								</li>
 							{% endfor %}

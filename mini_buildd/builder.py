@@ -15,9 +15,7 @@ import mini_buildd.changes
 LOG = logging.getLogger(__name__)
 
 
-class Build(mini_buildd.misc.APIStatus):
-    __API__ = -1
-
+class Build(mini_buildd.misc.Status):
     FAILED = -1
     CHECKING = 0
     BUILDING = 1
@@ -190,6 +188,17 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         self._breq.remove()
 
 
+class LastBuild(mini_buildd.misc.API):
+    __API__ = -100
+
+    def __init__(self, build):
+        super(LastBuild, self).__init__()
+        self.identity = build.__unicode__()
+
+    def __unicode__(self):
+        return self.identity
+
+
 def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq):
     try:
         # Always authorize the file first
@@ -209,9 +218,9 @@ def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq)
         try:
             b.upload()
             b.set_status(b.UPLOADED)
-            last_builds.appendleft(b)
             del builds[b.key]
             b.clean()
+            last_builds.appendleft(LastBuild(b))
         except Exception as e:
             b.set_status(b.UPLOADING, unicode(e))
     except Exception as e:

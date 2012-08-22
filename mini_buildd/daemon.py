@@ -126,14 +126,14 @@ def run():
                         package.set_status(package.INSTALLED)
                         package.archive()
                         package.notify()
-                        get().last_packages.appendleft(package)
                         del get().packages[changes_pid]
+                        get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
                 except Exception as e:
                     package.set_status(package.FAILED, unicode(e))
                     package.archive()
                     package.notify()
-                    get().last_packages.appendleft(package)
                     del get().packages[changes_pid]
+                    get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
 
             else:  # User upload
                 if changes_pid in get().packages:
@@ -148,8 +148,8 @@ def run():
                     package.set_status(package.REJECTED, unicode(e))
                     package.archive()
                     package.notify()
-                    get().last_packages.appendleft(package)
                     del get().packages[changes_pid]
+                    get().last_packages.appendleft(mini_buildd.packager.LastPackage(package))
 
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Package failed", e)

@@ -1,3 +1,19 @@
+mini-buildd (1.0.0~alpha.1) experimental; urgency=low
+
+  * [eb5204c] ftpd.py/doc: rm load options todo: not really a todo.
+  * [e4ed62d] keyring packages: Open template files with codecs assuming UTF-8.
+  * [fec92bd] packager.py: Properly implement && document Lintian QA check.
+  * [0f6dd8c] changes.py: Get rid of extra get_or_empty() method (use dict-builtin get()).
+  * [0fe59ee] keyring package: Fix all lintian errors and warnings.
+  * [7049b02] templates/mini_buildd/package_search_results.html: Text typo fix.
+  * [33e82a4] packager, changes: Add bres_stat property, and renice notify email body.
+  * [6a2d198] Bugfix last_package|builder persistence: Pickle extra classes with string values only.
+  * [7e05765] daemon,packager: Put top-level packager logic to packager.run(), and clean up daemon invalid changes error handling.
+  * [97df22f] lib/*: Remove all ye-olde 0.8.x script cruft from package.
+  * [30f0e12] debian/*: Provide upgrade support from 0.8.x packages.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 22 Aug 2012 20:37:27 +0200
+
 mini-buildd (1.0.0~alpha.0) experimental; urgency=low
 
   [ Stephan Sürken ]

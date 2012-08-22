@@ -1,2 +1,1 @@
-lib/mbd-common.sh lib/mbd-libopt.sh lib/mbd-cruft lib/mbd-qa-check lib/mbd-preinstall lib/mbd-update-bld lib/chroots-update.d/ usr/share/mini-buildd
 debian/mini-buildd-sudoers etc/sudoers.d

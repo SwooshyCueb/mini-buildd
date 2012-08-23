@@ -447,13 +447,8 @@ Example:
     def mbd_get_path(self):
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
-    def mbd_get_origin(self):
-        ".. todo:: add daemon id "
-        return "mini-buildd " + self.identity
-
-    def mbd_get_desc(self, distribution, suite_option):
-        ".. todo:: add daemon id, improve"
-        return "{d} {s} packages for {identity}".format(identity=self.identity, d=distribution.base_source.codename, s=suite_option.suite.name)
+    def mbd_get_description(self, distribution, suite_option):
+        return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.codename, i=self.identity)
 
     def mbd_get_apt_line(self, distribution, suite_option):
         return "deb {u}/{r}/{i}/ {d} {c}".format(
@@ -540,10 +535,10 @@ ButAutomaticUpgrades: {bau}
 DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
 """.format(dist=s.mbd_get_distribution_string(self, d),
-           origin=self.mbd_get_origin(),
+           origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
            components=" ".join(d.mbd_get_components()),
            architectures=" ".join([x.name for x in d.architectures.all()]),
-           desc=self.mbd_get_desc(d, s),
+           desc=self.mbd_get_description(d, s),
            na="yes" if s.not_automatic else "no",
            bau="yes" if s.but_automatic_upgrades else "no")
 

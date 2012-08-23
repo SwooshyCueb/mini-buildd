@@ -192,6 +192,9 @@ prevent original package maintainers to be spammed.
     def mbd_get_http_url(self):
         return "http://{h}".format(h=self.mbd_get_http_hopo().string)
 
+    def mbd_get_archive_origin(self):
+        return "Mini-Buildd archive {i} on {h}".format(i=self.identity, h=self.hostname)
+
     def mbd_get_pub_key(self):
         return self._mbd_gnupg.get_pub_key()
 

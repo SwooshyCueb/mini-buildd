@@ -27,8 +27,8 @@ def repository_dist(repository, dist, suite):
 
 
 @register.simple_tag
-def repository_desc(repository, dist, suite):
-    return repository.mbd_get_desc(dist, suite)
+def repository_desc(repository, distribution, suite_option):
+    return repository.mbd_get_description(distribution, suite_option)
 
 
 @register.simple_tag

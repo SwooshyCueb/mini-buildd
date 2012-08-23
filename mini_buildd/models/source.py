@@ -229,3 +229,6 @@ class PrioritySource(mini_buildd.models.base.Model):
 
     def mbd_id(self):
         return "{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
+
+    def mbd_get_apt_preferences(self):
+        return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(pin=self.source.mbd_get_apt_pin(), prio=self.priority)

@@ -307,6 +307,13 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             res += e.source.mbd_get_apt_line() + "\n"
         return res
 
+    def mbd_get_apt_preferences(self):
+        result = ""
+        for e in self.extra_sources.all():
+            result += e.mbd_get_apt_preferences()
+            result += "\n"
+        return result
+
 
 class Repository(mini_buildd.models.base.StatusModel):
     identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
@@ -480,12 +487,6 @@ Example:
         res += "# Mini-Buildd: {d}\n".format(d=dist)
         res += self.mbd_get_apt_line(d, s)
         return res
-
-# pylint: disable=R0201
-    def mbd_get_apt_preferences(self):
-        ".. todo:: STUB"
-        return ""
-# pylint: enable=R0201
 
     def mbd_get_apt_keys(self, dist):
         d, _s = self._mbd_find_dist(dist)

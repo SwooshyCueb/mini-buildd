@@ -248,7 +248,7 @@ class Changes(debian.deb822.Changes):
 
                 # Generate sources.list et.al. to be used
                 open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
-                open(os.path.join(path, "apt_preferences"), 'w').write(repository.mbd_get_apt_preferences())
+                open(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences())
                 open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))

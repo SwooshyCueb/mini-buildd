@@ -66,15 +66,16 @@
 					{% for s in object.layout.suiteoption_set.all %}
 						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% repository_desc object d s %}</span></h2>
 						<ul>
+							<li>Apt source line: <pre class="pre-inline">{% distribution_apt_line d object s %}</pre></li>
 							<li>Mandatory version part: <pre class="pre-inline">{% repository_mandatory_version object d s %}</pre></li>
-							<li>Apt source line: <pre class="pre-inline">{% repository_apt_line object d s %}</pre></li>
 							{% if s.suite.migrates_to %}
 								<li>Migrates to: <span class="emphasize-migrates-from">{{ s.suite.migrates_to.name }}</span></li>
 							{% endif %}
-							{% if s.suite.uploadable %}
+							{% if s.uploadable %}
 								<li>Uploadable.</li>
-							<li>Sources:<div class="pre-block"><pre>{% repository_sources object d s %}</pre></div></li>
-						{% endif %}
+								<li>Apt sources.list:<div class="pre-block"><pre>{% distribution_apt_sources_list d object s %}</pre></div></li>
+								<li>Apt preferences:<div class="pre-block"><pre>{% distribution_apt_preferences d object s %}</pre></div></li>
+							{% endif %}
 						</ul>
 					{% endfor %}
 				</div>

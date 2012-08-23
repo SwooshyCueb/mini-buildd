@@ -113,6 +113,16 @@ lintian) as non-lethal, and will install anyway.
             i=repository.identity,
             s=self.suite.name)
 
+    def mbd_get_apt_pin(self, repository, distribution):
+        return "release n={c}, o={o}".format(
+            c=self.mbd_get_distribution_string(repository, distribution),
+            o=self.mbd_get_daemon().model.mbd_get_archive_origin())
+
+    def mbd_get_apt_preferences(self, repository, distribution, prio=500):
+        return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(
+            pin=self.mbd_get_apt_pin(repository, distribution),
+            prio=prio)
+
 
 class SuiteOptionInline(django.contrib.admin.TabularInline):
     model = SuiteOption
@@ -299,19 +309,38 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
     def mbd_get_components(self):
         return [c.name for c in self.components.all()]
 
-    def mbd_get_apt_sources_list(self):
-        res = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
-        res += self.base_source.mbd_get_apt_line() + "\n\n"
-        for e in self.extra_sources.all():
-            res += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
-            res += e.source.mbd_get_apt_line() + "\n"
-        return res
+    def mbd_get_apt_line(self, repository, suite_option):
+        return "deb {u}/{r}/{i} {d} {c}".format(
+            u=self.mbd_get_daemon().model.mbd_get_http_url(),
+            r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
+            i=repository.identity, d=suite_option.mbd_get_distribution_string(repository, self), c=" ".join(self.mbd_get_components()))
 
-    def mbd_get_apt_preferences(self):
-        result = ""
+    def mbd_get_apt_sources_list(self, repository, suite_option):
+        result = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
+        result += self.base_source.mbd_get_apt_line() + "\n\n"
         for e in self.extra_sources.all():
-            result += e.mbd_get_apt_preferences()
+            result += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
+            result += e.source.mbd_get_apt_line() + "\n"
             result += "\n"
+
+        result += "# Mini-Buildd: Internal sources\n"
+        for s in repository.mbd_get_internal_suite_dependencies(suite_option):
+            result += self.mbd_get_apt_line(repository, s) + "\n"
+
+        result += "\n"
+        return result
+
+    def mbd_get_apt_preferences(self, repository, suite_option):
+        result = ""
+
+        # Get preferences for all extra (prioritized) sources
+        for e in self.extra_sources.all():
+            result += e.mbd_get_apt_preferences() + "\n"
+
+        # Get preferences for all internal sources
+        for s in repository.mbd_get_internal_suite_dependencies(suite_option):
+            result += s.mbd_get_apt_preferences(repository, self) + "\n"
+
         return result
 
 
@@ -457,12 +486,6 @@ Example:
     def mbd_get_description(self, distribution, suite_option):
         return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.codename, i=self.identity)
 
-    def mbd_get_apt_line(self, distribution, suite_option):
-        return "deb {u}/{r}/{i}/ {d} {c}".format(
-            u=self.mbd_get_daemon().model.mbd_get_http_url(),
-            r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=self.identity, d=suite_option.mbd_get_distribution_string(self, distribution), c=" ".join(distribution.mbd_get_components()))
-
     def _mbd_find_dist(self, dist):
         base, identity, suite = mini_buildd.misc.parse_distribution(dist)
         LOG.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
@@ -475,25 +498,31 @@ Example:
                             return d, s
         raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=dist))
 
-    def mbd_get_apt_sources_list(self, dist):
-        """
-        .. todo::
-
-        - get_apt_sources_list(): decide what other mini-buildd suites are to be included automatically
-        """
-        d, s = self._mbd_find_dist(dist)
-        res = d.mbd_get_apt_sources_list()
-        res += "\n"
-        res += "# Mini-Buildd: {d}\n".format(d=dist)
-        res += self.mbd_get_apt_line(d, s)
-        return res
-
     def mbd_get_apt_keys(self, dist):
         d, _s = self._mbd_find_dist(dist)
         result = self.mbd_get_daemon().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             for k in e.source.apt_keys.all():
                 result += k.key
+        return result
+
+    def mbd_get_internal_suite_dependencies(self, suite_option):
+        result = []
+
+        # Add ourselfs
+        result.append(suite_option)
+
+        if suite_option.experimental:
+            # Add all non-experimental suites
+            for s in self.layout.suiteoption_set.all().filter(experimental=False):
+                result.append(s)
+        else:
+            # Add all suites that we migrate to
+            s = suite_option.migrates_to
+            while s:
+                result.append(s)
+                s = s.migrates_to
+
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
@@ -507,16 +536,6 @@ Example:
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
-
-# pylint: disable=R0201
-    def mbd_get_sources(self, dist, _suite):
-        ".. todo:: STUB/WTF"
-        result = ""
-        result += "Base: " + dist.base_source + "\n"
-        for e in dist.extra_sources.all():
-            result += "Extra: " + e.__unicode__() + "\n"
-        return result
-# pylint: enable=R0201
 
     def _mbd_reprepro_config(self):
         result = ""

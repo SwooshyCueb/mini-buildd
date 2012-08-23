@@ -22,6 +22,21 @@ def admin_check_daemon_running(context):
 
 
 @register.simple_tag
+def distribution_apt_line(distribution, repository, suite_option):
+    return distribution.mbd_get_apt_line(repository, suite_option)
+
+
+@register.simple_tag
+def distribution_apt_sources_list(distribution, repository, suite_option):
+    return distribution.mbd_get_apt_sources_list(repository, suite_option)
+
+
+@register.simple_tag
+def distribution_apt_preferences(distribution, repository, suite_option):
+    return distribution.mbd_get_apt_preferences(repository, suite_option)
+
+
+@register.simple_tag
 def repository_dist(repository, dist, suite):
     return repository.mbd_get_dist(dist, suite)
 
@@ -29,16 +44,6 @@ def repository_dist(repository, dist, suite):
 @register.simple_tag
 def repository_desc(repository, distribution, suite_option):
     return repository.mbd_get_description(distribution, suite_option)
-
-
-@register.simple_tag
-def repository_apt_line(repository, dist, suite):
-    return repository.mbd_get_apt_line(dist, suite)
-
-
-@register.simple_tag
-def repository_sources(repository, dist, suite):
-    return repository.mbd_get_sources(dist, suite)
 
 
 @register.simple_tag

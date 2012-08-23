@@ -219,7 +219,7 @@ class Changes(debian.deb822.Changes):
             LOG.debug("Removing: '{f}'".format(f=fd["name"]))
             os.remove(f)
 
-    def gen_buildrequests(self, daemon, repository, dist):
+    def gen_buildrequests(self, daemon, repository, dist, suite_option):
         """
         Build buildrequest files for all architectures.
         """
@@ -247,8 +247,8 @@ class Changes(debian.deb822.Changes):
                     breq[v] = self[v]
 
                 # Generate sources.list et.al. to be used
-                open(os.path.join(path, "apt_sources.list"), 'w').write(repository.mbd_get_apt_sources_list(self["Distribution"]))
-                open(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences())
+                open(os.path.join(path, "apt_sources.list"), 'w').write(dist.mbd_get_apt_sources_list(repository, suite_option))
+                open(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences(repository, suite_option))
                 open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))

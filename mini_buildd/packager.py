@@ -68,7 +68,7 @@ class Package(mini_buildd.misc.Status):
             raise Exception("Version already in repository")
 
         # Generate build requests
-        self.requests = self.changes.gen_buildrequests(self.daemon, self.repository, self.distribution)
+        self.requests = self.changes.gen_buildrequests(self.daemon, self.repository, self.distribution, self.suite)
 
         # Upload buildrequests
         for _key, breq in self.requests.items():

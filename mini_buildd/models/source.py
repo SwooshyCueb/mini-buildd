@@ -144,7 +144,7 @@ class Source(mini_buildd.models.base.StatusModel):
         return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)
 
     def mbd_get_apt_pin(self):
-        return "release n=" + self.codename + ", o=" + self.origin
+        return "release n={c}, o={o}".format(c=self.codename, o=self.origin)
 
     def mbd_prepare(self, request):
         self.archives = []

@@ -91,9 +91,6 @@ $apt_update = 0;
 # Allow unauthenticated apt toggle
 $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
-# Builder identity
-$pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
-
 {custom_snippet}
 
 # don't remove this, Perl needs it:
@@ -116,7 +113,6 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
 
         - Upload "internal error" result on exception to requesting mini-buildd.
         - DEB_BUILD_OPTIONS
-        - [.sbuildrc] gpg setup
         - schroot bug: chroot-setup-command: uses sudo workaround
         - sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
         """
@@ -137,6 +133,7 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
                       "--chroot-setup-command=sudo apt-get update",
                       "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=self._build_dir),
                       "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
+                      "--keyid={k}".format(k=self._gnupg.get_first_sec_key_long_id()),
                       "--nolog", "--log-external-command-output", "--log-external-command-error"]
 
         if "Arch-All" in self._breq:
@@ -158,7 +155,8 @@ $pgp_options = ['-us', '-k Mini-Buildd Automatic Signing Key'];
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
                                      cwd=self._build_dir,
-                                     env=mini_buildd.misc.taint_env({"HOME": self._build_dir}),
+                                     env=mini_buildd.misc.taint_env({"HOME": self._build_dir,
+                                                                     "GNUPGHOME": os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg")}),
                                      stdout=l, stderr=subprocess.STDOUT)
 
         # Add build results to build request object

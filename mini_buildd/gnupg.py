@@ -40,6 +40,17 @@ class BaseGnuPG(object):
             res.append(l.split(":"))
         return res
 
+    def sec_keys_info(self):
+        res = []
+        for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-secret-keys", "--with-fingerprint", "--with-colons"]).splitlines():
+            res.append(l.split(":"))
+        return res
+
+    def get_first_sec_key_long_id(self):
+        for key in self.sec_keys_info():
+            if key[0] == "sec":
+                return key[4]
+
     def recv_key(self, keyserver, identity):
         return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", identity])
 

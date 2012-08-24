@@ -51,14 +51,15 @@ class Build(mini_buildd.misc.Status):
 
     def __unicode__(self):
         date_format = "%Y-%b-%d %H:%M:%S"
-        return "[{h}] {k} ({c}): {s}: Started {start} ({took} seconds), uploaded {uploaded}.".format(
+        return "{s}: [{h}] {k} ({c}): Started {start} ({took} seconds), uploaded {uploaded}: {desc}".format(
+            s=self.status,
             h=self._breq["Upload-Result-To"],
             k=self.key,
             c=self._chroot,
-            s=self.status,
             start=self.started.strftime(date_format),
             took=round(mini_buildd.misc.timedelta_total_seconds(self.built - self.started), 1) if self.built else "n/a",
-            uploaded=self.uploaded.strftime(date_format) if self.uploaded else "n/a")
+            uploaded=self.uploaded.strftime(date_format) if self.uploaded else "n/a",
+            desc=self.status_desc)
 
     @property
     def key(self):

@@ -47,11 +47,12 @@ class Package(mini_buildd.misc.Status):
                 result.append("{p}{a}".format(p=p, a=key))
             return result
 
-        return "{p} ({d}): {s} ({a}).".format(
+        return "{s}: {p} ({d}): {a}: {desc}".format(
+            s=self.status,
             p=self.pid,
             d=self.changes["Distribution"],
-            s=self.status,
-            a=" ".join(arch_status()))
+            a=" ".join(arch_status()),
+            desc=self.status_desc)
 
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes

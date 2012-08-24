@@ -43,19 +43,17 @@ class Status(object):
     Inheriting classes must give a stati dict to init.
     """
     def __init__(self, stati):
-        self.__status__, self.__status_desc__, self.__stati__ = 0, "", stati
+        self.__status__, self.__status_desc__, self.__stati__ = 0, "n/a", stati
 
     @property
     def status(self):
-        """
-        Human readable status string.
-        """
-        if self.__status_desc__:
-            return "{s}: {d}".format(s=self.__stati__[self.__status__], d=self.__status_desc__)
-        else:
-            return self.__stati__[self.__status__]
+        return self.__stati__[self.__status__]
 
-    def set_status(self, status, desc=""):
+    @property
+    def status_desc(self):
+        return self.__status_desc__
+
+    def set_status(self, status, desc="n/a"):
         """
         Set status with optional description.
         """

@@ -317,10 +317,10 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     def mbd_get_apt_sources_list(self, repository, suite_option):
         result = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())
-        result += self.base_source.mbd_get_apt_line() + "\n\n"
+        result += self.base_source.mbd_get_apt_line(self) + "\n\n"
         for e in self.extra_sources.all():
             result += "# Extra: {p}\n".format(p=e.source.mbd_get_apt_pin())
-            result += e.source.mbd_get_apt_line() + "\n"
+            result += e.source.mbd_get_apt_line(self) + "\n"
             result += "\n"
 
         result += "# Mini-Buildd: Internal sources\n"

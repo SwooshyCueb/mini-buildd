@@ -135,12 +135,10 @@ class Source(mini_buildd.models.base.StatusModel):
         else:
             raise Exception("No (pinging) archive found. Please add appr. archive, or check network setup.")
 
-    def mbd_get_apt_line(self):
-        ".. todo:: Merge components as configured per repo."
+    def mbd_get_apt_line(self, distribution):
         m = self.mbd_get_archive()
-        components = ""
-        for c in self.components.all():
-            components += c.name + " "
+        allowed_components = [c.name for c in distribution.components.all()]
+        components = " ".join([c.name for c in self.components.all() if c.name in allowed_components])
         return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)
 
     def mbd_get_apt_pin(self):

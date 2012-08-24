@@ -109,12 +109,15 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
     def build(self):
         """
-        .. todo:: Builder
+        .. note:: SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
 
-        - Upload "internal error" result on exception to requesting mini-buildd.
-        - DEB_BUILD_OPTIONS
-        - schroot bug: chroot-setup-command: uses sudo workaround
-        - sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
+            Includes all 'sudo' prefix for chroot-setup-commands below.
+
+            .. seealso:: :py:class:`~mini_buildd.models.chroot.Chroot`
+
+        .. note:: sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
+
+        .. todo:: "internal error" build results.
         """
         self._breq.untar(path=self._build_dir)
         self._generate_sbuildrc()
@@ -132,6 +135,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                       "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=self._build_dir),
                       "--chroot-setup-command=sudo apt-get update",
                       "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=self._build_dir),
+                      "--chroot-setup-command=sudo rm -v -f /etc/sudoers",
                       "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
                       "--keyid={k}".format(k=self._gnupg.get_first_sec_key_long_id()),
                       "--nolog", "--log-external-command-output", "--log-external-command-error"]

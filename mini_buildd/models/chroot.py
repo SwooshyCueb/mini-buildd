@@ -94,11 +94,13 @@ go to the default mapping.
 
     def mbd_prepare(self, request):
         """
-        .. todo:: debootstrap
+        .. note:: SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
 
-          - debootstrap rollback fix.
-          - SUDOERS WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
-            - '--include=sudo' and all handling of 'sudoers_workaround_file'
+            Includes '--include=sudo' and all handling of 'sudoers_workaround_file' below.
+
+            .. seealso:: :py:class:`~mini_buildd.builder.Build`
+
+        .. todo:: debootstrap rollback fix.
         """
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))
 

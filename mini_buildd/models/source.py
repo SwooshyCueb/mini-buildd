@@ -88,6 +88,20 @@ class Component(mini_buildd.models.base.Model):
         return self.name
 
 
+def cmp_components(component0, component1):
+    """
+    Get Debian components as string in a suitable order -- i.e.,
+    'main' should be first, the others in alphabetical order.
+
+    Basically only needed for reprepro's (broken?) default
+    component guessing, which uses the first given component in
+    the configuration.
+    """
+    if component0.name == "main":
+        return -1
+    return cmp(component0.name, component1.name)
+
+
 class Source(mini_buildd.models.base.StatusModel):
     # Identity
     origin = django.db.models.CharField(max_length=60, default="Debian",
@@ -136,10 +150,12 @@ class Source(mini_buildd.models.base.StatusModel):
             raise Exception("No (pinging) archive found. Please add appr. archive, or check network setup.")
 
     def mbd_get_apt_line(self, distribution):
-        m = self.mbd_get_archive()
         allowed_components = [c.name for c in distribution.components.all()]
-        components = " ".join([c.name for c in self.components.all() if c.name in allowed_components])
-        return "deb {u} {d} {C}".format(u=m.url, d=self.codename, C=components)
+        components = sorted([c for c in self.components.all() if c.name in allowed_components], cmp=cmp_components)
+        return "deb {u} {d} {c}".format(
+            u=self.mbd_get_archive().url,
+            d=self.codename,
+            c=" ".join([c.name for c in components]))
 
     def mbd_get_apt_pin(self):
         return "release n={c}, o={o}".format(c=self.codename, o=self.origin)

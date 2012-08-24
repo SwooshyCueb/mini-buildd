@@ -307,7 +307,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=" ".join(self.mbd_get_components()))
 
     def mbd_get_components(self):
-        return [c.name for c in self.components.all()]
+        return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]
 
     def mbd_get_apt_line(self, repository, suite_option):
         return "deb {u}/{r}/{i} {d} {c}".format(
@@ -627,6 +627,10 @@ DscIndices: Sources Release . .gz .bz2
             if d.base_source.codename in codenames:
                 raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
             codenames.append(d.base_source.codename)
+
+            # Check for mandatory component "main"
+            if not d.components.all().filter(name="main"):
+                raise django.core.exceptions.ValidationError("Mandatory component 'main' missing in: {d}".format(d=d))
 
         # Reprepro config
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))

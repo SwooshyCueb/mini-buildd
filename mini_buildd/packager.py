@@ -76,9 +76,6 @@ class Package(mini_buildd.misc.Status):
             breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
 
     def add_buildresult(self, bres, remotes_keyring):
-        """
-        .. todo:: Better inspect bres fail status: lintian, rejected, etc...
-        """
         remotes_keyring.verify(bres.file_path)
 
         arch = bres["Architecture"]
@@ -91,7 +88,10 @@ class Package(mini_buildd.misc.Status):
 
         LOG.info("{p}: Got build result for '{a}': {r}={s}, lintian={l}".format(p=self.pid, a=arch, r=retval, s=status, l=lintian))
 
-        if retval == 0 and (lintian == "pass" or self.suite.experimental or self.distribution.lintian_mode < self.distribution.LINTIAN_FAIL_ON_ERROR):
+        def check_lintian():
+            return lintian == "pass" or self.suite.experimental or self.distribution.lintian_mode < self.distribution.LINTIAN_FAIL_ON_ERROR
+
+        if retval == 0 and (status == "skipped" or check_lintian()):
             self.success[arch] = bres
         else:
             self.failed[arch] = bres
@@ -121,7 +121,11 @@ class Package(mini_buildd.misc.Status):
 
         # Second, install all other archs
         for bres in [s for a, s in self.success.items() if not a in archall]:
-            self.repository.mbd_package_install(bres)
+            # Don't try install if skipped
+            if bres.get("Sbuild-Status") == "skipped":
+                LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
+            else:
+                self.repository.mbd_package_install(bres)
 
     def archive(self):
         # Archive build results and request

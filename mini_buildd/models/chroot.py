@@ -67,9 +67,7 @@ go to the default mapping.
         return "mini-buildd-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)
 
     def mbd_get_tmp_dir(self):
-        d = os.path.join(self.mbd_get_path(), "tmp")
-        mini_buildd.misc.mkdirs(d)
-        return d
+        return os.path.join(self.mbd_get_path(), "tmp")
 
     def mbd_get_schroot_conf_file(self):
         return os.path.join(self.mbd_get_path(), "schroot.conf")
@@ -81,10 +79,12 @@ go to the default mapping.
         return os.path.join(self.mbd_get_path(), "sudoers_workaround")
 
     def mbd_get_sequence(self):
-        return self.mbd_get_backend().mbd_get_pre_sequence() + [
+        return [
+            (["/bin/mkdir", "--verbose", self.mbd_get_tmp_dir()],
+             ["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()])] + self.mbd_get_backend().mbd_get_pre_sequence() + [
             (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
               self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_archive().url],
-             ["/bin/umount", "-v", self.mbd_get_tmp_dir() + "/proc", self.mbd_get_tmp_dir() + "/sys"]),
+             ["/bin/umount", "-v", os.path.join(self.mbd_get_tmp_dir(), "proc"), os.path.join(self.mbd_get_tmp_dir(), "sys")]),
 
             (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],
              [])] + self.mbd_get_backend().mbd_get_post_sequence() + [
@@ -99,8 +99,6 @@ go to the default mapping.
             Includes '--include=sudo' and all handling of 'sudoers_workaround_file' below.
 
             .. seealso:: :py:class:`~mini_buildd.builder.Build`
-
-        .. todo:: debootstrap rollback fix.
         """
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))
 

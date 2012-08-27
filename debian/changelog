@@ -1,3 +1,24 @@
+mini-buildd (1.0.0~alpha.2) experimental; urgency=low
+
+  * The "todo" release:
+    Tackles all forgotten small in-code todos, fixing quite some caveats
+    on the way:
+  * [d4f759c] Fix/improve archive origin and repository description string.
+  * [9b7a6d0] Properly generate the apt/preferences file.
+  * [45ff6f3] builder: Always show generated 'sources.list' and 'preferences' in buildlog.
+  * [d5da158] Properly compute internal source dependencies and preferences.
+  * [ad87921] sources: Use available components only when configured in distribution.
+  * [df67ce1] Sort components (so that "main" is always first); fixes reprepro's default guessed component.
+  * [8720d60] builder, packager: Cosmetic: In description strings, put status back to front (much more readable).
+  * [bdaeccc] packager: Treat "skipped" build result status correctly for lintian check and reprepro installs.
+  * [563a709] builder/sbuild: Sign all Debian *.changes from builders (with mini-buildd's key).
+  * [b5e4293] chroot/builder sudo workaround: Remove /etc/sudoers in snapshot before actual package building.
+  * [6a9edb9] builder.py: Add log_exception in internal error (exception).
+  * [10f66fa] debian/mini-buildd-sudoers: Add "/bin/mkdir", and clean up (make sections for the different uses).
+  * [32edef1] models/chroot.py: Fix rollback when debootstrap fails.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 27 Aug 2012 16:05:36 +0200
+
 mini-buildd (1.0.0~alpha.1) experimental; urgency=low
 
   * [eb5204c] ftpd.py/doc: rm load options todo: not really a todo.

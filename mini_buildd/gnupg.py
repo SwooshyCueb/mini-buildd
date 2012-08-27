@@ -123,7 +123,7 @@ class TmpGnuPG(BaseGnuPG):
         super(TmpGnuPG, self).__init__(home=tempfile.mkdtemp())
 
     def __del__(self):
-        ".. todo:: Without this extra import, this might not work (python bug?). "
+        ".. note:: Without this extra import, this might not work (python bug?). "
         from shutil import rmtree
         rmtree(self.home)
 

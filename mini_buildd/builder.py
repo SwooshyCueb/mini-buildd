@@ -116,8 +116,6 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
             .. seealso:: :py:class:`~mini_buildd.models.chroot.Chroot`
 
         .. note:: sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
-
-        .. todo:: "internal error" build results.
         """
         self._breq.untar(path=self._build_dir)
         self._generate_sbuildrc()
@@ -229,8 +227,7 @@ def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq)
         except Exception as e:
             b.set_status(b.UPLOADING, unicode(e))
     except Exception as e:
-        # todo: upload error result
-        pass
+        mini_buildd.setup.log_exception(LOG, "Internal error building", e)
     finally:
         queue.task_done()
 

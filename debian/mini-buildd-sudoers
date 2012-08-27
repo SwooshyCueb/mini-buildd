@@ -1,5 +1,13 @@
-mini-buildd ALL=NOPASSWD:\
-            /usr/sbin/debootstrap,/bin/tar,\
-            /sbin/mkfs.*,/bin/mount,/bin/umount,/bin/cp,/bin/rm,\
-            /sbin/losetup,/bin/dd,\
-            /sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove
+# mini-buildd needs sudo calls for chroot prepare only
+
+# BASIC: Needed by all chroot types
+mini-buildd ALL=NOPASSWD:/usr/sbin/debootstrap,/bin/mount,/bin/umount,/bin/cp,/bin/rm,/bin/mkdir
+
+# FILE: FileChroot
+mini-buildd ALL=NOPASSWD:/bin/tar
+
+# LVM: LVMChroot, LoopLVMChroot
+mini-buildd ALL=NOPASSWD:/sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove/sbin/mkfs.*
+
+# LOOP: LoopLVMChroot
+mini-buildd ALL=NOPASSWD:/sbin/losetup,/bin/dd

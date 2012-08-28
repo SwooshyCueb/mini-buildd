@@ -22,14 +22,14 @@ class Reprepro():
         mini_buildd.misc.call(self._cmd + ["export"])
 
     def include(self, distribution, changes):
-        return mini_buildd.misc.call(self._cmd + ["include", distribution, changes])
+        mini_buildd.misc.call(self._cmd + ["include", distribution, changes])
 
     def copysrc(self, dest_distribution, source_distribution, package, version):
-        return mini_buildd.misc.call(
+        return mini_buildd.misc.sose_call(
             self._cmd + ["copysrc", dest_distribution, source_distribution, package, version])
 
     def removesrc(self, distribution, package, version):
-        return mini_buildd.misc.call(
+        return mini_buildd.misc.sose_call(
             self._cmd + ["removesrc", distribution, package, version])
 
     def listmatched(self, distribution, pattern):

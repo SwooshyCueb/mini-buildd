@@ -287,6 +287,15 @@ def mkdirs(path):
             LOG.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 
+def sose_call(args):
+    result = tempfile.TemporaryFile()
+    subprocess.check_call(args,
+                          stdout=result,
+                          stderr=subprocess.STDOUT)
+    result.seek(0)
+    return result.read().decode("UTF-8")
+
+
 def call(args, run_as_root=False, value_on_error=None, log_output=True, error_log_on_fail=True, **kwargs):
     """Wrapper around subprocess.call().
 

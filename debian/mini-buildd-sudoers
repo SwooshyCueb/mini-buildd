@@ -3,6 +3,9 @@
 # BASIC: Needed by all chroot types
 mini-buildd ALL=NOPASSWD:/usr/sbin/debootstrap,/bin/mount,/bin/umount,/bin/cp,/bin/rm,/bin/mkdir
 
+# FILE: DirChroot
+mini-buildd ALL=NOPASSWD:/bin/mv
+
 # FILE: FileChroot
 mini-buildd ALL=NOPASSWD:/bin/tar
 

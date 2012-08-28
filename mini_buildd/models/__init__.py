@@ -34,6 +34,7 @@ def import_all():
         repository.Distribution,
         repository.Repository,
         chroot.Chroot,
+        chroot.DirChroot,
         chroot.FileChroot,
         chroot.LVMChroot,
         chroot.LoopLVMChroot,

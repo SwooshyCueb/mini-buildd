@@ -49,16 +49,14 @@ go to the default mapping.
         return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.mbd_get_status_display())
 
     def mbd_get_backend(self):
-        try:
-            return self.filechroot
-        except:
-            try:
-                return self.lvmchroot.looplvmchroot
-            except:
-                try:
-                    return self.lvmchroot
-                except:
-                    raise Exception("No chroot backend found")
+        for cls, sub in {"filechroot": [], "dirchroot": [], "lvmchroot": ["looplvmchroot"]}.items():
+            if hasattr(self, cls):
+                c = getattr(self, cls)
+                for s in sub:
+                    if hasattr(c, s):
+                        return getattr(c, s)
+                return c
+        raise Exception("No chroot backend found")
 
     def mbd_get_path(self):
         return os.path.join(mini_buildd.setup.CHROOTS_DIR, self.source.codename, self.architecture.name)
@@ -150,6 +148,45 @@ personality={p}
 
     def mbd_get_status_dependencies(self):
         return [self.source]
+
+
+class DirChroot(Chroot):
+    """ Dir chroot backend. """
+
+    UNION_AUFS = 0
+    UNION_OVERLAYFS = 1
+    UNION_UNIONFS = 2
+    UNION_CHOICES = (
+        (UNION_AUFS, "aufs"),
+        (UNION_OVERLAYFS, "overlayfs"),
+        (UNION_UNIONFS, "unionfs"))
+
+    union_type = django.db.models.IntegerField(choices=UNION_CHOICES, default=UNION_AUFS)
+
+    class Meta(Chroot.Meta):
+        pass
+
+    def mbd_get_chroot_dir(self):
+        return os.path.join(self.mbd_get_path(), "source")
+
+    def mbd_get_schroot_conf(self):
+        return """\
+type=directory
+directory={d}
+union-type={u}
+""".format(d=self.mbd_get_chroot_dir(), u=self.get_union_type_display())
+
+    def mbd_get_pre_sequence(self):
+        LOG.debug("No pre-squence for chroot {c}".format(c=self))
+        return []
+
+    def mbd_get_post_sequence(self):
+        return [
+            (["/bin/mv",
+              "--verbose",
+              self.mbd_get_tmp_dir(),
+              self.mbd_get_chroot_dir()],
+             ["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_chroot_dir()])]
 
 
 class FileChroot(Chroot):

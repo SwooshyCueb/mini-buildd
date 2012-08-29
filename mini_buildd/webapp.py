@@ -11,7 +11,6 @@ import django.core.management
 import django.contrib.auth
 
 import mini_buildd.setup
-import mini_buildd.compat08x
 import mini_buildd.models
 
 LOG = logging.getLogger(__name__)
@@ -137,11 +136,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
     @classmethod
     def loaddata(cls, file_name):
-        if os.path.splitext(file_name)[1] == ".conf":
-            LOG.info("Try loading ad 08x.conf: {f}".format(f=file_name))
-            mini_buildd.compat08x.import_conf(file_name)
-        else:
-            django.core.management.call_command('loaddata', file_name)
+        django.core.management.call_command('loaddata', file_name)
 
     @classmethod
     def dumpdata(cls, app_path):

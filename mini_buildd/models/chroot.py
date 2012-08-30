@@ -80,7 +80,8 @@ go to the default mapping.
         return [
             (["/bin/mkdir", "--verbose", self.mbd_get_tmp_dir()],
              ["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()])] + self.mbd_get_backend().mbd_get_pre_sequence() + [
-            (["/usr/sbin/debootstrap", "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
+            ([self.mbd_get_extra_option("Debootstrap-Command", "/usr/sbin/debootstrap"),
+              "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
               self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_archive().url],
              ["/bin/umount", "-v", os.path.join(self.mbd_get_tmp_dir(), "proc"), os.path.join(self.mbd_get_tmp_dir(), "sys")]),
 

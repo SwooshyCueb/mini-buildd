@@ -1,7 +1,7 @@
-# mini-buildd needs sudo calls for chroot prepare only
+# mini-buildd needs sudo calls for chroot preparation only
 
 # BASIC: Needed by all chroot types
-mini-buildd ALL=NOPASSWD:/usr/sbin/debootstrap,/bin/mount,/bin/umount,/bin/cp,/bin/rm,/bin/mkdir
+mini-buildd ALL=NOPASSWD:/usr/[s]bin/*debootstrap*,/bin/mount,/bin/umount,/bin/cp,/bin/rm,/bin/mkdir
 
 # FILE: DirChroot
 mini-buildd ALL=NOPASSWD:/bin/mv

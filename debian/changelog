@@ -1,3 +1,19 @@
+mini-buildd (1.0.0~alpha.3) experimental; urgency=low
+
+  The "chroot" release:
+    Supports directory/union chroots, plus expert support for custom
+    debootstrap command:
+  * [a62d373] Add support for directory/union chroots (DirChroot).
+  * [0eacc21] debian/mini-buildd-sudoers: Fix typo (missing ',') (temp. broke lvm chroots).
+  * [334c986] reprepro: Add stderr shown to propagation and removal results.
+  * [5abe58e] Remove 'compat08x' support ("load 08x.conf").
+  * [8a8ec07] mini-buildd: Restructure/renice usage help.
+  * [03a933c] models/base.py: Enable (and support key:value type lines) 'extra_options' field for all models.
+  * [e24c5ee] chroot: Support selecting custom debootstrap command via extra options (experts).
+  * [0119c8a] Cleanup django admin interface after 'extra_options' inclusion.
+
+ -- Stephan Sürken <absurd@debian.org>  Thu, 30 Aug 2012 17:48:44 +0200
+
 mini-buildd (1.0.0~alpha.2) experimental; urgency=low
 
   * The "todo" release:

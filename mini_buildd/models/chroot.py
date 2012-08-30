@@ -44,6 +44,12 @@ go to the default mapping.
     class Admin(mini_buildd.models.base.StatusModel.Admin):
         search_fields = ["source", "architecture"]
         readonly_fields = ["personality"]
+        fieldsets = [
+            ("Generic options", {"fields": (("source", "architecture"), "personality", "personality_override")}),
+            ("Extra options",
+             {"classes": ("collapse",),
+              "description": "Supported extra options: 'Debootstrap-Command'.",
+              "fields": ("extra_options",)})]
 
     def __unicode__(self):
         return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.mbd_get_status_display())
@@ -167,6 +173,9 @@ class DirChroot(Chroot):
     class Meta(Chroot.Meta):
         pass
 
+    class Admin(Chroot.Admin):
+        fieldsets = Chroot.Admin.fieldsets + [("Dir options", {"fields": ("union_type",)})]
+
     def mbd_get_chroot_dir(self):
         return os.path.join(self.mbd_get_path(), "source")
 
@@ -219,6 +228,9 @@ class FileChroot(Chroot):
     class Meta(Chroot.Meta):
         pass
 
+    class Admin(Chroot.Admin):
+        fieldsets = Chroot.Admin.fieldsets + [("File options", {"fields": ("compression",)})]
+
     def mbd_get_tar_file(self):
         return os.path.join(self.mbd_get_path(), "source." + self.TAR_SUFFIX[self.compression])
 
@@ -255,6 +267,9 @@ class LVMChroot(Chroot):
 
     class Meta(Chroot.Meta):
         pass
+
+    class Admin(Chroot.Admin):
+        fieldsets = Chroot.Admin.fieldsets + [("LVM options", {"fields": ("volume_group", "filesystem", "snapshot_size")})]
 
     def mbd_get_volume_group(self):
         try:
@@ -293,8 +308,11 @@ class LoopLVMChroot(LVMChroot):
     loop_size = django.db.models.IntegerField(default=100,
                                               help_text="Loop device file size in GB.")
 
-    class Meta(Chroot.Meta):
+    class Meta(LVMChroot.Meta):
         pass
+
+    class Admin(LVMChroot.Admin):
+        fieldsets = LVMChroot.Admin.fieldsets + [("Loop options", {"fields": ("loop_size",)})]
 
     def mbd_get_volume_group(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)

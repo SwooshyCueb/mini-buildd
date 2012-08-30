@@ -33,6 +33,9 @@ class EmailAddress(mini_buildd.models.base.Model):
     class Meta(mini_buildd.models.base.Model.Meta):
         verbose_name_plural = "Email addresses"
 
+    class Admin(mini_buildd.models.base.Model.Admin):
+        exclude = ("extra_options",)
+
     def __unicode__(self):
         return "{n} <{a}>".format(n=self.name, a=self.address)
 
@@ -41,6 +44,9 @@ class Suite(mini_buildd.models.base.Model):
     name = django.db.models.CharField(
         max_length=100,
         help_text="A suite to support, usually s.th. like 'experimental', 'unstable', 'testing' or 'stable'.")
+
+    class Admin(mini_buildd.models.base.Model.Admin):
+        exclude = ("extra_options",)
 
     def __unicode__(self):
         return self.name
@@ -127,6 +133,7 @@ lintian) as non-lethal, and will install anyway.
 class SuiteOptionInline(django.contrib.admin.TabularInline):
     model = SuiteOption
     extra = 1
+    exclude = ("extra_options",)
 
 
 class Layout(mini_buildd.models.base.Model):
@@ -202,6 +209,7 @@ class ArchitectureOption(mini_buildd.models.base.Model):
 
 class ArchitectureOptionInline(django.contrib.admin.TabularInline):
     model = ArchitectureOption
+    exclude = ("extra_options",)
     extra = 1
 
 

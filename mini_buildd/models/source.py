@@ -31,6 +31,7 @@ class Archive(mini_buildd.models.base.Model):
 
     class Admin(mini_buildd.models.base.Model.Admin):
         search_fields = ["url"]
+        exclude = ("extra_options",)
 
     def __unicode__(self):
         return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
@@ -237,6 +238,9 @@ class PrioritySource(mini_buildd.models.base.Model):
 
     class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ('source', 'priority')
+
+    class Admin(mini_buildd.models.base.Model.Admin):
+        exclude = ("extra_options",)
 
     def __unicode__(self):
         return "{i}: Priority={p}".format(i=self.source, p=self.priority)

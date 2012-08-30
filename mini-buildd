@@ -24,44 +24,42 @@ class Main():
     @classmethod
     def _parse_args(cls):
         parser = argparse.ArgumentParser(prog="mini-buildd",
-                                         description="mini build daemon.",
+                                         description="Minimal Debian build daemon.",
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
         parser.add_argument('--version', action='version', version=mini_buildd.__version__)
 
-        parser.add_argument("-f", "--foreground", action='store_true',
-                            help="Don't daemonize, log to console.")
-        parser.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
-                            help="Web Server IP/Hostname and port to bind to.")
+        group_conf = parser.add_argument_group("daemon arguments")
+        group_conf.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
+                                help="Web Server IP/Hostname and port to bind to.")
+        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
+                                help="Run with this home dir. The only use case to change this for debugging, really.")
+        group_conf.add_argument("-f", "--foreground", action='store_true',
+                                help="Don't daemonize, log to console.")
 
-        group_log = parser.add_argument_group("Logging")
+        group_log = parser.add_argument_group("logging and debugging arguments")
         group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
                                help="Lower log level. Give twice for max logs.")
         group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
                                help="Tighten log level. Give twice for min logs.")
+        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
+                               help="Comma-separated list of loggers (file,syslog,console) to use.")
         group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
                                help="""\
 Comma-separated list of parts to put in 'debug mode'. Available parts:
 exception (log tracebacks in master exception handlers),
 django (put django app in debug mode),
 builder (don't delete builder spool directories)""")
-        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
-                               help="Comma-separated list of loggers (file,syslog,console) to use.")
 
-        group_conf = parser.add_argument_group("Daemon configuration")
-        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
-                                help="Run with this home dir. The only use case to change this for debugging, really.")
-
-        group_db = parser.add_argument_group("Database")
+        group_db = parser.add_argument_group("database arguments")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-        group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
-                              help="INTERNAL USE ONLY, use with care! Bulk-unprepare all objects that might have produced artifacts on the system.")
-
         group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
                               help="Dump database contents for app[.MODEL] as JSON file (see 'django-admin dumpdata').")
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
                               help="INTERNAL USE ONLY, use with care! Load JSON file into database (see 'django-admin loaddata').")
+        group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
+                              help="INTERNAL USE ONLY, use with care! Bulk-unprepare all objects that might have produced artifacts on the system.")
 
         args = parser.parse_args()
 

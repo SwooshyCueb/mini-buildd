@@ -89,10 +89,18 @@ class Model(django.db.models.Model):
     This just makes sure no config is changed or deleted while
     the daemon is running.
     """
-    extra_options = django.db.models.TextField(blank=True, editable=False,
+    extra_options = django.db.models.TextField(blank=True, editable=True,
                                                help_text="""\
-Free form text that may be used by any real model for any extra
-options to support without changing the database scheme.
+Extra/experimental options (in the form 'KEY: VALUE' per line) a
+model might support.
+
+Note that this is basically just a workaround to easily add
+options to a model without changing the database scheme; i.e.,
+these options may best be described as a staging area, or list
+of 'unofficial features'.
+
+The resp. model documentation should describe what extra options
+are actually supported by the current model.
 """)
 
     # May be used by any model for persistent python state
@@ -153,6 +161,13 @@ options to support without changing the database scheme.
     def mbd_check_daemon_stopped(self):
         if self.mbd_get_daemon().is_running():
             raise django.core.exceptions.ValidationError("Please stop the Daemon first!")
+
+    def mbd_get_extra_option(self, key, default=None):
+        for line in self.extra_options.splitlines():
+            lkey, _lsep, lvalue = line.partition(":")
+            if lkey == key:
+                return lvalue.lstrip()
+        return default
 
     def mbd_get_pickled_data(self, default=None):
         try:

@@ -51,6 +51,11 @@ class BaseGnuPG(object):
             if key[0] == "sec":
                 return key[4]
 
+    def get_first_sec_key_fingerprint(self):
+        for key in self.sec_keys_info():
+            if key[0] == "fpr":
+                return key[9]
+
     def recv_key(self, keyserver, identity):
         return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", identity])
 
@@ -101,9 +106,6 @@ Name-Email: {e}
 
     def get_pub_key(self, identity=None):
         return super(GnuPG, self).get_pub_key("mini-buildd")
-
-    def get_fingerprint(self):
-        return super(GnuPG, self).get_fingerprint("mini-buildd")
 
 
 class TmpGnuPG(BaseGnuPG):

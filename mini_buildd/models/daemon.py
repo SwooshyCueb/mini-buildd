@@ -123,6 +123,8 @@ prevent original package maintainers to be spammed.
         super(Daemon, self).__init__(*args, **kwargs)
         self._mbd_fullname = "mini-buildd archive {i}".format(i=self.identity)
         self._mbd_gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template, self._mbd_fullname, self.email_address)
+        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key_long_id()
+        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint()
 
     @property
     def mbd_fullname(self):
@@ -132,6 +134,14 @@ prevent original package maintainers to be spammed.
     def mbd_gnupg(self):
         return self._mbd_gnupg
 
+    @property
+    def mbd_gnupg_fingerprint(self):
+        return self._mbd_gnupg_fingerprint
+
+    @property
+    def mbd_gnupg_long_id(self):
+        return self._mbd_gnupg_long_id
+
     def clean(self, *args, **kwargs):
         super(Daemon, self).clean(*args, **kwargs)
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
@@ -139,7 +149,9 @@ prevent original package maintainers to be spammed.
 
     def mbd_prepare(self, request):
         self._mbd_gnupg.prepare()
-        self.mbd_msg_info(request, "Daemon GnuPG key generated.")
+        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key_long_id()
+        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint()
+        self.mbd_msg_info(request, "Daemon GnuPG key generated: {i}: {f}".format(i=self._mbd_gnupg_long_id, f=self._mbd_gnupg_fingerprint))
 
     def mbd_unprepare(self, request):
         self._mbd_gnupg.unprepare()

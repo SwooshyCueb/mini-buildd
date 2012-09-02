@@ -42,7 +42,11 @@ class Daemon(mini_buildd.models.base.StatusModel):
 Key-Type: RSA
 Key-Length: 4096
 Expire-Date: 0
-""")
+""", help_text="""
+Give a template file as accepted by 'gpg --batch --gen-key' (see gpg man page).
+
+You should not give 'Name-Real' and 'Name-Email', as these are
+automatically added.""")
 
     gnupg_keyserver = django.db.models.CharField(
         max_length=200,

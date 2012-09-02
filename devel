@@ -151,7 +151,7 @@ mbd_purge()
 	sudo rm -v -f /var/lib/sbuild/apt-keys/*
 }
 
-mbd_build()
+mbd_update()
 {
 	set +e
 	(
@@ -162,19 +162,22 @@ mbd_build()
 	[ ${ret} -eq 0 ] || read -p "Check failed. Continue anyway? [R]" dummy
 	set -e
 
+	_head "Checking changelog (must be unchanged)..."
+	git diff-index --exit-code HEAD debian/changelog
+
 	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
 	git-buildpackage --git-ignore-new --git-ignore-branch -us -uc
-}
 
-mbd_install()
-{
 	_head "Installing snapshot..."
 	cat <<EOF | sudo debconf-set-selections --verbose -
 mini-buildd mini-buildd/admin_password password admin
 mini-buildd mini-buildd/options string --verbose --debug=exception,django
 EOF
 	sudo debi
+
+	_head "Checking out orig changelog again..."
+	git checkout debian/changelog
 }
 
 mbd_default()

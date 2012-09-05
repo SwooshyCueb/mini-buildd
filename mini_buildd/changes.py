@@ -108,10 +108,7 @@ class Changes(debian.deb822.Changes):
         return pkg_id
 
     def get_files(self, key=None):
-        result = []
-        for f in self["Files"]:
-            result.append(f[key] if key else f)
-        return result
+        return [f[key] if key else f for f in self.get("Files", [])]
 
     def add_file(self, file_name):
         if not "Files" in self:
@@ -128,6 +125,7 @@ class Changes(debian.deb822.Changes):
             self.dump(fd=open(self._file_path, "w+"))
             LOG.info("Signing changes: {f}".format(f=self._file_path))
             gnupg.sign(self._file_path)
+            self._sha1 = mini_buildd.misc.sha1_of_file(self._file_path)
         except:
             # Existence of the file name is used as flag
             if os.path.exists(self._file_path):

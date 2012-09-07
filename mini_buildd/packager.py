@@ -73,7 +73,11 @@ class Package(mini_buildd.misc.Status):
 
         # Upload buildrequests
         for _key, breq in self.requests.items():
-            breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
+            try:
+                breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
+            except Exception as e:
+                # Upload failure build result to ourselves
+                breq.upload_failed_buildresult(self.daemon.mbd_gnupg, self.daemon.mbd_get_ftp_hopo(), 100, "upload-failed", e)
 
     def add_buildresult(self, bres, remotes_keyring):
         remotes_keyring.verify(bres.file_path)

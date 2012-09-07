@@ -56,7 +56,7 @@ class Build(mini_buildd.misc.Status):
             h=self._breq["Upload-Result-To"],
             k=self.key,
             c=self._chroot,
-            start=self.started.strftime(date_format),
+            start=self.started.strftime(date_format) if self.started else "n/a",
             took=round(mini_buildd.misc.timedelta_total_seconds(self.built - self.started), 1) if self.built else "n/a",
             uploaded=self.uploaded.strftime(date_format) if self.uploaded else "n/a",
             desc=self.status_desc)
@@ -203,32 +203,41 @@ class LastBuild(mini_buildd.misc.API):
 
 
 def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq):
+    build = None
     try:
-        # Always authorize the file first
+        # First, get build object. This will automagically set the status right.
+        build = Build(breq, gnupg, sbuild_jobs)
+        builds[build.key] = build
+
+        # Authorization
         remotes_keyring.verify(breq.file_path)
 
-        # First, get build object. This will automagically set the status right.
-        b = Build(breq, gnupg, sbuild_jobs)
-        builds[b.key] = b
-
         # Build if needed (may be just an upload-pending build)
-        if b.get_status() < b.BUILDING:
-            b.set_status(b.BUILDING)
-            b.build()
-            b.set_status(b.UPLOADING)
+        if build.get_status() < build.BUILDING:
+            build.set_status(build.BUILDING)
+            build.build()
+            build.set_status(build.UPLOADING)
 
         # Try upload
         try:
-            b.upload()
-            b.set_status(b.UPLOADED)
-            del builds[b.key]
-            b.clean()
-            last_builds.appendleft(LastBuild(b))
+            build.upload()
+            build.set_status(build.UPLOADED)
         except Exception as e:
-            b.set_status(b.UPLOADING, unicode(e))
+            build.set_status(build.UPLOADING, unicode(e))
+
     except Exception as e:
+        # Try to upload failure build result to remote
+        if build:
+            build.set_status(build.FAILED)
+        breq.upload_failed_buildresult(gnupg, mini_buildd.misc.HoPo(breq["Upload-Result-To"]), 101, "builder-failed", e)
         mini_buildd.setup.log_exception(LOG, "Internal error building", e)
+
     finally:
+        if build:
+            build.clean()
+            last_builds.appendleft(LastBuild(build))
+            if build.key in builds:
+                del builds[build.key]
         queue.task_done()
 
 

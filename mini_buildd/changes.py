@@ -3,9 +3,12 @@ from __future__ import unicode_literals
 
 import os
 import stat
+import tempfile
+import shutil
 import glob
 import logging
 import tarfile
+import socket
 import ftplib
 import re
 import contextlib
@@ -285,9 +288,12 @@ class Changes(debian.deb822.Changes):
 
         return breq_dict
 
-    def gen_buildresult(self):
+    def gen_buildresult(self, path=None):
         assert(self.is_buildrequest())
-        bres = mini_buildd.changes.Changes(os.path.join(self.get_spool_dir(),
+        if not path:
+            path = self.get_spool_dir()
+
+        bres = mini_buildd.changes.Changes(os.path.join(path,
                                                         "{b}.changes".
                                                         format(b=self.get_pkg_id(with_arch=True, arch_separator="_mini-buildd-buildresult_"))))
 
@@ -295,3 +301,21 @@ class Changes(debian.deb822.Changes):
             bres[v] = self[v]
 
         return bres
+
+    def upload_failed_buildresult(self, gnupg, hopo, retval, status, exception):
+        t = tempfile.mkdtemp()
+        bres = self.gen_buildresult(path=t)
+
+        bres["Sbuildretval"] = unicode(retval)
+        bres["Sbuild-Status"] = status
+        buildlog = os.path.join(t, self.buildlog_name)
+        with open(buildlog, "w+") as l:
+            l.write("""
+Host: {h}
+Build request failed: {r} ({s}): {e}
+""".format(h=socket.getfqdn(), r=retval, s=status, e=exception))
+        bres.add_file(buildlog)
+        bres.save(gnupg)
+        bres.upload(hopo)
+
+        shutil.rmtree(t)

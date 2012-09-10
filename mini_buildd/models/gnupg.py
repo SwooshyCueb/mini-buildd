@@ -17,7 +17,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
     key_id = django.db.models.CharField(max_length=100, blank=True, default="",
                                         help_text="Give a key id here to retrieve the actual key automatically per configured keyserver.")
     key = django.db.models.TextField(blank=True, default="",
-                                     help_text="ASCII-armored Gnu PG public key. Leave the key id blank if you fill this manually.")
+                                     help_text="ASCII-armored GnuPG public key. Leave the key id blank if you fill this manually.")
 
     key_long_id = django.db.models.CharField(max_length=254, blank=True, default="")
     key_created = django.db.models.CharField(max_length=254, blank=True, default="")
@@ -97,7 +97,10 @@ django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django
 
 
 class Remote(GnuPGPublicKey):
-    http = django.db.models.CharField(primary_key=True, max_length=255, default="")
+    http = django.db.models.CharField(primary_key=True, max_length=255, default=":8066",
+                                      help_text="""\
+'hostname:port' of the remote instance's http server.
+""")
 
     wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 

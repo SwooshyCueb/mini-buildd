@@ -195,8 +195,13 @@ class ArchitectureOption(mini_buildd.models.base.Model):
     architecture = django.db.models.ForeignKey("Architecture")
     distribution = django.db.models.ForeignKey("Distribution")
 
-    optional = django.db.models.BooleanField(default=False)
-    build_architecture_all = django.db.models.BooleanField(default=False)
+    optional = django.db.models.BooleanField(
+        default=False,
+        help_text="Don't care if the architecture can't be build.")
+
+    build_architecture_all = django.db.models.BooleanField(
+        default=False,
+        help_text="Use to build arch-all packages.")
 
     class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ("architecture", "distribution")
@@ -353,7 +358,14 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
 
 class Repository(mini_buildd.models.base.StatusModel):
-    identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname())
+    identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname(),
+                                          help_text="""\
+The id of the reprepro repository, placed in
+'repositories/ID'. It can also be used in 'version enforcement
+string' (true for the default layout) -- in this context, it
+plays the same role as the well-known 'bpo' version string from
+Debian backports.
+""")
 
     layout = django.db.models.ForeignKey(Layout)
     distributions = django.db.models.ManyToManyField(Distribution)

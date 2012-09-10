@@ -22,8 +22,20 @@ LOG = logging.getLogger(__name__)
 class Chroot(mini_buildd.models.base.StatusModel):
     PERSONALITIES = {'i386': 'linux32'}
 
-    source = django.db.models.ForeignKey(mini_buildd.models.source.Source)
-    architecture = django.db.models.ForeignKey(mini_buildd.models.source.Architecture)
+    source = django.db.models.ForeignKey(mini_buildd.models.source.Source,
+                                         help_text="""\
+Base source to create the chroot from; its codename must be 'debootstrapable'.
+
+Examples: "Debian 'squeeze'", "Debian 'wheezy'", "Ubuntu 'hardy'".
+""")
+
+    architecture = django.db.models.ForeignKey(mini_buildd.models.source.Architecture,
+                                               help_text="""\
+Chroot's architecture; using the same arch as the host system
+will always work, other architectures may work if supported. An
+'amd64' host, for example, will also allow for architecture
+'i386'.
+""")
 
     personality = django.db.models.CharField(max_length=50, editable=False, blank=True, default="",
                                              help_text="""\
@@ -31,7 +43,7 @@ Schroot 'personality' value (see 'schroot'); for 32bit chroots
 running on a 64bit host, this must be 'linux32'.
 """)
     personality_override = django.db.models.CharField(max_length=50, blank=True, default="",
-                                                      help_text=""""\
+                                                      help_text="""\
 Leave empty unless you want to override the automated way (via
 an internal mapping). Please report manual overrides so it can
 go to the default mapping.
@@ -45,10 +57,10 @@ go to the default mapping.
         search_fields = ["source", "architecture"]
         readonly_fields = ["personality"]
         fieldsets = [
-            ("Generic options", {"fields": (("source", "architecture"), "personality", "personality_override")}),
+            ("Chroot identity", {"fields": (("source", "architecture"), "personality", "personality_override")}),
             ("Extra options",
              {"classes": ("collapse",),
-              "description": "Supported extra options: 'Debootstrap-Command'.",
+              "description": "Supported extra options: 'Debootstrap-Command: Alternate command to run instead of standard debootstrap'",
               "fields": ("extra_options",)})]
 
     def __unicode__(self):
@@ -167,8 +179,10 @@ class DirChroot(Chroot):
         (UNION_AUFS, "aufs"),
         (UNION_OVERLAYFS, "overlayfs"),
         (UNION_UNIONFS, "unionfs"))
-
-    union_type = django.db.models.IntegerField(choices=UNION_CHOICES, default=UNION_AUFS)
+    union_type = django.db.models.IntegerField(choices=UNION_CHOICES, default=UNION_AUFS,
+                                               help_text="""\
+See 'man 5 schroot.conf'
+""")
 
     class Meta(Chroot.Meta):
         pass

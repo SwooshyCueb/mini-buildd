@@ -28,14 +28,33 @@ LOG = logging.getLogger(__name__)
 
 class Daemon(mini_buildd.models.base.StatusModel):
     # Basics
-    identity = django.db.models.CharField(max_length=50, default=socket.gethostname())
+    identity = django.db.models.CharField(max_length=50, default=socket.gethostname(),
+                                          help_text="""\
+Daemon's identity; this will be used to identify this
+mini-buildd instance in various places.
+
+It will occur in the "Name-Real" part of the GnuPG key,
+determines the name of the automated keyring packages, and will
+also occur in the "Origin" tag of repository indices.
+
+In most cases, just name of the host we are running on is a good
+choice.
+""")
 
     hostname = django.db.models.CharField(
         max_length=200,
         default=socket.getfqdn(),
-        help_text="Fully qualified hostname.")
+        help_text="Fully qualified hostname we can be accesed through by others over the network (i.e, from users, uploaders or remotes).")
 
-    email_address = django.db.models.EmailField(max_length=255, default="mini-buildd@{h}".format(h=socket.getfqdn()))
+    email_address = django.db.models.EmailField(max_length=255, default="mini-buildd@{h}".format(h=socket.getfqdn()),
+                                                help_text="""\
+Daemon's email address; this will be used to identify this
+mini-buildd instance in various places.
+
+It will occur in the "Name-Email" part of the GnuPG key, and used as
+maintainer email on various occations when packages are build
+automatically.
+""")
 
     # GnuPG options
     gnupg_template = django.db.models.TextField(default="""
@@ -43,7 +62,7 @@ Key-Type: RSA
 Key-Length: 4096
 Expire-Date: 0
 """, help_text="""
-Give a template file as accepted by 'gpg --batch --gen-key' (see gpg man page).
+Template as accepted by 'gpg --batch --gen-key' (see 'man gpg').
 
 You should not give 'Name-Real' and 'Name-Email', as these are
 automatically added.""")
@@ -109,7 +128,14 @@ prevent original package maintainers to be spammed.
 
     class Admin(mini_buildd.models.base.StatusModel.Admin):
         fieldsets = (
-            ("Archive identity", {"fields": ("identity", "hostname", "email_address", "gnupg_template")}),
+            (None, {"fields": (), "description": """\
+The daemon instance. There is always exactly one instance of this.
+
+prepare/unprepare actions will generate/remove the GnuPG key.
+
+activate/deactivate actions will start/stop the 'daemon'.
+"""}),
+            ("Archive identity", {"fields": (("identity", "hostname", "email_address"), "gnupg_template")}),
             ("FTP (incoming) Options", {"fields": ("ftpd_bind", "ftpd_options")}),
             ("Load Options", {"fields": ("build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),

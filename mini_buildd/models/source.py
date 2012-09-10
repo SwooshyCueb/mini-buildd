@@ -111,7 +111,12 @@ class Source(mini_buildd.models.base.StatusModel):
                                           help_text="The exact string of the 'Codename' field of the resp. Release file.")
 
     # Apt Secure
-    apt_keys = django.db.models.ManyToManyField(mini_buildd.models.gnupg.AptKey, blank=True)
+    apt_keys = django.db.models.ManyToManyField(mini_buildd.models.gnupg.AptKey, blank=True,
+                                                help_text="""\
+Keys this source is signed with. You must at least add the
+_first_ key the relase file is signed with. Not specifying any
+key will disable the key verification.
+""")
 
     # Extra
     description = django.db.models.CharField(max_length=100, editable=False, blank=True, default="")

@@ -1,3 +1,21 @@
+mini-buildd (1.0.0~alpha.4) experimental; urgency=low
+
+  Adds help texts for most important model fields, and various minor
+  fixes:
+  * [20e6645] Show GnuPG long id and fingerprint on main page.
+  * [84c47fc] doc: Daemon: Add help text for gnupg template field.
+  * [1edd2b4] devel: update=build+install: Only build snap when changelog is unchanged, and restore changelog.
+  * [c0dcb1a] changes.py: get_files(): Don't fail on zero files; save(): set sha on after save.
+  * [109438c] packager, builder: Improve error handling for failed uploads and failed builds.
+  * [c89b69b] Default layout: Build keyring package for suite experimental.
+  * [51268fa] doc: Add/improve chroot fields online help.
+  * [205d707] doc: Add/improve daemon fields online help.
+  * [f8a1a70] doc: Add/improve gnupg fields online help.
+  * [48b51e8] doc: Add/improve repository fields online help.
+  * [87ea8d8] doc: Add/improve source fields online help.
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 11 Sep 2012 13:18:19 +0200
+
 mini-buildd (1.0.0~alpha.3) experimental; urgency=low
 
   The "chroot" release:

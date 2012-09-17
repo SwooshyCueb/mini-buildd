@@ -79,6 +79,15 @@ class Changes(debian.deb822.Changes):
     def is_buildresult(self):
         return self.BUILDRESULT_RE.match(self._file_name)
 
+    @property
+    def magic_auto_backports(self):
+        mres = re.search(r"\*\s*MINI_BUILDD:\s*AUTO_BACKPORTS:\s*([^*.\[\]]+)", self.get("Changes", ""))
+        return (re.sub(r'\s+', '', mres.group(1))).split(",") if mres else []
+
+    @property
+    def magic_backport_mode(self):
+        return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self.get("Changes", "")))
+
     def get_repository(self):
         # Check and parse changes distribution string
         distribution_codename, repository_identity, suite_name = mini_buildd.misc.parse_distribution(self["Distribution"])

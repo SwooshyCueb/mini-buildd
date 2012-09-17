@@ -20,10 +20,15 @@ _head()
 PYPATH="$(readlink -f $(dirname $0))"
 DJSETTINGS="doc.django_settings"
 
+mbd_pyenv()
+{
+	printf "export PYTHONPATH=\"${PYPATH}\"\n"
+	printf "export DJANGO_SETTINGS_MODULE=\"${DJSETTINGS}\"\n"
+}
+
 pyenv()
 {
-	export PYTHONPATH="${PYPATH}"
-	export DJANGO_SETTINGS_MODULE="${DJSETTINGS}"
+	eval "$(mbd_pyenv)"
 }
 
 mbd_pep8()
@@ -89,7 +94,7 @@ mbd_pylintgeneratedmembers()
 
 mbd_pylint()
 {
-	[ "$(lsb_release -s -c)" != "squeeze" ] || { printf "W: Skipping pylint on squeeze" >&2; return; }
+	[ "$(lsb_release -s -c)" != "squeeze" ] || { printf "W: Skipping pylint on squeeze\n" >&2; return; }
 	(
 		pyenv
 		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/

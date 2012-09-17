@@ -28,6 +28,9 @@ max-branchs=25
 max-attributes=15
 max-statements=60
 
+# Since 'python-debian (0.1.21+nmu2)': Changes: Too many ancestors (12/7)
+max-parents=12
+
 [REPORTS]
 
 include-ids=yes

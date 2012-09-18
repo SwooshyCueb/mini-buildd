@@ -64,13 +64,12 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         if self.key_id:
             self.key = ""
 
-    def mbd_check(self, request):
+    def mbd_check(self, _request):
         """
         Checks that we actually have the key and long_id. This should always be true after "prepare".
         """
         if not self.key and not self.key_long_id:
             raise Exception("GnuPG key with inconsistent state -- try unprepare,prepare to fix.")
-        self.mbd_msg_info(request, "GnuPG key fine.")
 
 
 class AptKey(GnuPGPublicKey):
@@ -129,7 +128,7 @@ class Remote(GnuPGPublicKey):
         self.pickled_data = ""
         self.mbd_msg_info(request, "Remote key and state removed.")
 
-    def mbd_check(self, request):
+    def mbd_check(self, _request):
         url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
         self.pickled_data = urllib.urlopen(url).read()
         state = self.mbd_get_builder_state()

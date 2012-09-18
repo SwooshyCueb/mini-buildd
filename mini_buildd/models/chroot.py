@@ -161,9 +161,8 @@ personality={p}
         shutil.rmtree(self.mbd_get_path())
         self.mbd_msg_info(request, "Chroot {c}: Removed from system.".format(c=self))
 
-    def mbd_check(self, request):
+    def mbd_check(self, _request):
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--info"])
-        self.mbd_msg_info(request, "Chroot {c}: 'schroot --info' works fine.".format(c=self))
 
     def mbd_get_status_dependencies(self):
         return [self.source]

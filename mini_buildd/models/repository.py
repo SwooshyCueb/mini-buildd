@@ -630,7 +630,7 @@ DscIndices: Sources Release . .gz .bz2
 
         return result[fmt]
 
-    def mbd_prepare(self, request):
+    def mbd_prepare(self, _request):
         """
         Idempotent repository preparation. This may be used as-is as mbd_check.
         """
@@ -669,12 +669,9 @@ gnupghome {h}
         repo.clearvanished()
         repo.export()
 
-        self.mbd_msg_info(request, "{r}: Reprepro repository checked and updated: {b}".format(r=self, b=self.mbd_get_path()))
-
-    def mbd_unprepare(self, request):
+    def mbd_unprepare(self, _request):
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
-            self.mbd_msg_info(request, "{r}: Reprepro repository has been purged (along with all packages): {b}".format(r=self, b=self.mbd_get_path()))
 
     def mbd_check(self, request):
         self.mbd_prepare(request)

@@ -210,8 +210,6 @@ activate/deactivate actions will start/stop the 'daemon'.
 
         if not mini_buildd.models.repository.Repository.mbd_get_active() and not mini_buildd.models.chroot.Chroot.mbd_get_active():
             raise Exception("At least one chroot or repository must be active to start the daemon.")
-
-        self.mbd_msg_info(request, "Daemon checked.")
 # pylint: enable=R0201
 
     def mbd_activate(self, request):

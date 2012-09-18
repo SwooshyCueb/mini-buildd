@@ -173,7 +173,6 @@ key will disable the key verification.
             gpg.add_pub_key(k.key)
 
         for m in Archive.objects.all():
-            self.mbd_msg_info(request, "Scanning archive: {m}".format(m=m))
             try:
                 release = m.mbd_download_release(self.codename, gpg)
                 origin = release["Origin"]
@@ -181,7 +180,7 @@ key will disable the key verification.
                 if not (self.origin == origin and self.codename == codename):
                     raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
 
-                self.mbd_msg_info(request, "Archive for us: {m}".format(m=m))
+                self.mbd_msg_info(request, "{o}: Adding archive: {m}".format(o=self, m=m))
                 self.archives.add(m)
                 self.description = release["Description"]
 
@@ -208,16 +207,9 @@ key will disable the key verification.
                         self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
                     self.components.add(new_component)
             except Exception as e:
-                self.mbd_msg_info(request, "{m}: Not for us: {e}".format(m=m, e=e))
+                LOG.debug("{m}: Not for us: {e}".format(m=m, e=e))
 
-        # Update ping value for all archives
-        for a in self.archives.all():
-            # Save will implicitely ping
-            a.save()
-
-        # Check if we still get an archive
-        a = self.mbd_get_archive()
-        self.mbd_msg_info(request, "{s}: Fastest archive is: '{a}'".format(s=self, a=a))
+        self.mbd_check(request)
 
     def mbd_unprepare(self, _request):
         self.archives = []
@@ -225,8 +217,14 @@ key will disable the key verification.
         self.architectures = []
         self.description = ""
 
-    def mbd_check(self, request):
-        self.mbd_prepare(request)
+    def mbd_check(self, _request):
+        # Update ping value for all archives
+        for a in self.archives.all():
+            # Save will implicitely ping
+            a.save()
+
+        # Check if we still get an archive
+        self.mbd_get_archive()
 
     def mbd_get_status_dependencies(self):
         dependencies = []

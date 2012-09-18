@@ -157,6 +157,13 @@ def run():
 
 class Daemon():
     def __init__(self):
+        # Set global to ourself
+        global _INSTANCE
+        _INSTANCE = self
+
+        # When this is not None, daemon is running
+        self.thread = None
+
         # Vars that are (re)generated when the daemon model is updated
         self.model = None
         self.incoming_queue = None
@@ -165,23 +172,12 @@ class Daemon():
         self.builds = None
         self.last_packages = None
         self.last_builds = None
-        self._update_model()
-
-        # When this is not None, daemon is running
-        self.thread = None
-
-        # Set global to ourself
-        global _INSTANCE
-        _INSTANCE = self
 
         # Finally, start daemon right now if active
-        if self.model.mbd_is_active():
-            try:
-                self.start(run_check=True, update_model=False)
-            except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Could not start daemon", e)
-        else:
-            LOG.info("Daemon NOT started (activate first)")
+        try:
+            self.start()
+        except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "Could not start daemon", e)
 
     @classmethod
     def _new_model_object(cls):
@@ -217,21 +213,22 @@ class Daemon():
         except Exception as e:
             LOG.warn("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
 
-    def start(self, run_check, update_model=True):
+    def start(self, activate_action=False, request=None):
         if not self.thread:
-            if update_model:
-                self._update_model()
-            if run_check:
-                mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check")
-                if not self.model.mbd_is_active():
-                    raise Exception("Daemon auto-deactivated.")
+            self._update_model()
 
-            self.thread = mini_buildd.misc.run_as_thread(run)
-            LOG.info("Daemon running")
+            if not activate_action:
+                mini_buildd.models.daemon.Daemon.Admin.mbd_action(request, (self.model,), "check")
+
+            if activate_action or self.model.mbd_is_active():
+                self.thread = mini_buildd.misc.run_as_thread(run)
+                mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon started.")
+            else:
+                mini_buildd.models.base.Model.mbd_msg_warn(request, "Daemon deactivated (won't start).")
         else:
-            LOG.info("Daemon already running")
+            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already running.")
 
-    def stop(self):
+    def stop(self, request=None):
         if self.thread:
             # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
             # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
@@ -243,16 +240,16 @@ class Daemon():
             self.thread.join()
             self.thread = None
             self._update_model()
-            LOG.info("Daemon stopped")
+            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon stopped.")
         else:
-            LOG.info("Daemon already stopped")
+            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already stopped.")
 
-    def restart(self, run_check):
-        self.stop()
-        self.start(run_check)
+    def restart(self, activate_action=False, request=None):
+        self.stop(request=request)
+        self.start(activate_action=activate_action, request=request)
 
     def is_running(self):
-        return self.thread is not None
+        return bool(self.thread)
 
     def get_builder_state(self):
         def get_chroots():

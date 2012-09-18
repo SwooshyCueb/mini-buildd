@@ -60,27 +60,17 @@ import mini_buildd.setup
 LOG = logging.getLogger(__name__)
 
 
-def action_delete(_model, request, queryset):
-    """Custom delete action.
-
-    This workaround ensures that the model's delete() method is
-    called (where we do important checks).
-    Default actions do not call that ;(.
-    See: https://docs.djangoproject.com/en/dev/ref/contrib/admin/actions/
-    """
-    for o in queryset:
-        try:
-            o.delete()
-        except Exception as e:
-            o.mbd_msg_exception(request, "Deletion failed for '{o}'".format(o=o), e)
-
-action_delete.short_description = "[0] Delete selected objects"
-
+# Default action 'delete_selected' action does not call
+# custom delete, nor does it ask prior to deletion.
+#
+# See: https://docs.djangoproject.com/en/dev/ref/contrib/admin/actions/
+#
+# So we just disable this default action. You can still delete
+# single objects from the model's form.
 try:
     django.contrib.admin.site.disable_action("delete_selected")
 except:
     pass
-django.contrib.admin.site.add_action(action_delete, "mini_buildd_delete")
 
 
 class Model(django.db.models.Model):
@@ -111,23 +101,29 @@ are actually supported by the current model.
         app_label = "mini_buildd"
 
     class Admin(django.contrib.admin.ModelAdmin):
-        pass
+        def save_model(self, request, obj, form, change):
+            try:
+                obj.mbd_get_daemon().stop(request=request)
 
-    def delete(self, *args, **kwargs):
-        """
-        Custom delete. Deny deletion if Daemon is running, or the instance is prepared.
-        """
-        self.mbd_check_daemon_stopped()
+                obj.save()
+            except Exception as e:
+                obj.mbd_msg_error(request, "Saving model failed: {e}.".format(e=e))
+            finally:
+                obj.mbd_get_daemon().restart(request=request)
 
-        is_prepared_func = getattr(self, "mbd_is_prepared", None)
-        if is_prepared_func and is_prepared_func():
-            raise Exception("Unprepare first.")
+        def delete_model(self, request, obj):
+            try:
+                obj.mbd_get_daemon().stop(request=request)
 
-        super(Model, self).delete(*args, **kwargs)
+                is_prepared_func = getattr(obj, "mbd_is_prepared", None)
+                if is_prepared_func and is_prepared_func():
+                    self.mbd_unprepare(request, obj)
 
-    def clean(self, *args, **kwargs):
-        self.mbd_check_daemon_stopped()
-        super(Model, self).clean(*args, **kwargs)
+                obj.delete()
+            except Exception as e:
+                obj.mbd_msg_error(request, "Saving model failed: {e}.".format(e=e))
+            finally:
+                obj.mbd_get_daemon().restart(request=request)
 
     @classmethod
     def mbd_msg_info(cls, request, msg):
@@ -157,10 +153,6 @@ are actually supported by the current model.
     def mbd_get_daemon(cls):
         import mini_buildd.daemon
         return mini_buildd.daemon.get()
-
-    def mbd_check_daemon_stopped(self):
-        if self.mbd_get_daemon().is_running():
-            raise django.core.exceptions.ValidationError("Please stop the Daemon first!")
 
     def mbd_get_extra_option(self, key, default=None):
         for line in self.extra_options.splitlines():

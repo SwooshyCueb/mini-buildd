@@ -188,7 +188,7 @@ builder (don't delete builder spool directories)""")
                 if self._status == "RESTART":
                     if daemon.is_running():
                         try:
-                            daemon.restart(run_check=True)
+                            daemon.restart()
                         except Exception as e:
                             mini_buildd.setup.log_exception(LOG, "Could not restart daemon", e)
                     else:

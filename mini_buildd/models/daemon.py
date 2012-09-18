@@ -215,12 +215,10 @@ activate/deactivate actions will start/stop the 'daemon'.
 # pylint: enable=R0201
 
     def mbd_activate(self, request):
-        self.mbd_get_daemon().restart(run_check=False)
-        self.mbd_msg_info(request, "Daemon restarted.")
+        self.mbd_get_daemon().restart(activate_action=True, request=request)
 
     def mbd_deactivate(self, request):
-        self.mbd_get_daemon().stop()
-        self.mbd_msg_info(request, "Daemon stopped.")
+        self.mbd_get_daemon().stop(request=request)
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

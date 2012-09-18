@@ -413,7 +413,7 @@ Example:
                     s.mbd_generate_keyring_packages(request)
                 else:
                     s.mbd_msg_warn(request, "Repository not activated: {r}".format(r=s))
-        action_generate_keyring_packages.short_description = "[X] Generate keyring packages"
+        action_generate_keyring_packages.short_description = "Generate keyring packages"
 # pylint: enable=R0201
 
         actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]

@@ -213,9 +213,9 @@ class StatusModel(Model):
     last_checked = django.db.models.DateTimeField(default=datetime.datetime.min, editable=False)
     auto_reactivate = django.db.models.BooleanField(default=False, editable=False)
     STATUS_COLORS = {
-        STATUS_UNPREPARED: "yellow",
-        STATUS_PREPARED: "blue",
-        STATUS_ACTIVE: "green"}
+        STATUS_UNPREPARED: {"bg": "yellow", "fg": "black"},
+        STATUS_PREPARED: {"bg": "blue", "fg": "white"},
+        STATUS_ACTIVE: {"bg": "green", "fg": "white"}}
 
     class Meta(Model.Meta):
         abstract = True
@@ -318,11 +318,11 @@ class StatusModel(Model):
 
         def mbd_action_prepare(self, request, queryset):
             self.mbd_action(request, queryset, "prepare")
-        mbd_action_prepare.short_description = "[3] Prepare selected objects and dependencies"
+        mbd_action_prepare.short_description = "Prepare"
 
         def mbd_action_activate(self, request, queryset):
             self.mbd_action(request, queryset, "activate")
-        mbd_action_activate.short_description = "[4] Activate selected objects and dependencies"
+        mbd_action_activate.short_description = "Activate"
 
         def mbd_action_unprepare(self, request, queryset):
             if request.POST.get("confirm"):
@@ -342,23 +342,27 @@ this would mean losing all packages!
 """,
                         "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
                     current_app=self.admin_site.name)
-        mbd_action_unprepare.short_description = "[1] Unprepare selected objects"
+        mbd_action_unprepare.short_description = "Unprepare"
 
         def mbd_action_deactivate(self, request, queryset):
             self.mbd_action(request, queryset, "deactivate")
-        mbd_action_deactivate.short_description = "[2] Deactivate selected objects"
+        mbd_action_deactivate.short_description = "Deactivate"
 
         def mbd_action_check(self, request, queryset):
             self.mbd_action(request, queryset, "check")
-        mbd_action_check.short_description = "[5] Check selected objects and dependencies"
+        mbd_action_check.short_description = "Check"
 
 # pylint: disable=R0201
         def colored_status(self, obj):
-            return '<div style="foreground-color:black;background-color:{c};">{o}</div>'.format(o=obj.get_status_display(), c=obj.STATUS_COLORS[obj.status])
+            return '<div style="background-color:{bc};color:{fc};padding:2px 0px 2px 5px">{o}</div>'.format(
+                bc=obj.STATUS_COLORS[obj.status].get("bg"),
+                fc=obj.STATUS_COLORS[obj.status].get("fg"),
+                o=obj.get_status_display())
+
         colored_status.allow_tags = True
 # pylint: enable=R0201
 
-        actions = [mbd_action_unprepare, mbd_action_deactivate, mbd_action_prepare, mbd_action_activate, mbd_action_check]
+        actions = [mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_prepare, mbd_action_unprepare]
         list_display = ('colored_status', '__unicode__')
 
     def mbd_activate(self, request):

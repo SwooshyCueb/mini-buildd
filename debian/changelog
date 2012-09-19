@@ -1,3 +1,14 @@
+mini-buildd (1.0.0~alpha.5) experimental; urgency=low
+
+  Worldwide 'configuration convenience' release:
+  * [69df874] devel: Add 'pyenv' target; workaround pylint warning with new python-debian.
+  * [87a7e8f] changes: Add support to detect magic cl lines for 'backport mode', 'auto backports'; implement 'backport mode'.
+  * [5204cfd] Automatically stop/restart running daemon on config changes.
+  * [72ba9ef] configuration: Use buttons for admin actions, and other cosmetics.
+  * [a533b87] Action logging cleanup (less is more); improve "check" on Source.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 19 Sep 2012 18:30:40 +0200
+
 mini-buildd (1.0.0~alpha.4) experimental; urgency=low
 
   Adds help texts for most important model fields, and various minor

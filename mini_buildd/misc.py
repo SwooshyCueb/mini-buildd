@@ -389,16 +389,14 @@ def sbuild_keys_workaround():
             LOG.info("One-time generation of sbuild keys done")
 
 
-def setup_test_logging(syslog=True):
-    if syslog:
-        sh = logging.handlers.SysLogHandler(address="/dev/log".encode("UTF-8"), facility=logging.handlers.SysLogHandler.LOG_USER)
-        sh.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-        LOG.addHandler(sh)
-
+def setup_test_logging():
     ch = logging.StreamHandler()
     ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
-    LOG.addHandler(ch)
-    LOG.setLevel(logging.DEBUG)
+
+    for ln in ["__main__", "mini_buildd"]:
+        l = logging.getLogger(ln)
+        l.addHandler(ch)
+        l.setLevel(logging.DEBUG)
 
 
 if __name__ == "__main__":

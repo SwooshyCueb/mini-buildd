@@ -168,7 +168,7 @@ class Changes(debian.deb822.Changes):
 
         def check_remote(remote):
             try:
-                remote.mbd_check(request=None)
+                remote.mbd_check(_request=None)
                 state = remote.mbd_get_builder_state()
                 if state.is_up() and state.has_chroot(arch, codename):
                     remotes[state.get_load()] = state.get_hopo()

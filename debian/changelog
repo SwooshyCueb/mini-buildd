@@ -1,3 +1,11 @@
+mini-buildd (1.0.0~alpha.6) experimental; urgency=low
+
+  Universal 'typo fix' release:
+  * [8d3d15c] [devel] misc.py: log helper function: Fix for to work for 'module' __main__, and omit syslog.
+  * [bbf1f9a] changes.py: Fix typo on chroot check() call (effectively disabled any builds;().
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 02 Oct 2012 13:42:32 +0200
+
 mini-buildd (1.0.0~alpha.5) experimental; urgency=low
 
   Worldwide 'configuration convenience' release:

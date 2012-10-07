@@ -32,6 +32,7 @@
 from __future__ import unicode_literals
 
 import os
+import contextlib
 import Queue
 import collections
 import email.mime.text
@@ -53,25 +54,29 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
-def gen_uploader_keyrings():
-    "Generate all upload keyrings for each repository."
-    keyrings = {}
+@contextlib.contextmanager
+def gen_keyring():
+    "Generate all upload and remote keyrings."
+    keyring = {"uploader": {}, "remotes": mini_buildd.gnupg.TmpGnuPG()}
+
+    # keyring["uploader"]: All uploader keyrings for each repository.
     for r in mini_buildd.models.repository.Repository.mbd_get_active():
-        keyrings[r.identity] = r.mbd_get_uploader_keyring()
+        keyring["uploader"][r.identity] = r.mbd_get_uploader_keyring()
         # Always add our key too for internal builds
-        keyrings[r.identity].add_pub_key(get().model.mbd_get_pub_key())
-    return keyrings
+        keyring["uploader"][r.identity].add_pub_key(get().model.mbd_get_pub_key())
 
-
-def gen_remotes_keyring():
-    "Generate the remote keyring to authorize buildrequests and buildresults"
-    keyring = mini_buildd.gnupg.TmpGnuPG()
+    # keyring["remotes"]: Remotes keyring to authorize buildrequests and buildresults
     # Always add our own key
-    keyring.add_pub_key(get().model.mbd_get_pub_key())
+    keyring["remotes"].add_pub_key(get().model.mbd_get_pub_key())
     for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
-        keyring.add_pub_key(r.key)
+        keyring["remotes"].add_pub_key(r.key)
         LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
-    return keyring
+
+    try:
+        yield keyring
+    finally:
+        for g in keyring["uploader"].values() + [keyring["remotes"]]:
+            g.close()
 
 
 def run():
@@ -79,80 +84,78 @@ def run():
     mini-buildd 'daemon engine' run.
     """
 
-    uploader_keyrings = gen_uploader_keyrings()
-    remotes_keyring = gen_remotes_keyring()
+    with gen_keyring() as keyring:
+        ftpd_thread = mini_buildd.misc.run_as_thread(
+            mini_buildd.ftpd.run,
+            bind=get().model.ftpd_bind,
+            queue=get().incoming_queue)
 
-    ftpd_thread = mini_buildd.misc.run_as_thread(
-        mini_buildd.ftpd.run,
-        bind=get().model.ftpd_bind,
-        queue=get().incoming_queue)
+        builder_thread = mini_buildd.misc.run_as_thread(
+            mini_buildd.builder.run,
+            queue=get().build_queue,
+            builds=get().builds,
+            last_builds=get().last_builds,
+            remotes_keyring=keyring["remotes"],
+            gnupg=get().model.mbd_gnupg,
+            sbuild_jobs=get().model.sbuild_jobs)
 
-    builder_thread = mini_buildd.misc.run_as_thread(
-        mini_buildd.builder.run,
-        queue=get().build_queue,
-        builds=get().builds,
-        last_builds=get().last_builds,
-        remotes_keyring=remotes_keyring,
-        gnupg=get().model.mbd_gnupg,
-        sbuild_jobs=get().model.sbuild_jobs)
+        while True:
+            event = get().incoming_queue.get()
+            if event == "SHUTDOWN":
+                break
 
-    while True:
-        event = get().incoming_queue.get()
-        if event == "SHUTDOWN":
-            break
-
-        try:
-            LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                     format(len(get().packages), get().incoming_queue.qsize()))
-
-            changes = None
-            changes = mini_buildd.changes.Changes(event)
-
-            if changes.is_buildrequest():
-                # Build request: builder
-
-                def queue_buildrequest(event):
-                    "Queue in extra thread so we don't block here in case builder is busy."
-                    get().build_queue.put(event)
-                mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
-
-            else:
-                # User upload or build result: packager
-                mini_buildd.packager.run(
-                    get().model,
-                    changes,
-                    get().packages,
-                    get().last_packages,
-                    remotes_keyring,
-                    uploader_keyrings)
-
-        except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
-
-            # Try to notify
             try:
-                subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
-                body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
-                get().model.mbd_notify(subject, body)
-            except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
+                LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                         format(len(get().packages), get().incoming_queue.qsize()))
 
-            # Try to clean up
-            try:
-                if changes:
-                    changes.remove()
+                changes = None
+                changes = mini_buildd.changes.Changes(event)
+
+                if changes.is_buildrequest():
+                    # Build request: builder
+
+                    def queue_buildrequest(event):
+                        "Queue in extra thread so we don't block here in case builder is busy."
+                        get().build_queue.put(event)
+                    mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
+
                 else:
-                    os.remove(event)
+                    # User upload or build result: packager
+                    mini_buildd.packager.run(
+                        get().model,
+                        changes,
+                        get().packages,
+                        get().last_packages,
+                        keyring["remotes"],
+                        keyring["uploader"])
+
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Invalid changes cleanup failed", e)
+                mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
 
-        finally:
-            get().incoming_queue.task_done()
+                # Try to notify
+                try:
+                    subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
+                    body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
+                    get().model.mbd_notify(subject, body)
+                except Exception as e:
+                    mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
 
-    get().build_queue.put("SHUTDOWN")
-    mini_buildd.ftpd.shutdown()
-    builder_thread.join()
-    ftpd_thread.join()
+                # Try to clean up
+                try:
+                    if changes:
+                        changes.remove()
+                    else:
+                        os.remove(event)
+                except Exception as e:
+                    mini_buildd.setup.log_exception(LOG, "Invalid changes cleanup failed", e)
+
+            finally:
+                get().incoming_queue.task_done()
+
+        get().build_queue.put("SHUTDOWN")
+        mini_buildd.ftpd.shutdown()
+        builder_thread.join()
+        ftpd_thread.join()
 
 
 class Daemon():

@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import urllib
+import contextlib
 
 import django.db.models
 import django.contrib.admin
@@ -38,22 +39,22 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         return "{i}: {n} ({s})".format(i=self.key_long_id, n=self.key_name, s=self.mbd_get_status_display())
 
     def mbd_prepare(self, _request):
-        gpg = mini_buildd.gnupg.TmpGnuPG()
-        if self.key_id:
-            # Receive key from keyserver
-            gpg.recv_key(self.mbd_get_daemon().model.gnupg_keyserver, self.key_id)
-            self.key = gpg.get_pub_key(self.key_id)
-        elif self.key:
-            gpg.add_pub_key(self.key)
+        with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
+            if self.key_id:
+                # Receive key from keyserver
+                gpg.recv_key(self.mbd_get_daemon().model.gnupg_keyserver, self.key_id)
+                self.key = gpg.get_pub_key(self.key_id)
+            elif self.key:
+                gpg.add_pub_key(self.key)
 
-        for key in gpg.pub_keys_info():
-            if key[0] == "pub":
-                self.key_long_id = key[4]
-                self.key_created = key[5]
-                self.key_expires = key[6]
-                self.key_name = key[9]
-            if key[0] == "fpr":
-                self.key_fingerprint = key[9]
+            for key in gpg.pub_keys_info():
+                if key[0] == "pub":
+                    self.key_long_id = key[4]
+                    self.key_created = key[5]
+                    self.key_expires = key[6]
+                    self.key_name = key[9]
+                if key[0] == "fpr":
+                    self.key_fingerprint = key[9]
 
     def mbd_unprepare(self, _request):
         self.key_long_id = ""

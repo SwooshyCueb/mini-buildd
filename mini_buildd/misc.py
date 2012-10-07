@@ -66,6 +66,23 @@ class Status(object):
         return self.__status__
 
 
+class TmpDir(object):
+    """
+    Use with contextlib.closing() to guarantee tmpdir is purged afterwards.
+    """
+    def __init__(self):
+        self._tmpdir = tempfile.mkdtemp()
+        LOG.debug("TmpDir {t}".format(t=self._tmpdir))
+
+    def close(self):
+        LOG.debug("Purging tmpdir {t}".format(t=self._tmpdir))
+        shutil.rmtree(self._tmpdir)
+
+    @property
+    def tmpdir(self):
+        return self._tmpdir
+
+
 class ConfFile(object):
     """ ConfFile generation helper.
 

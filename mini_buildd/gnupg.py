@@ -108,7 +108,7 @@ Name-Email: {e}
         return super(GnuPG, self).get_pub_key("mini-buildd")
 
 
-class TmpGnuPG(BaseGnuPG):
+class TmpGnuPG(BaseGnuPG, mini_buildd.misc.TmpDir):
     """
     >>> gnupg = TmpGnuPG()
     >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Real: Üdo Ümlaut\\nName-Email: test@key.org")
@@ -117,17 +117,15 @@ class TmpGnuPG(BaseGnuPG):
     >>> gnupg.sign(file_name=t.name, identity="test@key.org")
     >>> gnupg.verify(t.name)
     >>> pub_key = gnupg.get_pub_key(identity="test@key.org")
+    >>> gnupg.close()
     >>> tgnupg = TmpGnuPG()
     >>> tgnupg.add_pub_key(pub_key)
     >>> tgnupg.verify(t.name)
+    >>> tgnupg.close()
     """
     def __init__(self):
-        super(TmpGnuPG, self).__init__(home=tempfile.mkdtemp())
-
-    def __del__(self):
-        ".. note:: Without this extra import, this might not work (python bug?). "
-        from shutil import rmtree
-        rmtree(self.home)
+        mini_buildd.misc.TmpDir.__init__(self)
+        super(TmpGnuPG, self).__init__(home=self.tmpdir)
 
 
 if __name__ == "__main__":

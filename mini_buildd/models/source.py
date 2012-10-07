@@ -5,6 +5,7 @@ import tempfile
 import urllib
 import logging
 import datetime
+import contextlib
 
 import django.db.models
 import django.contrib.admin
@@ -168,46 +169,46 @@ key will disable the key verification.
 
     def mbd_prepare(self, request):
         self.archives = []
-        gpg = mini_buildd.gnupg.TmpGnuPG() if self.apt_keys.all() else None
-        for k in self.apt_keys.all():
-            gpg.add_pub_key(k.key)
+        with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
+            for k in self.apt_keys.all():
+                gpg.add_pub_key(k.key)
 
-        for m in Archive.objects.all():
-            try:
-                release = m.mbd_download_release(self.codename, gpg)
-                origin = release["Origin"]
-                codename = release["Codename"]
-                if not (self.origin == origin and self.codename == codename):
-                    raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
+            for m in Archive.objects.all():
+                try:
+                    release = m.mbd_download_release(self.codename, gpg if self.apt_keys.all() else None)
+                    origin = release["Origin"]
+                    codename = release["Codename"]
+                    if not (self.origin == origin and self.codename == codename):
+                        raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
 
-                self.mbd_msg_info(request, "{o}: Adding archive: {m}".format(o=self, m=m))
-                self.archives.add(m)
-                self.description = release["Description"]
+                    self.mbd_msg_info(request, "{o}: Adding archive: {m}".format(o=self, m=m))
+                    self.archives.add(m)
+                    self.description = release["Description"]
 
-                # Set codeversion
-                self.codeversion = ""
-                if self.codeversion_override:
-                    self.codeversion = self.codeversion_override
-                else:
-                    try:
-                        version = release["Version"].split(".")
-                        self.codeversion = version[0] + version[1]
-                    except:
-                        self.codeversion = codename.upper()
+                    # Set codeversion
+                    self.codeversion = ""
+                    if self.codeversion_override:
+                        self.codeversion = self.codeversion_override
+                    else:
+                        try:
+                            version = release["Version"].split(".")
+                            self.codeversion = version[0] + version[1]
+                        except:
+                            self.codeversion = codename.upper()
 
-                # Set architectures and components (may be auto-added)
-                for a in release["Architectures"].split(" "):
-                    new_arch, created = Architecture.objects.get_or_create(name=a)
-                    if created:
-                        self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
-                    self.architectures.add(new_arch)
-                for c in release["Components"].split(" "):
-                    new_component, created = Component.objects.get_or_create(name=c)
-                    if created:
-                        self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
-                    self.components.add(new_component)
-            except Exception as e:
-                LOG.debug("{m}: Not for us: {e}".format(m=m, e=e))
+                    # Set architectures and components (may be auto-added)
+                    for a in release["Architectures"].split(" "):
+                        new_arch, created = Architecture.objects.get_or_create(name=a)
+                        if created:
+                            self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                        self.architectures.add(new_arch)
+                    for c in release["Components"].split(" "):
+                        new_component, created = Component.objects.get_or_create(name=c)
+                        if created:
+                            self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                        self.components.add(new_component)
+                except Exception as e:
+                    LOG.debug("{m}: Not for us: {e}".format(m=m, e=e))
 
         self.mbd_check(request)
 

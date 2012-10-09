@@ -19,11 +19,13 @@ _head()
 
 PYPATH="$(readlink -f $(dirname $0))"
 DJSETTINGS="doc.django_settings"
+PYLINTRC="${PYPATH}/.pylintrc"
 
 mbd_pyenv()
 {
 	printf "export PYTHONPATH=\"${PYPATH}\"\n"
 	printf "export DJANGO_SETTINGS_MODULE=\"${DJSETTINGS}\"\n"
+	printf "export PYLINTRC=\"${PYLINTRC}\""
 }
 
 pyenv()

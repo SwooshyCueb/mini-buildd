@@ -1,60 +1,36 @@
 #!/bin/bash -e
 
-# Get versions of known basis distributions
-mbdBasedist2Version()
-{
-	# Known base distributions
-	local woody=30
-	local sarge=31
-	local etch=40
-	local lenny=50
-	local squeeze=60
-	local wheezy=70
-	local sid=SID
-
-	local version=${!1}
-	if [ -z "${version}" ]; then
-		${MBD_LOG} -s "E: Unknown base dist ${1}."
-		return 1
-	fi
-	echo -n "${version}"
-}
-
 # Be sure the "Changed-By" E-Mail in changes is set reasonably
 # so we don't accidentally spam someone while testing ;)
 export DEBEMAIL="$(id -n -u)@$(hostname -f)"
 
-mbdPrevStable()
-{
-	case $1 in
-		sarge)
-			printf "woody"
-			;;
-		etch)
-			printf "sarge"
-			;;
-		lenny)
-			printf "etch"
-			;;
-		squeeze)
-			printf "lenny"
-			;;
-		wheezy)
-			printf "squeeze"
-			;;
-		sid)
-			printf "wheezy"
-			;;
-		*)
-			printf ""
-	esac
-}
+declare -A DEB_RELEASE_VERSION=(
+	[woody]=30
+	[sarge]=31
+	[etch]=40
+	[lenny]=50
+	[squeeze]=60
+	[wheezy]=70
+	[sid]=SID
+)
+
+declare -A DEB_RELEASE_PREV=(
+	[woody]=potato
+	[sarge]=woody
+	[etch]=sarge
+	[lenny]=etch
+	[squeeze]=lenny
+	[wheezy]=squeeze
+	[sid]=wheezy
+)
 
 read -e -i "mini-buildd-$(hostname)" -p "Dput target? " dput_target
 read -e -i "test" -p "mini-buildd reposiory id? " id
 read -e -i "$(lsb_release --short --codename)" -p "upload to base distribution? " dist
+prev_dist=${DEB_RELEASE_PREV[${dist}]}
+prev_prev_dist=${DEB_RELEASE_PREV[${prev_dist}]}
 read -e -i "experimental" -p "upload to experimental or unstable? " dest
-read -e -i "$(mbdPrevStable ${dist})-${id}-${dest}" -p "auto backports for? " backports
+read -e -i "${prev_dist}-${id}-${dest}, ${prev_prev_dist}-${id}-${dest}" -p "auto backports for? " backports
 
 PKG_DIR="$(dirname $(readlink -f ${0}))/packages/"
 PACKAGES="${*}"
@@ -78,7 +54,7 @@ fi
 for P in ${PACKAGES}; do
 	if ! echo "${P}" | grep -q "template"; then
 		(
-			version="$(date +%Y%m%d%H%M%S)~${id}$(mbdBasedist2Version "${dist}")+"
+			version="$(date --utc +%Y%m%d%H%M%S)~${id}${DEB_RELEASE_VERSION[${dist}]}+"
 			if cp -a "${PKG_DIR}/${P}" "${P}"; then
 				cd "${P}"
 				autoreconf --force --install
@@ -94,8 +70,8 @@ for P in ${PACKAGES}; do
 			else
 				version+="1"
 			fi
-			debchange -b --newversion "${version}" --force-distribution --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
-			[ -z "${backports}" ] || debchange "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
+			debchange --force-distribution --force-bad-version --newversion "${version}" --dist "${dist}-${id}-${dest}" "test build for mini-buildd"
+			[ -z "${backports}" ] || debchange --force-distribution --force-bad-version --dist "${dist}-${id}-${dest}" --append "MINI_BUILDD: AUTO_BACKPORTS: ${backports}"
 
 			dpkg-buildpackage ${SIGN_OPTS} -d -S -sa
 		)

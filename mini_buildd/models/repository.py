@@ -2,9 +2,8 @@
 from __future__ import unicode_literals
 
 import os
-import codecs
 import tempfile
-import time
+import contextlib
 import shutil
 import glob
 import re
@@ -19,6 +18,7 @@ import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
 import mini_buildd.reprepro
+import mini_buildd.porter
 
 import mini_buildd.models.source
 import mini_buildd.models.base
@@ -427,60 +427,23 @@ Example:
             raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite_option.suite.name, m=mandatory_regex, v=version))
 
     def mbd_generate_keyring_packages(self, request):
-        t = tempfile.mkdtemp()
-        try:
-            p = os.path.join(t, "package")
-            shutil.copytree("/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template", p)
+        with contextlib.closing(mini_buildd.porter.KeyringPackage(
+                self.mbd_get_daemon().model.identity,
+                self.mbd_get_daemon().model.mbd_gnupg,
+                self.mbd_get_daemon().model.mbd_fullname,
+                self.mbd_get_daemon().model.email_address)) as package:
 
-            identity = self.mbd_get_daemon().model.identity
-            debemail = self.mbd_get_daemon().model.email_address
-            debfullname = self.mbd_get_daemon().model.mbd_fullname
-            hopo = self.mbd_get_daemon().model.mbd_get_ftp_hopo()
-
-            for root, _dirs, files in os.walk(p):
-                for f in files:
-                    old_file = os.path.join(root, f)
-                    new_file = old_file + ".new"
-                    codecs.open(new_file, "w", encoding="UTF-8").write(
-                        mini_buildd.misc.subst_placeholders(
-                            codecs.open(old_file, "r", encoding="UTF-8").read(),
-                            {"ID": identity,
-                             "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
-                    os.rename(new_file, old_file)
-
-            package_name = "{i}-archive-keyring".format(i=identity)
-            self.mbd_get_daemon().model.mbd_gnupg.export(os.path.join(p, package_name + ".gpg"))
-
-            env = mini_buildd.misc.taint_env({"DEBEMAIL": debemail, "DEBFULLNAME": debfullname})
-
-            version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    mini_buildd.misc.call(["debchange",
-                                           "--create",
-                                           "--package={p}".format(p=package_name),
-                                           "--newversion={v}{m}".format(v=version, m=self.layout.mbd_get_default_version(self, d, s)),
-                                           "--force-distribution",
-                                           "--force-bad-version",
-                                           "--dist={c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.suite.name),
-                                           "Automated build for via mini-buildd."],
-                                          cwd=p,
-                                          env=env)
-                    mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
-                                          cwd=p,
-                                          env=env)
-                    # Remove changelog for next package build
-                    os.remove(os.path.join(p, "debian", "changelog"))
-
-            for c in glob.glob(os.path.join(t, "*.changes")):
-                mini_buildd.changes.Changes(c).upload(hopo)
-                self.mbd_msg_info(request, "Keyring package uploaded: {c}".format(c=c))
-
-        except Exception as e:
-            self.mbd_msg_exception(request, "Some package failed", e)
-
-        finally:
-            shutil.rmtree(t)
+                    dist = "{c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.suite.name)
+                    with contextlib.closing(mini_buildd.porter.PortedPackage(
+                            "file://" + package.dsc,
+                            dist,
+                            self.layout.mbd_get_default_version(self, d, s),
+                            ["MINI_BUILDD: BACKPORT_MODE"],
+                            package.environment)) as port:
+                        port.upload(self.mbd_get_daemon().model.mbd_get_ftp_hopo())
+                        self.mbd_msg_info(request, "Keyring package port uploaded for: {d}".format(d=dist))
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

@@ -25,6 +25,21 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
+def parse_distribution(dist):
+    """
+    Like misc.parse_distribution, but also finds and returns actual model objects.
+    """
+    # Check and parse changes distribution string
+    distribution_codename, repository_identity, suite_name = mini_buildd.misc.parse_distribution(dist)
+
+    # Get repository for identity; django exceptions will suite quite well as-is
+    repository = mini_buildd.models.repository.Repository.objects.get(identity=repository_identity)
+    distribution = repository.distributions.all().get(base_source__codename__exact=distribution_codename)
+    suite = repository.layout.suiteoption_set.all().get(suite__name=suite_name)
+
+    return repository, distribution, suite
+
+
 class Changes(debian.deb822.Changes):
     BUILDREQUEST_RE = re.compile("^.+_mini-buildd-buildrequest_[^_]+.changes$")
     BUILDRESULT_RE = re.compile("^.+_mini-buildd-buildresult_[^_]+.changes$")
@@ -89,13 +104,7 @@ class Changes(debian.deb822.Changes):
         return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self.get("Changes", "")))
 
     def get_repository(self):
-        # Check and parse changes distribution string
-        distribution_codename, repository_identity, suite_name = mini_buildd.misc.parse_distribution(self["Distribution"])
-
-        # Get repository for identity; django exceptions will suite quite well as-is
-        repository = mini_buildd.models.repository.Repository.objects.get(identity=repository_identity)
-        distribution = repository.distributions.all().get(base_source__codename__exact=distribution_codename)
-        suite = repository.layout.suiteoption_set.all().get(suite__name=suite_name)
+        repository, distribution, suite = parse_distribution(self["Distribution"])
 
         if not suite.uploadable:
             raise Exception("Suite '{s}' is not uploadable".format(s=suite))

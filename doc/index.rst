@@ -68,8 +68,6 @@ Known missing features
 
 Optional, maybe 1.2:
 
- - [REGR] Auto-backports.
-    - 0.8.x path: 'lib/mbd-qa-check': mbdQACheckBackports()
  - [REGR] Chroot maintentance (apt-update, fs checks).
     - 0.8.x path: 'lib/chroots-update.d/10_apt-upgrade.hook'
  - [FEAT] DB schema upgrade support.

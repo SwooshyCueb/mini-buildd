@@ -95,8 +95,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 suite=experimental,
                 uploadable=True,
                 experimental=True,
-                but_automatic_upgrades=False,
-                build_keyring_package=True)
+                but_automatic_upgrades=False)
             so_experimental.save()
 
     @classmethod

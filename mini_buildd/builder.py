@@ -131,7 +131,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                       "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=self._build_dir),
                       "--chroot-setup-command=cat /etc/apt/preferences",
                       "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=self._build_dir),
-                      "--chroot-setup-command=sudo apt-get update",
+                      "--chroot-setup-command=sudo apt-get --option=Acquire::Languages=none update",
                       "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=self._build_dir),
                       "--chroot-setup-command=sudo rm -v -f /etc/sudoers",
                       "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),

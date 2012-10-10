@@ -238,12 +238,12 @@ activate/deactivate actions will start/stop the 'daemon'.
 
     def mbd_get_dput_conf(self):
         return """\
-[mini-buildd-{h}]
+[mini-buildd-{i}]
 method   = ftp
-fqdn     = {hostname}:{p}
+fqdn     = {h}
 login    = anonymous
 incoming = /incoming
-""".format(h=self.hostname.split(".")[0], hostname=self.hostname, p=8067)
+""".format(i=self.identity, h=self.mbd_get_ftp_hopo().string)
 
     def mbd_notify(self, subject, body, repository=None, changes=None):
         m_to = []

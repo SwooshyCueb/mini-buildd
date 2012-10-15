@@ -74,8 +74,12 @@ class Changes(debian.deb822.Changes):
         return self._file_path
 
     @property
+    def version_without_epoch(self):
+        return self["Version"].rpartition(":")[2]
+
+    @property
     def dsc_name(self):
-        return "{s}_{v}.dsc".format(s=self["Source"], v=self["Version"])
+        return "{s}_{v}.dsc".format(s=self["Source"], v=self.version_without_epoch)
 
     @property
     def buildlog_name(self):
@@ -245,7 +249,7 @@ class Changes(debian.deb822.Changes):
 
         # Extra check on all files from the dsc: Check md5 against possible pool files, add missing from pool (orig.tar.gz).
         files_from_pool = []
-        dsc_file = os.path.join(os.path.dirname(self._file_path), "{p}_{v}.dsc".format(p=self["Source"], v=self["Version"]))
+        dsc_file = os.path.join(os.path.dirname(self._file_path), self.dsc_name)
         dsc = debian.deb822.Dsc(file(dsc_file))
         for f in dsc["Files"]:
             for p in glob.glob(os.path.join(repository.mbd_get_path(), "pool", "*", "*", self["Source"], f["name"])):

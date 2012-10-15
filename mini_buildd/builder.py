@@ -169,7 +169,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         self._bres.add_file(buildlog)
         build_changes_file = os.path.join(self._build_dir,
                                           "{s}_{v}_{a}.changes".
-                                          format(s=self._breq["Source"], v=self._breq["Version"], a=self._breq["Architecture"]))
+                                          format(s=self._breq["Source"], v=self._breq.version_without_epoch, a=self._breq["Architecture"]))
         if os.path.exists(build_changes_file):
             build_changes = mini_buildd.changes.Changes(build_changes_file)
             build_changes.tar(tar_path=self._bres.file_path + ".tar")

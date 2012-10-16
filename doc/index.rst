@@ -41,7 +41,7 @@ Enter the web application's `configuration section </admin/mini_buildd/>`_.
 9. **Generate** keyring packages for your test repository in the `repository list view </admin/mini_buildd/repository>`_.
 10. **Control status** on `mini-buildd's home </mini_buildd/>`_.
 11. **Search** packages using "*" as pattern to see all.
-12. **Propagate** the new keyring package to *-testing and *-stable.
+12. **Propagate** the new keyring package to \*-testing and \*-stable.
 
 
 User uploads

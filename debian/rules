@@ -9,6 +9,10 @@ override_dh_installdocs:
 	python setup.py build_sphinx --source-dir=build/sphinx
 	dh_installdocs build/sphinx/html
 
+override_dh_installman:
+	help2man -o build/mini-buildd.1 --no-info --no-discard-stderr --include=debian/mini-buildd.help2man.include ./mini-buildd
+	dh_installman build/mini-buildd.1
+
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf build/ *.egg-info/

@@ -1,0 +1,13 @@
+[name]
+mini-buildd \- Easy Debian build daemon and repository.
+
+[see also]
+This manual page only describes the call syntax of the
+mini-buildd program, which you will only really need for
+fine-tuning, debugging or testing.
+
+End-users usually just go with the online manual, which is
+always available through mini-buildd's web interface. In a
+standard install, it's available at
+
+.B http://localhost:8066/manual/index.html.

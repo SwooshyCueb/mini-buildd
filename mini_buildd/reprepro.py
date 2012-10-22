@@ -4,6 +4,9 @@ Run reprepro commands.
 """
 from __future__ import unicode_literals
 
+import os
+import shutil
+
 import logging
 
 import mini_buildd.misc
@@ -13,12 +16,17 @@ LOG = logging.getLogger(__name__)
 
 class Reprepro():
     def __init__(self, basedir):
+        self._basedir = basedir
         self._cmd = ["reprepro", "--verbose", "--basedir={b}".format(b=basedir)]
 
-    def clearvanished(self):
-        mini_buildd.misc.call(self._cmd + ["clearvanished"])
+    def reindex(self):
+        # Update reprepro dbs, and delete any packages no longer in dists.
+        mini_buildd.misc.call(self._cmd + ["--delete", "clearvanished"])
 
-    def export(self):
+        # Purge all indices under 'dists/' (clearvanished does not remove indices of vanished distributions)
+        shutil.rmtree(os.path.join(self._basedir, "dists"), ignore_errors=True)
+
+        # Finally, rebuild all indices
         mini_buildd.misc.call(self._cmd + ["export"])
 
     def include(self, distribution, changes):

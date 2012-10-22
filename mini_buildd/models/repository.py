@@ -618,7 +618,7 @@ DscIndices: Sources Release . .gz .bz2
             if not d.components.all().filter(name="main"):
                 raise django.core.exceptions.ValidationError("Mandatory component 'main' missing in: {d}".format(d=d))
 
-        # Reprepro config
+        # (Re-)build config files
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), "conf"))
         mini_buildd.misc.ConfFile(
             os.path.join(self.mbd_get_path(), "conf", "distributions"),
@@ -630,10 +630,8 @@ gnupghome {h}
 {m}
 """.format(h=os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"), m="morguedir +b/morguedir" if self.reprepro_morguedir else "")).save()
 
-        # Update all indices (or create on initial install) via reprepro
-        repo = self._mbd_reprepro()
-        repo.clearvanished()
-        repo.export()
+        # (Re-)index
+        self._mbd_reprepro().reindex()
 
     def mbd_unprepare(self, _request):
         if os.path.exists(self.mbd_get_path()):

@@ -64,7 +64,6 @@ distutils.core.setup(
                                   "templates/admin/*.html",
                                   "templates/admin/mini_buildd/*.html",
                                   "templatetags/*.py",
-                                  "fixtures/*.json",
                                   "static/css/*.css",
                                   "static/images/*.png",
                                   "static/*.*"]})

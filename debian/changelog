@@ -1,3 +1,28 @@
+mini-buildd (1.0.0~alpha.7) experimental; urgency=low
+
+  This release re-implements the magic auto backport
+  feature, and has galactical number of "very fine other fixes".
+  * [a7ab8c5] gnupg.py: TmpGnuPG: Switch to context manager solution to clear temporary dir.
+  * [5a73f97] [devel] Include PYLINTRC to env (./devel); fix and cleanup 'packages.testbuild' script.
+  * [129ddaf] Implement magic auto backports (per magic changelog line).
+  * [492b74f] builder.py: Don't aquire languages in builds on 'apt-get update'.
+  * [5e215ef] [defaults]: Don't build keyring package for 'experimental' in the 'Default' layout.
+  * [d6c558e] models/repository.py: Add example how to add "eatmydata" to builds.
+  * [7563812] models/daemon.py: Fix some hardcoded values in '.dput.cf' generator.
+  * [3926b44] changes.py: Fix building for epoched package versions.
+  * [9df0c18] [doc] doc/conf.py: Fix generation of models graphic via graphviz.
+  * [a41d023] Use debhelper 'sphinxdoc' extension (fixes redundant static .js files in manual).
+  * [8fb064e] debian/control: Use one dependency per line (cosmetic).
+  * [7b3de57] debian/control: Correctly use ${python:Depends}, and remove unused pre-depends.
+  * [aa9f070] debian/control: Update to stds-ver 3.9.3 (no changes needed).
+  * [2d49929] Produce a mini-buildd.1 man page with help2man.
+  * [d994bd7] lintian overrides: Ignore some more false positives.
+  * [bea5897] doc/index.rst: [cosmetic] Fix two warnings.
+  * [2744533] Drop unused mini_buildd/fixtures directory.
+  * [d03a63d] reprepro.py: Hardening reindex.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Oct 2012 21:07:18 +0200
+
 mini-buildd (1.0.0~alpha.6) experimental; urgency=low
 
   Universal 'typo fix' release:

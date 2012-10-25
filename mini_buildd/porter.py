@@ -127,7 +127,6 @@ Name-Email: test@porter""")
 
     K = KeyringPackage("test", GNUPG, "Porter Test", "test@porter")
 
-    # "file:///home/absurd/src/debian/mini-buildd/mini-buildd/DSC/mini-buildd_1.0.0~alpha.6~1.gbp3d037f.dsc",
     with contextlib.closing(PortedPackage("file://" + K.dsc,
                                           "squeeze-test-unstable", "~test60+1", ["MINI_BUILDD: BACKPORT-MODE"],
                                           K.environment)) as P:

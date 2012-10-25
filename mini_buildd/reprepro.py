@@ -32,9 +32,9 @@ class Reprepro():
     def include(self, distribution, changes):
         mini_buildd.misc.call(self._cmd + ["include", distribution, changes])
 
-    def copysrc(self, dest_distribution, source_distribution, package, version):
+    def copysrc(self, dest_distribution, source_distribution, package, version=None):
         return mini_buildd.misc.sose_call(
-            self._cmd + ["copysrc", dest_distribution, source_distribution, package, version])
+            self._cmd + ["copysrc", dest_distribution, source_distribution, package] + ([version] if version else []))
 
     def removesrc(self, distribution, package, version):
         return mini_buildd.misc.sose_call(

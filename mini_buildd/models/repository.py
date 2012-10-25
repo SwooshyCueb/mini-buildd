@@ -113,11 +113,23 @@ lintian) as non-lethal, and will install anyway.
 
         super(SuiteOption, self).clean(*args, **kwargs)
 
-    def mbd_get_distribution_string(self, repository, distribution):
-        return "{c}-{i}-{s}".format(
+    @property
+    def rollback(self):
+        " Rollback field temporarily implemented as extra_option. "
+        return int(self.mbd_get_extra_option("Rollback", "0"))
+
+    def mbd_get_distribution_string(self, repository, distribution, rollback=None):
+        dist_string = "{c}-{i}-{s}".format(
             c=distribution.base_source.codename,
             i=repository.identity,
             s=self.suite.name)
+
+        if rollback is None:
+            return dist_string
+        else:
+            if not rollback in range(self.rollback):
+                raise Exception("Rollback number out of range: {r} ({m})".format(r=rollback, m=self.rollback))
+            return "{d}-rollback{r}".format(d=dist_string, r=rollback)
 
     def mbd_get_apt_pin(self, repository, distribution):
         return "release n={c}, o={o}".format(
@@ -133,7 +145,6 @@ lintian) as non-lethal, and will install anyway.
 class SuiteOptionInline(django.contrib.admin.TabularInline):
     model = SuiteOption
     extra = 1
-    exclude = ("extra_options",)
 
 
 class Layout(mini_buildd.models.base.Model):
@@ -324,6 +335,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]
+
+    def mbd_get_archall_architectures(self):
+        return [a.architecture.name for a in self.architectureoption_set.all() if a.build_architecture_all]
+
+    def mbd_get_mandatory_architectures(self):
+        return [a.architecture.name for a in self.architectureoption_set.all() if not a.optional]
 
     def mbd_get_apt_line(self, repository, suite_option):
         return "deb {u}/{r}/{i} {d} {c}".format(
@@ -524,13 +541,10 @@ Example:
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
     def _mbd_reprepro_config(self):
-        result = ""
-        for d in self.distributions.all():
-            for s in self.layout.suiteoption_set.all():
-                result += """
-Codename: {dist}
-Suite: {dist}
-Label: {dist}
+        dist_template = """
+Codename: {distribution}
+Suite: {distribution}
+Label: {distribution}
 Origin: {origin}
 Components: {components}
 Architectures: source {architectures}
@@ -540,20 +554,45 @@ NotAutomatic: {na}
 ButAutomaticUpgrades: {bau}
 DebIndices: Packages Release . .gz .bz2
 DscIndices: Sources Release . .gz .bz2
-""".format(dist=s.mbd_get_distribution_string(self, d),
-           origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
-           components=" ".join(d.mbd_get_components()),
-           architectures=" ".join([x.name for x in d.architectures.all()]),
-           desc=self.mbd_get_description(d, s),
-           na="yes" if s.not_automatic else "no",
-           bau="yes" if s.but_automatic_upgrades else "no")
+"""
+        result = ""
+        for d in self.distributions.all():
+            for s in self.layout.suiteoption_set.all():
+                result += dist_template.format(
+                    distribution=s.mbd_get_distribution_string(self, d),
+                    origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
+                    components=" ".join(d.mbd_get_components()),
+                    architectures=" ".join([x.name for x in d.architectures.all()]),
+                    desc=self.mbd_get_description(d, s),
+                    na="yes" if s.not_automatic else "no",
+                    bau="yes" if s.but_automatic_upgrades else "no")
+
+                for r in range(s.rollback):
+                    result += dist_template.format(
+                        distribution=s.mbd_get_distribution_string(self, d, r),
+                        origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
+                        components=" ".join(d.mbd_get_components()),
+                        architectures=" ".join([x.name for x in d.architectures.all()]),
+                        desc="{d}: Automatic rollback distribution #{r}".format(d=self.mbd_get_description(d, s), r=r),
+                        na="yes",
+                        bau="no")
 
         return result
 
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_package_install(self, bres):
+    def _mbd_package_shift_rollbacks(self, distribution, suite_option, package_name):
+        for r in range(suite_option.rollback - 1, -1, -1):
+            src = suite_option.mbd_get_distribution_string(self, distribution, None if r == 0 else r - 1)
+            dst = suite_option.mbd_get_distribution_string(self, distribution, r)
+            LOG.info("Rollback: Moving {p}: {s} to {d}".format(p=package_name, s=src, d=dst))
+            try:
+                self._mbd_reprepro().copysrc(dst, src, package_name)
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Rollback failed (ignoring)", e)
+
+    def _mbd_package_install(self, bres):
         t = tempfile.mkdtemp()
         bres.untar(path=t)
         self._mbd_reprepro().include(
@@ -562,10 +601,46 @@ DscIndices: Sources Release . .gz .bz2
         shutil.rmtree(t)
         LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
 
+    def mbd_package_install(self, distribution, suite_option, bresults):
+        """
+        Install a dict arch:bres of successful build results.
+        """
+        archall = distribution.mbd_get_archall_architectures()
+        LOG.debug("Found archall={a}".format(a=archall))
+
+        # Check that all mandatory archs are present
+        missing_mandatory_archs = [arch for arch in distribution.mbd_get_mandatory_architectures() if arch not in bresults]
+        if missing_mandatory_archs:
+            raise Exception("{n} mandatory architecture(s) missing: {a}".format(n=len(missing_mandatory_archs), a=" ".join(missing_mandatory_archs)))
+
+        # Shift package up in the rollback distributions
+        self._mbd_package_shift_rollbacks(distribution, suite_option, bresults.values()[0]["Source"])
+
+        # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
+        for bres in [s for a, s in bresults.items() if a in archall]:
+            self._mbd_package_install(bres)
+
+        # Second, install all other archs
+        for bres in [s for a, s in bresults.items() if not a in archall]:
+            # Don't try install if skipped
+            if bres.get("Sbuild-Status") == "skipped":
+                LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
+            else:
+                self._mbd_package_install(bres)
+
     def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
+        # Shift rollbacks in the destination distributions
+        d, s = self._mbd_find_dist(dest_distribution)
+        self._mbd_package_shift_rollbacks(d, s, package)
+
+        # Actually propagate package
         return self._mbd_reprepro().copysrc(dest_distribution, source_distribution, package, version)
 
     def mbd_package_remove(self, distribution, package, version):
+        # Shift rollbacks in the destination distributions
+        d, s = self._mbd_find_dist(distribution)
+        self._mbd_package_shift_rollbacks(d, s, package)
+
         return self._mbd_reprepro().removesrc(distribution, package, version)
 
     MBD_SEARCH_FMT_STANDARD = 0
@@ -585,14 +660,15 @@ DscIndices: Sources Release . .gz .bz2
         result = [{}, []]
         for d in distributions:
             for s in self.layout.suiteoption_set.all():
-                for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d), pattern):
-                    package, distribution, version = item
-                    pkg = result[self.MBD_SEARCH_FMT_STANDARD].setdefault(package, {})
-                    dis = pkg.setdefault(distribution, {})
-                    ver = dis.setdefault(version, {})
-                    result[self.MBD_SEARCH_FMT_VERSIONS].append(version)
-                    if s.migrates_to:
-                        ver["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
+                for rollback in [None] + range(s.rollback):
+                    for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d, rollback), pattern):
+                        package, distribution, version = item
+                        pkg = result[self.MBD_SEARCH_FMT_STANDARD].setdefault(package, {})
+                        dis = pkg.setdefault(distribution, {})
+                        ver = dis.setdefault(version, {})
+                        result[self.MBD_SEARCH_FMT_VERSIONS].append(version)
+                        if s.migrates_to:
+                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
 
         return result[fmt]
 

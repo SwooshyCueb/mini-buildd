@@ -114,26 +114,9 @@ class Package(mini_buildd.misc.Status):
         This may throw on error, and if so, no changes should be
         done to the repo.
         """
-        archall = [a.architecture.name for a in self.distribution.architectureoption_set.all() if a.build_architecture_all]
-        archman = [a.architecture.name for a in self.distribution.architectureoption_set.all() if not a.optional]
-        LOG.debug("Found archall={a}".format(a=archall))
-        LOG.debug("Found archman={a}".format(a=archman))
 
-        mandatory_fails = [arch for arch in self.failed.keys() if arch in archman]
-        if mandatory_fails:
-            raise Exception("{n} mandatory architecture(s) failed: {a}".format(n=len(mandatory_fails), a=" ".join(mandatory_fails)))
-
-        # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
-        for bres in [s for a, s in self.success.items() if a in archall]:
-            self.repository.mbd_package_install(bres)
-
-        # Second, install all other archs
-        for bres in [s for a, s in self.success.items() if not a in archall]:
-            # Don't try install if skipped
-            if bres.get("Sbuild-Status") == "skipped":
-                LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
-            else:
-                self.repository.mbd_package_install(bres)
+        # Install to reprepro repository
+        self.repository.mbd_package_install(self.distribution, self.suite, self.success)
 
         # Installed. Finally, try to server magic auto backports
         dsc_url = "file://" + os.path.join(os.path.dirname(self.changes.file_path), self.changes.dsc_name)

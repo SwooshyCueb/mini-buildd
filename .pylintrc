@@ -7,7 +7,7 @@ disable=C0111,C0301,
 
 [TYPECHECK]
 # see ./devel pylintgeneratedmembers
-generated-members=add,all,build_keyring_package_for,codename,create_default_layout,DoesNotExist,filechroot,get_status_display,id,looplvmchroot,lvmchroot,mandatory_architectures,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_default_version,mbd_get_mandatory_version_regex,mbd_id,objects,split,splitlines,suites,admin_site,suiteoption_set,suite,layout,uploadable,get_union_type_display mbd_unprepare
+generated-members=add,all,build_keyring_package_for,codename,create_default_layout,DoesNotExist,filechroot,get_status_display,id,looplvmchroot,lvmchroot,mandatory_architectures,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_default_version,mbd_get_mandatory_version_regex,mbd_id,objects,split,splitlines,suites,admin_site,suiteoption_set,suite,layout,uploadable,get_union_type_display mbd_unprepare,architectureoption_set
 
 [BASIC]
 

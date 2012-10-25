@@ -211,6 +211,21 @@ mbd_all()
 	mbd_test
 }
 
+mbd_chrootclean()
+{
+	local c s
+
+	_head "Trying to clean any mini-buildd schroot sessions...."
+	for c in $(sudo schroot --all-sessions --list | grep mini-buildd); do
+		sudo schroot --verbose --chroot="${c}" --end-session || true
+	done
+
+	_head "Trying to remove any leftover mini-buildd lvm snapshot..."
+	for s in $(sudo lvdisplay | grep 'LV Name.*/dev/mini-buildd-loop-.\+/mini-buildd-.\+-.\+-.\+-.\+-.\+-.\+' | rev | cut -d' ' -f1 | rev); do
+		sudo lvremove --verbose --force "${s}" || true
+	done
+}
+
 sep=" "
 for c in $(compgen -A function | grep '^mbd_'); do
 	ACTIONS+="${sep}${c:4}"

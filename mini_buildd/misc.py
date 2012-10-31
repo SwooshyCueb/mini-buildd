@@ -406,18 +406,18 @@ def sbuild_keys_workaround():
             LOG.info("One-time generation of sbuild keys done")
 
 
-def setup_test_logging():
+def setup_console_logging(level=logging.DEBUG):
     ch = logging.StreamHandler()
     ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
 
     for ln in ["__main__", "mini_buildd"]:
         l = logging.getLogger(ln)
         l.addHandler(ch)
-        l.setLevel(logging.DEBUG)
+        l.setLevel(level)
 
 
 if __name__ == "__main__":
-    setup_test_logging()
+    setup_console_logging()
 
     import doctest
     doctest.testmod()

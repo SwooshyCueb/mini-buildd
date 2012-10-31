@@ -116,7 +116,7 @@ class PortedPackage(mini_buildd.misc.TmpDir):
 
 
 if __name__ == "__main__":
-    mini_buildd.misc.setup_test_logging()
+    mini_buildd.misc.setup_console_logging()
 
     import contextlib
     GNUPG = mini_buildd.gnupg.TmpGnuPG()

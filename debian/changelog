@@ -1,3 +1,15 @@
+mini-buildd (1.0.0~alpha.8) experimental; urgency=low
+
+  Adds the automated rollback distributions.
+  * [6dc5826] postinst/fstab: Bind-mount whole '~/var' (not only '~/var/spool') in builds (fixes optional %LIBDIR% support, f.e. needed for ccache).
+  * [679b58c] Add support for automated rollback distributions.
+  * [98b883e] [devel]: Add extra target 'chrootclean'.
+  * [c26d848] porter.py: [devel] Remove local debug uri from comment.
+  * [807d3ad] misc.py: Rename setup_test_logging() to setup_console_logging(), and parameterize level.
+  * [3d17248] misc.py: Add 'ftp' proto to builder state string.
+
+ -- Stephan Sürken <absurd@debian.org>  Thu, 01 Nov 2012 16:13:18 +0100
+
 mini-buildd (1.0.0~alpha.7) experimental; urgency=low
 
   This release re-implements the magic auto backport

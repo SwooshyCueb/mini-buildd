@@ -170,7 +170,7 @@ class BuilderState(object):
             self._state = pickle.load(pickled_state)
 
     def __unicode__(self):
-        return "{s}: {h}: {c} ({l})".format(
+        return "{s}: ftp://{h}: {c} ({l})".format(
             s="Running" if self.is_up() else "Stopped",
             h=self.get_hopo().string,
             c=pprint.pformat(self.get_chroots()),

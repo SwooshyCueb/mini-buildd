@@ -58,7 +58,7 @@ distutils.core.setup(
     description="Mini Debian build daemon",
     author="Stephan Sürken",
     author_email="absurd@debian.org",
-    scripts=["mini-buildd"],
+    scripts=["mini-buildd", "mini-buildd-tool"],
     packages=["mini_buildd", "mini_buildd/models"],
     package_data={"mini_buildd": ["templates/mini_buildd/*.html",
                                   "templates/admin/*.html",

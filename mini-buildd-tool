@@ -1,0 +1,75 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import sys
+import argparse
+#import contextlib
+import urllib
+import logging
+import logging.handlers
+
+import mini_buildd.misc
+#import mini_buildd.porter
+
+LOG = logging.getLogger("mini_buildd")
+mini_buildd.misc.setup_console_logging(logging.INFO)
+
+
+PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
+                                 description="Mini-buildd user tool.",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+PARSER.add_argument('--version', action='version', version=mini_buildd.__version__)
+PARSER.add_argument("-H", "--host", action='store', default="localhost:8066",
+                    help="Mini-buildd host (http port).")
+
+def get_host_state(args):
+    url = "http://{h}/mini_buildd/download/builder_state".format(h=args.host)
+    return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
+
+SUBPARSERS = PARSER.add_subparsers()
+
+#
+# "status"
+#
+PARSER_STATUS = SUBPARSERS.add_parser("status")
+
+def status(args):
+    print("{h}: {s}".format(h=args.host, s=get_host_state(args)))
+
+PARSER_STATUS.set_defaults(func=status)
+
+#
+# "port"
+#
+PARSER_PORT = SUBPARSERS.add_parser("port")
+
+PARSER_PORT.add_argument("--dsc", action="store", required=True,
+                         help="URL for a dsc (Debian source package)")
+PARSER_PORT.add_argument("--distribution", action="store", required=True,
+                         help="Distribution to build for (e.g. 'squeeze-test-experimental', 'squeeze-test-unstable')")
+PARSER_PORT.add_argument("--appendix", action="store", required=True,
+                         help="Version appendix to use (e.g. '~test60+0exp1', '~test60+1')")
+
+def port(args):
+    # with contextlib.closing(
+    #     mini_buildd.porter.PortedPackage(
+    #         args.dsc,
+    #         args.distribution,
+    #         args.appendix,
+    #         ["MINI_BUILDD: BACKPORT_MODE"],
+    #         mini_buildd.misc.taint_env({}))) as p:
+    #     p.upload(get_host_state(args).get_hopo())
+    print("not impl yet", args)
+
+PARSER_PORT.set_defaults(func=port)
+
+
+# Parse and run
+ARGS = PARSER.parse_args()
+try:
+    ARGS.func(ARGS)
+except Exception as e:
+    print("Error {h}: {e}".format(h=ARGS.host, e=e))
+    sys.exit(1)

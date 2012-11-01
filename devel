@@ -99,7 +99,7 @@ mbd_pylint()
 	[ "$(lsb_release -s -c)" != "squeeze" ] || { printf "W: Skipping pylint on squeeze\n" >&2; return; }
 	(
 		pyenv
-		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini_buildd/
+		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini-buildd-tool mini_buildd/
 	)
 }
 

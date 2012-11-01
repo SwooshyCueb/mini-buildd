@@ -56,7 +56,7 @@ db_get mini-buildd/admin_password
 MINI_BUILDD_ADMIN_PASSWORD="${RET}"
 if [ -n "${MINI_BUILDD_ADMIN_PASSWORD}" ]; then
 	printf "Setting admin password..."
-	su mini-buildd -c "mini-buildd --set-admin-password='${MINI_BUILDD_ADMIN_PASSWORD}'"
+	su mini-buildd -c "/usr/sbin/mini-buildd --set-admin-password='${MINI_BUILDD_ADMIN_PASSWORD}'"
 	db_set mini-buildd/admin_password ""
 	printf "done.\n"
 fi

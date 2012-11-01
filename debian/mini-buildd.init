@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
-DAEMON=/usr/bin/mini-buildd
+DAEMON=/usr/sbin/mini-buildd
 NAME=$(basename "${DAEMON}")
 DESC="mini build daemon"
 

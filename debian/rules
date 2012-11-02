@@ -5,21 +5,9 @@ export DH_VERBOSE = 1
 %:
 	dh $@ --with=python2,sphinxdoc
 
-override_dh_installdocs:
+override_dh_auto_build:
+	dh_auto_build
 	python setup.py build_sphinx --source-dir=build/sphinx
-	dh_installdocs build/sphinx/html
-
-override_dh_installman:
-	help2man \
-		--output=build/mini-buildd.8 --section=8 \
-		--no-info --no-discard-stderr \
-		--include=debian/mini-buildd.help2man.include ./mini-buildd
-	help2man \
-		--output=build/mini-buildd-tool.1 --section=1 \
-		--no-info --no-discard-stderr \
-		--name="mini-buildd-tool \- User/client tool box for mini-buildd instances." ./mini-buildd-tool
-	dh_installman -pmini-buildd build/mini-buildd.8
-	dh_installman -ppython-mini-buildd build/mini-buildd-tool.1
 
 override_dh_auto_clean:
 	dh_auto_clean

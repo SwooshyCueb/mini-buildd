@@ -1,0 +1,2 @@
+# git dch always produces these errors
+python-mini-buildd: debian-changelog-line-too-long

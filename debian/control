@@ -23,7 +23,7 @@ Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 
 Package: python-mini-buildd
-#Section: python
+Section: python
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},

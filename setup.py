@@ -2,6 +2,7 @@
 import os
 import sys
 import shutil
+import subprocess
 import distutils.core
 import debian.changelog
 import setuptools
@@ -10,30 +11,25 @@ import doc.apidoc
 print "I: Using setuptools: {v}".format(v=setuptools.__version__)
 
 
-def sphinx_build_workaround():
-    build_dir = "build/sphinx"
-    static_files_build_dir = build_dir + "/_static"
-    template_files_build_dir = build_dir + "/_templates"
-    template_files_source_dir = "doc/_templates"
+def sphinx_build_workaround(build_dir="./build/sphinx"):
+    # Prepare build dir
+    shutil.rmtree(build_dir, ignore_errors=True)
+    shutil.copytree("./doc", build_dir)
+    os.makedirs(build_dir + "/_static")
 
-    if not os.path.exists(static_files_build_dir):
-        os.makedirs(static_files_build_dir)
-
-    if not os.path.exists(template_files_build_dir):
-        os.makedirs(template_files_build_dir)
-
-    # copy template files
-    file_list = os.listdir(template_files_source_dir)
-    for f in file_list:
-        shutil.copy(template_files_source_dir + "/" + f, template_files_build_dir)
-
-    # copy main files
-    shutil.copy("doc/conf.py", build_dir)
-    shutil.copy("doc/index.rst", build_dir)
-
-    # call local apidoc script (sphinx < 1.1)
-    apidoc_arguments = ['doc/apidoc.py', '--force', '--output-dir', 'build/sphinx', 'mini_buildd']
+    # Call apidoc (local script for sphinx < 1.1)
+    apidoc_arguments = ['doc/apidoc.py', '--force', '--output-dir', build_dir, './mini_buildd/']
     doc.apidoc.main(apidoc_arguments)
+
+    # Generate man pages via help2man
+    subprocess.check_call(["help2man",
+                           "--no-info", "--no-discard-stderr",
+                           "--output=" + build_dir + "/mini-buildd.8", "--section=8",
+                           "--include=doc/mini-buildd.help2man.include", "./mini-buildd"])
+    subprocess.check_call(["help2man",
+                           "--no-info", "--no-discard-stderr",
+                           "--output=" + build_dir + "/mini-buildd-tool.1", "--section=1",
+                           "--name=mini-buildd-tool \- User/client tool box for mini-buildd instances.", "./mini-buildd-tool"])
 
 # This is a Debian native package, the version is in
 # debian/changelog and nowhere else. We automagically get the

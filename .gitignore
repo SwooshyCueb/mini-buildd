@@ -6,9 +6,10 @@
 # Debian package
 /mini_buildd.egg-info/
 /debian/tmp/*
+/debian/python-mini-buildd/*
 /debian/mini-buildd/*
 /debian/mini-buildd-common/*
-/debian/mini-buildd*.*.debhelper
-/debian/mini-buildd*.debhelper.log
-/debian/mini-buildd*.substvars
+/debian/*mini-buildd*.*.debhelper
+/debian/*mini-buildd*.debhelper.log
+/debian/*mini-buildd*.substvars
 /debian/files

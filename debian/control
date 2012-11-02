@@ -22,14 +22,27 @@ Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 
+Package: python-mini-buildd
+#Section: python
+Architecture: all
+Depends: ${misc:Depends},
+         ${python:Depends},
+         python-argparse,
+         python-debian (>= 0.1.18~)
+Description: Minimal Debian build daemon: python library and user tool
+ Mini-buildd is an easy-to-configure Debian autobuilder and
+ repository.
+ .
+ This package includes the user space control tool and the
+ 'mini_buildd' python package.
+
 Package: mini-buildd
 Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          ${sphinxdoc:Depends},
-         python-argparse,
+         python-mini-buildd (= ${binary:Version}),
          python-daemon (>= 1.5.5),
-         python-debian (>= 0.1.18~),
          python-cherrypy3,
          python-pyftpdlib,
          python-django (>= 1.4),

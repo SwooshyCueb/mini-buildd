@@ -1,4 +1,2 @@
-usr/lib
 usr/bin/mini-buildd usr/sbin/
-usr/bin/mini-buildd-tool usr/bin/
 debian/mini-buildd-sudoers etc/sudoers.d

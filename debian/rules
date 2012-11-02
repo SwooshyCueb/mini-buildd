@@ -18,7 +18,8 @@ override_dh_installman:
 		--output=build/mini-buildd-tool.1 --section=1 \
 		--no-info --no-discard-stderr \
 		--name="mini-buildd-tool \- User/client tool box for mini-buildd instances." ./mini-buildd-tool
-	dh_installman build/mini-buildd.8 build/mini-buildd-tool.1
+	dh_installman -pmini-buildd build/mini-buildd.8
+	dh_installman -ppython-mini-buildd build/mini-buildd-tool.1
 
 override_dh_auto_clean:
 	dh_auto_clean

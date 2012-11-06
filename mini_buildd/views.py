@@ -88,26 +88,31 @@ def get_repository_results(request):
     return ret
 
 
-def http_status(code, meaning, description):
-    return django.shortcuts.render_to_response("mini_buildd/error_page.html",
-                                               {"code": code,
-                                                "meaning": meaning,
-                                                "description": description})
+def http_status(request, code, meaning, description):
+    return django.shortcuts.render(request,
+                                   "mini_buildd/error_page.html",
+                                   {"code": code,
+                                    "meaning": meaning,
+                                    "description": description},
+                                   status=code)
 
 
-def http_status_403(_request):
-    meaning = "Forbidden"
-    description = "The request was a valid request, but the server is refusing to respond to it."
-    return http_status(403, meaning, description)
+def http_status_403(request):
+    return http_status(request,
+                       403,
+                       meaning="Forbidden",
+                       description="The request was a valid request, but the server is refusing to respond to it.")
 
 
-def http_status_404(_request):
-    meaning = "Not Found"
-    description = "The requested resource could not be found."
-    return http_status(404, meaning, description)
+def http_status_404(request):
+    return http_status(request,
+                       404,
+                       meaning="Not Found",
+                       description="The requested resource could not be found.")
 
 
-def http_status_500(_request):
-    meaning = "Internal Server Error"
-    description = "Sorry, something went wrong."
-    return http_status(500, meaning, description)
+def http_status_500(request):
+    return http_status(request,
+                       500,
+                       meaning="Internal Server Error",
+                       description="Sorry, something went wrong.")

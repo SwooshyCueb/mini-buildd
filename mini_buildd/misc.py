@@ -12,6 +12,9 @@ import Queue
 import multiprocessing
 import tempfile
 import hashlib
+import urllib
+import urllib2
+import getpass
 import pickle
 import logging
 import logging.handlers
@@ -389,6 +392,90 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             LOG.error("Sequence failed at: {i} (rolling back)".format(i=i))
             rollback(i)
             raise
+
+
+class CredsCache(object):
+    def __init__(self, cache_file):
+        self._file = cache_file
+        self._creds = {}
+        try:
+            self._creds = pickle.load(open(self._file))
+            LOG.debug("Creds cache pickled from '{c}'. {l} entries.".format(c=cache_file, l=len(self._creds)))
+        except Exception as e:
+            LOG.debug("Can't read credentials cache {c}: {e}".format(c=cache_file, e=e))
+        self._changed = []
+
+    def save(self):
+        if self._changed:
+            LOG.info("Got new credentials for: {c}".format(c=",".join(self._changed)))
+            answer = raw_input("Cache (unencrypted) in '{f}' (y/n)? ".format(f=self._file))
+            if answer.upper() == "Y":
+                pickle.dump(self._creds,
+                            os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "w"))
+        else:
+            LOG.debug("No changes in '{c}'".format(c=self._file))
+
+    def clear(self, delete_file=True):
+        self._creds = {}
+        if delete_file:
+            os.remove(self._file)
+            LOG.info("Credentials cache removed: {c}".format(c=self._file))
+
+    def get(self, url):
+        try:
+            username, password = self._creds[url]
+            LOG.debug("Using creds from cache '{f}': {url}, user {user}".format(f=self._file, url=url, user=username))
+        except Exception as e:
+            LOG.debug("Not in cache {u}: {e}".format(u=url, e=e))
+            username = raw_input("Username: ")
+            password = getpass.getpass("Password: ")
+            self._changed.append(url)
+            self._creds[url] = username, password
+
+        return username, password
+
+
+def web_login(url, credentials, login_loc="/admin/", next_loc="/mini_buildd/"):
+    try:
+        login_url = url + login_loc
+        next_url = url + next_loc
+
+        username, password = credentials.get(url)
+
+        # Create cookie-enabled opener
+        cookie_handler = urllib2.HTTPCookieProcessor()
+        opener = urllib2.build_opener(urllib2.HTTPHandler(debuglevel=0), cookie_handler)
+
+        # Retrieve login page
+        opener.open(login_url)
+
+        # Find "csrftoken" in cookiejar
+        csrf_cookies = [c for c in cookie_handler.cookiejar if c.name == "csrftoken"]
+        if len(csrf_cookies) != 1:
+            raise Exception("{n} csrftoken cookies found in login pages (need exactly 1).")
+        LOG.debug("csrftoken={c}".format(c=csrf_cookies[0].value))
+
+        # Login via POST request
+        response = opener.open(
+            login_url,
+            urllib.urlencode({"username": username,
+                              "password": password,
+                              "csrfmiddlewaretoken": csrf_cookies[0].value,
+                              "this_is_the_login_form": "1",
+                              "next": next_loc,
+                              }))
+
+        # If successfull, next url of the response must match
+        if response.geturl() != next_url:
+            raise Exception("Response URL {r} does not equal expected: {e}".format(r=response.geturl(), e=next_url))
+
+        # Logged in: Install opener, save credentials
+        LOG.info("User {u} logged in to {url}".format(u=username, url=url))
+        urllib2.install_opener(opener)
+        credentials.save()
+    except Exception as e:
+        raise Exception("Login to {u} failed: {e}".format(u=url, e=e))
+
 
 SBUILD_KEYS_WORKAROUND_LOCK = threading.Lock()
 

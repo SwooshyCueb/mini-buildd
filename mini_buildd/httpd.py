@@ -60,7 +60,8 @@ def run(bind, wsgi_app):
     log_init()
 
     cherrypy.config.update({'server.socket_host': mini_buildd.misc.HoPo(bind).host,
-                            'server.socket_port': mini_buildd.misc.HoPo(bind).port})
+                            'server.socket_port': mini_buildd.misc.HoPo(bind).port,
+                            'engine.autoreload_on': False})
 
     # Django: Add our own static directory
     add_static_handler(directory=".",

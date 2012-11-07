@@ -494,8 +494,14 @@ def sbuild_keys_workaround():
 
 
 def setup_console_logging(level=logging.DEBUG):
+    logging.addLevelName(logging.DEBUG, "D")
+    logging.addLevelName(logging.INFO, "I")
+    logging.addLevelName(logging.WARNING, "W")
+    logging.addLevelName(logging.ERROR, "E")
+    logging.addLevelName(logging.CRITICAL, "C")
+
     ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter("%(levelname)-8s: %(message)s"))
+    ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
 
     for ln in ["__main__", "mini_buildd"]:
         l = logging.getLogger(ln)

@@ -13,7 +13,7 @@ generated-members=add,all,build_keyring_package_for,codename,create_default_layo
 
 good-names=mini-buildd,mini-buildd-tool,urlpatterns,register
 variable-rgx=[a-z_][a-z0-9_]{0,30}$
-method-rgx=[a-z_][a-z0-9_]{2,40}$
+method-rgx=[a-z_][a-z0-9_]{1,40}$
 
 [DESIGN]
 
@@ -24,6 +24,7 @@ min-public-methods=0
 # We need to pimp some default values a little
 max-args=10
 max-locals=30
+max-returns=10
 max-branchs=25
 max-attributes=15
 max-statements=60

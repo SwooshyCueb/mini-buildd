@@ -215,16 +215,62 @@ def timedelta_total_seconds(delta):
     return float(delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * (10 ** 6)) / (10 ** 6)
 
 
-def parse_distribution(dist):
-    """Parse a mini-buildd distribution of the form CODENAME-ID-SUITE into a triple in that order.
-
-    >>> parse_distribution("squeeze-test-unstable")
-    (u'squeeze', u'test', u'unstable')
+class Distribution(object):
     """
-    dsplit = dist.split("-")
-    if len(dsplit) != 3 or not dsplit[0] or not dsplit[1] or not dsplit[2]:
-        raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE'".format(d=dist))
-    return dsplit[0], dsplit[1], dsplit[2]
+    A mini-buildd distribution string.
+
+    >>> d = Distribution("squeeze-test-stable")
+    >>> d.codename, d.repository, d.suite
+    (u'squeeze', u'test', u'stable')
+    >>> d.get()
+    u'squeeze-test-stable'
+    >>> d = Distribution("squeeze-test-stable-rollback5", allow_rollback=True)
+    >>> d.is_rollback
+    True
+    >>> d.codename, d.repository, d.suite, d.rollback
+    (u'squeeze', u'test', u'stable', u'rollback5')
+    >>> d.get()
+    u'squeeze-test-stable-rollback5'
+
+    """
+    def __init__(self, dist, allow_rollback=False):
+        self._dsplit = dist.split("-")
+        self._max_parts = 4 if allow_rollback else 3
+
+        def some_empty():
+            for d in self._dsplit:
+                if not d:
+                    return True
+            return False
+
+        if (len(self._dsplit) < 3 or len(self._dsplit) > self._max_parts) or some_empty():
+            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE{r}'".format(d=dist, r="[-rollbackN]" if allow_rollback else ""))
+
+    def get(self, rollback=True):
+        if rollback:
+            return "-".join(self._dsplit)
+        else:
+            return "-".join(self._dsplit[:3])
+
+    @property
+    def codename(self):
+        return self._dsplit[0]
+
+    @property
+    def repository(self):
+        return self._dsplit[1]
+
+    @property
+    def suite(self):
+        return self._dsplit[2]
+
+    @property
+    def is_rollback(self):
+        return len(self._dsplit) == 4
+
+    @property
+    def rollback(self):
+        return self._dsplit[3]
 
 
 def subst_placeholders(template, placeholders):

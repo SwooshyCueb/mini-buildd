@@ -27,15 +27,15 @@ LOG = logging.getLogger(__name__)
 
 def parse_distribution(dist):
     """
-    Like misc.parse_distribution, but also finds and returns actual model objects.
+    Find repo, dist and suite model object from distribtion string.
     """
     # Check and parse changes distribution string
-    distribution_codename, repository_identity, suite_name = mini_buildd.misc.parse_distribution(dist)
+    dist_parsed = mini_buildd.misc.Distribution(dist)
 
     # Get repository for identity; django exceptions will suite quite well as-is
-    repository = mini_buildd.models.repository.Repository.objects.get(identity=repository_identity)
-    distribution = repository.distributions.all().get(base_source__codename__exact=distribution_codename)
-    suite = repository.layout.suiteoption_set.all().get(suite__name=suite_name)
+    repository = mini_buildd.models.repository.Repository.objects.get(identity=dist_parsed.repository)
+    distribution = repository.distributions.all().get(base_source__codename__exact=dist_parsed.codename)
+    suite = repository.layout.suiteoption_set.all().get(suite__name=dist_parsed.suite)
 
     return repository, distribution, suite
 

@@ -489,20 +489,19 @@ Example:
     def mbd_get_description(self, distribution, suite_option):
         return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.codename, i=self.identity)
 
-    def _mbd_find_dist(self, dist):
-        base, identity, suite = mini_buildd.misc.parse_distribution(dist)
-        LOG.debug("Finding dist for {d}: Base={b}, RepoId={r}, Suite={s}".format(d=dist, b=base, r=identity, s=suite))
+    def _mbd_find_dist(self, distribution):
+        LOG.debug("Finding dist for {d}".format(d=distribution.get()))
 
-        if identity == self.identity:
+        if distribution.repository == self.identity:
             for d in self.distributions.all():
-                if d.base_source.codename == base:
+                if d.base_source.codename == distribution.codename:
                     for s in self.layout.suiteoption_set.all():
-                        if s.suite.name == suite:
+                        if s.suite.name == distribution.suite:
                             return d, s
-        raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=dist))
+        raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=distribution.get()))
 
     def mbd_get_apt_keys(self, dist):
-        d, _s = self._mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
         result = self.mbd_get_daemon().model.mbd_get_pub_key()
         for e in d.extra_sources.all():
             for k in e.source.apt_keys.all():
@@ -529,12 +528,12 @@ Example:
         return result
 
     def mbd_get_chroot_setup_script(self, dist):
-        d, _s = self._mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(d.chroot_setup_script)
 
     def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d, _s = self._mbd_find_dist(dist)
+        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
 
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
@@ -630,7 +629,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
         # Shift rollbacks in the destination distributions
-        d, s = self._mbd_find_dist(dest_distribution)
+        d, s = self._mbd_find_dist(mini_buildd.misc.Distribution(dest_distribution))
         self._mbd_package_shift_rollbacks(d, s, package)
 
         # Actually propagate package
@@ -638,7 +637,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_package_remove(self, distribution, package, version):
         # Shift rollbacks in the destination distributions
-        d, s = self._mbd_find_dist(distribution)
+        d, s = self._mbd_find_dist(mini_buildd.misc.Distribution(distribution))
         self._mbd_package_shift_rollbacks(d, s, package)
 
         return self._mbd_reprepro().removesrc(distribution, package, version)

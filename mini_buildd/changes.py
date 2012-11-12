@@ -85,9 +85,13 @@ class Changes(debian.deb822.Changes):
     def buildlog_name(self):
         return "{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
 
-    @property
-    def archive_dir(self):
-        return os.path.join(self["Distribution"], self["Source"], self["Version"], self["Architecture"])
+    def get_archive_dir(self, installed):
+        " Archive path for this changes file: REPOID/[_failed]/PACKAGE/VERSION/ARCH "
+        return os.path.join(mini_buildd.misc.Distribution(self["Distribution"]).repository,
+                            "" if installed else "_failed",
+                            self["Source"],
+                            self["Version"],
+                            self["Architecture"])
 
     def is_new(self):
         return self._new
@@ -122,9 +126,6 @@ class Changes(debian.deb822.Changes):
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
-
-    def get_log_dir(self):
-        return os.path.join(mini_buildd.setup.LOG_DIR, self.archive_dir)
 
     def get_pkg_id(self, with_arch=False, arch_separator=":"):
         pkg_id = "{s}_{v}".format(s=self["Source"], v=self["Version"])
@@ -225,8 +226,9 @@ class Changes(debian.deb822.Changes):
         else:
             LOG.info("No tar file (skipping): {f}".format(f=tar_file))
 
-    def archive(self):
-        logdir = self.get_log_dir()
+    def archive(self, installed):
+        logdir = os.path.join(mini_buildd.setup.LOG_DIR, self.get_archive_dir(installed))
+
         if not os.path.exists(logdir):
             os.makedirs(logdir)
         LOG.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))

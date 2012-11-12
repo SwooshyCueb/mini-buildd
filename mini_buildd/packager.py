@@ -141,9 +141,9 @@ class Package(mini_buildd.misc.Status):
     def archive(self):
         # Archive build results and request
         for _arch, c in self.success.items() + self.failed.items() + self.requests.items():
-            c.archive()
+            c.archive(self.get_status() == self.INSTALLED)
         # Archive incoming changes
-        self.changes.archive()
+        self.changes.archive(self.get_status() == self.INSTALLED)
         # Purge complete package dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
@@ -155,7 +155,7 @@ class Package(mini_buildd.misc.Status):
             return "{a} ({s}): {b}\n".format(
                 a=arch,
                 s=bres.bres_stat,
-                b=self.daemon.mbd_get_http_url() + "/log/" + bres.archive_dir + "/" + bres.buildlog_name)
+                b=self.daemon.mbd_get_http_url() + "/log/" + bres.get_archive_dir(self.get_status() == self.INSTALLED) + "/" + bres.buildlog_name)
 
         results = header(self.__unicode__(), "=")
         results += "\n"
@@ -195,13 +195,13 @@ class LastPackage(mini_buildd.misc.API):
         self.success = {}
         for arch, bres in package.success.items():
             self.success[arch] = {
-                "log": os.path.join(bres.archive_dir, bres.buildlog_name),
+                "log": os.path.join(bres.get_archive_dir(package.get_status() == package.INSTALLED), bres.buildlog_name),
                 "stat": bres.bres_stat}
 
         self.failed = {}
         for arch, bres in package.failed.items():
             self.failed[arch] = {
-                "log": os.path.join(bres.archive_dir, bres.buildlog_name),
+                "log": os.path.join(bres.get_archive_dir(package.get_status() == package.INSTALLED), bres.buildlog_name),
                 "stat": bres.bres_stat}
 
     def __unicode__(self):

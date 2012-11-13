@@ -220,7 +220,8 @@ class Daemon():
         if not self.thread:
             self._update_model()
 
-            if not activate_action:
+            if not activate_action and (self.model.mbd_is_active() or self.model.auto_reactivate):
+                # Check if this can be auto-reactivated
                 mini_buildd.models.daemon.Daemon.Admin.mbd_action(request, (self.model,), "check")
 
             if activate_action or self.model.mbd_is_active():

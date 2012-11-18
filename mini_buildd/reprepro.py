@@ -29,25 +29,47 @@ class Reprepro():
         # Finally, rebuild all indices
         mini_buildd.misc.call(self._cmd + ["export"])
 
-    def include(self, distribution, changes):
-        mini_buildd.misc.call(self._cmd + ["include", distribution, changes])
-
-    def copysrc(self, dest_distribution, source_distribution, package, version=None):
-        return mini_buildd.misc.sose_call(
-            self._cmd + ["copysrc", dest_distribution, source_distribution, package] + ([version] if version else []))
-
-    def removesrc(self, distribution, package, version):
-        return mini_buildd.misc.sose_call(
-            self._cmd + ["removesrc", distribution, package, version])
-
-    def listmatched(self, distribution, pattern):
+    def list(self, pattern, distribution, list_max=50):
         result = []
         for item in mini_buildd.misc.call(self._cmd +
-                                          ["--type=dsc",
-                                           "--list-format=${$source}|${$codename}|${$sourceversion};",
+                                          ["--list-format=${package}|${$type}|${architecture}|${version}|${$source}|${$sourceversion}|${$codename};",
+                                           "--list-max={m}".format(m=list_max),
                                            "listmatched",
                                            distribution,
                                            pattern]).split(";"):
             if item:
-                result.append(item.split("|"))
+                item_split = item.split("|")
+                result.append({"package": item_split[0],
+                               "type": item_split[1],
+                               "architecture": item_split[2],
+                               "version": item_split[3],
+                               "source": item_split[4],
+                               "sourceversion": item_split[5],
+                               "distribution": item_split[6],
+                               })
         return result
+
+    def show(self, package):
+        result = []
+        # reprepro ls format: "${$source} | ${$sourceversion} |    ${$codename} | source\n"
+        for item in mini_buildd.misc.call(self._cmd +
+                                          ["--type=dsc",
+                                           "ls",
+                                           package]).split("\n"):
+            LOG.debug("ls: {i}".format(i=item))
+            if item:
+                item_split = item.split("|")
+                result.append({"source": item_split[0].strip(),
+                               "sourceversion": item_split[1].strip(),
+                               "distribution": item_split[2].strip(),
+                               })
+        return result
+
+    def migrate(self, package, src_distribution, dst_distribution):
+        return mini_buildd.misc.sose_call(self._cmd + ["copysrc", dst_distribution, src_distribution, package])
+
+    def remove(self, package, distribution):
+        return mini_buildd.misc.sose_call(self._cmd + ["removesrc", distribution, package])
+
+    def install(self, changes, distribution):
+        return mini_buildd.misc.sose_call(self._cmd + ["include", distribution, changes])

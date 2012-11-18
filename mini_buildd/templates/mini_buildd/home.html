@@ -1,7 +1,8 @@
-{% extends "mini_buildd/base.html" %}
-{% load base %}
+{% extends "mini_buildd/page.html" %}
 
 {% block title %}mini-buildd{% endblock %}
+{% block page_title %}{{ daemon.tpl.model.identity }}{% endblock %}
+{% block page_sub_title %}{{ daemon.tpl.running_text }}{% endblock %}
 
 {% block localscript %}
 function toggleLastBuilds()
@@ -52,32 +53,9 @@ $(document).ready(
 {% endblock %}
 
 {% block content %}
-
 	<div id="mb_index_status">
 		<div class="box">
 			<h1 class="box-caption"><span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }} </span></h1>
-
-			<div id="mb_index_package_search">
-				<form id="mb_repository_search_form" action="/mini_buildd/repositories/" method="get">
-					<table style="display: inline">
-						<tr>
-							<th>Package</th>
-							<th>Repository</th>
-							<th />
-						</tr>
-						<tr>
-							<td><input type="hidden" name="action" value="search" /><input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" /></td>
-							<td><select name="repository" size="1">
-									{% for r in repositories.all %}
-										<option value="{{ r.identity|urlencode }}">{{ r }}</option>
-									{% endfor %}
-									<option selected="selected" value="">any</option>
-							</select></td>
-							<td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
-						</tr>
-					</table>
-				</form>
-			</div>
 
 			<div id="mb_index_repositories">
 				<div class="inner-box">

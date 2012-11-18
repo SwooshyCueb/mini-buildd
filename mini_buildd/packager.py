@@ -66,8 +66,8 @@ class Package(mini_buildd.misc.Status):
             uploader_keyrings[self.repository.identity].verify(self.changes.file_path)
 
         # Check if this version is already in repository
-        if self.changes["Version"] in self.repository.mbd_package_search(None, self.changes["Source"], fmt=self.repository.MBD_SEARCH_FMT_VERSIONS):
-            raise Exception("Version already in repository")
+        if self.repository.mbd_package_exists(self.changes["Source"], self.changes["Version"]):
+            raise Exception("Version '{v}' already installed".format(v=self.changes["Version"]))
 
         # Generate build requests
         self.requests = self.changes.gen_buildrequests(self.daemon, self.repository, self.distribution, self.suite)

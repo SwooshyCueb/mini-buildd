@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import pprint
 import os
 import datetime
 import shutil
@@ -12,6 +11,7 @@ import Queue
 import multiprocessing
 import tempfile
 import hashlib
+import re
 import urllib
 import urllib2
 import getpass
@@ -158,52 +158,6 @@ class HoPo(object):
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
 
 
-class BuilderState(object):
-    """ Builder status (de)serializer.
-
-    >>> s = BuilderState(state=[True, "host:324", 66, {"i386": ["squeeze", "sid"], "amd64": ["sid"]}])
-    >>> s.is_up(), s.get_hopo().port, s.get_load(), s.has_chroot("amd64", "squeeze"), s.has_chroot("i386", "squeeze")
-    (True, 324, 66, False, True)
-    """
-
-    def __init__(self, state=None, pickled_state=None):
-        if state:
-            self._state = state
-        elif pickled_state:
-            self._state = pickle.load(pickled_state)
-
-    def __unicode__(self):
-        return "{s}: ftp://{h}: {c} ({l})".format(
-            s="Running" if self.is_up() else "Stopped",
-            h=self.get_hopo().string,
-            c=pprint.pformat(self.get_chroots()),
-            l=self.get_load())
-
-    def __str__(self):
-        return self.__unicode__()
-
-    def dump(self):
-        return pickle.dumps(self._state)
-
-    def is_up(self):
-        return self._state[0]
-
-    def get_hopo(self):
-        return HoPo(self._state[1])
-
-    def get_load(self):
-        return self._state[2]
-
-    def get_chroots(self):
-        return self._state[3]
-
-    def has_chroot(self, arch, codename):
-        try:
-            return codename in self.get_chroots()[arch]
-        except:
-            return False
-
-
 def nop(*_args, **_kwargs):
     pass
 
@@ -231,7 +185,8 @@ class Distribution(object):
     (u'squeeze', u'test', u'stable', u'rollback5')
     >>> d.get()
     u'squeeze-test-stable-rollback5'
-
+    >>> d.rollback_no
+    5
     """
     def __init__(self, dist, allow_rollback=False):
         self._dsplit = dist.split("-")
@@ -271,6 +226,11 @@ class Distribution(object):
     @property
     def rollback(self):
         return self._dsplit[3]
+
+    @property
+    def rollback_no(self):
+        " Rollback (int) number: 'rollback0' -> 0 "
+        return int(re.sub(r"\D", "", self.rollback))
 
 
 def subst_placeholders(template, placeholders):
@@ -461,11 +421,13 @@ class CredsCache(object):
         else:
             LOG.debug("No changes in '{c}'".format(c=self._file))
 
-    def clear(self, delete_file=True):
+    def clear(self):
         self._creds = {}
-        if delete_file:
+        if os.path.exists(self._file):
             os.remove(self._file)
             LOG.info("Credentials cache removed: {c}".format(c=self._file))
+        else:
+            LOG.info("No credentials cache file: {c}".format(c=self._file))
 
     def get(self, url):
         try:
@@ -482,6 +444,7 @@ class CredsCache(object):
 
 
 def web_login(url, credentials, login_loc="/admin/", next_loc="/mini_buildd/"):
+    username = None
     try:
         login_url = url + login_loc
         next_url = url + next_loc
@@ -513,14 +476,14 @@ def web_login(url, credentials, login_loc="/admin/", next_loc="/mini_buildd/"):
 
         # If successfull, next url of the response must match
         if response.geturl() != next_url:
-            raise Exception("Response URL {r} does not equal expected: {e}".format(r=response.geturl(), e=next_url))
+            raise Exception("Wrong creds: Please check username and password")
 
         # Logged in: Install opener, save credentials
-        LOG.info("User {u} logged in to {url}".format(u=username, url=url))
+        LOG.info("User '{u}' logged in to '{url}'".format(u=username, url=url))
         urllib2.install_opener(opener)
         credentials.save()
     except Exception as e:
-        raise Exception("Login to {u} failed: {e}".format(u=url, e=e))
+        raise Exception("Login as '{u}' failed: {e}".format(u=username, e=e))
 
 
 SBUILD_KEYS_WORKAROUND_LOCK = threading.Lock()

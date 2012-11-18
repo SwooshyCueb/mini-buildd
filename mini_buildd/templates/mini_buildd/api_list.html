@@ -1,0 +1,39 @@
+{% extends "mini_buildd/api.html" %}
+
+{% block page_title %}{{ result.args.pattern }}{% endblock %}
+{% block page_sub_title %}Source and binary package matches{% endblock %}
+
+{% block content %}
+	<div id="mb_api_list">
+		{% for repository, results in result.repositories.items %}
+			<div class="box">
+				<h1 class="box-caption">
+					<a class="box-anchor"
+						 title="goto repository {{ repository }}"
+						 href="/mini_buildd/repositories/{{ repository }}/">Repository: {{ repository }}
+					</a>
+				</h1>
+			</div>
+			<table>
+				<tr>
+					<th>Package</th>
+					<th>Type</th>
+					<th>Arch</th>
+					<th>Distribution</th>
+					<th>Version</th>
+					<th>Source</th>
+				</tr>
+				{% for package in results %}
+					<tr>
+						<td>{{ package.package }}</td>
+						<td>{{ package.type }}</td>
+						<td>{{ package.architecture }}</td>
+						<td>{{ package.distribution }}</td>
+						<td>{{ package.version }}</td>
+						<td><a href="/mini_buildd/api?command=show&amp;package={{ package.source|urlencode }}">{{ package.source }}</a></td>
+					</tr>
+				{% endfor %}
+			</table>
+		{% endfor %}
+	</div>
+{% endblock %}

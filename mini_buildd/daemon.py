@@ -42,6 +42,7 @@ import logging
 import mini_buildd.misc
 import mini_buildd.changes
 import mini_buildd.gnupg
+import mini_buildd.api
 import mini_buildd.ftpd
 import mini_buildd.packager
 import mini_buildd.builder
@@ -255,18 +256,21 @@ class Daemon():
     def is_running(self):
         return bool(self.thread)
 
-    def get_builder_state(self):
-        def get_chroots():
-            chroots = {}
-            for c in mini_buildd.models.chroot.Chroot.mbd_get_active():
-                chroots.setdefault(c.architecture.name, [])
-                chroots[c.architecture.name].append(c.source.codename)
-            return chroots
+    @classmethod
+    def get_active_chroots(cls):
+        return mini_buildd.models.chroot.Chroot.mbd_get_active()
 
-        return mini_buildd.misc.BuilderState(state=[self.is_running(),
-                                                    self.model.mbd_get_ftp_hopo().string,
-                                                    self.build_queue.load,
-                                                    get_chroots()])
+    @classmethod
+    def get_active_repositories(cls):
+        return mini_buildd.models.repository.Repository.mbd_get_active()
+
+    @classmethod
+    def get_active_remotes(cls):
+        return mini_buildd.models.gnupg.Remote.mbd_get_active()
+
+    @classmethod
+    def parse_distribution(cls, distribution):
+        return mini_buildd.changes.parse_distribution(distribution)
 
     @property
     def tpl(self):

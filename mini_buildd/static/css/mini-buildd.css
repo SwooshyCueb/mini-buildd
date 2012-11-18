@@ -96,6 +96,10 @@ a:hover
 	border-left: 0;
 }
 
+#mb_custom_header
+{
+	margin: 10px;
+}
 
 /* CONTENT */
 
@@ -115,6 +119,11 @@ a:hover
 	border-color: #ff0000;
 }
 
+
+#mb_content a.box-anchor
+{
+	color: white;
+}
 
 #mb_content .box-caption.error
 {
@@ -181,6 +190,16 @@ a:hover
 	color: #417690;
 	font-weight: bold;
 	margin: 15px 15px 10px 15px;
+}
+
+#mb_page_header {
+	color: #57859a;
+	background-color: #F3F3F3;
+	overflow: hidden;
+}
+
+#mb_page_header h1 {
+	font-size: 15px;
 }
 
 #mb_content h1 {
@@ -283,7 +302,7 @@ a:hover
 	font-weight: bold;
 }
 
-#mb_content td.search-result-cannot-propagate
+#mb_content td.search-result-cannot-migrate
 {
 	color: #a7a7a7;
 	font-size: 11px;
@@ -329,9 +348,9 @@ a:hover
 	background-color: #ff6060;
 }
 
-#mb_content a.button-propagate:link, #mb_content a.button-propagate:visited
+#mb_content a.button-migrate:link, #mb_content a.button-migrate:visited
 {
-	background: url("/static/images/mb_propagate.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/images/mb_migrate.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -344,7 +363,7 @@ a:hover
 	background-color: #e7e7e7;
 }
 
-#mb_content a.button-propagate:hover
+#mb_content a.button-migrate:hover
 {
 	background-color: #f7f7f7;
 }
@@ -373,7 +392,7 @@ a:hover
 	padding: 0;
 }
 
-#mb_repository_search_form input.package-input
+#mb_repository_show_form input.package-input
 {
 	width: 300px;
 }
@@ -388,39 +407,19 @@ a:hover
 	margin-left: 0px;
 }
 
-#mb_package_search_results .removal-confirmation
+
+#mb_api_show table
 {
-	display: none;
-	font-weight: bold;
-	color: red;
-	font-size: 11px;
+	border: 2;
 }
 
-#mb_package_search_results .propagation-confirmation
-{
-	display: none;
-	font-weight: bold;
-	color: #888888;
-	font-size: 11px;
-}
-
-#mb_package_search_results th.distribution
+#mb_api_show th
 {
 	/* text-align: right; */
 	padding-right: 0px;
 }
 
-#mb_package_search_results th.version
-{
-	text-align: left;
-}
-
-#mb_package_search_results h1
-{
-	/* text-align: center; */
-}
-
-#mb_package_search_results td.distribution
+#mb_api_show td
 {
 	/* text-align: right; */
 	font-weight: bold;
@@ -428,10 +427,13 @@ a:hover
 	padding: 10px 14px 0px 0px;
 }
 
-#mb_package_search_results td.version
+#mb_api_show td.codename
 {
-	text-align: left;
-	padding: 10px 14px 0px 0px;
+	font-weight:bold;
+	text-align:center;
+	background-color:lightgrey;
+	margin-top:20px;
+	padding-bottom:10px;
 }
 
 #mb_last_builds
@@ -464,7 +466,13 @@ a:hover
 	font-size: 12px;
 }
 
-#mb_index_package_search
+#mb_index_package_show
+{
+	text-align: center;
+	padding: 20px 15px 15px 15px;
+}
+
+#mb_index_api_show
 {
 	text-align: center;
 	padding: 20px 15px 15px 15px;

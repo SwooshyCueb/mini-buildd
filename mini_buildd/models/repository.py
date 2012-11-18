@@ -2,12 +2,12 @@
 from __future__ import unicode_literals
 
 import os
-import tempfile
 import contextlib
 import shutil
 import glob
 import re
 import socket
+import pprint
 import logging
 
 import django.db
@@ -140,6 +140,19 @@ lintian) as non-lethal, and will install anyway.
         return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(
             pin=self.mbd_get_apt_pin(repository, distribution),
             prio=prio)
+
+    def mbd_get_sort_no(self):
+        """
+        Compute number that may be used to sort suites from 'stable' (0) towards 'experimental'.
+        """
+        no = 0
+        if self.uploadable:
+            no += 5
+        if self.migrates_to:
+            no += 5
+        if self.experimental:
+            no += 20
+        return no
 
 
 class SuiteOptionInline(django.contrib.admin.TabularInline):
@@ -581,24 +594,144 @@ DscIndices: Sources Release . .gz .bz2
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
+    def mbd_package_list(self, pattern, with_rollbacks=False):
+        result = []
+        for d in self.distributions.all():
+            for s in self.layout.suiteoption_set.all():
+                rollbacks = s.rollback if with_rollbacks else 0
+                for rollback in [None] + range(rollbacks):
+                    res = self._mbd_reprepro().list(pattern, s.mbd_get_distribution_string(self, d, rollback))
+                    result.extend(res)
+        return result
+
+    def mbd_package_show(self, package):
+        """
+        Result if of the form:
+
+        [(CODENAME, [{"distribution": DIST,
+                      "source": PKG_NAME,
+                      "sourceversion": VERSION,
+                      "migrates_to": DIST,
+                      "uploadable": BOOL,
+                      "experimental": BOOL,
+                      "sort_no": NO,
+                      "rollbacks": [{"no": 0, "distribution": DIST, "source": PKG_NAME, "sourceversion": VERS0}, ...]}])]
+        """
+        result = []
+
+        def get_or_create_codename(codename):
+            for p in result:
+                if p[0] == codename:
+                    return p[1]
+            new = []
+            result.append((codename, new))
+            LOG.debug("Codename pair created: {c}".format(c=codename))
+            return new
+
+        def get_or_create_distribution(codename, distribution):
+            for p in codename:
+                if p["distribution"] == distribution:
+                    return p
+            new = {}
+            codename.append(new)
+            LOG.debug("Distribution dict created: {d}".format(d=distribution))
+            return new
+
+        def cp_values(src, dst):
+            for k, v in src.items():
+                dst[k] = v
+
+        rep_result = self._mbd_reprepro().show(package)
+
+        LOG.debug("Reprepro 'show' result: {r}".format(r=pprint.pformat(result)))
+
+        # Init all codenames
+        for r in rep_result:
+            dist = mini_buildd.misc.Distribution(r["distribution"], allow_rollback=True)
+            distribution, suite = self._mbd_find_dist(dist)
+
+            # Get list of dicts with unique distributions
+            codename = get_or_create_codename(dist.codename)
+
+            # Get dict with distribution values
+            values = get_or_create_distribution(codename, dist.get(rollback=False))
+
+            # Always set valid default values (in case of rollback version w/o a version in actual dists, or if the rollback comes first)
+            values.setdefault("distribution", dist.get(rollback=False))
+            values.setdefault("source", "")
+            values.setdefault("sourceversion", "")
+            values.setdefault("migrates_to", suite.migrates_to.mbd_get_distribution_string(self, distribution) if suite.migrates_to else "")
+            values.setdefault("uploadable", suite.uploadable)
+            values.setdefault("experimental", suite.experimental)
+            values.setdefault("sort_no", suite.mbd_get_sort_no())
+            values.setdefault("rollback", suite.rollback)
+            values.setdefault("rollbacks", [])
+
+            if dist.is_rollback:
+                # Add to rollback list with "no" appended
+                r["no"] = dist.rollback_no
+                values["rollbacks"].append(r)
+            else:
+                # Copy all reprepro values, plus migration dist
+                cp_values(r, values)
+
+        LOG.debug("Repository 'show' result: {r}".format(r=pprint.pformat(result)))
+
+        return result
+
+    def mbd_package_exists(self, package, version):
+        for r in self._mbd_reprepro().show(package):
+            if r["sourceversion"] == version:
+                return True
+        return False
+
     def _mbd_package_shift_rollbacks(self, distribution, suite_option, package_name):
         for r in range(suite_option.rollback - 1, -1, -1):
             src = suite_option.mbd_get_distribution_string(self, distribution, None if r == 0 else r - 1)
             dst = suite_option.mbd_get_distribution_string(self, distribution, r)
             LOG.info("Rollback: Moving {p}: {s} to {d}".format(p=package_name, s=src, d=dst))
             try:
-                self._mbd_reprepro().copysrc(dst, src, package_name)
+                self._mbd_reprepro().migrate(package_name, src, dst)
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Rollback failed (ignoring)", e)
 
+    def mbd_package_migrate(self, package, distribution, suite):
+        # Get src and dst dist strings, and check we are confed to migrate
+        src_dist = suite.mbd_get_distribution_string(self, distribution)
+        if not suite.migrates_to:
+            raise Exception("You can't migrate from {d}".format(d=src_dist))
+        dst_dist = suite.migrates_to.mbd_get_distribution_string(self, distribution)
+
+        # Check src and dst package versions
+        pkg_show = self._mbd_reprepro().show(package)
+        dst_version = None
+        src_version = None
+        for r in pkg_show:
+            if r["distribution"] == src_dist:
+                src_version = r["sourceversion"]
+            if r["distribution"] == dst_dist:
+                dst_version = r["sourceversion"]
+        if src_version == dst_version:
+            raise Exception("Version {v} already migrated to {d}".format(v=src_version, d=dst_dist))
+
+        # Shift rollbacks in the destination distributions
+        self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
+
+        # Actually migrate package in reprepro
+        return self._mbd_reprepro().migrate(package, src_dist, dst_dist)
+
+    def mbd_package_remove(self, package, distribution, suite):
+        # Shift rollbacks
+        self._mbd_package_shift_rollbacks(distribution, suite, package)
+        # Remove package
+        return self._mbd_reprepro().remove(package, suite.mbd_get_distribution_string(self, distribution))
+
     def _mbd_package_install(self, bres):
-        t = tempfile.mkdtemp()
-        bres.untar(path=t)
-        self._mbd_reprepro().include(
-            bres["Distribution"],
-            " ".join(glob.glob(os.path.join(t, "*.changes"))))
-        shutil.rmtree(t)
-        LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
+        with contextlib.closing(mini_buildd.misc.TmpDir()) as t:
+            bres.untar(path=t.tmpdir)
+            self._mbd_reprepro().install(" ".join(glob.glob(os.path.join(t.tmpdir, "*.changes"))),
+                                         bres["Distribution"])
+            LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
 
     def mbd_package_install(self, distribution, suite_option, bresults):
         """
@@ -626,50 +759,6 @@ DscIndices: Sources Release . .gz .bz2
                 LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
             else:
                 self._mbd_package_install(bres)
-
-    def mbd_package_propagate(self, dest_distribution, source_distribution, package, version):
-        # Shift rollbacks in the destination distributions
-        d, s = self._mbd_find_dist(mini_buildd.misc.Distribution(dest_distribution))
-        self._mbd_package_shift_rollbacks(d, s, package)
-
-        # Actually propagate package
-        return self._mbd_reprepro().copysrc(dest_distribution, source_distribution, package, version)
-
-    def mbd_package_remove(self, distribution, package, version):
-        # Shift rollbacks in the destination distributions
-        d, s = self._mbd_find_dist(mini_buildd.misc.Distribution(distribution))
-        self._mbd_package_shift_rollbacks(d, s, package)
-
-        return self._mbd_reprepro().removesrc(distribution, package, version)
-
-    MBD_SEARCH_FMT_STANDARD = 0
-    MBD_SEARCH_FMT_VERSIONS = 1
-
-    def mbd_package_search(self, codename, pattern, fmt=MBD_SEARCH_FMT_STANDARD):
-        """
-        Result if of the form:
-
-        { PACKAGE: { DISTRIBUTION: { VERSION: { PROPKEY: PROPVAL }}}}
-        """
-        distributions = []
-        for d in self.distributions.all():
-            if not codename or codename == d.base_source.codename:
-                distributions.append(d)
-
-        result = [{}, []]
-        for d in distributions:
-            for s in self.layout.suiteoption_set.all():
-                for rollback in [None] + range(s.rollback):
-                    for item in self._mbd_reprepro().listmatched(s.mbd_get_distribution_string(self, d, rollback), pattern):
-                        package, distribution, version = item
-                        pkg = result[self.MBD_SEARCH_FMT_STANDARD].setdefault(package, {})
-                        dis = pkg.setdefault(distribution, {})
-                        ver = dis.setdefault(version, {})
-                        result[self.MBD_SEARCH_FMT_VERSIONS].append(version)
-                        if s.migrates_to:
-                            ver["migrates_to"] = s.migrates_to.mbd_get_distribution_string(self, d)
-
-        return result[fmt]
 
     def mbd_prepare(self, _request):
         """

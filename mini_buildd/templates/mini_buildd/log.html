@@ -1,0 +1,25 @@
+{% extends "mini_buildd/base.html" %}
+{% load base %}
+
+{% block mbd_page_title %}: Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
+{% block mbd_page_footer %} &raquo; Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
+
+{% block content %}
+	<div id="mb_package_propagation_results">
+		<div class="box">
+			<h1 class="box-caption">Logs for: {{ repository }}/{{ package }}/{{ version }}</h1>
+			<h2>Installed</h2>
+			<ul>
+				{% for arch, uri in logs.installed.items %}
+					<li><a href="/log/{{ uri }}">{{ arch }}</a></li>
+				{% endfor %}
+			</ul>
+			<h2>Failed</h2>
+			<ul>
+				{% for arch, uri in logs.failed.items %}
+					<li><a href="/log/{{ uri }}">{{ arch }}</a></li>
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+{% endblock %}

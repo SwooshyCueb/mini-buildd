@@ -1,0 +1,10 @@
+{% extends "mini_buildd/api.html" %}
+
+{% block content %}
+	<div id="mb_package_propagation_results">
+		<div class="box">
+			<h1 class="box-caption">API call: {{ command }}</h1>
+			<pre>{{ result }}</pre>
+		</div>
+	</div>
+{% endblock %}

@@ -1,7 +1,8 @@
-{% extends "mini_buildd/base.html" %}
+{% extends "mini_buildd/page.html" %}
 {% load base %}
 
-{% block mbd_page_title %} - repository {{ object.identity }}{% endblock %}
+{% block page_title %}Repository {{ object.identity }}{% endblock %}
+{% block page_sub_title %}Setup details{% endblock %}
 {% block mbd_page_footer %} &raquo; {{ object.identity }}{% endblock %}
 
 {% block content %}
@@ -17,37 +18,6 @@
 					</ul>
 				</div>
 			{% endif %}
-
-			<div id="mb_repository_search">
-				<div class="inner-box">
-					<h1 class="inner-box-caption">Search</h1>
-
-					<form id="mb_repository_search_form" action="/mini_buildd/repositories/" method="get">
-						<table>
-							<tr>
-								<th>Package Name</th>
-								<th>Distribution</th>
-								<th />
-							</tr>
-							<tr>
-								<td>
-									<input type="hidden" name="repository" value="{{ object.identity|urlencode }}" />
-									<input type="text" name="package" size="80" title="Please enter a package name pattern (shell-like glob)." class="package-input" />
-									<input type="hidden" name="action" value="search" />
-								</td>
-								<td><select name="codename" size="1">
-										{% for d in object.distributions.all %}
-											<option value="{{ d.base_source.codename|urlencode }}">{{ d }}</option>
-										{% endfor %}
-										<option selected="selected" value="">any</option>
-								</select></td>
-								<td class="form-submit"><input title="Search for package!" type="submit" value="Search" /></td>
-							</tr>
-						</table>
-					</form>
-
-				</div>
-			</div>
 
 			{% for d in object.distributions.all %}
 				<div class="inner-box">
@@ -83,6 +53,5 @@
 
 		</div>
 	</div>
-
 
 {% endblock %}

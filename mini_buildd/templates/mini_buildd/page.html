@@ -1,0 +1,33 @@
+{% extends "mini_buildd/base.html" %}
+
+{% block page_header %}
+	<div id="mb_page_header";>
+		<div style="float: left; padding: 5px; margin-right: 10px; background-color: lightgrey;">
+			{% block page_menu %}
+				<div style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 10px;">
+					Page
+				</div>
+				<a href="javascript: location.replace(document.referrer)">Back</a>
+			{% endblock %}
+		</div>
+		<div style="float: left">
+			<h1><div style="font-style: italic">{% block page_title %}{% endblock %}</div><div style="font-size: 10px">{% block page_sub_title %}{% endblock %}</div></h1>
+		</div>
+		<div style="float: right; padding: 5px; background-color: lightgrey;">
+			<div style="text-align: center; font-weight: bold; font-size: 10px;">
+				Packages
+			</div>
+			<form action="/mini_buildd/api" method="get">
+				<input type="hidden" name="command" value="show" />
+				<input type="text" name="package" size="15" title="Source package name." />
+				<input type="submit" value="Show" title="Show source package" />
+			</form>
+			<form action="/mini_buildd/api" method="get">
+				<input type="hidden" name="command" value="list" />
+				<input type="text" name="pattern" size="15" title="Source or binary package name pattern (shell-like glob)." />
+				<input type="checkbox" name="with_rollbacks" value="True" title="Also show package in rollback distributions." />
+				<input type="submit" value="List" title="List packages matching pattern" />
+			</form>
+		</div>
+	</div>
+{% endblock %}

@@ -3,73 +3,86 @@
 from __future__ import unicode_literals
 
 import sys
+import os
 import argparse
-#import contextlib
 import urllib
+import urllib2
 import logging
 import logging.handlers
 
 import mini_buildd.misc
-#import mini_buildd.porter
+import mini_buildd.setup
+import mini_buildd.api
 
 LOG = logging.getLogger("mini_buildd")
-mini_buildd.misc.setup_console_logging(logging.INFO)
-
+mini_buildd.misc.setup_console_logging(logging.DEBUG)
 
 PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
                                  description="Mini-buildd user tool.",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 PARSER.add_argument('--version', action='version', version=mini_buildd.__version__)
+PARSER.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
+                    help="Lower log level. Give twice for max logs.")
+PARSER.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
+                    help="Tighten log level. Give twice for min logs.")
 PARSER.add_argument("-H", "--host", action='store', default="localhost:8066",
                     help="Mini-buildd host (http port).")
+PARSER.add_argument("-O", "--output", action='store', default="plain",
+                    help="Output type: 'html', 'plain' or 'python'.")
+PARSER.add_argument("-C", "--clear-creds", action='store_true',
+                    help="Clear credentials cache.")
 
-def get_host_state(args):
-    url = "http://{h}/mini_buildd/download/builder_state".format(h=args.host)
-    return mini_buildd.misc.BuilderState(pickled_state=urllib.urlopen(url))
+def api_call(args):
+    # Construct base URL form host argument
+    base_url = "http://{h}".format(h=args.host)
+
+    # Log in if required by this call
+    if mini_buildd.api.COMMANDS[args.command].LOGIN:
+        mini_buildd.misc.web_login(
+            base_url,
+            CREDS_CACHE)
+
+    # Compute api call parameters
+    http_args = {}
+    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "clear_creds", "login", "func"]]:
+        http_args[k] = args.__dict__[k]
+
+    # Do the api call
+    call_url = "{b}/mini_buildd/api?{a}".format(b=base_url, a=urllib.urlencode(http_args))
+    LOG.info("API call URL: {u}".format(u=call_url))
+
+    return urllib2.urlopen(call_url).read()
+
+def cmd_call(args):
+    LOG.info("{h}: {c}".format(h=args.host, c=args.command))
+    print("{r}".format(r=api_call(args)))
 
 SUBPARSERS = PARSER.add_subparsers()
 
-#
-# "status"
-#
-PARSER_STATUS = SUBPARSERS.add_parser("status")
-
-def status(args):
-    print("{h}: {s}".format(h=args.host, s=get_host_state(args)))
-
-PARSER_STATUS.set_defaults(func=status)
-
-#
-# "port"
-#
-PARSER_PORT = SUBPARSERS.add_parser("port")
-
-PARSER_PORT.add_argument("--dsc", action="store", required=True,
-                         help="URL for a dsc (Debian source package)")
-PARSER_PORT.add_argument("--distribution", action="store", required=True,
-                         help="Distribution to build for (e.g. 'squeeze-test-experimental', 'squeeze-test-unstable')")
-PARSER_PORT.add_argument("--appendix", action="store", required=True,
-                         help="Version appendix to use (e.g. '~test60+0exp1', '~test60+1')")
-
-def port(args):
-    # with contextlib.closing(
-    #     mini_buildd.porter.PortedPackage(
-    #         args.dsc,
-    #         args.distribution,
-    #         args.appendix,
-    #         ["MINI_BUILDD: BACKPORT_MODE"],
-    #         mini_buildd.misc.taint_env({}))) as p:
-    #     p.upload(get_host_state(args).get_hopo())
-    print("not impl yet", args)
-
-PARSER_PORT.set_defaults(func=port)
-
+for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
+    cmd_parser = SUBPARSERS.add_parser(cmd, help=cmd_cls.__doc__)
+    for cmd_args, cmd_kvargs in cmd_cls.ARGUMENTS:
+        cmd_parser.add_argument(*cmd_args, **cmd_kvargs)
+    cmd_parser.set_defaults(func=cmd_call,
+                            command=cmd,
+                            login=cmd_cls.LOGIN)
 
 # Parse and run
 ARGS = PARSER.parse_args()
+LOG.setLevel(logging.WARNING - (10 * (min(2, ARGS.verbosity) - min(2, ARGS.terseness))))
+
+if LOG.getEffectiveLevel() <= logging.DEBUG:
+    mini_buildd.setup.DEBUG = ["exception"]
+
 try:
+    CREDS_CACHE = mini_buildd.misc.CredsCache(os.path.join(os.getenv("HOME"), ".mini-buildd-tool.credentials"))
+    if ARGS.clear_creds:
+        CREDS_CACHE.clear()
     ARGS.func(ARGS)
-except Exception as e:
-    print("Error {h}: {e}".format(h=ARGS.host, e=e))
+except urllib2.HTTPError as e:
+    mini_buildd.setup.log_exception(LOG, "{h}: {m}".format(h=ARGS.host, m=e.headers.get("X-Mini-Buildd-Error", "")), e)
     sys.exit(1)
+except Exception as e:
+    mini_buildd.setup.log_exception(LOG, "{h}".format(h=ARGS.host), e)
+    sys.exit(2)

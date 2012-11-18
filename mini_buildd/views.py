@@ -1,9 +1,17 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import django.http
+import os.path
+import glob
+import copy
+import pickle
+import urllib
+import logging
 
+import django.core.exceptions
+import django.http
 import django.shortcuts
+import django.template
 
 import mini_buildd.daemon
 
@@ -11,108 +19,116 @@ import mini_buildd.models.repository
 import mini_buildd.models.chroot
 import mini_buildd.models.gnupg
 
+LOG = logging.getLogger(__name__)
 
-def show_index(_request):
-    return django.shortcuts.render_to_response("mini_buildd/index.html",
+
+def error(request, code, meaning, description):
+    response = django.shortcuts.render(request,
+                                       "mini_buildd/error.html",
+                                       {"code": code,
+                                        "meaning": meaning,
+                                        "description": description},
+                                       status=code)
+    response["X-Mini-Buildd-Error"] = description
+    return response
+
+
+def error400_bad_request(request, description="Bad request"):
+    return error(request,
+                 400,
+                 "Bad Request",
+                 description)
+
+
+def error401_unauthorized(request, description="Missing authorization"):
+    return error(request,
+                 401,
+                 "Unauthorized",
+                 description)
+
+
+def error404_not_found(request, description="The requested resource could not be found"):
+    return error(request,
+                 404,
+                 "Not Found",
+                 description)
+
+
+def error500_internal(request, description="Sorry, something went wrong"):
+    return error(request,
+                 500,
+                 "Internal Server Error",
+                 description)
+
+
+def home(_request):
+    return django.shortcuts.render_to_response("mini_buildd/home.html",
                                                {"daemon": mini_buildd.daemon.get(),
                                                 "repositories": mini_buildd.models.repository.Repository.mbd_get_prepared(),
                                                 "chroots": mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
                                                 "remotes": mini_buildd.models.gnupg.Remote.mbd_get_prepared()})
 
 
-def get_archive_key(_request):
-    return django.http.HttpResponse(mini_buildd.daemon.get().model.mbd_get_pub_key(), mimetype="text/plain")
+def log(_request, repository, package, version):
+    def get_logs(installed=True):
+        result = {}
+        path = os.path.join(mini_buildd.setup.LOG_DIR, repository, "" if installed else "_failed", package, version)
+        for buildlog in glob.glob("{p}/*/*.buildlog".format(p=path)):
+            # buildlog: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.buildlog"
+            arch = os.path.basename(os.path.dirname(buildlog))
+            result[arch] = buildlog.replace(mini_buildd.setup.LOG_DIR, "")
+        return result
+
+    return django.shortcuts.render_to_response("mini_buildd/log.html",
+                                               {"repository": repository,
+                                                "package": package,
+                                                "version": version,
+                                                "logs": {"installed": get_logs(),
+                                                         "failed": get_logs(installed=False)}})
 
 
-def get_dput_conf(_request):
-    return django.http.HttpResponse(mini_buildd.daemon.get().model.mbd_get_dput_conf(), mimetype="text/plain")
+def api(request):
+    try:
+        if request.method != 'GET':
+            return error400_bad_request(request, "API: Allows GET requests only")
 
+        command = request.GET.get("command", None)
+        if not command in mini_buildd.api.COMMANDS:
+            return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
 
-def get_builder_state(_request):
-    return django.http.HttpResponse(mini_buildd.daemon.get().get_builder_state().dump(), mimetype="text/plain")
+        authenticated = request.user.is_authenticated() and request.user.is_staff
+        if mini_buildd.api.COMMANDS[command].LOGIN and not authenticated:
+            return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=command))
 
+        # Generate standard python dict from GET parms
+        args = {}
+        for k, v in request.GET.iteritems():
+            args[k] = v
 
-def get_repository_results(request):
-    if request.GET:
-        authenticated = (request.user.is_authenticated() and request.user.is_superuser)
-        action = request.GET.get("action", None)
+        # Get API object. Runs actual code in constructor (with dep-injection via daemon object).
+        result = mini_buildd.api.COMMANDS[command](args, mini_buildd.daemon.get())
 
-        if action == "search":
-            package = request.GET.get("package", None)
-            repository = request.GET.get("repository", None)
-            codename = request.GET.get("codename", None)
+        output = request.GET.get("output", "html")
 
-            if repository:
-                search_repos = [mini_buildd.models.repository.Repository.mbd_get_prepared().get(identity=repository)]
-            else:
-                search_repos = mini_buildd.models.repository.Repository.mbd_get_prepared()
+        # Generate generic api call uris to put on html output pages
+        api_call = {}
+        for t in ["plain", "python"]:
+            args = copy.copy(request.GET)
+            args["output"] = t
+            api_call[t] = "{b}?{a}".format(b=request.path, a=urllib.urlencode(args))
 
-            result = {}
-            for r in search_repos:
-                result[r.identity] = r.mbd_package_search(codename, package)
-
-            ret = django.shortcuts.render_to_response("mini_buildd/package_search_results.html",
-                                                      {'authenticated': authenticated, 'result': result})
-        elif action == "propagate":
-            result = {}
-            if authenticated:
-                package = request.GET.get("package", None)
-                version = request.GET.get("version", None)
-                repository = request.GET.get("repository", None)
-                from_distribution = request.GET.get("from_distribution", None)
-                to_distribution = request.GET.get("to_distribution", None)
-
-                r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
-                result = r.mbd_package_propagate(to_distribution, from_distribution, package, version)
-
-            ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
-                                                      {'authenticated': authenticated, 'result': result})
-
-        elif action == "remove":
-            result = {}
-            if authenticated:
-                package = request.GET.get("package", None)
-                version = request.GET.get("version", None)
-                repository = request.GET.get("repository", None)
-                distribution = request.GET.get("distribution", None)
-
-                r = mini_buildd.models.repository.Repository.objects.get(identity=repository)
-                result = r.mbd_package_remove(distribution, package, version)
-
-            ret = django.shortcuts.render_to_response("mini_buildd/package_propagation_results.html",
-                                                      {'authenticated': authenticated, 'result': result})
-
-    else:
-        ret = ""
-
-    return ret
-
-
-def http_status(request, code, meaning, description):
-    return django.shortcuts.render(request,
-                                   "mini_buildd/error_page.html",
-                                   {"code": code,
-                                    "meaning": meaning,
-                                    "description": description},
-                                   status=code)
-
-
-def http_status_403(request):
-    return http_status(request,
-                       403,
-                       meaning="Forbidden",
-                       description="The request was a valid request, but the server is refusing to respond to it.")
-
-
-def http_status_404(request):
-    return http_status(request,
-                       404,
-                       meaning="Not Found",
-                       description="The requested resource could not be found.")
-
-
-def http_status_500(request):
-    return http_status(request,
-                       500,
-                       meaning="Internal Server Error",
-                       description="Sorry, something went wrong.")
+        if output == "html":
+            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command), "mini_buildd/api_default.html".format(c=command)],
+                                                       {"command": command,
+                                                        "authenticated": authenticated,
+                                                        "result": result,
+                                                        "api_call": api_call})
+        elif output == "plain":
+            return django.http.HttpResponse("{r}".format(r=result), mimetype="text/plain")
+        elif output == "python":
+            return django.http.HttpResponse(pickle.dumps(result), mimetype="application/python-pickle")
+        else:
+            return django.http.HttpResponseBadRequest("<h1>Unknow output type {o}</h1>".format(o=output))
+    except Exception as e:
+        mini_buildd.setup.log_exception(LOG, "API internal error", e)
+        return error500_internal(request, "API: Internal error: {e}".format(e=e))

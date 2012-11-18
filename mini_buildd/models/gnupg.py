@@ -109,13 +109,13 @@ class Remote(GnuPGPublicKey):
         readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_data"]
 
     def __unicode__(self):
-        return "{S} ({s})".format(S=self.mbd_get_builder_state(), s=self.mbd_get_status_display())
+        return "{S} ({s})".format(S=self.mbd_get_status(), s=self.mbd_get_status_display())
 
-    def mbd_get_builder_state(self):
-        return mini_buildd.misc.BuilderState(state=self.mbd_get_pickled_data(default=[False, self.http, 0, {}]))
+    def mbd_get_status(self):
+        return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}, None))
 
     def mbd_prepare(self, request):
-        url = "http://{h}/mini_buildd/download/archive.key".format(h=self.http)
+        url = "http://{h}/mini_buildd/api?command=getkey&output=plain".format(h=self.http)
         self.mbd_msg_info(request, "Downloading '{u}'...".format(u=url))
         self.key = urllib.urlopen(url).read()
         if self.key:
@@ -130,8 +130,8 @@ class Remote(GnuPGPublicKey):
         self.mbd_msg_info(request, "Remote key and state removed.")
 
     def mbd_check(self, _request):
-        url = "http://{h}/mini_buildd/download/builder_state".format(h=self.http)
+        url = "http://{h}/mini_buildd/api?command=status&output=python".format(h=self.http)
         self.pickled_data = urllib.urlopen(url).read()
-        state = self.mbd_get_builder_state()
-        if not state.is_up():
-            raise Exception("Remote builder down.")
+        status = self.mbd_get_status()
+        if not status.running:
+            raise Exception("Remote down: {r}".format(r=self.http))

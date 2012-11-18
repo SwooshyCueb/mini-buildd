@@ -1,0 +1,63 @@
+{% extends "mini_buildd/api.html" %}
+
+{% block page_title %}{{ result.args.package }}{% endblock %}
+{% block page_sub_title %}Source package{% endblock %}
+
+{% block page_menu %}
+	{{ block.super }}
+	<br />
+	<a href="http://packages.qa.debian.org/common/index.html?src={{ result.args.package|urlencode }}">Debian PTS</a>
+{% endblock %}
+
+{% block content %}
+	<div id="mb_api_show">
+		{% for repository, codenames in result.repositories.items %}
+			<div class="box">
+				<h1 class="box-caption">
+					<a class="box-anchor"
+						 title="goto repository {{ repository }}"
+						 href="/mini_buildd/repositories/{{ repository }}/">Repository '{{ repository }}'
+					</a>
+				</h1>
+
+				<table>
+					<tr>
+						<th>Distribution</th>
+						<th>Version</th>
+						<th>Actions</th>
+						<th>Rollbacks</th>
+					</tr>
+					{% for codename, distributions in codenames %}
+						<tr>
+							<td class="codename" colspan="4">{{ codename }}</td>
+						</tr>
+						{% for values in distributions|dictsort:"sort_no" %}
+							<tr>
+								<td>{{ values.distribution }}</td>
+								<td>
+									{% if values.sourceversion %}
+										<a href="/mini_buildd/log/{{ repository }}/{{ result.args.package }}/{{ values.sourceversion }}/">{{ values.sourceversion }}</a>
+									{% endif %}
+								</td>
+								<td>
+									{% if values.sourceversion %}
+										<a class="button-remove" title="...from {{ values.distribution }}" href="/mini_buildd/api?command=remove&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}">Remove</a>
+										{% if values.migrates_to %}
+											<a class="button-migrate" title="...to {{ values.migrates_to }}" href="/mini_buildd/api?command=migrate&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}">Migrate</a>
+										{% endif %}
+									{% endif %}
+								</td>
+								<td>
+									{% for rollback in values.rollbacks|dictsort:"no" %}
+										<a class="button-remove" title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}" href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}">{{ rollback.no }}</a>
+									{% endfor %}
+									<span title="{{ values.rollback }} rollback distributions">{{ values.rollbacks|length }}/{{ values.rollback }}</span>
+								</td>
+							</tr>
+						{% endfor %}
+					{% endfor %}
+				</table>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}

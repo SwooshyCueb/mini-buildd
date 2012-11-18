@@ -183,9 +183,9 @@ class Changes(debian.deb822.Changes):
         def check_remote(remote):
             try:
                 remote.mbd_check(_request=None)
-                state = remote.mbd_get_builder_state()
-                if state.is_up() and state.has_chroot(arch, codename):
-                    remotes[state.get_load()] = state.get_hopo()
+                status = remote.mbd_get_status()
+                if status.running and status.has_chroot(arch, codename):
+                    remotes[status.load] = status.ftp
             except Exception as e:
                 LOG.warn("Builder check failed: {e}".format(e=e))
 
@@ -199,12 +199,13 @@ class Changes(debian.deb822.Changes):
         if not remotes:
             raise Exception("No builder found for {a}/{c}".format(a=arch, c=codename))
 
-        for load, hopo in sorted(remotes.items()):
+        for load, ftp in sorted(remotes.items()):
             try:
+                hopo = mini_buildd.misc.HoPo(ftp)
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                LOG.warn("Uploading to '{h}' failed: ".format(h=hopo.string), e=e)
+                LOG.warn("Uploading to '{h}' failed: ".format(h=ftp), e=e)
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 

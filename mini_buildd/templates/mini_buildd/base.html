@@ -10,7 +10,7 @@
 		<script type="text/javascript">
 			{% block localscript %}{% endblock %}
 		</script>
-		<title>{% block title %}mini-buildd{% endblock %}{% block mbd_page_title %}{% endblock %}</title>
+		<title>{% block title %}mini-buildd{% endblock %}: {% block page_title %}{% endblock %}: {% block page_sub_title %}{% endblock %}</title>
 	</head>
 	<body>
 		<!-- Header -->
@@ -23,16 +23,23 @@
 					<li class="first"><a href="/mini_buildd/">Home</a></li>
 					<li><a href="/admin/">Configure</a></li>
 					<li><a href="/manual/index.html">Documentation</a></li>
-					<li><a href="/mini_buildd/download/archive.key">Download Archive Key</a></li>
-					<li><a href="/mini_buildd/download/dput.cf">Download Dput Config</a></li>
+					<li><a href="/mini_buildd/api?command=getkey">Archive Key</a></li>
+					<li><a href="/mini_buildd/api?command=getdputconf">Dput Config</a></li>
 					<li><a href="/log/daemon.log">View daemon log</a></li>
 				</ul>
 			</div>
 		</div>
+
+		<!-- Page header -->
+		<div id="mb_page_header">
+			{% block page_header %}{% endblock %}
+		</div>
+
 		<!-- Content -->
 		<div id="mb_content">
 			{% block content %}{% endblock %}
 		</div>
+
 		<!-- Footer -->
 		<div id="mb_footer">
 			<p><a class="homelink" title="Mini-buildd Home" href="/mini_buildd/">{% mbd_version %}</a><span class="page-footer">{% block mbd_page_footer %}{% endblock %}</span></p>

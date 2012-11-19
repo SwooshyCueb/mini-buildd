@@ -66,6 +66,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         stable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="stable")
         testing, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="testing")
         unstable, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="unstable")
+        snapshot, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="snapshot")
         experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="experimental")
 
         default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name="Default")
@@ -74,7 +75,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 layout=default_layout,
                 suite=stable,
                 uploadable=False,
-                extra_options="Rollback: 10\n")
+                extra_options="Rollback: 9\n")
             so_stable.save()
 
             so_testing = mini_buildd.models.repository.SuiteOption(
@@ -93,13 +94,22 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 extra_options="Rollback: 3\n")
             so_unstable.save()
 
+            so_snapshot = mini_buildd.models.repository.SuiteOption(
+                layout=default_layout,
+                suite=snapshot,
+                uploadable=True,
+                experimental=True,
+                but_automatic_upgrades=True,
+                extra_options="Rollback: 3\n")
+            so_snapshot.save()
+
             so_experimental = mini_buildd.models.repository.SuiteOption(
                 layout=default_layout,
                 suite=experimental,
                 uploadable=True,
                 experimental=True,
                 but_automatic_upgrades=False,
-                extra_options="Rollback: 1\n")
+                extra_options="Rollback: 3\n")
             so_experimental.save()
 
     @classmethod

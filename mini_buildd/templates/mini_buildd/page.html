@@ -3,15 +3,25 @@
 {% block page_header %}
 	<div id="mb_page_header";>
 		<div style="float: left; padding: 5px; margin-right: 10px; background-color: lightgrey;">
-			{% block page_menu %}
-				<div style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 10px;">
-					Page
-				</div>
-				<a href="javascript: location.replace(document.referrer)">Back</a>
-			{% endblock %}
+			<div style="text-align: center; font-weight: bold; text-decoration: underline; font-size: 10px;">
+				Page
+			</div>
+			{% if api_args.package %}
+				<a href="/mini_buildd/api?command=show&amp;package={{ api_args.package|urlencode }}" title="Show {{ api_args.package }} source package">Show package</a>
+				<br/ >
+				<a href="http://packages.qa.debian.org/common/index.html?src={{ api_args.package|urlencode }}" title="Show {{ api_args.package }} source package in Debian PTS">Show Debian</a>
+				<br />
+			{% endif %}
+			{% if api_uri %}
+				<hr/ >
+				<a href="{{ api_uri }}&amp;output=plain" title="This API call as plain text">API: Plain</a>
+				<br/ >
+				<a href="{{ api_uri }}&amp;output=python" title="This API call as pickled python object">API: Python</a>
+				<br/ >
+			{% endif %}
 		</div>
 		<div style="float: left">
-			<h1><div style="font-style: italic">{% block page_title %}{% endblock %}</div><div style="font-size: 10px">{% block page_sub_title %}{% endblock %}</div></h1>
+			<h1><div style="font-style: italic; style="font-size: 14px">{% block page_title %}{% endblock %}</div><div style="font-size: 12px">{% block page_sub_title %}{% endblock %}</div></h1>
 		</div>
 		<div style="float: right; padding: 5px; background-color: lightgrey;">
 			<div style="text-align: center; font-weight: bold; font-size: 10px;">

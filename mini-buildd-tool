@@ -48,6 +48,13 @@ def api_call(args):
     for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "clear_creds", "login", "func"]]:
         http_args[k] = args.__dict__[k]
 
+    # Confirm if required by this call
+    if mini_buildd.api.COMMANDS[args.command].CONFIRM:
+        if not http_args["confirm"]:
+            http_args["confirm"] = raw_input("Confirm command: ")
+        if not http_args["confirm"]:
+            raise Exception("{c}: Not confirmed, skipped.".format(c=args.command))
+
     # Do the api call
     call_url = "{b}/mini_buildd/api?{a}".format(b=base_url, a=urllib.urlencode(http_args))
     LOG.info("API call URL: {u}".format(u=call_url))
@@ -64,6 +71,11 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
     cmd_parser = SUBPARSERS.add_parser(cmd, help=cmd_cls.__doc__)
     for cmd_args, cmd_kvargs in cmd_cls.ARGUMENTS:
         cmd_parser.add_argument(*cmd_args, **cmd_kvargs)
+
+    if cmd_cls.CONFIRM:
+        cmd_parser.add_argument("--confirm", action='store', default="", metavar="COMMAND",
+                                help="This command needs user confirmation; this option allows to force-bypass that, by explicitly repeating the command.")
+
     cmd_parser.set_defaults(func=cmd_call,
                             command=cmd,
                             login=cmd_cls.LOGIN)

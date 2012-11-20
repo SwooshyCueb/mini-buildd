@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os.path
 import glob
-import copy
 import pickle
 import urllib
 import logging
@@ -23,11 +22,13 @@ LOG = logging.getLogger(__name__)
 
 
 def error(request, code, meaning, description):
+    # Note: Adding api_args.package if applicable; this will enable the "Show package" back link even on error pages.
     response = django.shortcuts.render(request,
                                        "mini_buildd/error.html",
                                        {"code": code,
                                         "meaning": meaning,
-                                        "description": description},
+                                        "description": description,
+                                        "api_args": {"package": request.GET.get("package", None)}},
                                        status=code)
     response["X-Mini-Buildd-Error"] = description
     return response
@@ -92,37 +93,44 @@ def api(request):
         if request.method != 'GET':
             return error400_bad_request(request, "API: Allows GET requests only")
 
-        command = request.GET.get("command", None)
-        if not command in mini_buildd.api.COMMANDS:
-            return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
+        api_cmd = request.GET.get("command", None)
+        if not api_cmd in mini_buildd.api.COMMANDS:
+            return error400_bad_request(request, "API: Unknown command '{c}'".format(c=api_cmd))
+
+        api_cls = mini_buildd.api.COMMANDS[api_cmd]
 
         authenticated = request.user.is_authenticated() and request.user.is_staff
-        if mini_buildd.api.COMMANDS[command].LOGIN and not authenticated:
-            return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=command))
+        if api_cls.LOGIN and not authenticated:
+            return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=api_cmd))
 
-        # Generate standard python dict from GET parms
-        args = {}
-        for k, v in request.GET.iteritems():
-            args[k] = v
-
-        # Get API object. Runs actual code in constructor (with dep-injection via daemon object).
-        result = mini_buildd.api.COMMANDS[command](args, mini_buildd.daemon.get())
+        # Generate api_args and api_uri
+        api_args = api_cls.filter_api_args(request.GET)
+        api_uri = "{b}?command={c}&{a}".format(b=request.path, c=api_cmd, a=urllib.urlencode(api_args))
 
         output = request.GET.get("output", "html")
 
-        # Generate generic api call uris to put on html output pages
-        api_call = {}
-        for t in ["plain", "python"]:
-            args = copy.copy(request.GET)
-            args["output"] = t
-            api_call[t] = "{b}?{a}".format(b=request.path, a=urllib.urlencode(args))
+        # Check confirmable calls
+        if api_cls.CONFIRM and request.GET.get("confirm", None) != api_cmd:
+            if output != "html":
+                return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=api_cmd))
+            else:
+                return django.shortcuts.render_to_response("mini_buildd/api_confirm.html",
+                                                           {"command": api_cmd,
+                                                            "authenticated": authenticated,
+                                                            "api_args": api_args,
+                                                            "api_uri": api_uri})
 
+        # Run API call. Runs actual code in constructor (with dep-injection via daemon object)
+        result = api_cls(api_args, mini_buildd.daemon.get())
+
+        # Generate API call output
         if output == "html":
-            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command), "mini_buildd/api_default.html".format(c=command)],
-                                                       {"command": command,
+            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=api_cmd), "mini_buildd/api_default.html".format(c=api_cmd)],
+                                                       {"command": api_cmd,
                                                         "authenticated": authenticated,
                                                         "result": result,
-                                                        "api_call": api_call})
+                                                        "api_args": api_args,
+                                                        "api_uri": api_uri})
         elif output == "plain":
             return django.http.HttpResponse("{r}".format(r=result), mimetype="text/plain")
         elif output == "python":

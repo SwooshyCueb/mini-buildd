@@ -1,0 +1,21 @@
+{% extends "mini_buildd/api.html" %}
+
+{% block content %}
+	<div align="center">
+		<tt>
+			<b>{{ command }}</b>
+			{% for k, v in api_args.items %}
+				{{ k }}=<b>{{ v }}</b>
+			{% endfor %}
+		</tt>
+		<p/ >
+		<form action="/mini_buildd/api" method="get">
+			<input type="hidden" name="command" value="{{ command }}" />
+			{% for k, v in api_args.items %}
+				<input type="hidden" name="{{ k }}" value="{{ v }}" />
+			{% endfor %}
+			<input type="hidden" name="confirm" value="{{ command }}" />
+			<input type="submit" value="Yes, run {{ command }}" title="Really run {{ command }}" />
+		</form>
+	</div>
+{% endblock %}

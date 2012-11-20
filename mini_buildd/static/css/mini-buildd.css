@@ -407,6 +407,10 @@ a:hover
 	margin-left: 0px;
 }
 
+#mb_api_confirm div
+{
+	align: center;
+}
 
 #mb_api_show table
 {

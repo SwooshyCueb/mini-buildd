@@ -3,12 +3,6 @@
 {% block page_title %}{{ result.args.package }}{% endblock %}
 {% block page_sub_title %}Source package{% endblock %}
 
-{% block page_menu %}
-	{{ block.super }}
-	<br />
-	<a href="http://packages.qa.debian.org/common/index.html?src={{ result.args.package|urlencode }}">Debian PTS</a>
-{% endblock %}
-
 {% block content %}
 	<div id="mb_api_show">
 		{% for repository, codenames in result.repositories.items %}

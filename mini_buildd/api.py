@@ -11,14 +11,31 @@ LOG = logging.getLogger(__name__)
 
 class Command(object):
     LOGIN = False
+    CONFIRM = False
     ARGUMENTS = []
+
+    @classmethod
+    def get_arg_name(cls, name):
+        """
+        '--with-xyz' -> 'with_xyz'
+        """
+        return name.replace("--", "", 1).replace("-", "_")
+
+    @classmethod
+    def filter_api_args(cls, args):
+        result = {}
+        for sargs, _kvsargs in cls.ARGUMENTS:
+            arg = cls.get_arg_name(sargs[0])
+            if arg in args:
+                result[arg] = args[arg]
+        return result
 
     def __init__(self, args):
         self.args = args
 
         # Checks
         for sargs, kvsargs in self.ARGUMENTS:
-            arg = sargs[0].replace("--", "", 1)
+            arg = self.get_arg_name(sargs[0])
             if sargs[0][:2] != "--" or ("required" in kvsargs and kvsargs["required"]):
                 if not arg in args or not args[arg]:
                     raise Exception("Missing required argument {a}".format(a=arg))
@@ -249,6 +266,7 @@ class Migrate(Command):
     Migrate a source package (along with all binary packages).
     """
     LOGIN = True
+    CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "Source package name."}),
         (["distribution"], {"help": "Distribution to migrate from."})]
@@ -268,6 +286,7 @@ class Remove(Command):
     Remove a source package (along with all binary packages).
     """
     LOGIN = True
+    CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "Source package name."}),
         (["distribution"], {"help": "Distribution to remove from."})]

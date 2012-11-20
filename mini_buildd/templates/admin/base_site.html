@@ -10,15 +10,15 @@
 {% endblock %}
 
 {% block branding %}
-	<div id="mb_django_admin_branding">
+	<div id="mbd_django_admin_branding">
 		<a title="Mini-buildd Home" href="/"><img src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
 		<h1>{% trans 'Configuration of Mini-buildd' %}</h1>
 	</div>
 
-	{% admin_check_daemon_running %}
+	{% mbd_admin_check_daemon_running %}
 
 	{% if daemon_running %}
-		<div id="mb_django_admin_daemon_status">
+		<div id="mbd_django_admin_daemon_status">
 			<p><span class="warning">Warning:</span>
 				The daemon is <span style="font-weight: bold">running</span>!&nbsp;
 				<a class="stop-daemon" href="/admin/mini_buildd/daemon/" title="goto daemon section">Consider temporary deactivation</a> for extensive maintenance work!</p>
@@ -28,7 +28,7 @@
 {% endblock %}
 
 {% block nav-global %}
-	<div id="mb_django_admin_navigation">
+	<div id="mbd_django_admin_navigation">
 		<a href="/">mini-buildd home</a> &raquo; configuration
 	</div>
 {% endblock %}

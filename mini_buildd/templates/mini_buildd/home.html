@@ -3,15 +3,16 @@
 {% block title %}mini-buildd{% endblock %}
 {% block page_title %}{{ daemon.tpl.model.identity }}{% endblock %}
 {% block page_sub_title %}{{ daemon.tpl.running_text }}{% endblock %}
+{% block mbd_page_footer %}GnuPG long key and fingerprint: <tt>{{ daemon.tpl.model.mbd_gnupg_long_id }}: {{ daemon.tpl.model.mbd_gnupg_fingerprint }}</tt>{% endblock %}
 
 {% block localscript %}
 function toggleLastBuilds()
 {
-	$('#mb_lb_click_me').click(
+	$('#mbd_lb_click_me').click(
 		function()
 		{
-			$('#mb_last_builds').toggle();
-			$('#mb_last_builds').is(":visible") ?  $('#mb_lb_anchor').html("hide") : $('#mb_lb_anchor').html("show");
+			$('#mbd_last_builds').toggle();
+			$('#mbd_last_builds').is(":visible") ?  $('#mbd_lb_anchor').html("hide") : $('#mbd_lb_anchor').html("show");
 		}
 	);
 }
@@ -19,11 +20,11 @@ function toggleLastBuilds()
 
 function toggleLastPackages()
 {
-	$('#mb_lp_click_me').click(
+	$('#mbd_lp_click_me').click(
 		function()
 		{
-			$('#mb_last_packages').toggle();
-			$('#mb_last_packages').is(":visible") ?  $('#mb_lp_anchor').html("hide") : $('#mb_lp_anchor').html("show");
+			$('#mbd_last_packages').toggle();
+			$('#mbd_last_packages').is(":visible") ?  $('#mbd_lp_anchor').html("hide") : $('#mbd_lp_anchor').html("show");
 		}
 	);
 }
@@ -31,13 +32,13 @@ function toggleLastPackages()
 
 function updateLastBuildsCount()
 {
-	$('#mb_lb_count').html($('#mb_last_builds li').size());
+	$('#mbd_lb_count').html($('#mbd_last_builds li').size());
 }
 
 
 function updateLastPackagesCount()
 {
-	$('#mb_lp_count').html($('#mb_last_packages li').size());
+	$('#mbd_lp_count').html($('#mbd_last_packages li').size());
 }
 
 
@@ -53,11 +54,11 @@ $(document).ready(
 {% endblock %}
 
 {% block content %}
-	<div id="mb_index_status">
+	<div id="mbd_index_status">
 		<div class="box">
 			<h1 class="box-caption"><span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }} </span></h1>
 
-			<div id="mb_index_repositories">
+			<div id="mbd_index_repositories">
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Packager: {{ daemon.tpl.packages|length }} packaging</h1>
 					{% if repositories.count > 0 %}
@@ -82,8 +83,8 @@ $(document).ready(
 							</ul>
 						{% endif %}
 
-						<h2>Last packages: <span id="mb_lp_count">0</span> (<span id="mb_lp_click_me"><a id="mb_lp_anchor" href="#">show</a></span>)</h2>
-						<ul id="mb_last_packages">
+						<h2>Last packages: <span id="mbd_lp_count">0</span> (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
+						<ul id="mbd_last_packages">
 							{% for p in daemon.tpl.last_packages %}
 								<li>{{ p }}<br />
 									Build results:
@@ -103,7 +104,7 @@ $(document).ready(
 				</div>
 			</div>
 
-			<div id="mb_index_chroots">
+			<div id="mbd_index_chroots">
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Builder: {{ daemon.tpl.build_queue }}</h1>
 
@@ -128,8 +129,8 @@ $(document).ready(
 							</ul>
 						{% endif %}
 
-						<h2>Last builds: <span id="mb_lb_count">0</span>  (<span id="mb_lb_click_me"><a id="mb_lb_anchor" href="#">show</a></span>)</h2>
-						<ul id="mb_last_builds">
+						<h2>Last builds: <span id="mbd_lb_count">0</span>  (<span id="mbd_lb_click_me"><a id="mbd_lb_anchor" href="#">show</a></span>)</h2>
+						<ul id="mbd_last_builds">
 							{% for b in daemon.tpl.last_builds %}
 								<li>{{ b }}</li>
 							{% endfor %}
@@ -141,7 +142,7 @@ $(document).ready(
 				</div>
 			</div>
 
-			<div id="mb_index_remotes">
+			<div id="mbd_index_remotes">
 				<div class="inner-box">
 					<h1 class="inner-box-caption">Network: {{ daemon.tpl.remotes|length }} remotes</h1>
 					{% if remotes.count > 0 %}
@@ -155,10 +156,6 @@ $(document).ready(
 						<p>No prepared remotes.</p>
 					{% endif %}
 				</div>
-			</div>
-			<!-- Footer -->
-			<div id="mb_footer">
-				<p>GnuPG long key and fingerprint: <tt>{{ daemon.tpl.model.mbd_gnupg_long_id }}: {{ daemon.tpl.model.mbd_gnupg_fingerprint }}</tt></p>
 			</div>
 		</div>
 	</div>

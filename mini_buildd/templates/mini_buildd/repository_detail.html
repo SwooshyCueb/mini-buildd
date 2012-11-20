@@ -7,12 +7,12 @@
 
 {% block content %}
 
-	<div id="mb_repository">
+	<div id="mbd_repository">
 		<div class="box">
 			<h1 class="box-caption">Repository: {{ object.identity }}</h1>
 
 			{% if object.external_home_url %}
-				<div id="mb_repository_misc">
+				<div id="mbd_repository_misc">
 					<ul>
 						<li>External documentation: <a href="{{ object.external_home_url }}">{{ object.external_home_url }}</a></li>
 					</ul>
@@ -34,17 +34,17 @@
 					</ul>
 					<hr />
 					{% for s in object.layout.suiteoption_set.all %}
-						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% repository_desc object d s %}</span></h2>
+						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% mbd_repository_desc object d s %}</span></h2>
 						<ul>
-							<li>Apt source line: <pre class="pre-inline">{% distribution_apt_line d object s %}</pre></li>
-							<li>Mandatory version part: <pre class="pre-inline">{% repository_mandatory_version object d s %}</pre></li>
+							<li>Apt source line: <pre class="pre-inline">{% mbd_distribution_apt_line d object s %}</pre></li>
+							<li>Mandatory version part: <pre class="pre-inline">{% mbd_repository_mandatory_version object d s %}</pre></li>
 							{% if s.suite.migrates_to %}
 								<li>Migrates to: <span class="emphasize-migrates-from">{{ s.suite.migrates_to.name }}</span></li>
 							{% endif %}
 							{% if s.uploadable %}
 								<li>Uploadable.</li>
-								<li>Apt sources.list:<div class="pre-block"><pre>{% distribution_apt_sources_list d object s %}</pre></div></li>
-								<li>Apt preferences:<div class="pre-block"><pre>{% distribution_apt_preferences d object s %}</pre></div></li>
+								<li>Apt sources.list:<div class="pre-block"><pre>{% mbd_distribution_apt_sources_list d object s %}</pre></div></li>
+								<li>Apt preferences:<div class="pre-block"><pre>{% mbd_distribution_apt_preferences d object s %}</pre></div></li>
 							{% endif %}
 						</ul>
 					{% endfor %}

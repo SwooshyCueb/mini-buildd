@@ -14,11 +14,11 @@
 	</head>
 	<body>
 		<!-- Header -->
-		<div id="mb_header">
-			<div id="mb_branding">
+		<div id="mbd_header">
+			<div id="mbd_branding">
 				<a class="image" title="Mini-buildd Home" href="/"><img src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
 			</div>
-			<div id="mb_navigation">
+			<div id="mbd_navigation">
 				<ul>
 					<li class="first"><a href="/mini_buildd/">Home</a></li>
 					<li><a href="/admin/">Configure</a></li>
@@ -31,17 +31,17 @@
 		</div>
 
 		<!-- Page header -->
-		<div id="mb_page_header">
+		<div id="mbd_page_header">
 			{% block page_header %}{% endblock %}
 		</div>
 
 		<!-- Content -->
-		<div id="mb_content">
+		<div id="mbd_content">
 			{% block content %}{% endblock %}
 		</div>
 
 		<!-- Footer -->
-		<div id="mb_footer">
+		<div id="mbd_footer">
 			<p><a class="homelink" title="Mini-buildd Home" href="/mini_buildd/">{% mbd_version %}</a><span class="page-footer">{% block mbd_page_footer %}{% endblock %}</span></p>
 		</div>
 	</body>

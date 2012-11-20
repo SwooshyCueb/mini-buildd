@@ -41,57 +41,57 @@
 				{% else %}
 					<!-- MINI-BUILDD -->
 					<div class="module mb">
-						<div id="mb_box">
+						<div id="mbd_box">
 							<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">Mini-buildd</a></h1>
 							<!-- DAEMON -->
 							<div class="inner-box">
 								<table>
 									<caption>Daemon</caption>
-									{% include "admin/index_mb_row.html" with model_name="Daemon" hide_add="True" %}
+									{% include "admin/index_mbd_row.html" with model_name="Daemon" hide_add="True" %}
 								</table>
 							</div>
 							<!-- ARCHIVES AND SOURCES -->
 							<div class="inner-box">
 								<table>
 									<caption>Archives and Sources</caption>
-									{% include "admin/index_mb_row.html" with model_name="Apt keys" %}
-									{% include "admin/index_mb_row.html" with model_name="Archives" %}
-									{% include "admin/index_mb_row.html" with model_name="Sources" %}
-									{% include "admin/index_mb_row.html" with model_name="Priority sources" %}
+									{% include "admin/index_mbd_row.html" with model_name="Apt keys" %}
+									{% include "admin/index_mbd_row.html" with model_name="Archives" %}
+									{% include "admin/index_mbd_row.html" with model_name="Sources" %}
+									{% include "admin/index_mbd_row.html" with model_name="Priority sources" %}
 								</table>
 							</div>
 							<!-- SUITES AND LAYOUTS-->
 							<div class="inner-box">
 								<table>
 									<caption>Suites and Layouts</caption>
-									{% include "admin/index_mb_row.html" with model_name="Suites" %}
-									{% include "admin/index_mb_row.html" with model_name="Layouts" %}
+									{% include "admin/index_mbd_row.html" with model_name="Suites" %}
+									{% include "admin/index_mbd_row.html" with model_name="Layouts" %}
 								</table>
 							</div>
 							<!-- DISTRIBUTIONS AND REPOSITORIES -->
 							<div class="inner-box">
 								<table>
 									<caption>Distributions and Repositories</caption>
-									{% include "admin/index_mb_row.html" with model_name="Distributions" %}
-									{% include "admin/index_mb_row.html" with model_name="Repositories" %}
+									{% include "admin/index_mbd_row.html" with model_name="Distributions" %}
+									{% include "admin/index_mbd_row.html" with model_name="Repositories" %}
 								</table>
 							</div>
 							<!-- CHROOTS -->
 							<div class="inner-box">
 								<table>
 									<caption>Chroots</caption>
-									{% include "admin/index_mb_row.html" with model_name="Dir chroots" %}
-									{% include "admin/index_mb_row.html" with model_name="File chroots" %}
-									{% include "admin/index_mb_row.html" with model_name="Lvm chroots" %}
-									{% include "admin/index_mb_row.html" with model_name="Loop lvm chroots" %}
+									{% include "admin/index_mbd_row.html" with model_name="Dir chroots" %}
+									{% include "admin/index_mbd_row.html" with model_name="File chroots" %}
+									{% include "admin/index_mbd_row.html" with model_name="Lvm chroots" %}
+									{% include "admin/index_mbd_row.html" with model_name="Loop lvm chroots" %}
 								</table>
 							</div>
 							<!-- UPLOADERS AND REMOTES -->
 							<div class="inner-box">
 								<table>
 									<caption>Uploaders and Remotes</caption>
-									{% include "admin/index_mb_row.html" with model_name="Uploaders" hide_add="True" %}
-									{% include "admin/index_mb_row.html" with model_name="Remotes" %}
+									{% include "admin/index_mbd_row.html" with model_name="Uploaders" hide_add="True" %}
+									{% include "admin/index_mbd_row.html" with model_name="Remotes" %}
 								</table>
 							</div>
 						</div>

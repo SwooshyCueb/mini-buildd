@@ -14,7 +14,7 @@ def mbd_version():
 
 
 @register.simple_tag(takes_context=True)
-def admin_check_daemon_running(context):
+def mbd_admin_check_daemon_running(context):
     context['daemon_running'] = False
     if mini_buildd.daemon.get().is_running():
         context['daemon_running'] = True
@@ -22,30 +22,25 @@ def admin_check_daemon_running(context):
 
 
 @register.simple_tag
-def distribution_apt_line(distribution, repository, suite_option):
+def mbd_distribution_apt_line(distribution, repository, suite_option):
     return distribution.mbd_get_apt_line(repository, suite_option)
 
 
 @register.simple_tag
-def distribution_apt_sources_list(distribution, repository, suite_option):
+def mbd_distribution_apt_sources_list(distribution, repository, suite_option):
     return distribution.mbd_get_apt_sources_list(repository, suite_option)
 
 
 @register.simple_tag
-def distribution_apt_preferences(distribution, repository, suite_option):
+def mbd_distribution_apt_preferences(distribution, repository, suite_option):
     return distribution.mbd_get_apt_preferences(repository, suite_option)
 
 
 @register.simple_tag
-def repository_dist(repository, dist, suite):
-    return repository.mbd_get_dist(dist, suite)
-
-
-@register.simple_tag
-def repository_desc(repository, distribution, suite_option):
+def mbd_repository_desc(repository, distribution, suite_option):
     return repository.mbd_get_description(distribution, suite_option)
 
 
 @register.simple_tag
-def repository_mandatory_version(repository, dist, suite):
+def mbd_repository_mandatory_version(repository, dist, suite):
     return repository.layout.mbd_get_mandatory_version_regex(repository, dist, suite)

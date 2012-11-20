@@ -1,17 +1,17 @@
 /* New mini-buildd specific style definitions. */
 
-#mb_django_admin_branding h1
+#mbd_django_admin_branding h1
 {
 	color: #ffffcc;
 }
 
-#mb_django_admin_branding img
+#mbd_django_admin_branding img
 {
 	float: left;
 	margin: 0px 10px 8px 10px;
 }
 
-#mb_django_admin_daemon_status
+#mbd_django_admin_daemon_status
 {
 	float: left;
 	width: 100%;
@@ -23,30 +23,30 @@
 	padding: 2px 0px 3px 7px;
 }
 
-#mb_django_admin_daemon_status p
+#mbd_django_admin_daemon_status p
 {
 	display: inline;
 }
 
-#mb_django_admin_daemon_status span.warning
+#mbd_django_admin_daemon_status span.warning
 {
 	color: red;
 	font-weight: bold;
 }
 
-#mb_django_admin_daemon_status a:link, #mb_django_admin_daemon_status a:visited
+#mbd_django_admin_daemon_status a:link, #mbd_django_admin_daemon_status a:visited
 {
 	font-size: 11px;
 	color: #5b80b2;
 }
 
-#mb_django_admin_daemon_status a:hover
+#mbd_django_admin_daemon_status a:hover
 {
 	color: #003366;
 	text-decoration: none;
 }
 
-#mb_box h1.mini-buildd
+#mbd_box h1.mini-buildd
 {
 	background: url("/static/admin/img/default-bg.gif") repeat-x scroll left top #7CA0C7;
 	color: white;
@@ -55,7 +55,7 @@
 	padding: 2px 0px 2px 5px;
 }
 
-#mb_box caption
+#mbd_box caption
 {
 	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
 	background-color: #417690;
@@ -65,7 +65,7 @@
 	padding: 5px 0px 4px 4px;
 }
 
-#mb_box .inner-box
+#mbd_box .inner-box
 {
 	margin: 12px;
 	border: 1px solid #cccccc;

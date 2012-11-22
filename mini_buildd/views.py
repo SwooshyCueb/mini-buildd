@@ -55,6 +55,13 @@ def error404_not_found(request, description="The requested resource could not be
                  description)
 
 
+def error405_method_not_allowed(request, description="The resource does not allow this request"):
+    return error(request,
+                 405,
+                 "Method Not Allowed",
+                 description)
+
+
 def error500_internal(request, description="Sorry, something went wrong"):
     return error(request,
                  500,
@@ -138,5 +145,7 @@ def api(request):
         else:
             return django.http.HttpResponseBadRequest("<h1>Unknow output type {o}</h1>".format(o=output))
     except Exception as e:
-        mini_buildd.setup.log_exception(LOG, "API internal error", e)
-        return error500_internal(request, "API: Internal error: {e}".format(e=e))
+        # This might as well be just an internal error; in case of no bug in the code, 405 fits better though.
+        # ['wontfix' unless we refactor to diversified exception classes]
+        mini_buildd.setup.log_exception(LOG, "API call error", e)
+        return error405_method_not_allowed(request, "API call error: {e}".format(e=e))

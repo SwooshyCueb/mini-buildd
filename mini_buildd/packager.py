@@ -57,7 +57,18 @@ class Package(mini_buildd.misc.Status):
 
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes
-        self.repository, self.distribution, self.suite = self.changes.get_repository()
+        self.repository, self.distribution, self.suite, rollback = self.daemon.parse_distribution(self.changes["Distribution"])
+
+        if rollback is not None:
+            raise Exception("Rollback distribution are not uploadable")
+
+        if not self.suite.uploadable:
+            raise Exception("Suite '{s}' is not uploadable".format(s=self.suite))
+
+        if not self.repository.mbd_is_active():
+            raise Exception("Repository '{r}' is not active".format(r=self.repository))
+
+        self.repository.mbd_check_version(self.changes["Version"], self.distribution, self.suite)
 
         # Authenticate
         if self.repository.allow_unauthenticated_uploads:
@@ -66,19 +77,19 @@ class Package(mini_buildd.misc.Status):
             uploader_keyrings[self.repository.identity].verify(self.changes.file_path)
 
         # Check if this version is already in repository
-        if self.repository.mbd_package_exists(self.changes["Source"], self.changes["Version"]):
+        if self.repository.mbd_package_find(self.changes["Source"], version=self.changes["Version"]):
             raise Exception("Version '{v}' already installed".format(v=self.changes["Version"]))
 
         # Generate build requests
-        self.requests = self.changes.gen_buildrequests(self.daemon, self.repository, self.distribution, self.suite)
+        self.requests = self.changes.gen_buildrequests(self.daemon.model, self.repository, self.distribution, self.suite)
 
         # Upload buildrequests
         for _key, breq in self.requests.items():
             try:
-                breq.upload_buildrequest(self.daemon.mbd_get_http_hopo())
+                breq.upload_buildrequest(self.daemon.model.mbd_get_http_hopo())
             except Exception as e:
                 # Upload failure build result to ourselves
-                breq.upload_failed_buildresult(self.daemon.mbd_gnupg, self.daemon.mbd_get_ftp_hopo(), 100, "upload-failed", e)
+                breq.upload_failed_buildresult(self.daemon.model.mbd_gnupg, self.daemon.model.mbd_get_ftp_hopo(), 100, "upload-failed", e)
 
     def add_buildresult(self, bres, remotes_keyring):
         remotes_keyring.verify(bres.file_path)
@@ -122,18 +133,18 @@ class Package(mini_buildd.misc.Status):
         dsc_url = "file://" + os.path.join(os.path.dirname(self.changes.file_path), self.changes.dsc_name)
         for dist in self.changes.magic_auto_backports:
             try:
-                repository, distribution, suite = mini_buildd.changes.parse_distribution(dist)
+                repository, distribution, suite, _rollback = self.daemon.parse_distribution(dist)
                 with contextlib.closing(mini_buildd.porter.PortedPackage(
                         dsc_url,
                         dist,
                         repository.layout.mbd_get_default_version(repository, distribution, suite),
                         ["MINI_BUILDD: BACKPORT_MODE"],
                         mini_buildd.misc.taint_env(
-                            {"DEBEMAIL": self.daemon.email_address,
-                             "DEBFULLNAME": self.daemon.mbd_fullname,
-                             "GNUPGHOME": self.daemon.mbd_gnupg.home}),
+                            {"DEBEMAIL": self.daemon.model.email_address,
+                             "DEBFULLNAME": self.daemon.model.mbd_fullname,
+                             "GNUPGHOME": self.daemon.model.mbd_gnupg.home}),
                         replace_version_apdx_regex=self.repository.layout.mbd_get_mandatory_version_regex(self.repository, self.distribution, self.suite))) as port:
-                    port.upload(self.daemon.mbd_get_ftp_hopo())
+                    port.upload(self.daemon.model.mbd_get_ftp_hopo())
                     LOG.info("Automatic package port uploaded for: {d}".format(d=dist))
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=dist), e)
@@ -155,7 +166,7 @@ class Package(mini_buildd.misc.Status):
             return "{a} ({s}): {b}\n".format(
                 a=arch,
                 s=bres.bres_stat,
-                b=self.daemon.mbd_get_http_url() + "/log/" + bres.get_archive_dir(self.get_status() == self.INSTALLED) + "/" + bres.buildlog_name)
+                b=self.daemon.model.mbd_get_http_url() + "/log/" + bres.get_archive_dir(self.get_status() == self.INSTALLED) + "/" + bres.buildlog_name)
 
         results = header(self.__unicode__(), "=")
         results += "\n"
@@ -177,7 +188,7 @@ class Package(mini_buildd.misc.Status):
 
         body = email.mime.text.MIMEText(results, _charset="UTF-8")
 
-        self.daemon.mbd_notify(
+        self.daemon.model.mbd_notify(
             self.__unicode__(),
             body,
             self.repository,
@@ -214,6 +225,7 @@ def run(daemon, changes, packages, last_packages, remotes_keyring, uploader_keyr
             raise Exception("No active package for that build result.")
 
         package = packages[changes.get_pkg_id()]
+
         try:
             if package.add_buildresult(changes, remotes_keyring):
                 package.install()
@@ -228,6 +240,8 @@ def run(daemon, changes, packages, last_packages, remotes_keyring, uploader_keyr
             package.notify()
             del packages[changes.get_pkg_id()]
             last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+
+            mini_buildd.setup.log_exception(LOG, "Package FAILED", e)
 
     else:  # User upload
         if changes.get_pkg_id() in packages:
@@ -244,3 +258,5 @@ def run(daemon, changes, packages, last_packages, remotes_keyring, uploader_keyr
             package.notify()
             del packages[changes.get_pkg_id()]
             last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+
+            mini_buildd.setup.log_exception(LOG, "Package REJECTED", e)

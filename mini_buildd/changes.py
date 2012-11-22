@@ -25,21 +25,6 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
-def parse_distribution(dist):
-    """
-    Find repo, dist and suite model object from distribtion string.
-    """
-    # Check and parse changes distribution string
-    dist_parsed = mini_buildd.misc.Distribution(dist)
-
-    # Get repository for identity; django exceptions will suite quite well as-is
-    repository = mini_buildd.models.repository.Repository.objects.get(identity=dist_parsed.repository)
-    distribution = repository.distributions.all().get(base_source__codename__exact=dist_parsed.codename)
-    suite = repository.layout.suiteoption_set.all().get(suite__name=dist_parsed.suite)
-
-    return repository, distribution, suite
-
-
 class Changes(debian.deb822.Changes):
     BUILDREQUEST_RE = re.compile("^.+_mini-buildd-buildrequest_[^_]+.changes$")
     BUILDRESULT_RE = re.compile("^.+_mini-buildd-buildresult_[^_]+.changes$")
@@ -110,19 +95,6 @@ class Changes(debian.deb822.Changes):
     @property
     def magic_backport_mode(self):
         return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self.get("Changes", "")))
-
-    def get_repository(self):
-        repository, distribution, suite = parse_distribution(self["Distribution"])
-
-        if not suite.uploadable:
-            raise Exception("Suite '{s}' is not uploadable".format(s=suite))
-
-        if not repository.mbd_is_active():
-            raise Exception("Repository '{r}' is not active".format(r=repository))
-
-        repository.mbd_check_version(self["Version"], distribution, suite)
-
-        return repository, distribution, suite
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
@@ -275,11 +247,13 @@ class Changes(debian.deb822.Changes):
                 # Generate sources.list et.al. to be used
                 open(os.path.join(path, "apt_sources.list"), 'w').write(dist.mbd_get_apt_sources_list(repository, suite_option))
                 open(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences(repository, suite_option))
-                open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(self["Distribution"]))
+                open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(dist))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
-                open(chroot_setup_script, 'w').write(repository.mbd_get_chroot_setup_script(self["Distribution"]))
+                # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+                open(chroot_setup_script, 'w').write(mini_buildd.misc.fromdos(dist.chroot_setup_script))
+
                 os.chmod(chroot_setup_script, stat.S_IRWXU)
-                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(repository.mbd_get_sbuildrc_snippet(self["Distribution"], ao.architecture.name))
+                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(dist.mbd_get_sbuildrc_snippet(ao.architecture.name))
 
                 # Generate tar from original changes
                 self.tar(tar_path=breq.file_path + ".tar",

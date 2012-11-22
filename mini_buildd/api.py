@@ -269,13 +269,13 @@ class Migrate(Command):
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "Source package name."}),
-        (["distribution"], {"help": "Distribution to migrate from."})]
+        (["distribution"], {"help": "Distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore.)"})]
 
     def __init__(self, args, daemon):
         super(Migrate, self).__init__(args)
 
-        repository, distribution, suite = daemon.parse_distribution(args["distribution"])
-        self.cmd_out = repository.mbd_package_migrate(args["package"], distribution, suite)
+        repository, distribution, suite, rollback = daemon.parse_distribution(args["distribution"])
+        self.cmd_out = repository.mbd_package_migrate(args["package"], distribution, suite, rollback)
 
     def __unicode__(self):
         return self.cmd_out
@@ -294,8 +294,8 @@ class Remove(Command):
     def __init__(self, args, daemon):
         super(Remove, self).__init__(args)
 
-        repository, distribution, suite = daemon.parse_distribution(args["distribution"])
-        self.cmd_out = repository.mbd_package_remove(args["package"], distribution, suite)
+        repository, distribution, suite, rollback = daemon.parse_distribution(args["distribution"])
+        self.cmd_out = repository.mbd_package_remove(args["package"], distribution, suite, rollback)
 
     def __unicode__(self):
         return self.cmd_out

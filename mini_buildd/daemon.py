@@ -123,12 +123,12 @@ def run():
                 else:
                     # User upload or build result: packager
                     mini_buildd.packager.run(
-                        get().model,
-                        changes,
-                        get().packages,
-                        get().last_packages,
-                        keyring["remotes"],
-                        keyring["uploader"])
+                        daemon=get(),
+                        changes=changes,
+                        packages=get().packages,
+                        last_packages=get().last_packages,
+                        remotes_keyring=keyring["remotes"],
+                        uploader_keyrings=keyring["uploader"])
 
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
@@ -269,8 +269,19 @@ class Daemon():
         return mini_buildd.models.gnupg.Remote.mbd_get_active()
 
     @classmethod
-    def parse_distribution(cls, distribution):
-        return mini_buildd.changes.parse_distribution(distribution)
+    def parse_distribution(cls, dist):
+        """
+        Get repository, distribution and suite model objects (plus rollback no) from distribtion string.
+        """
+        # Check and parse changes distribution string
+        dist_parsed = mini_buildd.misc.Distribution(dist)
+
+        # Get repository for identity; django exceptions will suite quite well as-is
+        repository = mini_buildd.models.repository.Repository.objects.get(identity=dist_parsed.repository)
+        distribution = repository.distributions.all().get(base_source__codename__exact=dist_parsed.codename)
+        suite = repository.layout.suiteoption_set.all().get(suite__name=dist_parsed.suite)
+
+        return repository, distribution, suite, dist_parsed.rollback_no
 
     @property
     def tpl(self):

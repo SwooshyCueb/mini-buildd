@@ -389,6 +389,11 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
         return result
 
+    def mbd_get_sbuildrc_snippet(self, arch):
+        libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, self.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
+        # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
+        return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(self.sbuildrc_snippet, {"LIBDIR": libdir}))
+
 
 class Repository(mini_buildd.models.base.StatusModel):
     identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname(),
@@ -513,10 +518,9 @@ Example:
                             return d, s
         raise Exception("No such distribution in repository {i}: {d}".format(self.identity, d=distribution.get()))
 
-    def mbd_get_apt_keys(self, dist):
-        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
+    def mbd_get_apt_keys(self, distribution):
         result = self.mbd_get_daemon().model.mbd_get_pub_key()
-        for e in d.extra_sources.all():
+        for e in distribution.extra_sources.all():
             for k in e.source.apt_keys.all():
                 result += k.key
         return result
@@ -539,18 +543,6 @@ Example:
                 s = s.migrates_to
 
         return result
-
-    def mbd_get_chroot_setup_script(self, dist):
-        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
-        # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return mini_buildd.misc.fromdos(d.chroot_setup_script)
-
-    def mbd_get_sbuildrc_snippet(self, dist, arch):
-        d, _s = self._mbd_find_dist(mini_buildd.misc.Distribution(dist))
-        libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, d.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
-
-        # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-        return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(d.sbuildrc_snippet, {"LIBDIR": libdir}))
 
     def _mbd_reprepro_config(self):
         dist_template = """
@@ -637,17 +629,13 @@ DscIndices: Sources Release . .gz .bz2
             LOG.debug("Distribution dict created: {d}".format(d=distribution))
             return new
 
-        def cp_values(src, dst):
-            for k, v in src.items():
-                dst[k] = v
-
-        rep_result = self._mbd_reprepro().show(package)
+        pkg_show = self._mbd_reprepro().show(package)
 
         LOG.debug("Reprepro 'show' result: {r}".format(r=pprint.pformat(result)))
 
         # Init all codenames
-        for r in rep_result:
-            dist = mini_buildd.misc.Distribution(r["distribution"], allow_rollback=True)
+        for r in pkg_show:
+            dist = mini_buildd.misc.Distribution(r["distribution"])
             distribution, suite = self._mbd_find_dist(dist)
 
             # Get list of dicts with unique distributions
@@ -672,18 +660,28 @@ DscIndices: Sources Release . .gz .bz2
                 r["no"] = dist.rollback_no
                 values["rollbacks"].append(r)
             else:
-                # Copy all reprepro values, plus migration dist
-                cp_values(r, values)
+                # Copy all reprepro values
+                for k, v in r.items():
+                    values[k] = v
+
+                # Extra: Set flag whether this dist is migrated or not
+                values["is_migrated"] = \
+                    values["migrates_to"] and \
+                    self._mbd_package_find(pkg_show, distribution=values["migrates_to"], version=values["sourceversion"])
 
         LOG.debug("Repository 'show' result: {r}".format(r=pprint.pformat(result)))
 
         return result
 
-    def mbd_package_exists(self, package, version):
-        for r in self._mbd_reprepro().show(package):
-            if r["sourceversion"] == version:
-                return True
-        return False
+    @classmethod
+    def _mbd_package_find(cls, pkg_show, distribution=None, version=None):
+        for r in pkg_show:
+            if not distribution or r["distribution"] == distribution:
+                if not version or r["sourceversion"] == version:
+                    return r
+
+    def mbd_package_find(self, package, distribution=None, version=None):
+        return self._mbd_package_find(self._mbd_reprepro().show(package), distribution, version)
 
     def _mbd_package_shift_rollbacks(self, distribution, suite_option, package_name):
         for r in range(suite_option.rollback - 1, -1, -1):
@@ -695,36 +693,67 @@ DscIndices: Sources Release . .gz .bz2
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Rollback failed (ignoring)", e)
 
-    def mbd_package_migrate(self, package, distribution, suite):
-        # Get src and dst dist strings, and check we are confed to migrate
+    def mbd_package_migrate(self, package, distribution, suite, rollback=None):
         src_dist = suite.mbd_get_distribution_string(self, distribution)
+        pkg_show = self._mbd_reprepro().show(package)
+
+        if rollback is not None:
+            LOG.info("Rollback restore of '{p}' from rollback {r} to '{d}'".format(p=package, r=rollback, d=src_dist))
+            if self._mbd_package_find(pkg_show, distribution=src_dist):
+                raise Exception("Package '{p}' exists in '{d}': Remove first to restore rollback".format(p=package, d=src_dist))
+
+            rob_dist = suite.mbd_get_distribution_string(self, distribution, rollback=rollback)
+            if not self._mbd_package_find(pkg_show, distribution=rob_dist):
+                raise Exception("Package '{p}' has no rollback '{r}'".format(p=package, r=rollback))
+
+            # Actually migrate package in reprepro
+            return self._mbd_reprepro().migrate(package, rob_dist, src_dist)
+
+        # Get src and dst dist strings, and check we are configured to migrate
         if not suite.migrates_to:
-            raise Exception("You can't migrate from {d}".format(d=src_dist))
+            raise Exception("You can't migrate from '{d}'".format(d=src_dist))
         dst_dist = suite.migrates_to.mbd_get_distribution_string(self, distribution)
 
-        # Check src and dst package versions
-        pkg_show = self._mbd_reprepro().show(package)
-        dst_version = None
-        src_version = None
-        for r in pkg_show:
-            if r["distribution"] == src_dist:
-                src_version = r["sourceversion"]
-            if r["distribution"] == dst_dist:
-                dst_version = r["sourceversion"]
-        if src_version == dst_version:
-            raise Exception("Version {v} already migrated to {d}".format(v=src_version, d=dst_dist))
+        # Check if package is in src_dst
+        src_pkg = self._mbd_package_find(pkg_show, distribution=src_dist)
+        if src_pkg is None:
+            raise Exception("Package '{p}' not in '{d}'".format(p=package, d=src_dist))
+        # Check that version is not already migrated
+        dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist)
+        if dst_pkg is not None and src_pkg["sourceversion"] == dst_pkg["sourceversion"]:
+            raise Exception("Version '{v}' already migrated to '{d}'".format(v=src_pkg["sourceversion"], d=dst_dist))
 
         # Shift rollbacks in the destination distributions
-        self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
+        if dst_pkg is not None:
+            self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
 
         # Actually migrate package in reprepro
         return self._mbd_reprepro().migrate(package, src_dist, dst_dist)
 
-    def mbd_package_remove(self, package, distribution, suite):
-        # Shift rollbacks
-        self._mbd_package_shift_rollbacks(distribution, suite, package)
-        # Remove package
-        return self._mbd_reprepro().remove(package, suite.mbd_get_distribution_string(self, distribution))
+    def mbd_package_remove(self, package, distribution, suite, rollback=None):
+        dist_str = suite.mbd_get_distribution_string(self, distribution, rollback)
+        if not self.mbd_package_find(package, distribution=dist_str):
+            raise Exception("Package '{p}' not in '{d}'".format(p=package, d=dist_str))
+
+        if rollback is None:
+            # Shift rollbacks
+            self._mbd_package_shift_rollbacks(distribution, suite, package)
+            # Remove package
+            return self._mbd_reprepro().remove(package, dist_str)
+        else:
+            # Rollback removal
+            res = self._mbd_reprepro().remove(package, dist_str)
+
+            # Fix up empty rollback dist
+            for r in range(rollback, suite.rollback - 1):
+                src = suite.mbd_get_distribution_string(self, distribution, r + 1)
+                dst = suite.mbd_get_distribution_string(self, distribution, r)
+                try:
+                    res += self._mbd_reprepro().migrate(package, src, dst)
+                    res += self._mbd_reprepro().remove(package, src)
+                except Exception as e:
+                    res += "WARN: Rollback: Moving '{p}' from '{s}' to '{d}' FAILED (ignoring): {e}\n".format(p=package, s=src, d=dst, e=e)
+            return res
 
     def _mbd_package_install(self, bres):
         with contextlib.closing(mini_buildd.misc.TmpDir()) as t:
@@ -737,23 +766,31 @@ DscIndices: Sources Release . .gz .bz2
         """
         Install a dict arch:bres of successful build results.
         """
-        archall = distribution.mbd_get_archall_architectures()
-        LOG.debug("Found archall={a}".format(a=archall))
+        # Get the full distribution str
+        dist_str = suite_option.mbd_get_distribution_string(self, distribution)
+
+        # Get the 'archall' arch
+        archall = distribution.mbd_get_archall_architectures()[0]
+        LOG.debug("Package install: Archall={a}".format(a=archall))
+
+        # Get the (source) package name
+        package = bresults[archall]["Source"]
+        LOG.debug("Package install: Package={p}".format(p=package))
 
         # Check that all mandatory archs are present
         missing_mandatory_archs = [arch for arch in distribution.mbd_get_mandatory_architectures() if arch not in bresults]
         if missing_mandatory_archs:
             raise Exception("{n} mandatory architecture(s) missing: {a}".format(n=len(missing_mandatory_archs), a=" ".join(missing_mandatory_archs)))
 
-        # Shift package up in the rollback distributions
-        self._mbd_package_shift_rollbacks(distribution, suite_option, bresults.values()[0]["Source"])
+        # Shift current package up in the rollback distributions (unless this is the initial install)
+        if self.mbd_package_find(package, distribution=dist_str):
+            self._mbd_package_shift_rollbacks(distribution, suite_option, package)
 
         # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
-        for bres in [s for a, s in bresults.items() if a in archall]:
-            self._mbd_package_install(bres)
+        self._mbd_package_install(bresults[archall])
 
         # Second, install all other archs
-        for bres in [s for a, s in bresults.items() if not a in archall]:
+        for bres in [s for a, s in bresults.items() if a != archall]:
             # Don't try install if skipped
             if bres.get("Sbuild-Status") == "skipped":
                 LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))

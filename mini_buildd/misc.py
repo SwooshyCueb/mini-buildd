@@ -178,7 +178,7 @@ class Distribution(object):
     (u'squeeze', u'test', u'stable')
     >>> d.get()
     u'squeeze-test-stable'
-    >>> d = Distribution("squeeze-test-stable-rollback5", allow_rollback=True)
+    >>> d = Distribution("squeeze-test-stable-rollback5")
     >>> d.is_rollback
     True
     >>> d.codename, d.repository, d.suite, d.rollback
@@ -188,9 +188,8 @@ class Distribution(object):
     >>> d.rollback_no
     5
     """
-    def __init__(self, dist, allow_rollback=False):
+    def __init__(self, dist):
         self._dsplit = dist.split("-")
-        self._max_parts = 4 if allow_rollback else 3
 
         def some_empty():
             for d in self._dsplit:
@@ -198,8 +197,8 @@ class Distribution(object):
                     return True
             return False
 
-        if (len(self._dsplit) < 3 or len(self._dsplit) > self._max_parts) or some_empty():
-            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-ID-SUITE{r}'".format(d=dist, r="[-rollbackN]" if allow_rollback else ""))
+        if (len(self._dsplit) < 3 or len(self._dsplit) > 4) or some_empty():
+            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-REPOID-SUITE[-rollbackN]'".format(d=dist))
 
     def get(self, rollback=True):
         if rollback:
@@ -225,12 +224,14 @@ class Distribution(object):
 
     @property
     def rollback(self):
-        return self._dsplit[3]
+        if self.is_rollback:
+            return self._dsplit[3]
 
     @property
     def rollback_no(self):
         " Rollback (int) number: 'rollback0' -> 0 "
-        return int(re.sub(r"\D", "", self.rollback))
+        if self.is_rollback:
+            return int(re.sub(r"\D", "", self.rollback))
 
 
 def subst_placeholders(template, placeholders):

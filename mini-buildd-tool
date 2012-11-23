@@ -1,9 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+from __future__ import print_function
 
 import sys
 import os
+import locale
 import argparse
 import urllib
 import urllib2
@@ -58,12 +60,17 @@ def api_call(args):
     # Do the api call
     call_url = "{b}/mini_buildd/api?{a}".format(b=base_url, a=urllib.urlencode(http_args))
     LOG.info("API call URL: {u}".format(u=call_url))
+    response = urllib2.urlopen(call_url)
 
-    return urllib2.urlopen(call_url).read()
+    # Return content as unicode string
+    encoding = response.headers["content-type"].partition("charset=")[2]
+    return unicode(response.read(), encoding if encoding else "UTF-8")
 
 def cmd_call(args):
     LOG.info("{h}: {c}".format(h=args.host, c=args.command))
-    print("{r}".format(r=api_call(args)))
+    res = api_call(args)
+    print(res.encode(locale.getpreferredencoding()))
+
 
 SUBPARSERS = PARSER.add_subparsers()
 

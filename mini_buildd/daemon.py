@@ -35,6 +35,7 @@ import os
 import contextlib
 import Queue
 import collections
+import codecs
 import email.mime.text
 import email.utils
 import logging
@@ -255,6 +256,11 @@ class Daemon():
 
     def is_running(self):
         return bool(self.thread)
+
+    @classmethod
+    def logcat(cls, lines):
+        logfile = codecs.open(mini_buildd.setup.LOG_FILE, "r", encoding="UTF-8")
+        return mini_buildd.misc.tail(logfile, lines)
 
     @classmethod
     def get_active_chroots(cls):

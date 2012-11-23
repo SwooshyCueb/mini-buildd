@@ -24,10 +24,12 @@ class Command(object):
     @classmethod
     def filter_api_args(cls, args):
         result = {}
-        for sargs, _kvsargs in cls.ARGUMENTS:
+        for sargs, kvsargs in cls.ARGUMENTS:
             arg = cls.get_arg_name(sargs[0])
             if arg in args:
                 result[arg] = args[arg]
+            elif "default" in kvsargs:
+                result[arg] = kvsargs["default"]
         return result
 
     def __init__(self, args):
@@ -134,6 +136,23 @@ class GetDputConf(Command):
 
     def __unicode__(self):
         return self.conf
+
+
+class LogCat(Command):
+    """
+    Cat last n lines of the mini-buildd's log.
+    """
+    ARGUMENTS = [
+        (["--lines", "-n"], {"action": "store", "metavar": "N", "type": int,
+                             "default": 50,
+                             "help": "Cat (approx.) the last N lines."})]
+
+    def __init__(self, args, daemon):
+        super(LogCat, self).__init__(args)
+        self.log = daemon.logcat(lines=int(args["lines"]))
+
+    def __unicode__(self):
+        return self.log
 
 
 def _get_table_format(dct, cols):
@@ -304,6 +323,7 @@ class Remove(Command):
 COMMANDS = {"status": Status,
             "getkey": GetKey,
             "getdputconf": GetDputConf,
+            "logcat": LogCat,
             "list": List,
             "show": Show,
             "migrate": Migrate,

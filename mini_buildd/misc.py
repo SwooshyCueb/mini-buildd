@@ -401,6 +401,18 @@ def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True
             raise
 
 
+def tail(file_object, lines, line_chars=160):
+    # goto EOF, and get file size
+    file_object.seek(0, 2)
+    file_size = file_object.tell()
+
+    # go approx n lines up from EOF
+    file_object.seek(-(min(file_size, lines * line_chars)), 2)
+
+    # Return tail
+    return file_object.read()
+
+
 class CredsCache(object):
     def __init__(self, cache_file):
         self._file = cache_file

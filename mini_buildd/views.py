@@ -139,7 +139,7 @@ def api(request):
                                                         "api_args": api_args,
                                                         "api_uri": api_uri})
         elif output == "plain":
-            return django.http.HttpResponse("{r}".format(r=result), mimetype="text/plain")
+            return django.http.HttpResponse(result.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
         elif output == "python":
             return django.http.HttpResponse(pickle.dumps(result), mimetype="application/python-pickle")
         else:

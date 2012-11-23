@@ -86,7 +86,10 @@ $(document).ready(
 						<h2>Last packages: <span id="mbd_lp_count">0</span> (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
 						<ul id="mbd_last_packages">
 							{% for p in daemon.tpl.last_packages %}
-								<li>{{ p }}<br />
+								<li>
+									<a href="/mini_buildd/api?command=show&package={{ p.package|urlencode }}">{{ p.package }}</a>:
+									{{ p }}
+									<br />
 									Build results:
 									{% for arch, bres in p.success.items %}
 										<a href="../log/{{ bres.log }}">+{{ arch }}</a> ({{ bres.stat }})

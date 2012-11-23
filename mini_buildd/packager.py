@@ -201,6 +201,7 @@ class LastPackage(mini_buildd.misc.API):
     def __init__(self, package):
         super(LastPackage, self).__init__()
 
+        self.package = package.changes["Source"]
         self.identity = package.__unicode__()
 
         self.success = {}

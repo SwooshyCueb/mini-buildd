@@ -85,6 +85,7 @@ builder (don't delete builder spool directories)""")
 
         vardir = os.path.join(self._args.home, "var")
         mini_buildd.setup.LOG_DIR = os.path.join(vardir, "log")
+        mini_buildd.setup.LOG_FILE = os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log")
         mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
         mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
         mini_buildd.setup.SPOOL_DIR = os.path.join(vardir, "spool")
@@ -112,7 +113,11 @@ builder (don't delete builder spool directories)""")
         LOG.handlers = []
 
         if "file" in loggers:
-            handler = logging.FileHandler(os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log"))
+            handler = logging.handlers.RotatingFileHandler(
+                mini_buildd.setup.LOG_FILE,
+                maxBytes=5000000,
+                backupCount=9,
+                encoding="UTF-8")
             handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
             LOG.addHandler(handler)
 

@@ -159,10 +159,7 @@ def _get_table_format(dct, cols):
     tlen = {}
     for _r, values in dict(dct).items():
         for value in values:
-            LOG.debug(value)
             for k, v in cols:
-                LOG.debug(k)
-                LOG.debug(v)
                 if k in tlen:
                     tlen[k] = max(tlen[k], len(value[k]))
                 else:

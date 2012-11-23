@@ -7,7 +7,6 @@ import shutil
 import glob
 import re
 import socket
-import pprint
 import logging
 
 import django.db
@@ -631,8 +630,6 @@ DscIndices: Sources Release . .gz .bz2
 
         pkg_show = self._mbd_reprepro().show(package)
 
-        LOG.debug("Reprepro 'show' result: {r}".format(r=pprint.pformat(result)))
-
         # Init all codenames
         for r in pkg_show:
             dist = mini_buildd.misc.Distribution(r["distribution"])
@@ -668,8 +665,6 @@ DscIndices: Sources Release . .gz .bz2
                 values["is_migrated"] = \
                     values["migrates_to"] and \
                     self._mbd_package_find(pkg_show, distribution=values["migrates_to"], version=values["sourceversion"])
-
-        LOG.debug("Repository 'show' result: {r}".format(r=pprint.pformat(result)))
 
         return result
 

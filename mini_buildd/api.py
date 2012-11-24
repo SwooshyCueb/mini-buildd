@@ -317,6 +317,34 @@ class Remove(Command):
         return self.cmd_out
 
 
+class Port(Command):
+    """
+    Port any source package to (a) mini-buildd distribution(s).
+
+    A 'port' is a unchanged rebuild of the given source package.
+    """
+    LOGIN = True
+    CONFIRM = True
+    ARGUMENTS = [
+        (["dsc"], {"help": "Debian source package (dsc) URL."}),
+        (["distributions"], {"help": "Comma-separated list of distributions to port to."})]
+
+    def __init__(self, args, daemon):
+        super(Port, self).__init__(args)
+
+        # Parse and pre-check all dists
+        self.results = ""
+        for d in self.args["distributions"].split(","):
+            try:
+                daemon.port(args["dsc"], d, None)
+                self.results += "{dsc}->{d}: Portrequest uploaded.\n".format(dsc=args["dsc"], d=d)
+            except Exception as e:
+                self.results += "{dsc}->{d}: Portrequest FAILed: {e}.\n".format(dsc=args["dsc"], d=d, e=e)
+
+    def __unicode__(self):
+        return self.results
+
+
 COMMANDS = {"status": Status,
             "getkey": GetKey,
             "getdputconf": GetDputConf,
@@ -325,6 +353,7 @@ COMMANDS = {"status": Status,
             "show": Show,
             "migrate": Migrate,
             "remove": Remove,
+            "port": Port,
             }
 
 

@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import shutil
-import contextlib
 import email.mime.text
 import email.utils
 import logging
@@ -129,23 +128,12 @@ class Package(mini_buildd.misc.Status):
         # Install to reprepro repository
         self.repository.mbd_package_install(self.distribution, self.suite, self.success)
 
-        # Installed. Finally, try to server magic auto backports
+        # Installed. Finally, try to serve magic auto backports
         dsc_url = "file://" + os.path.join(os.path.dirname(self.changes.file_path), self.changes.dsc_name)
         for dist in self.changes.magic_auto_backports:
             try:
-                repository, distribution, suite, _rollback = self.daemon.parse_distribution(dist)
-                with contextlib.closing(mini_buildd.porter.PortedPackage(
-                        dsc_url,
-                        dist,
-                        repository.layout.mbd_get_default_version(repository, distribution, suite),
-                        ["MINI_BUILDD: BACKPORT_MODE"],
-                        mini_buildd.misc.taint_env(
-                            {"DEBEMAIL": self.daemon.model.email_address,
-                             "DEBFULLNAME": self.daemon.model.mbd_fullname,
-                             "GNUPGHOME": self.daemon.model.mbd_gnupg.home}),
-                        replace_version_apdx_regex=self.repository.layout.mbd_get_mandatory_version_regex(self.repository, self.distribution, self.suite))) as port:
-                    port.upload(self.daemon.model.mbd_get_ftp_hopo())
-                    LOG.info("Automatic package port uploaded for: {d}".format(d=dist))
+                self.daemon.port(dsc_url, dist,
+                                 self.repository.layout.mbd_get_mandatory_version_regex(self.repository, self.distribution, self.suite))
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=dist), e)
 

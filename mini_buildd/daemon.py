@@ -289,6 +289,28 @@ class Daemon():
 
         return repository, distribution, suite, dist_parsed.rollback_no
 
+    def port(self, dsc_url, dist, replace_version_apdx_regex):
+        repository, distribution, suite, rollback = self.parse_distribution(dist)
+
+        if not suite.uploadable:
+            raise Exception("Port failed: Non-upload distribution requested: '{d}'".format(d=dist))
+
+        if rollback:
+            raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=dist))
+
+        with contextlib.closing(mini_buildd.porter.PortedPackage(
+                dsc_url,
+                dist,
+                repository.layout.mbd_get_default_version(repository, distribution, suite),
+                ["MINI_BUILDD: BACKPORT_MODE"],
+                mini_buildd.misc.taint_env(
+                    {"DEBEMAIL": self.model.email_address,
+                     "DEBFULLNAME": self.model.mbd_fullname,
+                     "GNUPGHOME": self.model.mbd_gnupg.home}),
+                replace_version_apdx_regex=replace_version_apdx_regex)) as port:
+            port.upload(self.model.mbd_get_ftp_hopo())
+            LOG.info("Automatic package port uploaded for: {d}".format(d=dist))
+
     @property
     def tpl(self):
         return {

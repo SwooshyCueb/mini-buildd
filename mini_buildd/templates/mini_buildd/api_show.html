@@ -17,20 +17,25 @@
 				<table>
 					<tr>
 						<th>Distribution</th>
-						<th>Version</th>
+						<th colspan="2">Version</th>
 						<th colspan="2">Actions</th>
 						<th>Rollbacks</th>
 					</tr>
 					{% for codename, distributions in codenames %}
 						<tr>
-							<td class="codename" colspan="5">{{ codename }}</td>
+							<td class="codename" colspan="6">{{ codename }}</td>
 						</tr>
 						{% for values in distributions|dictsort:"sort_no" %}
 							<tr>
 								<td>{{ values.distribution }}</td>
 								<td>
 									{% if values.sourceversion %}
-										<a href="/mini_buildd/log/{{ repository }}/{{ result.args.package }}/{{ values.sourceversion }}/">{{ values.sourceversion }}</a>
+										<a href="/mini_buildd/log/{{ repository }}/{{ result.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
+									{% endif %}
+								</td>
+								<td>
+									{% if values.sourceversion %}
+										[<a href="{{ values.dsc }}" title="Source package URL">dsc</a>]
 									{% endif %}
 								</td>
 								<td>
@@ -60,6 +65,10 @@
 								</td>
 							</tr>
 						{% endfor %}
+						<!-- omg. this tr is for some extra space only. fix in css -->
+						<tr>
+							<td colspan="6"></td>
+						</tr>
 					{% endfor %}
 				</table>
 			</div>

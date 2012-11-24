@@ -595,6 +595,20 @@ DscIndices: Sources Release . .gz .bz2
                     result.extend(res)
         return result
 
+    def _mbd_get_dsc(self, distribution, package, version):
+        """
+        Get complete DSC URL of an installed package.
+        """
+        subdir = package[:4] if package.startswith("lib") else package[0]
+
+        dsc = ""
+        for c in sorted(distribution.components.all(), cmp=mini_buildd.models.source.cmp_components):
+            dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c, d=subdir, p=package, v=version)
+            LOG.debug("Checking dsc: {d}".format(d=dsc))
+            if os.path.exists(os.path.join(mini_buildd.setup.REPOSITORIES_DIR, dsc)):
+                break
+        return os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)
+
     def mbd_package_show(self, package):
         """
         Result if of the form:
@@ -645,6 +659,7 @@ DscIndices: Sources Release . .gz .bz2
             values.setdefault("distribution", dist.get(rollback=False))
             values.setdefault("source", "")
             values.setdefault("sourceversion", "")
+            values.setdefault("dsc", "")
             values.setdefault("migrates_to", suite.migrates_to.mbd_get_distribution_string(self, distribution) if suite.migrates_to else "")
             values.setdefault("uploadable", suite.uploadable)
             values.setdefault("experimental", suite.experimental)
@@ -655,13 +670,16 @@ DscIndices: Sources Release . .gz .bz2
             if dist.is_rollback:
                 # Add to rollback list with "no" appended
                 r["no"] = dist.rollback_no
+                r["dsc"] = self._mbd_get_dsc(distribution, r["source"], r["sourceversion"])
                 values["rollbacks"].append(r)
             else:
                 # Copy all reprepro values
                 for k, v in r.items():
                     values[k] = v
 
-                # Extra: Set flag whether this dist is migrated or not
+                # Extra: DSC, is_migrated flag
+                values["dsc"] = self._mbd_get_dsc(distribution, values["source"], values["sourceversion"])
+
                 values["is_migrated"] = \
                     values["migrates_to"] and \
                     self._mbd_package_find(pkg_show, distribution=values["migrates_to"], version=values["sourceversion"])

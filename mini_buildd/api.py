@@ -259,19 +259,25 @@ class Show(Command):
               s1=sep1,
               p="\n".join([fmt.format(**p) for p in values]))
 
+        rows = [("distribution", "Distribution"),
+                ("sourceversion", "Version"),
+                ("migrates_to", "Migrates to")]
+        if self.has_flag("verbose"):
+            rows.append(("dsc", "Source URL"))
+            rows.append(("rollbacks_str_verbose", "Rollbacks"))
+        else:
+            rows.append(("rollbacks_str", "Rollbacks"))
+
         result = ""
         for repository, codenames in self.repositories.items():
             # Add rollback_str
             for k, v in codenames:
                 for d in v:
                     d["rollbacks_str"] = "{n}/{m}".format(n=len(d["rollbacks"]), m=d["rollback"])
-                    if self.has_flag("verbose"):
-                        d["rollbacks_str"] += ": " + " ".join(["{n}:{v}".format(n=r["no"], v=r["sourceversion"]) for r in d["rollbacks"]])
+                    d["rollbacks_str_verbose"] = d["rollbacks_str"] + \
+                        ": " + " ".join(["{n}:{v}".format(n=r["no"], v=r["sourceversion"]) for r in d["rollbacks"]])
 
-            fmt, hdr, fmt_tle, sep0, sep1 = _get_table_format(codenames, [("distribution", "Distribution"),
-                                                                          ("sourceversion", "Version"),
-                                                                          ("migrates_to", "Migrates to"),
-                                                                          ("rollbacks_str", "Rollbacks")])
+            fmt, hdr, fmt_tle, sep0, sep1 = _get_table_format(codenames, rows)
             result += "{s}\n{t}\n".format(s=sep0, t=fmt_tle.format(t="Repository '{r}'".format(r=repository)))
             result += "\n".join([p_codename(k, v) for k, v in codenames])
         return result

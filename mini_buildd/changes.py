@@ -159,7 +159,7 @@ class Changes(debian.deb822.Changes):
                 if status.running and status.has_chroot(arch, codename):
                     remotes[status.load] = status.ftp
             except Exception as e:
-                LOG.warn("Builder check failed: {e}".format(e=e))
+                mini_buildd.setup.log_exception(LOG, "Builder check failed", e)
 
         # Always checkout our own instance as pseudo remote
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))

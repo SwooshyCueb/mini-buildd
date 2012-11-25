@@ -112,7 +112,7 @@ class Remote(GnuPGPublicKey):
         return "{S} ({s})".format(S=self.mbd_get_status(), s=self.mbd_get_status_display())
 
     def mbd_get_status(self):
-        return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}, None))
+        return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}))
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/api?command=getkey&output=plain".format(h=self.http)

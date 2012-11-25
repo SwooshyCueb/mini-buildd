@@ -5,17 +5,19 @@
 		<div class="menu_title">
 			Page
 		</div>
-		{% if api_args.package %}
-			<a href="/mini_buildd/api?command=show&amp;package={{ api_args.package|urlencode }}" title="Show {{ api_args.package }} source package">Show package</a>
-			<br />
-			<a href="http://packages.qa.debian.org/common/index.html?src={{ api_args.package|urlencode }}" title="Show {{ api_args.package }} source package in Debian PTS">Show Debian</a>
-			<br />
+		{% if api_cmd.args.package %}
+			{% with api_cmd.args.package as package %}
+				<a href="/mini_buildd/api?command=show&amp;package={{ package|urlencode }}" title="Show {{ package }} source package">Show package</a>
+				<br />
+				<a href="http://packages.qa.debian.org/common/index.html?src={{ package|urlencode }}" title="Show {{ package }} source package in Debian PTS">Show Debian</a>
+				<br />
+			{% endwith %}
 		{% endif %}
-		{% if api_uri %}
+		{% if api_cmd.args %}
 			<hr />
-			<a href="{{ api_uri }}&amp;output=plain" title="This API call as plain text">API: Plain</a>
+			<a href="/mini_buildd/api?command={{ api_cmd.COMMAND|urlencode }}&amp;{% for k, v in api_cmd.args.items %}{{ k|urlencode }}={{ v|urlencode }}&amp;{% endfor %}output=plain" title="This API call with plain output">API: plain</a>
 			<br />
-			<a href="{{ api_uri }}&amp;output=python" title="This API call as pickled python object">API: Python</a>
+			<a href="/mini_buildd/api?command={{ api_cmd.COMMAND|urlencode }}&amp;{% for k, v in api_cmd.args.items %}{{ k|urlencode }}={{ v|urlencode }}&amp;{% endfor %}output=python" title="This API call with python output">API: python</a>
 			<br />
 		{% endif %}
 	</div>
@@ -29,16 +31,31 @@
 		<form action="/mini_buildd/api" method="get">
 			<div>
 				<input type="hidden" name="command" value="show" />
-				<input type="text" name="package" size="12" title="Source package name." />
+				<input type="text" name="package" size="12" value="{{ api_cmd.args.package }}" title="Source package name." />
 				<input type="submit" value="Show" title="Show source package" style="width: 4em"/>
 			</div>
 		</form>
 		<form action="/mini_buildd/api" method="get">
 			<div>
 				<input type="hidden" name="command" value="list" />
-				<input type="text" name="pattern" size="12" title="Source or binary package name pattern (shell-like glob)." />
+				<input type="text" name="pattern" size="12" value="{{ api_cmd.args.pattern }}" title="Source or binary package name pattern (shell-like glob)." />
 				<input type="submit" value="List" title="List packages matching pattern" style="width: 4em" />
 			</div>
 		</form>
 	</div>
+
+	{% if api_cmd.args %}
+		<div class="right">
+			<form action="/mini_buildd/api" method="get">
+				<div>
+					<input type="hidden" name="command" value="{{ api_cmd.COMMAND }}" />
+					{% for k, v in api_cmd.args.items %}
+						<input type="text" title="{{ k }}" size="8" name="{{ k }}" value="{{ v }}" />
+					{% endfor %}
+					<input type="submit" value="Refine" title="Refined API call" style="width: 4em" />
+				</div>
+			</form>
+		</div>
+	{% endif %}
+
 {% endblock %}

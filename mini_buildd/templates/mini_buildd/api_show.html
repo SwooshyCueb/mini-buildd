@@ -1,11 +1,11 @@
 {% extends "mini_buildd/api.html" %}
 
-{% block page_title %}{{ result.args.package }}{% endblock %}
+{% block page_title %}{{ api_cmd.args.package }}{% endblock %}
 {% block page_sub_title %}Source package{% endblock %}
 
 {% block content %}
 	<div id="mbd_api_show">
-		{% for repository, codenames in result.repositories.items %}
+		{% for repository, codenames in api_cmd.repositories.items %}
 			<div class="box">
 				<h1 class="box-caption">
 					<a class="box-anchor"
@@ -30,7 +30,7 @@
 								<td>{{ values.distribution }}</td>
 								<td>
 									{% if values.sourceversion %}
-										<a href="/mini_buildd/log/{{ repository }}/{{ result.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
+										<a href="/mini_buildd/log/{{ repository }}/{{ api_cmd.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
 									{% endif %}
 								</td>
 								<td>

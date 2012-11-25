@@ -34,7 +34,7 @@ class Reprepro():
         for item in mini_buildd.misc.call(self._cmd +
                                           ["--list-format=${package}|${$type}|${architecture}|${version}|${$source}|${$sourceversion}|${$codename};",
                                            "--list-max={m}".format(m=list_max)] +
-                                           (["--type={t}".format(t=typ)] if typ else []) +
+                                          (["--type={t}".format(t=typ)] if typ else []) +
                                           ["listmatched",
                                            distribution,
                                            pattern]).split(";"):

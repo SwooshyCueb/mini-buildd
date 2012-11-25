@@ -1,11 +1,11 @@
 {% extends "mini_buildd/api.html" %}
 
-{% block page_title %}{{ result.args.pattern }}{% endblock %}
+{% block page_title %}{{ api_cmd.args.pattern }}{% endblock %}
 {% block page_sub_title %}Source and binary package matches{% endblock %}
 
 {% block content %}
 	<div id="mbd_api_list">
-		{% for repository, results in result.repositories.items %}
+		{% for repository, results in api_cmd.repositories.items %}
 			<div class="box">
 				<h1 class="box-caption">
 					<a class="box-anchor"

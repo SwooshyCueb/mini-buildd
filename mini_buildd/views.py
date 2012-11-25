@@ -4,7 +4,6 @@ from __future__ import unicode_literals
 import os.path
 import glob
 import pickle
-import urllib
 import logging
 
 import django.core.exceptions
@@ -21,52 +20,57 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
-def error(request, code, meaning, description):
-    # Note: Adding api_args.package if applicable; this will enable the "Show package" back link even on error pages.
+def error(request, code, meaning, description, api_cmd=None):
+    # Note: Adding api_cmd if applicable; this will enable automated api links even on error pages.
     response = django.shortcuts.render(request,
                                        "mini_buildd/error.html",
                                        {"code": code,
                                         "meaning": meaning,
                                         "description": description,
-                                        "api_args": {"package": request.GET.get("package", None)}},
+                                        "api_cmd": api_cmd},
                                        status=code)
     response["X-Mini-Buildd-Error"] = description
     return response
 
 
-def error400_bad_request(request, description="Bad request"):
+def error400_bad_request(request, description="Bad request", api_cmd=None):
     return error(request,
                  400,
                  "Bad Request",
-                 description)
+                 description,
+                 api_cmd)
 
 
-def error401_unauthorized(request, description="Missing authorization"):
+def error401_unauthorized(request, description="Missing authorization", api_cmd=None):
     return error(request,
                  401,
                  "Unauthorized",
-                 description)
+                 description,
+                 api_cmd)
 
 
-def error404_not_found(request, description="The requested resource could not be found"):
+def error404_not_found(request, description="The requested resource could not be found", api_cmd=None):
     return error(request,
                  404,
                  "Not Found",
-                 description)
+                 description,
+                 api_cmd)
 
 
-def error405_method_not_allowed(request, description="The resource does not allow this request"):
+def error405_method_not_allowed(request, description="The resource does not allow this request", api_cmd=None):
     return error(request,
                  405,
                  "Method Not Allowed",
-                 description)
+                 description,
+                 api_cmd)
 
 
-def error500_internal(request, description="Sorry, something went wrong"):
+def error500_internal(request, description="Sorry, something went wrong", api_cmd=None):
     return error(request,
                  500,
                  "Internal Server Error",
-                 description)
+                 description,
+                 api_cmd)
 
 
 def home(_request):
@@ -96,56 +100,49 @@ def log(_request, repository, package, version):
 
 
 def api(request):
+    api_cmd = None
     try:
         if request.method != 'GET':
             return error400_bad_request(request, "API: Allows GET requests only")
 
-        api_cmd = request.GET.get("command", None)
-        if not api_cmd in mini_buildd.api.COMMANDS:
-            return error400_bad_request(request, "API: Unknown command '{c}'".format(c=api_cmd))
+        # Get API class from 'command' parameter
+        command = request.GET.get("command", None)
+        if not command in mini_buildd.api.COMMANDS:
+            return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
+        api_cls = mini_buildd.api.COMMANDS[command]
 
-        api_cls = mini_buildd.api.COMMANDS[api_cmd]
+        # Authentication
+        if api_cls.LOGIN and not (request.user.is_authenticated() and request.user.is_staff):
+            return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=command))
 
-        authenticated = request.user.is_authenticated() and request.user.is_staff
-        if api_cls.LOGIN and not authenticated:
-            return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=api_cmd))
-
-        # Generate api_args and api_uri
-        api_args = api_cls.filter_api_args(request.GET)
-        api_uri = "{b}?command={c}&{a}".format(b=request.path, c=api_cmd, a=urllib.urlencode(api_args))
+        # Generate command object
+        api_cmd = api_cls(request.GET)
 
         output = request.GET.get("output", "html")
 
         # Check confirmable calls
-        if api_cls.CONFIRM and request.GET.get("confirm", None) != api_cmd:
+        if api_cls.CONFIRM and request.GET.get("confirm", None) != command:
             if output != "html":
-                return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=api_cmd))
+                return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
             else:
                 return django.shortcuts.render_to_response("mini_buildd/api_confirm.html",
-                                                           {"command": api_cmd,
-                                                            "authenticated": authenticated,
-                                                            "api_args": api_args,
-                                                            "api_uri": api_uri})
+                                                           {"api_cmd": api_cmd})
 
-        # Run API call. Runs actual code in constructor (with dep-injection via daemon object)
-        result = api_cls(api_args, mini_buildd.daemon.get())
+        # Run API call (dep-injection via daemon object)
+        api_cmd.run(mini_buildd.daemon.get())
 
         # Generate API call output
         if output == "html":
-            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=api_cmd), "mini_buildd/api_default.html".format(c=api_cmd)],
-                                                       {"command": api_cmd,
-                                                        "authenticated": authenticated,
-                                                        "result": result,
-                                                        "api_args": api_args,
-                                                        "api_uri": api_uri})
+            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command), "mini_buildd/api_default.html".format(c=command)],
+                                                       {"api_cmd": api_cmd})
         elif output == "plain":
-            return django.http.HttpResponse(result.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
+            return django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
         elif output == "python":
-            return django.http.HttpResponse(pickle.dumps(result), mimetype="application/python-pickle")
+            return django.http.HttpResponse(pickle.dumps(api_cmd), mimetype="application/python-pickle")
         else:
             return django.http.HttpResponseBadRequest("<h1>Unknow output type {o}</h1>".format(o=output))
     except Exception as e:
         # This might as well be just an internal error; in case of no bug in the code, 405 fits better though.
         # ['wontfix' unless we refactor to diversified exception classes]
         mini_buildd.setup.log_exception(LOG, "API call error", e)
-        return error405_method_not_allowed(request, "API call error: {e}".format(e=e))
+        return error405_method_not_allowed(request, "API call error: {e}".format(e=e), api_cmd=api_cmd)

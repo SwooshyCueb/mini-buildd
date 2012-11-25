@@ -29,12 +29,13 @@ class Reprepro():
         # Finally, rebuild all indices
         mini_buildd.misc.call(self._cmd + ["export"])
 
-    def list(self, pattern, distribution, list_max=50):
+    def list(self, pattern, distribution, typ=None, list_max=50):
         result = []
         for item in mini_buildd.misc.call(self._cmd +
                                           ["--list-format=${package}|${$type}|${architecture}|${version}|${$source}|${$sourceversion}|${$codename};",
-                                           "--list-max={m}".format(m=list_max),
-                                           "listmatched",
+                                           "--list-max={m}".format(m=list_max)] +
+                                           (["--type={t}".format(t=typ)] if typ else []) +
+                                          ["listmatched",
                                            distribution,
                                            pattern]).split(";"):
             if item:

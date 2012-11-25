@@ -29,16 +29,15 @@
 		<form action="/mini_buildd/api" method="get">
 			<div>
 				<input type="hidden" name="command" value="show" />
-				<input type="text" name="package" size="15" title="Source package name." />
-				<input type="submit" value="Show" title="Show source package" />
+				<input type="text" name="package" size="12" title="Source package name." />
+				<input type="submit" value="Show" title="Show source package" style="width: 4em"/>
 			</div>
 		</form>
 		<form action="/mini_buildd/api" method="get">
 			<div>
 				<input type="hidden" name="command" value="list" />
-				<input type="text" name="pattern" size="15" title="Source or binary package name pattern (shell-like glob)." />
-				<input type="checkbox" name="with_rollbacks" value="True" title="Also show package in rollback distributions." />
-				<input type="submit" value="List" title="List packages matching pattern" />
+				<input type="text" name="pattern" size="12" title="Source or binary package name pattern (shell-like glob)." />
+				<input type="submit" value="List" title="List packages matching pattern" style="width: 4em" />
 			</div>
 		</form>
 	</div>

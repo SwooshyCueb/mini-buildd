@@ -182,7 +182,10 @@ class List(Command):
         (["pattern"], {"help": "List source packages matching pattern"}),
         (["--with-rollbacks", "-r"], {"action": "store_true",
                                       "default": False,
-                                      "help": "Also list packages on rollback distributions"})]
+                                      "help": "Also list packages on rollback distributions"}),
+        (["--type", "-T"], {"action": "store", "metavar": "TYPE",
+                            "default": "",
+                            "help": "Package type: dsc, deb or udeb (like reprepo --type)."})]
 
     def __init__(self, args, daemon):
         super(List, self).__init__(args)
@@ -190,7 +193,9 @@ class List(Command):
         # Save all results of all repos in a top-level dict (don't add repos with empty results).
         self.repositories = {}
         for r in daemon.get_active_repositories():
-            r_result = r.mbd_package_list(self.args["pattern"], with_rollbacks=self.has_flag("with_rollbacks"))
+            r_result = r.mbd_package_list(self.args["pattern"],
+                                          typ=self.args["type"] if self.args["type"] else None,
+                                          with_rollbacks=self.has_flag("with_rollbacks"))
             if r_result:
                 self.repositories[r.identity] = r_result
 

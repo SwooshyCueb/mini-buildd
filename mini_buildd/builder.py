@@ -153,7 +153,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         # Actually run sbuild
         mini_buildd.misc.sbuild_keys_workaround()
         buildlog = os.path.join(self._build_dir, self._breq.buildlog_name)
-        LOG.info("{p}: Running sbuild: {c}".format(p=self.key, c=sbuild_cmd))
+        LOG.info("{p}: Running sbuild: {c}".format(p=self.key, c=" ".join(sbuild_cmd)))
         with open(buildlog, "w") as l:
             retval = subprocess.call(sbuild_cmd,
                                      cwd=self._build_dir,

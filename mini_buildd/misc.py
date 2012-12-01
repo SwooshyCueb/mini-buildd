@@ -338,7 +338,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
     stdout = tempfile.TemporaryFile()
     stderr = tempfile.TemporaryFile()
 
-    LOG.info("Calling: {a}".format(a=args))
+    LOG.info("Calling: {a}".format(a=" ".join(args)))
     try:
         olog = LOG.debug
         try:
@@ -360,12 +360,12 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
                 LOG.error("Output logging failed (char enc?): {e}".format(e=e))
     except:
         if error_log_on_fail:
-            LOG.error("Call failed: {a}".format(a=args))
+            LOG.error("Call failed: {a}".format(a=" ".join(args)))
         if value_on_error is not None:
             return value_on_error
         else:
             raise
-    LOG.info("Call successful: {a}".format(a=args))
+    LOG.info("Call successful: {a}".format(a=" ".join(args)))
     stdout.seek(0)
     return stdout.read().decode("UTF-8")
 

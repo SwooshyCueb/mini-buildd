@@ -75,10 +75,10 @@ class Status(Command):
         # float value: 0 =< load <= 1
         self.load = daemon.build_queue.load
 
-        # chroots: {"i386": ["sid", "wheezy"], "amd64": ["wheezy"]}
+        # chroots: {"squeeze": ["i386", "amd64"], "wheezy": ["amd64"]}
         for c in daemon.get_active_chroots():
-            self.chroots.setdefault(c.architecture.name, [])
-            self.chroots[c.architecture.name].append(c.source.codename)
+            self.chroots.setdefault(c.source.codename, [])
+            self.chroots[c.source.codename].append(c.architecture.name)
 
         # repositories: {"repo1": ["sid", "wheezy"], "repo2": ["squeeze"]}
         for r in daemon.get_active_repositories():
@@ -105,8 +105,8 @@ Remotes     : {rm}
            c=", ".join(["{a}: {c}".format(a=arch, c=" ".join(codenames)) for arch, codenames in self.chroots.items()]),
            rm=", ".join(self.remotes))
 
-    def has_chroot(self, arch, codename):
-        return arch in self.chroots and codename in self.chroots[arch]
+    def has_chroot(self, codename, arch):
+        return codename in self.chroots and arch in self.chroots[codename]
 
 
 class GetKey(Command):
@@ -402,7 +402,7 @@ if __name__ == "__main__":
     T1 = pickle.load(open("./pickle.test"))
     print("{}".format(T1))
     print(T1.__class__.__name__)
-    print(T1.has_chroot("i386", "squeeze"))
+    print(T1.has_chroot("squeeze", "i386"))
 
     import doctest
     doctest.testmod()

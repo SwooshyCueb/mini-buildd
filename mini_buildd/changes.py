@@ -156,7 +156,7 @@ class Changes(debian.deb822.Changes):
             try:
                 remote.mbd_check(_request=None)
                 status = remote.mbd_get_status()
-                if status.running and status.has_chroot(arch, codename):
+                if status.running and status.has_chroot(codename, arch):
                     remotes[status.load] = status.ftp
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Builder check failed", e)
@@ -169,7 +169,7 @@ class Changes(debian.deb822.Changes):
             check_remote(r)
 
         if not remotes:
-            raise Exception("No builder found for {a}/{c}".format(a=arch, c=codename))
+            raise Exception("No builder found for {c}/{a}".format(c=codename, a=arch))
 
         for load, ftp in sorted(remotes.items()):
             try:

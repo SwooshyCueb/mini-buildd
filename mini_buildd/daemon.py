@@ -257,6 +257,11 @@ class Daemon():
     def is_running(self):
         return bool(self.thread)
 
+    def get_status(self):
+        status = mini_buildd.api.Status([])
+        status.run(self)
+        return status
+
     @classmethod
     def logcat(cls, lines):
         logfile = codecs.open(mini_buildd.setup.LOG_FILE, "r", encoding="UTF-8")

@@ -12,6 +12,7 @@ INCOMING_DIR = None
 REPOSITORIES_DIR = None
 
 SPOOL_DIR = None
+TMP_DIR = None
 LOG_DIR = None
 LOG_FILE = None
 CHROOTS_DIR = None

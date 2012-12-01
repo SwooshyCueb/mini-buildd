@@ -19,6 +19,8 @@ import pickle
 import logging
 import logging.handlers
 
+import mini_buildd.setup
+
 LOG = logging.getLogger(__name__)
 
 
@@ -74,12 +76,14 @@ class TmpDir(object):
     Use with contextlib.closing() to guarantee tmpdir is purged afterwards.
     """
     def __init__(self):
-        self._tmpdir = tempfile.mkdtemp()
+        self._tmpdir = tempfile.mkdtemp(dir=mini_buildd.setup.TMP_DIR)
         LOG.debug("TmpDir {t}".format(t=self._tmpdir))
 
     def close(self):
-        LOG.debug("Purging tmpdir {t}".format(t=self._tmpdir))
-        shutil.rmtree(self._tmpdir)
+        if "builder" in mini_buildd.setup.DEBUG:
+            LOG.warn("BUILDER DEBUG MODE: Not Purging tmpdir {t}".format(t=self._tmpdir))
+        else:
+            shutil.rmtree(self._tmpdir)
 
     @property
     def tmpdir(self):

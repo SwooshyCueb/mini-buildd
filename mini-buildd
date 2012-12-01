@@ -89,17 +89,16 @@ builder (don't delete builder spool directories)""")
         mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
         mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
         mini_buildd.setup.SPOOL_DIR = os.path.join(vardir, "spool")
+        mini_buildd.setup.TMP_DIR = os.path.join(vardir, "tmp")
 
-        if os.path.exists("./build/sphinx/html"):
-            # A bit clumsy, but should work: Seems to be a development run
-            mini_buildd.setup.MANUAL_DIR = os.path.realpath("./build/sphinx/html")
-        else:
-            mini_buildd.setup.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
+        # Hardcoded to the Debian path atm
+        mini_buildd.setup.MANUAL_DIR = os.path.realpath("/usr/share/doc/mini-buildd/html")
 
         # Create base directories
         mini_buildd.misc.mkdirs(mini_buildd.setup.INCOMING_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.setup.REPOSITORIES_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.setup.LOG_DIR)
+        mini_buildd.misc.mkdirs(mini_buildd.setup.TMP_DIR)
 
     def _setup_logging(self):
         loggers = self._args.loggers.split(",")

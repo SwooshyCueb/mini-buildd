@@ -786,14 +786,14 @@ DscIndices: Sources Release . .gz .bz2
         archall = distribution.mbd_get_archall_architectures()[0]
         LOG.debug("Package install: Archall={a}".format(a=archall))
 
-        # Get the (source) package name
-        package = bresults[archall]["Source"]
-        LOG.debug("Package install: Package={p}".format(p=package))
-
         # Check that all mandatory archs are present
         missing_mandatory_archs = [arch for arch in distribution.mbd_get_mandatory_architectures() if arch not in bresults]
         if missing_mandatory_archs:
             raise Exception("{n} mandatory architecture(s) missing: {a}".format(n=len(missing_mandatory_archs), a=" ".join(missing_mandatory_archs)))
+
+        # Get the (source) package name
+        package = bresults[archall]["Source"]
+        LOG.debug("Package install: Package={p}".format(p=package))
 
         # Shift current package up in the rollback distributions (unless this is the initial install)
         if self.mbd_package_find(package, distribution=dist_str):

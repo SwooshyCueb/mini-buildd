@@ -369,13 +369,17 @@ class Port(Command):
         self.results = ""
 
     def run(self, daemon):
+        dsc = self.args["dsc"]
+
         # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
+            info = "Port request {dsc} -> {d}".format(dsc=dsc, d=d)
             try:
-                daemon.port(self.args["dsc"], d, None)
-                self.results += "{dsc}->{d}: Portrequest uploaded.\n".format(dsc=self.args["dsc"], d=d)
+                daemon.port(dsc, d, None)
+                self.results += "Uploaded: {i}.\n".format(i=info)
             except Exception as e:
-                self.results += "{dsc}->{d}: Portrequest FAILed: {e}.\n".format(dsc=self.args["dsc"], d=d, e=e)
+                self.results += "FAILED  : {i}: {e}.\n".format(i=info, e=e)
+                mini_buildd.setup.log_exception(LOG, info, e)
 
     def __unicode__(self):
         return self.results

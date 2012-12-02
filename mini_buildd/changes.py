@@ -59,12 +59,8 @@ class Changes(debian.deb822.Changes):
         return self._file_path
 
     @property
-    def version_without_epoch(self):
-        return self["Version"].rpartition(":")[2]
-
-    @property
     def dsc_name(self):
-        return "{s}_{v}.dsc".format(s=self["Source"], v=self.version_without_epoch)
+        return "{s}_{v}.dsc".format(s=self["Source"], v=mini_buildd.misc.strip_epoch(self["Version"]))
 
     @property
     def buildlog_name(self):
@@ -176,7 +172,7 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                LOG.warn("Uploading to '{h}' failed: ".format(h=ftp), e=e)
+                LOG.warn("Uploading to '{h}' failed: {e}".format(h=ftp, e=e))
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 

@@ -109,8 +109,7 @@ class Changes(debian.deb822.Changes):
         return [f[key] if key else f for f in self.get("Files", [])]
 
     def add_file(self, file_name):
-        if not "Files" in self:
-            self["Files"] = []
+        self.setdefault("Files", [])
         self["Files"].append({"md5sum": mini_buildd.misc.md5_of_file(file_name),
                               "size": os.path.getsize(file_name),
                               "section": "mini-buildd",

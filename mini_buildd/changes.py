@@ -40,15 +40,15 @@ class Changes(debian.deb822.Changes):
 
     def __unicode__(self):
         if self.is_buildrequest():
-            return "Buildrequest from '{h}': {i}".format(h=self.get("Upload-Result-To", "n/a"), i=self.get_pkg_id(with_arch=True))
+            return "Buildrequest from '{h}': {i}".format(h=self.get("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
         elif self.is_buildresult():
-            return "Buildresult from '{h}': {i}".format(h=self.get("Built-By", "n/a"), i=self.get_pkg_id(with_arch=True))
+            return "Buildresult from '{h}': {i}".format(h=self.get("Built-By"), i=self.get_pkg_id(with_arch=True))
         else:
             return "User upload: {i}".format(i=self.get_pkg_id())
 
     @property
     def bres_stat(self):
-        return "Build={b}, Lintian={l}".format(b=self.get("Sbuild-Status", "n/a"), l=self.get("Sbuild-Lintian", "n/a"))
+        return "Build={b}, Lintian={l}".format(b=self.get("Sbuild-Status"), l=self.get("Sbuild-Lintian"))
 
     @property
     def file_name(self):

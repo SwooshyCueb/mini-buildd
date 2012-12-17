@@ -165,7 +165,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         self._bres["Sbuildretval"] = unicode(retval)
         self._buildlog_to_buildresult(buildlog)
 
-        LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=self.key, r=retval, s=self._bres["Sbuild-Status"]))
+        LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=self.key, r=retval, s=self._bres.get("Sbuild-Status")))
         self._bres.add_file(buildlog)
         build_changes_file = os.path.join(self._build_dir,
                                           "{s}_{v}_{a}.changes".format(s=self._breq["Source"],

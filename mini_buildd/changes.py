@@ -24,10 +24,44 @@ import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
 
+# Extra mini-buildd changes file types we invent
+TYPE_DEFAULT = 0
+TYPE_BREQ = 1
+TYPE_BRES = 2
+TYPES = {TYPE_DEFAULT: "",
+         TYPE_BREQ: "_mini-buildd-buildrequest",
+         TYPE_BRES: "_mini-buildd-buildresult"}
+
+
+def strip_epoch(version):
+    return version.rpartition(":")[2]
+
+
+def gen_file_name(package, version, arch, mbd_type=TYPE_DEFAULT):
+    """
+    Gen any changes file name.
+
+    Always strip epoch from version, and handle special
+    mini-buildd types.
+
+    >>> gen_file_name("mypkg", "1.2.3-1", "mips")
+    u'mypkg_1.2.3-1_mips.changes'
+    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips")
+    u'mypkg_1.2.3-1_mips.changes'
+    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=TYPE_BREQ)
+    u'mypkg_1.2.3-1_mini-buildd-buildrequest_mips.changes'
+    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=TYPE_BRES)
+    u'mypkg_1.2.3-1_mini-buildd-buildresult_mips.changes'
+    """
+    return "{p}_{v}{x}_{a}.changes".format(p=package,
+                                           v=strip_epoch(version),
+                                           a=arch,
+                                           x=TYPES[mbd_type])
+
 
 class Changes(debian.deb822.Changes):
-    BUILDREQUEST_RE = re.compile("^.+_mini-buildd-buildrequest_[^_]+.changes$")
-    BUILDRESULT_RE = re.compile("^.+_mini-buildd-buildresult_[^_]+.changes$")
+    BUILDREQUEST_RE = re.compile("^.+" + TYPES[TYPE_BREQ] + "_[^_]+.changes$")
+    BUILDRESULT_RE = re.compile("^.+" + TYPES[TYPE_BRES] + "_[^_]+.changes$")
 
     def __init__(self, file_path):
         self._file_path = file_path
@@ -46,6 +80,9 @@ class Changes(debian.deb822.Changes):
         else:
             return "User upload: {i}".format(i=self.get_pkg_id())
 
+    def gen_file_name(self, arch, mbd_type):
+        return gen_file_name(self["Source"], self["Version"], arch, mbd_type)
+
     @property
     def bres_stat(self):
         return "Build={b}, Lintian={l}".format(b=self.get("Sbuild-Status"), l=self.get("Sbuild-Lintian"))
@@ -60,7 +97,8 @@ class Changes(debian.deb822.Changes):
 
     @property
     def dsc_name(self):
-        return "{s}_{v}.dsc".format(s=self["Source"], v=mini_buildd.misc.strip_epoch(self["Version"]))
+        return "{s}_{v}.dsc".format(s=self["Source"],
+                                    v=strip_epoch(self["Version"]))
 
     @property
     def buildlog_name(self):
@@ -234,7 +272,9 @@ class Changes(debian.deb822.Changes):
         for ao in dist.architectureoption_set.all():
             path = os.path.join(self.get_spool_dir(), ao.architecture.name)
 
-            breq = Changes(os.path.join(path, "{b}_mini-buildd-buildrequest_{a}.changes".format(b=self.get_pkg_id(), a=ao.architecture.name)))
+            breq = Changes(os.path.join(path,
+                                        self.gen_file_name(ao.architecture.name, TYPE_BREQ)))
+
             if breq.is_new():
                 for v in ["Distribution", "Source", "Version"]:
                     breq[v] = self[v]
@@ -288,8 +328,7 @@ class Changes(debian.deb822.Changes):
             path = self.get_spool_dir()
 
         bres = mini_buildd.changes.Changes(os.path.join(path,
-                                                        "{b}.changes".
-                                                        format(b=self.get_pkg_id(with_arch=True, arch_separator="_mini-buildd-buildresult_"))))
+                                                        self.gen_file_name(self["Architecture"], TYPE_BRES)))
 
         for v in ["Distribution", "Source", "Version", "Architecture"]:
             bres[v] = self[v]
@@ -313,3 +352,9 @@ Build request failed: {r} ({s}): {e}
         bres.upload(hopo)
 
         shutil.rmtree(t)
+
+
+if __name__ == "__main__":
+    mini_buildd.misc.setup_console_logging()
+    import doctest
+    doctest.testmod()

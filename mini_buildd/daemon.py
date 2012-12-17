@@ -408,8 +408,10 @@ class Daemon():
                                   env=env)
 
             changes = os.path.join(t.tmpdir,
-                                   "{p}_{v}_source.changes".format(p=dsc["Source"],
-                                                                   v=mini_buildd.misc.strip_epoch(version)))
+                                   mini_buildd.changes.gen_file_name(dsc["Source"],
+                                                                     version,
+                                                                     "source"))
+
             with open(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",

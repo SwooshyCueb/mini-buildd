@@ -17,7 +17,6 @@ import mini_buildd.setup
 import mini_buildd.misc
 import mini_buildd.gnupg
 import mini_buildd.reprepro
-import mini_buildd.porter
 
 import mini_buildd.models.source
 import mini_buildd.models.base
@@ -464,20 +463,15 @@ Example:
             raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite_option.suite.name, m=mandatory_regex, v=version))
 
     def mbd_generate_keyring_packages(self, request):
-        with contextlib.closing(mini_buildd.porter.KeyringPackage(
-                self.mbd_get_daemon().model.identity,
-                self.mbd_get_daemon().model.mbd_gnupg,
-                self.mbd_get_daemon().model.mbd_fullname,
-                self.mbd_get_daemon().model.email_address)) as package:
-
+        with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    info = "Keyring port request for {s}".format(s=s.suite.name)
+                    info = "Keyring port for {s}".format(s=s.suite.name)
                     try:
                         self.mbd_get_daemon().port_raw("file://" + package.dsc, self, d, s, None)
-                        self.mbd_msg_info(request, "Uploaded: {i}.".format(i=info))
+                        self.mbd_msg_info(request, "Requested: {i}.".format(i=info))
                     except Exception as e:
-                        self.mbd_msg_error(request, "FAILED  : {i}.".format(i=info))
+                        self.mbd_msg_error(request, "FAILED   : {i}.".format(i=info))
                         mini_buildd.setup.log_exception(LOG, info, e)
 
     def mbd_get_uploader_keyring(self):

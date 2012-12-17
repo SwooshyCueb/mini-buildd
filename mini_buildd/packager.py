@@ -146,6 +146,12 @@ class Package(mini_buildd.misc.Status):
         # Purge complete package dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
+        # In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
+        tmpdir = mini_buildd.misc.TmpDir.file_dir(self.changes.file_path)
+        if tmpdir:
+            LOG.debug("Purging port tmpdir: {t}".format(t=tmpdir))
+            shutil.rmtree(tmpdir, ignore_errors=True)
+
     def notify(self):
         def header(title, underline="-"):
             return "{t}:\n{u}\n".format(t=title, u=underline * (1 + len(title)))

@@ -89,6 +89,17 @@ class TmpDir(object):
     def tmpdir(self):
         return self._tmpdir
 
+    @classmethod
+    def file_dir(cls, file_name):
+        # nf "/var/lib/mini-buildd/tmp/t123/xyz.file
+        # nd "/var/lib/mini-buildd/tmp/t123"
+        # nt "/var/lib/mini-buildd/tmp"
+        nf = os.path.normpath(file_name)
+        nd = os.path.dirname(nf)
+        nt = os.path.normpath(mini_buildd.setup.TMP_DIR)
+        if nf.startswith(nt) and nd != nt:
+            return nd
+
 
 class ConfFile(object):
     """ ConfFile generation helper.

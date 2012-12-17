@@ -32,6 +32,8 @@
 from __future__ import unicode_literals
 
 import os
+import re
+import subprocess
 import contextlib
 import Queue
 import collections
@@ -39,6 +41,8 @@ import codecs
 import email.mime.text
 import email.utils
 import logging
+
+import debian.deb822
 
 import mini_buildd.misc
 import mini_buildd.changes
@@ -295,18 +299,79 @@ class Daemon():
         return repository, distribution, suite, dist_parsed.rollback_no
 
     def port_raw(self, dsc_url, repository, distribution, suite, replace_version_apdx_regex):
-        with contextlib.closing(mini_buildd.porter.PortedPackage(
-                dsc_url,
-                suite.mbd_get_distribution_string(repository, distribution),
-                repository.layout.mbd_get_default_version(repository, distribution, suite),
-                ["MINI_BUILDD: BACKPORT_MODE"],
-                mini_buildd.misc.taint_env(
-                    {"DEBEMAIL": self.model.email_address,
-                     "DEBFULLNAME": self.model.mbd_fullname,
-                     "GNUPGHOME": self.model.mbd_gnupg.home}),
-                self.model.mbd_gnupg,
-                replace_version_apdx_regex=replace_version_apdx_regex)) as port:
-            port.upload(self.model.mbd_get_ftp_hopo())
+        t = mini_buildd.misc.TmpDir()
+        try:
+            version_apdx = repository.layout.mbd_get_default_version(repository, distribution, suite)
+            extra_cl_entries = ["MINI_BUILDD: BACKPORT_MODE"]
+
+            env = mini_buildd.misc.taint_env({"DEBEMAIL": self.model.email_address,
+                                              "DEBFULLNAME": self.model.mbd_fullname,
+                                              "GNUPGHOME": self.model.mbd_gnupg.home})
+
+            mini_buildd.misc.call(["dget",
+                                   "--allow-unauthenticated",
+                                   "--download-only",
+                                   dsc_url],
+                                  cwd=t.tmpdir,
+                                  env=env)
+
+            dsc_file = os.path.basename(dsc_url)
+            dsc = debian.deb822.Dsc(file(os.path.join(t.tmpdir, dsc_file)))
+            dst = "debian_source_tree"
+
+            mini_buildd.misc.call(["dpkg-source",
+                                   "-x",
+                                   dsc_file,
+                                   dst],
+                                  cwd=t.tmpdir,
+                                  env=env)
+
+            # Remove matching string from version if given; mainly
+            # for internal automated backports so they don't get a
+            # doubled version apdx like '~testSID+1~test60+1'
+            if replace_version_apdx_regex:
+                version = re.sub(replace_version_apdx_regex, version_apdx, dsc["Version"])
+            else:
+                version = dsc["Version"] + version_apdx
+
+            dst_path = os.path.join(t.tmpdir, dst)
+            mini_buildd.misc.call(["debchange",
+                                   "--newversion={v}".format(v=version),
+                                   "--force-distribution",
+                                   "--force-bad-version",
+                                   "--preserve",
+                                   "--dist={d}".format(d=suite.mbd_get_distribution_string(repository, distribution)),
+                                   "Automated port via mini-buildd (no changes)."],
+                                  cwd=dst_path,
+                                  env=env)
+
+            for entry in extra_cl_entries:
+                mini_buildd.misc.call(["debchange",
+                                       "--append",
+                                       entry],
+                                      cwd=dst_path,
+                                      env=env)
+
+            mini_buildd.misc.call(["dpkg-source", "-b", dst],
+                                  cwd=t.tmpdir,
+                                  env=env)
+
+            changes = os.path.join(t.tmpdir,
+                                   "{p}_{v}_source.changes".format(p=dsc["Source"],
+                                                                   v=mini_buildd.misc.strip_epoch(version)))
+            with open(changes, "w") as c:
+                subprocess.check_call(["dpkg-genchanges",
+                                       "-S",
+                                       "-sa"],
+                                      cwd=dst_path,
+                                      env=env,
+                                      stdout=c)
+
+            self.model.mbd_gnupg.sign(changes)
+            self.incoming_queue.put(changes)
+        except:
+            t.close()
+            raise
 
     def port(self, dsc_url, dist, replace_version_apdx_regex):
         repository, distribution, suite, rollback = self.parse_distribution(dist)

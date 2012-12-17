@@ -75,7 +75,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 layout=default_layout,
                 suite=stable,
                 uploadable=False,
-                extra_options="Rollback: 9\n")
+                extra_options="Rollback: 6\n")
             so_stable.save()
 
             so_testing = mini_buildd.models.repository.SuiteOption(
@@ -83,7 +83,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 suite=testing,
                 uploadable=False,
                 migrates_to=so_stable,
-                extra_options="Rollback: 6\n")
+                extra_options="Rollback: 3\n")
             so_testing.save()
 
             so_unstable = mini_buildd.models.repository.SuiteOption(
@@ -91,7 +91,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 suite=unstable,
                 migrates_to=so_testing,
                 build_keyring_package=True,
-                extra_options="Rollback: 3\n")
+                extra_options="Rollback: 9\n")
             so_unstable.save()
 
             so_snapshot = mini_buildd.models.repository.SuiteOption(
@@ -100,7 +100,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 uploadable=True,
                 experimental=True,
                 but_automatic_upgrades=True,
-                extra_options="Rollback: 3\n")
+                extra_options="Rollback: 12\n")
             so_snapshot.save()
 
             so_experimental = mini_buildd.models.repository.SuiteOption(
@@ -109,7 +109,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 uploadable=True,
                 experimental=True,
                 but_automatic_upgrades=False,
-                extra_options="Rollback: 3\n")
+                extra_options="Rollback: 6\n")
             so_experimental.save()
 
     @classmethod

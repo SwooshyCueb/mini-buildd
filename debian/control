@@ -56,9 +56,6 @@ Depends: ${misc:Depends},
          schroot (>= 1.6.3),
          sbuild (>= 0.63.1),
          dpkg-dev,
-         fakeroot,
-         debhelper,
-         cdbs,
          lintian,
          devscripts (>= 2.10.15)
 Suggests: lvm2

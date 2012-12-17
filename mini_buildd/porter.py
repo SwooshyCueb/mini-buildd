@@ -2,10 +2,10 @@
 from __future__ import unicode_literals
 
 import os
-import glob
 import re
 import time
 import shutil
+import subprocess
 import codecs
 import logging
 
@@ -53,32 +53,43 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                                "[mini-buildd] Automatic keyring package template for {i}.".format(i=identity)],
                               cwd=p,
                               env=self.environment)
-        mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa"],
-                              cwd=p,
+
+        mini_buildd.misc.call(["dpkg-source",
+                               "-b",
+                               "package"],
+                              cwd=self.tmpdir,
                               env=self.environment)
 
         # Compute DSC file name
-        dscs = glob.glob(os.path.join(self.tmpdir, "*.dsc"))
-        if len(dscs) != 1:
-            raise Exception("Expected exactly one dsc after building, got {l}.".format(l=len(dscs)))
-        self.dsc = dscs[0]
+        self.dsc = os.path.join(self.tmpdir,
+                                "{p}_{v}.dsc".format(p=self.package_name,
+                                                     v=self.version))
 
 
 class PortedPackage(mini_buildd.misc.TmpDir):
     def __init__(self, dsc_uri,
                  distribution, version_apdx, extra_cl_entries,
-                 env,
+                 env, gnupg,
                  replace_version_apdx_regex=None):
         super(PortedPackage, self).__init__()
 
-        mini_buildd.misc.call(["dget", "--allow-unauthenticated", "--extract", dsc_uri], cwd=self.tmpdir, env=env)
-        dirs = [d for d in os.listdir(self.tmpdir) if os.path.isdir(os.path.join(self.tmpdir, d))]
-        if len(dirs) != 1:
-            raise Exception("Expected exactly one dir after unpacking dsc, got {l}.".format(l=len(dirs)))
-        d = dirs[0]
-        p = os.path.join(self.tmpdir, d)
+        mini_buildd.misc.call(["dget",
+                               "--allow-unauthenticated",
+                               "--download-only",
+                               dsc_uri],
+                              cwd=self.tmpdir,
+                              env=env)
 
-        dsc = debian.deb822.Dsc(file(os.path.join(self.tmpdir, os.path.basename(dsc_uri))))
+        dsc_file = os.path.basename(dsc_uri)
+        dsc = debian.deb822.Dsc(file(os.path.join(self.tmpdir, dsc_file)))
+        dst = "debian_source_tree"
+
+        mini_buildd.misc.call(["dpkg-source",
+                               "-x",
+                               dsc_file,
+                               dst],
+                              cwd=self.tmpdir,
+                              env=env)
 
         # Remove matching string from version if given; mainly
         # for internal automated backports so they don't get a
@@ -88,6 +99,7 @@ class PortedPackage(mini_buildd.misc.TmpDir):
         else:
             version = dsc["Version"] + version_apdx
 
+        dst_path = os.path.join(self.tmpdir, dst)
         mini_buildd.misc.call(["debchange",
                                "--newversion={v}".format(v=version),
                                "--force-distribution",
@@ -95,30 +107,45 @@ class PortedPackage(mini_buildd.misc.TmpDir):
                                "--preserve",
                                "--dist={d}".format(d=distribution),
                                "Automated port via mini-buildd (no changes)."],
-                              cwd=p,
+                              cwd=dst_path,
                               env=env)
 
         for entry in extra_cl_entries:
             mini_buildd.misc.call(["debchange",
                                    "--append",
                                    entry],
-                                  cwd=p,
+                                  cwd=dst_path,
                                   env=env)
 
-        mini_buildd.misc.call(["dpkg-buildpackage", "-S", "-sa", "-d"],
-                              cwd=p,
+        mini_buildd.misc.call(["dpkg-source", "-b", dst],
+                              cwd=self.tmpdir,
                               env=env)
 
+        self.changes = os.path.join(self.tmpdir,
+                                    "{p}_{v}_source.changes".format(p=dsc["Source"],
+                                                                    v=mini_buildd.misc.strip_epoch(version)))
+        with open(self.changes, "w") as c:
+            subprocess.check_call(["dpkg-genchanges",
+                                   "-S",
+                                   "-sa"],
+                                  cwd=dst_path,
+                                  env=env,
+                                  stdout=c)
+
+        gnupg.sign(self.changes)
+
     def upload(self, hopo):
-        for c in glob.glob(os.path.join(self.tmpdir, "*.changes")):
-            mini_buildd.changes.Changes(c).upload(hopo)
-            LOG.info("Ported package uploaded: {c}".format(c=c))
+        mini_buildd.changes.Changes(self.changes).upload(hopo)
+        LOG.info("Ported package uploaded: {c}".format(c=self.changes))
 
 
 if __name__ == "__main__":
     mini_buildd.misc.setup_console_logging()
 
     import contextlib
+    import mini_buildd.setup
+    mini_buildd.setup.DEBUG.append("builder")
+
     GNUPG = mini_buildd.gnupg.TmpGnuPG()
     GNUPG.gen_secret_key("""Key-Type: DSA
 Key-Length: 1024
@@ -129,5 +156,5 @@ Name-Email: test@porter""")
 
     with contextlib.closing(PortedPackage("file://" + K.dsc,
                                           "squeeze-test-unstable", "~test60+1", ["MINI_BUILDD: BACKPORT-MODE"],
-                                          K.environment)) as P:
+                                          K.environment, GNUPG)) as P:
         P.upload(mini_buildd.misc.HoPo("localhost:8067"))

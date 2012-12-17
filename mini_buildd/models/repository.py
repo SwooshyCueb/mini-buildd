@@ -472,15 +472,13 @@ Example:
 
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    dist = "{c}-{i}-{s}".format(c=d.base_source.codename, i=self.identity, s=s.suite.name)
-                    with contextlib.closing(mini_buildd.porter.PortedPackage(
-                            "file://" + package.dsc,
-                            dist,
-                            self.layout.mbd_get_default_version(self, d, s),
-                            ["MINI_BUILDD: BACKPORT_MODE"],
-                            package.environment)) as port:
-                        port.upload(self.mbd_get_daemon().model.mbd_get_ftp_hopo())
-                        self.mbd_msg_info(request, "Keyring package port uploaded for: {d}".format(d=dist))
+                    info = "Keyring port request for {s}".format(s=s.suite.name)
+                    try:
+                        self.mbd_get_daemon().port_raw("file://" + package.dsc, self, d, s, None)
+                        self.mbd_msg_info(request, "Uploaded: {i}.".format(i=info))
+                    except Exception as e:
+                        self.mbd_msg_error(request, "FAILED  : {i}.".format(i=info))
+                        mini_buildd.setup.log_exception(LOG, info, e)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

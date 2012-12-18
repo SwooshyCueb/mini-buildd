@@ -466,13 +466,12 @@ Example:
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    info = "Keyring port for {s}".format(s=s.suite.name)
+                    info = "Keyring port for {d}".format(d=s.mbd_get_distribution_string(self, d))
                     try:
                         self.mbd_get_daemon().port_raw("file://" + package.dsc, self, d, s, None)
-                        self.mbd_msg_info(request, "Requested: {i}.".format(i=info))
+                        self.mbd_msg_success(request, "Requested: {i}.".format(i=info))
                     except Exception as e:
-                        self.mbd_msg_error(request, "FAILED   : {i}.".format(i=info))
-                        mini_buildd.setup.log_exception(LOG, info, e)
+                        self.mbd_msg_exception(request, "FAILED: {i}".format(i=info), e)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()
@@ -757,7 +756,9 @@ DscIndices: Sources Release . .gz .bz2
                     res += self._mbd_reprepro().migrate(package, src, dst)
                     res += self._mbd_reprepro().remove(package, src)
                 except Exception as e:
-                    res += "WARN: Rollback: Moving '{p}' from '{s}' to '{d}' FAILED (ignoring): {e}\n".format(p=package, s=src, d=dst, e=e)
+                    inf = "Rollback: Moving '{p}' from '{s}' to '{d}' FAILED (ignoring)".format(p=package, s=src, d=dst)
+                    mini_buildd.setup.log_exception(LOG, inf, e, logging.WARN)
+                    res += "WARNING: {i}: {e}\n".format(i=inf, e=e)
             return res
 
     def _mbd_package_install(self, bres):

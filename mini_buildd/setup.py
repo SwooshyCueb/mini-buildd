@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import logging
+
 DEBUG = []
 
 HTTPD_BIND = None
@@ -21,9 +23,8 @@ CHROOT_LIBDIR = None
 MANUAL_DIR = None
 
 
-def log_exception(log, message, exception):
+def log_exception(log, message, exception, level=logging.ERROR):
     msg = "{m}: {e}".format(m=message, e=exception)
+    log.log(level, msg)
     if "exception" in DEBUG:
         log.exception(msg)
-    else:
-        log.error(msg)

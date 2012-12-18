@@ -208,7 +208,7 @@ key will disable the key verification.
                             self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
                         self.components.add(new_component)
                 except Exception as e:
-                    LOG.debug("{m}: Not for us: {e}".format(m=m, e=e))
+                    self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.DEBUG)
 
         self.mbd_check(request)
 

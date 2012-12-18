@@ -192,7 +192,7 @@ class Changes(debian.deb822.Changes):
                 if status.running and status.has_chroot(codename, arch):
                     remotes[status.load] = status.ftp
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Builder check failed", e)
+                mini_buildd.setup.log_exception(LOG, "Builder check failed", e, logging.WARNING)
 
         # Always checkout our own instance as pseudo remote
         check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
@@ -210,7 +210,7 @@ class Changes(debian.deb822.Changes):
                 self.upload(hopo)
                 return load, hopo
             except Exception as e:
-                LOG.warn("Uploading to '{h}' failed: {e}".format(h=ftp, e=e))
+                mini_buildd.setup.log_exception(LOG, "Uploading to '{h}' failed".format(h=ftp), e, logging.WARNING)
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 

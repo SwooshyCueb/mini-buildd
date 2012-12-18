@@ -271,7 +271,7 @@ class Daemon():
                 else:
                     LOG.warn("Removing (new API) from last builds info: {b}".format(b=b))
         except Exception as e:
-            LOG.warn("Ignoring error adding persisted last builds/packages: {e}".format(e=e))
+            mini_buildd.setup.log_exception(LOG, "Error adding persisted last builds/packages (ignoring)", e, logging.WARN)
 
     def start(self, activate_action=False, request=None):
         if not self.thread:

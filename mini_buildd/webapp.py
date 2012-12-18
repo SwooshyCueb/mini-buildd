@@ -9,6 +9,7 @@ import django.conf
 import django.core.handlers.wsgi
 import django.core.management
 import django.contrib.auth
+import django.contrib.messages.constants
 
 import mini_buildd.setup
 import mini_buildd.models
@@ -25,9 +26,11 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
+        debug = "django" in mini_buildd.setup.DEBUG
         django.conf.settings.configure(
-            DEBUG="django" in mini_buildd.setup.DEBUG,
-            TEMPLATE_DEBUG="django" in mini_buildd.setup.DEBUG,
+            DEBUG=debug,
+            TEMPLATE_DEBUG=debug,
+            MESSAGE_LEVEL=django.contrib.messages.constants.DEBUG if debug else django.contrib.messages.constants.INFO,
 
             TEMPLATE_DIRS=['/usr/share/pyshared/mini_buildd/templates'],
             TEMPLATE_LOADERS=(

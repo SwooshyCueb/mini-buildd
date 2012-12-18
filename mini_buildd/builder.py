@@ -224,6 +224,7 @@ def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq)
             build.upload()
             build.set_status(build.UPLOADED)
         except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "Upload failed (retry later)", e, logging.WARN)
             build.set_status(build.UPLOADING, unicode(e))
 
     except Exception as e:

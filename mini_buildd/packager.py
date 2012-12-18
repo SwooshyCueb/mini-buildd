@@ -87,6 +87,10 @@ class Package(mini_buildd.misc.Status):
             try:
                 breq.upload_buildrequest(self.daemon.model.mbd_get_http_hopo())
             except Exception as e:
+                mini_buildd.setup.log_exception(LOG,
+                                                "{i}: Buildrequest upload to {h} failed".format(i=breq.get_pkg_id(),
+                                                                                                h=self.daemon.model.mbd_get_ftp_hopo()),
+                                                e)
                 # Upload failure build result to ourselves
                 breq.upload_failed_buildresult(self.daemon.model.mbd_gnupg, self.daemon.model.mbd_get_ftp_hopo(), 100, "upload-failed", e)
 

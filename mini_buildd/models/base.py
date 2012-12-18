@@ -107,7 +107,7 @@ are actually supported by the current model.
 
                 obj.save()
             except Exception as e:
-                obj.mbd_msg_error(request, "Saving model failed: {e}.".format(e=e))
+                obj.mbd_msg_exception(request, "Model saving failed", e)
             finally:
                 obj.mbd_get_daemon().restart(request=request)
 
@@ -121,33 +121,49 @@ are actually supported by the current model.
 
                 obj.delete()
             except Exception as e:
-                obj.mbd_msg_error(request, "Saving model failed: {e}.".format(e=e))
+                obj.mbd_msg_exception(request, "Model deletion failed", e)
             finally:
                 obj.mbd_get_daemon().restart(request=request)
 
     @classmethod
-    def mbd_msg_info(cls, request, msg):
+    def _mbd_msg_d2p(cls, level):
+        return {django.contrib.messages.DEBUG: logging.DEBUG,
+                django.contrib.messages.INFO: logging.INFO,
+                django.contrib.messages.SUCCESS: logging.INFO,
+                django.contrib.messages.WARNING: logging.WARN,
+                django.contrib.messages.ERROR: logging.ERROR}[level]
+
+    @classmethod
+    def mbd_msg(cls, level, request, msg):
         if request:
-            django.contrib.messages.add_message(request, django.contrib.messages.INFO, msg)
-        LOG.info(msg)
+            django.contrib.messages.add_message(request, level, msg)
+        LOG.log(cls._mbd_msg_d2p(level), msg)
+
+    @classmethod
+    def mbd_msg_debug(cls, request, msg):
+        cls.mbd_msg(django.contrib.messages.DEBUG, request, msg)
+
+    @classmethod
+    def mbd_msg_info(cls, request, msg):
+        cls.mbd_msg(django.contrib.messages.INFO, request, msg)
+
+    @classmethod
+    def mbd_msg_success(cls, request, msg):
+        cls.mbd_msg(django.contrib.messages.SUCCESS, request, msg)
 
     @classmethod
     def mbd_msg_warn(cls, request, msg):
-        if request:
-            django.contrib.messages.add_message(request, django.contrib.messages.WARNING, msg)
-        LOG.warn(msg)
+        cls.mbd_msg(django.contrib.messages.WARNING, request, msg)
 
     @classmethod
     def mbd_msg_error(cls, request, msg):
-        if request:
-            django.contrib.messages.add_message(request, django.contrib.messages.ERROR, msg)
-        LOG.error(msg)
+        cls.mbd_msg(django.contrib.messages.ERROR, request, msg)
 
     @classmethod
-    def mbd_msg_exception(cls, request, msg, exception):
+    def mbd_msg_exception(cls, request, msg, exception, level=django.contrib.messages.ERROR):
         if request:
-            django.contrib.messages.add_message(request, django.contrib.messages.ERROR, "{m}: {e}".format(m=msg, e=exception))
-        mini_buildd.setup.log_exception(LOG, msg, exception)
+            django.contrib.messages.add_message(request, level, "{m}: {e}".format(m=msg, e=exception))
+        mini_buildd.setup.log_exception(LOG, msg, exception, level=cls._mbd_msg_d2p(level))
 
     @classmethod
     def mbd_get_daemon(cls):

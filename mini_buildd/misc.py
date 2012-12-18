@@ -272,7 +272,7 @@ def run_as_thread(thread_func=None, daemon=False, **kwargs):
             thread_func(**kwargs)
             LOG.info("{i}: Finished.".format(i=tid))
         except Exception as e:
-            LOG.exception("{i}: Exception: {e}".format(i=tid, e=e))
+            mini_buildd.setup.log_exception(LOG, "Thread '{i}' error".format(i=tid), e)
         except:
             LOG.exception("{i}: Non-standard exception".format(i=tid))
 
@@ -372,7 +372,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
                     for line in stderr:
                         olog("Call stderr: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
             except Exception as e:
-                LOG.error("Output logging failed (char enc?): {e}".format(e=e))
+                mini_buildd.setup.log_exception(LOG, "Output logging failed (char enc?)", e)
     except:
         if error_log_on_fail:
             LOG.error("Call failed: {a}".format(a=" ".join(args)))
@@ -436,7 +436,7 @@ class CredsCache(object):
             self._creds = pickle.load(open(self._file))
             LOG.debug("Creds cache pickled from '{c}'. {l} entries.".format(c=cache_file, l=len(self._creds)))
         except Exception as e:
-            LOG.debug("Can't read credentials cache {c}: {e}".format(c=cache_file, e=e))
+            mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
         self._changed = []
 
     def save(self):
@@ -462,7 +462,7 @@ class CredsCache(object):
             username, password = self._creds[url]
             LOG.debug("Using creds from cache '{f}': {url}, user {user}".format(f=self._file, url=url, user=username))
         except Exception as e:
-            LOG.debug("Not in cache {u}: {e}".format(u=url, e=e))
+            mini_buildd.setup.log_exception(LOG, "Not in cache {u}".format(u=url), e, logging.DEBUG)
             username = raw_input("Username: ")
             password = getpass.getpass("Password: ")
             self._changed.append(url)

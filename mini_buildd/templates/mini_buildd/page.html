@@ -13,7 +13,7 @@
 				<br />
 			{% endwith %}
 		{% endif %}
-		{% if api_cmd.args %}
+		{% if api_cmd %}
 			<hr />
 			<a href="/mini_buildd/api?command={{ api_cmd.COMMAND|urlencode }}&amp;{% for k, v in api_cmd.args.items %}{{ k|urlencode }}={{ v|urlencode }}&amp;{% endfor %}output=plain" title="This API call with plain output">API: plain</a>
 			<br />

@@ -236,6 +236,22 @@ a:hover
 	font-size: 12px;
 }
 
+#mbd_page_header span.status
+{
+	padding: 1px 3px 0px 3px;
+	background: url("/static/images/mbd_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
+}
+
+#mbd_page_header span.status.running
+{
+	color: green;
+}
+
+#mbd_page_header span.status.stopped
+{
+	color: red;
+}
+
 
 /* Content */
 
@@ -287,22 +303,6 @@ a:hover
 #mbd_content li
 {
 	margin: 5px 0px 5px 0px;
-}
-
-#mbd_content span.status
-{
-	padding: 1px 3px 0px 3px;
-	background: url("/static/images/mbd_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
-}
-
-#mbd_content span.status.running
-{
-	color: green;
-}
-
-#mbd_content span.status.stopped
-{
-	color: red;
 }
 
 #mbd_content hr

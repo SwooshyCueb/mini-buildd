@@ -29,7 +29,7 @@ def sphinx_build_workaround(build_dir="./build/sphinx"):
     subprocess.check_call(["help2man",
                            "--no-info", "--no-discard-stderr",
                            "--output=" + build_dir + "/mini-buildd-tool.1", "--section=1",
-                           "--name=mini-buildd-tool \- User/client tool box for mini-buildd instances.", "./mini-buildd-tool"])
+                           r"--name=mini-buildd-tool \- User/client tool box for mini-buildd instances.", "./mini-buildd-tool"])
 
 # This is a Debian native package, the version is in
 # debian/changelog and nowhere else. We automagically get the

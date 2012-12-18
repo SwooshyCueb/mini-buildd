@@ -1,11 +1,6 @@
 # -*- coding: utf-8 -*-
-"""
-Generic module for models of the django application *mini_buildd*::
-
-  from mini_buildd import models
-
-Most models are split into separate modules, but we keep pseudo
-declarations for all models here for convenience.
+r"""
+Generic module for models of the django app *mini_buildd*::
 
 Naming conventions
 ==================

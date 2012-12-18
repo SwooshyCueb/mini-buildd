@@ -172,7 +172,7 @@ class Layout(mini_buildd.models.base.Model):
 %CODEVERSION%: Numerical base distribution version (see 'Source').
 """)
     mandatory_version_regex = django.db.models.CharField(
-        max_length=100, default="~%IDENTITY%%CODEVERSION%\+[1-9]",
+        max_length=100, default=r"~%IDENTITY%%CODEVERSION%\+[1-9]",
         help_text="Mandatory version regex; you may use the same placeholders as for 'default version'.")
 
     # Version magic (experimental)
@@ -181,7 +181,7 @@ class Layout(mini_buildd.models.base.Model):
         help_text="Like 'default version', but for suites flagged 'experimental'.")
 
     experimental_mandatory_version_regex = django.db.models.CharField(
-        max_length=100, default="~%IDENTITY%%CODEVERSION%\+0",
+        max_length=100, default=r"~%IDENTITY%%CODEVERSION%\+0",
         help_text="Like 'mandatory version', but for suites flagged 'experimental'.")
 
     class Admin(mini_buildd.models.base.Model.Admin):

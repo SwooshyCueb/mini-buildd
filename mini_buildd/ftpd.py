@@ -34,7 +34,7 @@ def log_init():
     pyftpdlib.ftpserver.logerror = LOG.error
 
 
-_CHANGES_RE = re.compile("^.*\.changes$")
+_CHANGES_RE = re.compile(r"^.*\.changes$")
 
 
 def handle_incoming_file(queue, file_name):
@@ -51,7 +51,7 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
         Make any incoming file read-only as soon as it arrives; avoids overriding uploads of the same file.
         """
         os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP)
-        handle_incoming_file(self._mini_buildd_queue, file_name)
+        handle_incoming_file(self.mini_buildd_queue, file_name)
 
 
 def run(bind, queue):
@@ -65,7 +65,7 @@ def run(bind, queue):
     handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.INCOMING_DIR, perm='elrw')
 
     handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
-    handler._mini_buildd_queue = queue
+    handler.mini_buildd_queue = queue
 
     # Re-feed all existing changes in incoming
     # We must feed the the user uploads first, so the daemon does not get any yet-unknown build results

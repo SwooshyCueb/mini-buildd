@@ -80,8 +80,8 @@ class TmpDir(object):
         LOG.debug("TmpDir {t}".format(t=self._tmpdir))
 
     def close(self):
-        if "builder" in mini_buildd.setup.DEBUG:
-            LOG.warn("BUILDER DEBUG MODE: Not Purging tmpdir {t}".format(t=self._tmpdir))
+        if "keep" in mini_buildd.setup.DEBUG:
+            LOG.warn("KEEP DEBUG MODE: Keeping tmpdir {t}".format(t=self._tmpdir))
         else:
             shutil.rmtree(self._tmpdir)
 

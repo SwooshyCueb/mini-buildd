@@ -185,8 +185,8 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         self.uploaded = datetime.datetime.now()
 
     def clean(self):
-        if "builder" in mini_buildd.setup.DEBUG:
-            LOG.warn("BUILDER DEBUG MODE: Not removing build spool dir {d}".format(d=self._breq.get_spool_dir()))
+        if "keep" in mini_buildd.setup.DEBUG:
+            LOG.warn("KEEP DEBUG MODE: Keeping build spool dir {d}".format(d=self._breq.get_spool_dir()))
         else:
             shutil.rmtree(self._breq.get_spool_dir())
         self._breq.remove()

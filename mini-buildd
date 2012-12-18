@@ -47,9 +47,9 @@ class Main():
         group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
                                help="""\
 Comma-separated list of parts to put in 'debug mode'. Available parts:
-exception (log tracebacks in master exception handlers),
+exception (log tracebacks in exception handlers),
 django (put django app in debug mode),
-builder (don't delete builder spool directories)""")
+keep (keep spool and temporary directories)""")
 
         group_db = parser.add_argument_group("database arguments")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",

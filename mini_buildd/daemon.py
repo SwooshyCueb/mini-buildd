@@ -149,12 +149,8 @@ def run():
 
         builder_thread = mini_buildd.misc.run_as_thread(
             mini_buildd.builder.run,
-            queue=get().build_queue,
-            builds=get().builds,
-            last_builds=get().last_builds,
-            remotes_keyring=keyring["remotes"],
-            gnupg=get().model.mbd_gnupg,
-            sbuild_jobs=get().model.sbuild_jobs)
+            daemon_=get(),
+            remotes_keyring=keyring["remotes"])
 
         while True:
             event = get().incoming_queue.get()
@@ -181,8 +177,6 @@ def run():
                     mini_buildd.packager.run(
                         daemon=get(),
                         changes=changes,
-                        packages=get().packages,
-                        last_packages=get().last_packages,
                         remotes_keyring=keyring["remotes"],
                         uploader_keyrings=keyring["uploader"])
 

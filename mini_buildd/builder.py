@@ -203,12 +203,12 @@ class LastBuild(mini_buildd.misc.API):
         return self.identity
 
 
-def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq):
+def build(daemon_, remotes_keyring, breq):
     build = None
     try:
         # First, get build object. This will automagically set the status right.
-        build = Build(breq, gnupg, sbuild_jobs)
-        builds[build.key] = build
+        build = Build(breq, daemon_.model.mbd_gnupg, daemon_.model.sbuild_jobs)
+        daemon_.builds[build.key] = build
 
         # Authorization
         remotes_keyring.verify(breq.file_path)
@@ -231,33 +231,29 @@ def build(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs, breq)
         # Try to upload failure build result to remote
         if build:
             build.set_status(build.FAILED)
-        breq.upload_failed_buildresult(gnupg, mini_buildd.misc.HoPo(breq["Upload-Result-To"]), 101, "builder-failed", e)
+        breq.upload_failed_buildresult(daemon_.model.mbd_gnupg, mini_buildd.misc.HoPo(breq["Upload-Result-To"]), 101, "builder-failed", e)
         mini_buildd.setup.log_exception(LOG, "Internal error building", e)
 
     finally:
         if build:
             build.clean()
-            last_builds.appendleft(LastBuild(build))
-            if build.key in builds:
-                del builds[build.key]
-        queue.task_done()
+            daemon_.last_builds.appendleft(LastBuild(build))
+            if build.key in daemon_.builds:
+                del daemon_.builds[build.key]
+        daemon_.build_queue.task_done()
 
 
-def run(queue, builds, last_builds, remotes_keyring, gnupg, sbuild_jobs):
+def run(daemon_, remotes_keyring):
     while True:
-        event = queue.get()
+        event = daemon_.build_queue.get()
         if event == "SHUTDOWN":
             break
 
-        LOG.info("Builder status: {s}.".format(s=queue))
+        LOG.info("Builder status: {s}.".format(s=daemon_.build_queue))
 
         mini_buildd.misc.run_as_thread(
             build,
             daemon=True,
-            queue=queue,
-            builds=builds,
-            last_builds=last_builds,
+            daemon_=daemon_,
             remotes_keyring=remotes_keyring,
-            gnupg=gnupg,
-            sbuild_jobs=sbuild_jobs,
             breq=mini_buildd.changes.Changes(event))

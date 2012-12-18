@@ -168,9 +168,9 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=self.key, r=retval, s=self._bres.get("Sbuild-Status")))
         self._bres.add_file(buildlog)
         build_changes_file = os.path.join(self._build_dir,
-                                          mini_buildd.changes.gen_file_name(self._breq["Source"],
-                                                                            self._breq["Version"],
-                                                                            self._breq["Architecture"]))
+                                          mini_buildd.changes.Changes.gen_changes_file_name(self._breq["Source"],
+                                                                                            self._breq["Version"],
+                                                                                            self._breq["Architecture"]))
         if os.path.exists(build_changes_file):
             build_changes = mini_buildd.changes.Changes(build_changes_file)
             build_changes.tar(tar_path=self._bres.file_path + ".tar")

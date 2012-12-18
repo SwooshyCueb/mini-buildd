@@ -24,42 +24,16 @@ import mini_buildd.models.gnupg
 
 LOG = logging.getLogger(__name__)
 
-# Extra mini-buildd changes file types we invent
-TYPE_DEFAULT = 0
-TYPE_BREQ = 1
-TYPE_BRES = 2
-TYPES = {TYPE_DEFAULT: "",
-         TYPE_BREQ: "_mini-buildd-buildrequest",
-         TYPE_BRES: "_mini-buildd-buildresult"}
-
-
-def strip_epoch(version):
-    return version.rpartition(":")[2]
-
-
-def gen_file_name(package, version, arch, mbd_type=TYPE_DEFAULT):
-    """
-    Gen any changes file name.
-
-    Always strip epoch from version, and handle special
-    mini-buildd types.
-
-    >>> gen_file_name("mypkg", "1.2.3-1", "mips")
-    u'mypkg_1.2.3-1_mips.changes'
-    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips")
-    u'mypkg_1.2.3-1_mips.changes'
-    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=TYPE_BREQ)
-    u'mypkg_1.2.3-1_mini-buildd-buildrequest_mips.changes'
-    >>> gen_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=TYPE_BRES)
-    u'mypkg_1.2.3-1_mini-buildd-buildresult_mips.changes'
-    """
-    return "{p}_{v}{x}_{a}.changes".format(p=package,
-                                           v=strip_epoch(version),
-                                           a=arch,
-                                           x=TYPES[mbd_type])
-
 
 class Changes(debian.deb822.Changes):
+    # Extra mini-buildd changes file types we invent
+    TYPE_DEFAULT = 0
+    TYPE_BREQ = 1
+    TYPE_BRES = 2
+    TYPES = {TYPE_DEFAULT: "",
+             TYPE_BREQ: "_mini-buildd-buildrequest",
+             TYPE_BRES: "_mini-buildd-buildresult"}
+
     BUILDREQUEST_RE = re.compile("^.+" + TYPES[TYPE_BREQ] + "_[^_]+.changes$")
     BUILDRESULT_RE = re.compile("^.+" + TYPES[TYPE_BRES] + "_[^_]+.changes$")
 
@@ -68,20 +42,63 @@ class Changes(debian.deb822.Changes):
         self._file_name = os.path.basename(file_path)
         self._new = not os.path.exists(file_path)
         self._sha1 = None if self._new else mini_buildd.misc.sha1_of_file(file_path)
+
+        if self.BUILDREQUEST_RE.match(self._file_name):
+            self._type = self.TYPE_BREQ
+        elif self.BUILDRESULT_RE.match(self._file_name):
+            self._type = self.TYPE_BRES
+        else:
+            self._type = self.TYPE_DEFAULT
+
         super(Changes, self).__init__([] if self._new else file(file_path))
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
     def __unicode__(self):
-        if self.is_buildrequest():
+        if self.type == self.TYPE_BREQ:
             return "Buildrequest from '{h}': {i}".format(h=self.get("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
-        elif self.is_buildresult():
+        elif self.type == self.TYPE_BRES:
             return "Buildresult from '{h}': {i}".format(h=self.get("Built-By"), i=self.get_pkg_id(with_arch=True))
         else:
             return "User upload: {i}".format(i=self.get_pkg_id())
 
+    @property
+    def type(self):
+        return self._type
+
+    @classmethod
+    def strip_epoch(cls, version):
+        return version.rpartition(":")[2]
+
+    @classmethod
+    def gen_changes_file_name(cls, package, version, arch, mbd_type=TYPE_DEFAULT):
+        """
+        Gen any changes file name.
+
+        Always strip epoch from version, and handle special
+        mini-buildd types.
+
+        >>> Changes.gen_changes_file_name("mypkg", "1.2.3-1", "mips")
+        u'mypkg_1.2.3-1_mips.changes'
+        >>> Changes.gen_changes_file_name("mypkg", "7:1.2.3-1", "mips")
+        u'mypkg_1.2.3-1_mips.changes'
+        >>> Changes.gen_changes_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=Changes.TYPE_BREQ)
+        u'mypkg_1.2.3-1_mini-buildd-buildrequest_mips.changes'
+        >>> Changes.gen_changes_file_name("mypkg", "7:1.2.3-1", "mips", mbd_type=Changes.TYPE_BRES)
+        u'mypkg_1.2.3-1_mini-buildd-buildresult_mips.changes'
+        """
+        return "{p}_{v}{x}_{a}.changes".format(p=package,
+                                               v=cls.strip_epoch(version),
+                                               a=arch,
+                                               x=cls.TYPES[mbd_type])
+
     def gen_file_name(self, arch, mbd_type):
-        return gen_file_name(self["Source"], self["Version"], arch, mbd_type)
+        return self.gen_changes_file_name(self["Source"], self["Version"], arch, mbd_type)
+
+    @property
+    def dsc_name(self):
+        return "{s}_{v}.dsc".format(s=self["Source"],
+                                    v=self.strip_epoch(self["Version"]))
 
     @property
     def bres_stat(self):
@@ -94,11 +111,6 @@ class Changes(debian.deb822.Changes):
     @property
     def file_path(self):
         return self._file_path
-
-    @property
-    def dsc_name(self):
-        return "{s}_{v}.dsc".format(s=self["Source"],
-                                    v=strip_epoch(self["Version"]))
 
     @property
     def buildlog_name(self):
@@ -114,12 +126,6 @@ class Changes(debian.deb822.Changes):
 
     def is_new(self):
         return self._new
-
-    def is_buildrequest(self):
-        return self.BUILDREQUEST_RE.match(self._file_name)
-
-    def is_buildresult(self):
-        return self.BUILDRESULT_RE.match(self._file_name)
 
     @property
     def magic_auto_backports(self):
@@ -273,7 +279,7 @@ class Changes(debian.deb822.Changes):
             path = os.path.join(self.get_spool_dir(), ao.architecture.name)
 
             breq = Changes(os.path.join(path,
-                                        self.gen_file_name(ao.architecture.name, TYPE_BREQ)))
+                                        self.gen_file_name(ao.architecture.name, self.TYPE_BREQ)))
 
             if breq.is_new():
                 for v in ["Distribution", "Source", "Version"]:
@@ -323,12 +329,12 @@ class Changes(debian.deb822.Changes):
         return breq_dict
 
     def gen_buildresult(self, path=None):
-        assert(self.is_buildrequest())
+        assert(self.type == self.TYPE_BREQ)
         if not path:
             path = self.get_spool_dir()
 
         bres = mini_buildd.changes.Changes(os.path.join(path,
-                                                        self.gen_file_name(self["Architecture"], TYPE_BRES)))
+                                                        self.gen_file_name(self["Architecture"], self.TYPE_BRES)))
 
         for v in ["Distribution", "Source", "Version", "Architecture"]:
             bres[v] = self[v]

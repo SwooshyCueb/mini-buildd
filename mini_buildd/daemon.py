@@ -168,7 +168,7 @@ def run():
                 changes = None
                 changes = mini_buildd.changes.Changes(event)
 
-                if changes.is_buildrequest():
+                if changes.type == changes.TYPE_BREQ:
                     # Build request: builder
 
                     def queue_buildrequest(event):
@@ -408,9 +408,9 @@ class Daemon():
                                   env=env)
 
             changes = os.path.join(t.tmpdir,
-                                   mini_buildd.changes.gen_file_name(dsc["Source"],
-                                                                     version,
-                                                                     "source"))
+                                   mini_buildd.changes.Changes.gen_changes_file_name(dsc["Source"],
+                                                                                     version,
+                                                                                     "source"))
 
             with open(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",

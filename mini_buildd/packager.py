@@ -219,7 +219,7 @@ class LastPackage(mini_buildd.misc.API):
 
 
 def run(daemon, changes, packages, last_packages, remotes_keyring, uploader_keyrings):
-    if changes.is_buildresult():
+    if changes.type == changes.TYPE_BRES:
         if not changes.get_pkg_id() in packages:
             raise Exception("No active package for that build result.")
 

@@ -166,7 +166,7 @@ class Layout(mini_buildd.models.base.Model):
     # Version magic
     default_version = django.db.models.CharField(
         max_length=100, default="~%IDENTITY%%CODEVERSION%+1",
-        help_text="""This will be used for automated builds; you may use these placeholders:<br/>
+        help_text="""Version string to append to the original version for automated ports; you may use these placeholders:<br/>
 
 %IDENTITY%: Repository identity (see 'Repository').<br/>
 %CODEVERSION%: Numerical base distribution version (see 'Source').
@@ -466,9 +466,10 @@ Example:
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    info = "Keyring port for {d}".format(d=s.mbd_get_distribution_string(self, d))
+                    dist = s.mbd_get_distribution_string(self, d)
+                    info = "Keyring port for {d}".format(d=dist)
                     try:
-                        self.mbd_get_daemon().port_raw("file://" + package.dsc, self, d, s, None)
+                        self.mbd_get_daemon().portext("file://" + package.dsc, dist)
                         self.mbd_msg_success(request, "Requested: {i}.".format(i=info))
                     except Exception as e:
                         self.mbd_msg_exception(request, "FAILED: {i}".format(i=info), e)
@@ -586,7 +587,7 @@ DscIndices: Sources Release . .gz .bz2
                     result.extend(res)
         return result
 
-    def _mbd_get_dsc(self, distribution, package, version):
+    def mbd_get_dsc_url(self, distribution, package, version):
         """
         Get complete DSC URL of an installed package.
         """
@@ -650,7 +651,7 @@ DscIndices: Sources Release . .gz .bz2
             values.setdefault("distribution", dist.get(rollback=False))
             values.setdefault("source", "")
             values.setdefault("sourceversion", "")
-            values.setdefault("dsc", "")
+            values.setdefault("dsc_url", "")
             values.setdefault("migrates_to", suite.migrates_to.mbd_get_distribution_string(self, distribution) if suite.migrates_to else "")
             values.setdefault("uploadable", suite.uploadable)
             values.setdefault("experimental", suite.experimental)
@@ -661,15 +662,15 @@ DscIndices: Sources Release . .gz .bz2
             if dist.is_rollback:
                 # Add to rollback list with "no" appended
                 r["no"] = dist.rollback_no
-                r["dsc"] = self._mbd_get_dsc(distribution, r["source"], r["sourceversion"])
+                r["dsc_url"] = self.mbd_get_dsc_url(distribution, r["source"], r["sourceversion"])
                 values["rollbacks"].append(r)
             else:
                 # Copy all reprepro values
                 for k, v in r.items():
                     values[k] = v
 
-                # Extra: DSC, is_migrated flag
-                values["dsc"] = self._mbd_get_dsc(distribution, values["source"], values["sourceversion"])
+                # Extra: DSC_URL, is_migrated flag
+                values["dsc_url"] = self.mbd_get_dsc_url(distribution, values["source"], values["sourceversion"])
 
                 values["is_migrated"] = \
                     values["migrates_to"] and \

@@ -153,7 +153,7 @@ class LogCat(Command):
     ARGUMENTS = [
         (["--lines", "-n"], {"action": "store", "metavar": "N", "type": int,
                              "default": 50,
-                             "help": "Cat (approx.) the last N lines."})]
+                             "help": "cat (approx.) the last N lines"})]
 
     def __init__(self, args):
         super(LogCat, self).__init__(args)
@@ -191,13 +191,13 @@ class List(Command):
     """
     COMMAND = "list"
     ARGUMENTS = [
-        (["pattern"], {"help": "List source packages matching pattern"}),
+        (["pattern"], {"help": "list source packages matching pattern"}),
         (["--with-rollbacks", "-r"], {"action": "store_true",
                                       "default": False,
-                                      "help": "Also list packages on rollback distributions"}),
+                                      "help": "also list packages on rollback distributions"}),
         (["--type", "-T"], {"action": "store", "metavar": "TYPE",
                             "default": "",
-                            "help": "Package type: dsc, deb or udeb (like reprepo --type)."})]
+                            "help": "package type: dsc, deb or udeb (like reprepo --type)"})]
 
     def __init__(self, args):
         super(List, self).__init__(args)
@@ -246,10 +246,10 @@ class Show(Command):
     """
     COMMAND = "show"
     ARGUMENTS = [
-        (["package"], {"help": "Source package name"}),
+        (["package"], {"help": "source package name"}),
         (["--verbose", "-v"], {"action": "store_true",
                                "default": False,
-                               "help": "Verbose output"})]
+                               "help": "verbose output"})]
 
     def __init__(self, args):
         super(Show, self).__init__(args)
@@ -283,7 +283,7 @@ class Show(Command):
                 ("sourceversion", "Version"),
                 ("migrates_to", "Migrates to")]
         if self.has_flag("verbose"):
-            rows.append(("dsc", "Source URL"))
+            rows.append(("dsc_url", "Source URL"))
             rows.append(("rollbacks_str_verbose", "Rollbacks"))
         else:
             rows.append(("rollbacks_str", "Rollbacks"))
@@ -311,8 +311,8 @@ class Migrate(Command):
     LOGIN = True
     CONFIRM = True
     ARGUMENTS = [
-        (["package"], {"help": "Source package name."}),
-        (["distribution"], {"help": "Distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore.)"})]
+        (["package"], {"help": "source package name"}),
+        (["distribution"], {"help": "distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore)"})]
 
     def __init__(self, args):
         super(Migrate, self).__init__(args)
@@ -334,8 +334,8 @@ class Remove(Command):
     LOGIN = True
     CONFIRM = True
     ARGUMENTS = [
-        (["package"], {"help": "Source package name."}),
-        (["distribution"], {"help": "Distribution to remove from."})]
+        (["package"], {"help": "source package name"}),
+        (["distribution"], {"help": "distribution to remove from"})]
 
     def __init__(self, args):
         super(Remove, self).__init__(args)
@@ -351,7 +351,7 @@ class Remove(Command):
 
 class Port(Command):
     """
-    Port any source package to (a) mini-buildd distribution(s).
+    Port a package internally.
 
     A 'port' is a unchanged rebuild of the given source package.
     """
@@ -359,8 +359,9 @@ class Port(Command):
     LOGIN = True
     CONFIRM = True
     ARGUMENTS = [
-        (["dsc"], {"help": "Debian source package (dsc) URL."}),
-        (["distributions"], {"help": "Comma-separated list of distributions to port to."})]
+        (["package"], {"help": "source package name"}),
+        (["from-distribution"], {"help": "distribution to port from"}),
+        (["to-distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"})]
 
     def __init__(self, args):
         super(Port, self).__init__(args)
@@ -369,13 +370,45 @@ class Port(Command):
         self.results = ""
 
     def run(self, daemon):
-        dsc = self.args["dsc"]
+        # Parse and pre-check all dists
+        for d in self.args["to_distributions"].split(","):
+            info = "Port request {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=d)
+            try:
+                daemon.port(self.args["package"], self.args["from_distribution"], d)
+                self.results += "Uploaded: {i}.\n".format(i=info)
+            except Exception as e:
+                self.results += "FAILED  : {i}: {e}.\n".format(i=info, e=e)
+                mini_buildd.setup.log_exception(LOG, info, e)
+
+    def __unicode__(self):
+        return self.results
+
+
+class PortExt(Command):
+    """
+    Port an external package.
+
+    A 'port' is a unchanged rebuild of the given source package.
+    """
+    COMMAND = "portext"
+    LOGIN = True
+    CONFIRM = True
+    ARGUMENTS = [
+        (["dsc-url"], {"help": "URL of any Debian source package (dsc) to port"}),
+        (["distributions"], {"help": "comma-separated list of distributions to port to"})]
+
+    def __init__(self, args):
+        super(PortExt, self).__init__(args)
 
         # Parse and pre-check all dists
+        self.results = ""
+
+    def run(self, daemon):
+        # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
-            info = "Port request {dsc} -> {d}".format(dsc=dsc, d=d)
+            info = "Port request {dsc} -> {d}".format(dsc=self.args["dsc_url"], d=d)
             try:
-                daemon.port(dsc, d, None)
+                daemon.portext(self.args["dsc_url"], d)
                 self.results += "Uploaded: {i}.\n".format(i=info)
             except Exception as e:
                 self.results += "FAILED  : {i}: {e}.\n".format(i=info, e=e)
@@ -394,6 +427,7 @@ COMMANDS = {Status.COMMAND: Status,
             Migrate.COMMAND: Migrate,
             Remove.COMMAND: Remove,
             Port.COMMAND: Port,
+            PortExt.COMMAND: PortExt,
             }
 
 

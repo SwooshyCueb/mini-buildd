@@ -40,6 +40,7 @@ import contextlib
 import Queue
 import collections
 import codecs
+import urllib2
 import email.mime.text
 import email.utils
 import logging
@@ -62,6 +63,16 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
+class StampVersion(object):
+    def __init__(self):
+        # 20121218151309
+        self.version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+
+    @property
+    def regex(self):
+        return r"[0-9]{{{n}}}".format(n=len(self.version))
+
+
 class KeyringPackage(mini_buildd.misc.TmpDir):
     def __init__(self, identity, gpg, debfullname, debemail, tpl_dir="/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template"):
         super(KeyringPackage, self).__init__()
@@ -71,7 +82,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
             {"DEBEMAIL": debemail,
              "DEBFULLNAME": debfullname,
              "GNUPGHOME": gpg.home})
-        self.version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+        self.version = StampVersion().version
 
         # Copy template, and replace %ID% and %MAINT% in all files
         p = os.path.join(self.tmpdir, "package")
@@ -343,16 +354,73 @@ class Daemon():
 
         return repository, distribution, suite, dist_parsed.rollback_no
 
-    def port_raw(self, dsc_url, repository, distribution, suite, replace_version_apdx_regex):
+    def port(self, package, from_dist, to_dist):
+        def _sub_rightmost(pattern, repl, string):
+            last_match = None
+            for last_match in re.finditer(pattern, string):
+                pass
+            if last_match:
+                return string[:last_match.start()] + repl + string[last_match.end():]
+            else:
+                return string + repl
+
+        # check from_dist
+        from_repository, from_distribution, from_suite, _from_rollback = self.parse_distribution(from_dist)
+        p = from_repository.mbd_package_find(package, from_dist)
+        if not p:
+            raise Exception("Port failed: Package '{p}' not in '{d}'".format(p=package, d=from_dist))
+
+        # check to_dist
+        to_repository, to_distribution, to_suite, to_rollback = self.parse_distribution(to_dist)
+        if not to_suite.uploadable:
+            raise Exception("Port failed: Non-upload distribution requested: '{d}'".format(d=to_dist))
+        if to_rollback:
+            raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=to_dist))
+
+        # Ponder version to use
+        if to_dist == from_dist:
+            # Rebuild
+            stamp = StampVersion()
+            version = _sub_rightmost(r"\+rebuilt" + stamp.regex,
+                                     "+rebuilt" + stamp.version,
+                                     p["sourceversion"])
+        else:
+            # Internal port
+            version = _sub_rightmost(from_repository.layout.mbd_get_mandatory_version_regex(from_repository, from_distribution, from_suite),
+                                     to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite),
+                                     p["sourceversion"])
+
+        self._port(from_repository.mbd_get_dsc_url(from_distribution, package, p["sourceversion"]),
+                   package,
+                   to_dist,
+                   version)
+
+    def portext(self, dsc_url, to_dist):
+        # check to_dist
+        to_repository, to_distribution, to_suite, to_rollback = self.parse_distribution(to_dist)
+
+        if not to_suite.uploadable:
+            raise Exception("Port failed: Non-upload distribution requested: '{d}'".format(d=to_dist))
+
+        if to_rollback:
+            raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=to_dist))
+
+        dsc = debian.deb822.Dsc(urllib2.urlopen(dsc_url))
+        self._port(dsc_url,
+                   dsc["Source"],
+                   to_dist,
+                   dsc["Version"] + to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite))
+
+    def _port(self, dsc_url, package, dist, version):
         t = mini_buildd.misc.TmpDir()
         try:
-            version_apdx = repository.layout.mbd_get_default_version(repository, distribution, suite)
             extra_cl_entries = ["MINI_BUILDD: BACKPORT_MODE"]
 
             env = mini_buildd.misc.taint_env({"DEBEMAIL": self.model.email_address,
                                               "DEBFULLNAME": self.model.mbd_fullname,
                                               "GNUPGHOME": self.model.mbd_gnupg.home})
 
+            # Download DSC via dget.
             mini_buildd.misc.call(["dget",
                                    "--allow-unauthenticated",
                                    "--download-only",
@@ -360,32 +428,23 @@ class Daemon():
                                   cwd=t.tmpdir,
                                   env=env)
 
-            dsc_file = os.path.basename(dsc_url)
-            dsc = debian.deb822.Dsc(file(os.path.join(t.tmpdir, dsc_file)))
+            # Unpack DSC (note: dget does not support -x to a dedcicated dir).
             dst = "debian_source_tree"
-
             mini_buildd.misc.call(["dpkg-source",
                                    "-x",
-                                   dsc_file,
+                                   os.path.basename(dsc_url),
                                    dst],
                                   cwd=t.tmpdir,
                                   env=env)
 
-            # Remove matching string from version if given; mainly
-            # for internal automated backports so they don't get a
-            # doubled version apdx like '~testSID+1~test60+1'
-            if replace_version_apdx_regex:
-                version = re.sub(replace_version_apdx_regex, version_apdx, dsc["Version"])
-            else:
-                version = dsc["Version"] + version_apdx
-
+            # Change changelog in DST
             dst_path = os.path.join(t.tmpdir, dst)
             mini_buildd.misc.call(["debchange",
                                    "--newversion={v}".format(v=version),
                                    "--force-distribution",
                                    "--force-bad-version",
                                    "--preserve",
-                                   "--dist={d}".format(d=suite.mbd_get_distribution_string(repository, distribution)),
+                                   "--dist={d}".format(d=dist),
                                    "Automated port via mini-buildd (no changes)."],
                                   cwd=dst_path,
                                   env=env)
@@ -397,15 +456,16 @@ class Daemon():
                                       cwd=dst_path,
                                       env=env)
 
+            # Repack DST
             mini_buildd.misc.call(["dpkg-source", "-b", dst],
                                   cwd=t.tmpdir,
                                   env=env)
 
+            # Gen changes file
             changes = os.path.join(t.tmpdir,
-                                   mini_buildd.changes.Changes.gen_changes_file_name(dsc["Source"],
+                                   mini_buildd.changes.Changes.gen_changes_file_name(package,
                                                                                      version,
                                                                                      "source"))
-
             with open(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",
@@ -414,22 +474,12 @@ class Daemon():
                                       env=env,
                                       stdout=c)
 
+            # Sign and add to incoming queue
             self.model.mbd_gnupg.sign(changes)
             self.incoming_queue.put(changes)
         except:
             t.close()
             raise
-
-    def port(self, dsc_url, dist, replace_version_apdx_regex):
-        repository, distribution, suite, rollback = self.parse_distribution(dist)
-
-        if not suite.uploadable:
-            raise Exception("Port failed: Non-upload distribution requested: '{d}'".format(d=dist))
-
-        if rollback:
-            raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=dist))
-
-        self.port_raw(dsc_url, repository, distribution, suite, replace_version_apdx_regex)
 
     def get_keyring_package(self):
         return KeyringPackage(self.model.identity,
@@ -455,3 +505,9 @@ _INSTANCE = None
 def get():
     assert(_INSTANCE)
     return _INSTANCE
+
+
+if __name__ == "__main__":
+    S = StampVersion()
+    print S.version
+    print S.regex

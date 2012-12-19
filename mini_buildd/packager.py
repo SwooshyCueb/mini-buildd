@@ -133,11 +133,11 @@ class Package(mini_buildd.misc.Status):
         self.repository.mbd_package_install(self.distribution, self.suite, self.success)
 
         # Installed. Finally, try to serve magic auto backports
-        dsc_url = "file://" + os.path.join(os.path.dirname(self.changes.file_path), self.changes.dsc_name)
         for dist in self.changes.magic_auto_backports:
             try:
-                self.daemon.port(dsc_url, dist,
-                                 self.repository.layout.mbd_get_mandatory_version_regex(self.repository, self.distribution, self.suite))
+                self.daemon.port(self.changes["Source"],
+                                 self.changes["Distribution"],
+                                 dist)
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=dist), e)
 

@@ -469,24 +469,19 @@ a:hover
 	align: center;
 }
 
-#mbd_api_show table
-{
-	border: 2;
-}
 
-#mbd_api_show th
-{
-	/* text-align: right; */
-#	padding-right: 0px;
-	text-align: center;
-}
+/* API show */
 
-#mbd_api_show td
+#mbd_api_show td.distribution
 {
-	/* text-align: right; */
 	font-weight: bold;
 	color: #666666;
-	padding: 10px 14px 0px 0px;
+}
+
+#mbd_api_show td.version
+{
+	font-weight: bold;
+	color: #666666;
 }
 
 #mbd_api_show td.codename
@@ -496,6 +491,7 @@ a:hover
 	background-color:lightgrey;
 	padding:5px;
 }
+
 
 #mbd_last_builds
 {
@@ -525,18 +521,6 @@ a:hover
 #mbd_lp_anchor
 {
 	font-size: 12px;
-}
-
-#mbd_index_package_show
-{
-	text-align: center;
-	padding: 20px 15px 15px 15px;
-}
-
-#mbd_index_api_show
-{
-	text-align: center;
-	padding: 20px 15px 15px 15px;
 }
 
 /* FOOTER */

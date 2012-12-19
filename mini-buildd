@@ -44,12 +44,13 @@ class Main():
                                help="Tighten log level. Give twice for min logs.")
         group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
                                help="Comma-separated list of loggers (file,syslog,console) to use.")
-        group_log.add_argument("-d", "--debug", action='store', default="", metavar="PART,..",
+        group_log.add_argument("-d", "--debug", action='store', default="", metavar="OPTION,..",
                                help="""\
-Comma-separated list of parts to put in 'debug mode'. Available parts:
-exception (log tracebacks in exception handlers),
-django (put django app in debug mode),
-keep (keep spool and temporary directories)""")
+Comma-separated list of special debugging options:
+'exception' (log tracebacks in exception handlers),
+'django' (put django app in debug mode),
+'keep' (keep spool and temporary directories),
+'profile' (produce cProfile dump in log directory).""")
 
         group_db = parser.add_argument_group("database arguments")
         group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
@@ -205,7 +206,14 @@ keep (keep spool and temporary directories)""")
 
 
 try:
-    Main().run()
+    MAIN = Main()
+    if "profile" in mini_buildd.setup.DEBUG:
+        PROFILE = os.path.join(mini_buildd.setup.LOG_DIR, "daemon.profile")
+        LOG.warn("PROFILE DEBUG MODE: Profiling to '{p}'".format(p=PROFILE))
+        import cProfile
+        cProfile.run("MAIN.run()", PROFILE)
+    else:
+        MAIN.run()
 except Exception as e:
     mini_buildd.setup.log_exception(LOG, "mini-buildd FAILED", e)
     sys.exit(1)

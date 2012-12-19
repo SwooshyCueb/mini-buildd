@@ -1,3 +1,66 @@
+mini-buildd (1.0.0~beta.1) experimental; urgency=low
+
+  Initial beta release. Many fixes, but also two important new features:
+   - API, usable via web or command line tool; splits Debian package
+     'python-mini-buildd' (user client).
+   - Port code rewrite (enabling rebuilds, internal ports, external ports;
+     fixes dependency on source deps).
+  Detailed dch changes below:
+  * [3ac38c7] Add command line client "mini-buildd-tool"; move 'mini-buildd' daemon to sbin/.
+  * [6aa4181] .pylintrc: Don't print info messages for in-code-disabled warnings.
+  * [dfb18e9] Remove obsoleted and outdated files: debian/99mini-buildd, debian/TODO, debian/NEWS.Debian, debian/README.Debian.
+  * [bb05806] Rename NEWS to package-specific mini-buildd.NEWS.
+  * [559cdf9] debian: Split package in 'mini-buildd' and 'python-mini-buildd'.
+  * [bdb883b] debian/setup: Fix doc and manual generation and installation.
+  * [55ea3eb] httpd.py: cherrypy: Explicitly disable engine autoreload.
+  * [004a5e1] misc.py: Add CredsCache() class and web_login() function (for later use in mini-buildd-tool command line client).
+  * [8a8b2bc] views.py: Bugfix: Return correct HTTP error status for custom 403,404,500 handlers.
+  * [50bedb3] misc.py: Renice console logging: Use one-char level name (D: debug msg, E: error msg).
+  * [0827364] misc.py: Use dedicated class 'misc.Distribution' for dist string parsing.
+  * [9ba4f18] [devel] .pylintrc: Some more adjustments.
+  * [e5c5e9c] Fix buildlogs paths to: REPOID/[_failed/]PACKAGE/VERSION/ARCH
+  * [375a7a4] daemon.py: Do not run check on startup unless daemon is active or on auto_reactivate.
+  * [2881ed4] Implement Web API.
+  * [cb20687] Default layout: Add 'snapshot' suite.
+  * [acfd29c] API: Implement confirmation (remove and migrate).
+  * [b0b51f1] css, templates, templatetags: Fix prefix from "mb" to "mbd" (sync with the used python code prefix).
+  * [04e7b28] Update/beautify some web icons.
+  * [9146656] .pylintrc: Relaxing regex for functions.
+  * [f1fc23e] install(), remove(), migrate(): Fix corner cases, improve web GUI.
+  * [3ba893c] API http status: Use 405 (not 500) when syntax-correct call fails.
+  * [8ad32dd] Auto-rotate daemon log file.
+  * [1fa99f6] views.py: API: Fix char-encoding for text/plain output.
+  * [fd2a1d7] api: Add "logcat" call.
+  * [0a11a88] remove some obsolete debug output.
+  * [dd6fe71] Add api_show() link to last_packages.
+  * [8a0b2d5] API: Add "port" call.
+  * [3790efc] api_show: Add dsc url.
+  * [6900c08] api.py: list: Add '--type' arg.
+  * [9927e58] api/web: Generically allow call refining with all api call args.
+  * [a34966f] status: chroot list: Use codename first, then arch.
+  * [b4a6390] calls: Nicer logging of command calls.
+  * [f7b91e9] tmp: Use dir in mini-buildd's var dir (~/var/tmp), not system default (/tmp).
+  * [d95df2f] changes.py (Changes.add_file): use dict.setdefault.
+  * [7066296] models/repository.py: install(): Minor order fix for better exception.
+  * [dea4b6d] strip_epoch: As misc function.
+  * [c8e482f] porter.py: Implement package porting using 'raw dpkg-dev' calls (thus makes any package port work, independent of source deps).
+  * [8b66b31] builder: Fix: Avoid key exception in log in case Sbuild-Status is not there (i.e., sbuild failed hard)
+  * [bdec9dd] ports: Deliver changes directly to incoming queue, not via ftp uploads.
+  * [2fad854] Put KeyringPackage class to daemon (obsoletes porter.py).
+  * [47b0061] Optimize default layout's rollback # (again).
+  * [5c24e25] Gen changes file names at one place only.
+  * [ca187d8] log_exception: Use in _all_ appr. exception handlers.
+  * [78c5252] pylint: Fix some new warnings emerging with version 0.26.
+  * [e4dfe67] changes: use type property.
+  * [5d54ab3] Inject daemon object to builder and packager.
+  * [e9ca201] [debug mode] Rename "builder" debug mode to "keep".
+  * [fc4cc4e] [debug mode] Add debug option 'profile'.
+  * [de8ff10] html: Some cleanups.
+  * [08bb58d] Fix up porting API and code (internal ports, rebuilds, keyring ports, external ports).
+  * [7096db4] [checks] Run doctest on all *.py (except models); add *-tool to pychecker check.
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 19 Dec 2012 12:10:59 +0100
+
 mini-buildd (1.0.0~alpha.8) experimental; urgency=low
 
   Adds the automated rollback distributions.

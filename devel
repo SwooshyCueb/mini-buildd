@@ -70,8 +70,7 @@ mbd_pydoctests()
 {
 	(
 		pyenv
-		python -m doctest -v mini_buildd/misc.py
-		python -m doctest -v mini_buildd/gnupg.py
+		python -m doctest -v mini-buildd mini-buildd-tool mini_buildd/*.py
 	)
 }
 
@@ -107,7 +106,7 @@ mbd_pychecker()
 {
 	(
 		pyenv
-		pychecker mini-buildd $(find mini_buildd/ -name "*.py")
+		pychecker mini-buildd mini-buildd-tool $(find mini_buildd/ -name "*.py")
 	)
 }
 

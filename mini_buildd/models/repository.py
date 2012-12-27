@@ -542,6 +542,7 @@ Suite: {distribution}
 Label: {distribution}
 Origin: {origin}
 Components: {components}
+UDebComponents: {components}
 Architectures: source {architectures}
 Description: {desc}
 SignWith: default

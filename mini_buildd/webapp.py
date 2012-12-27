@@ -56,13 +56,13 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'mini_buildd'))
 
         mini_buildd.models.import_all()
-        self.syncdb()
-        self.setup_default_models()
+        self._syncdb()
+        self._default_setup()
 
     @classmethod
-    def setup_default_models(cls):
+    def _default_setup(cls):
         """
-        Auto-create some default model instances if they do not exist.
+        Create default suites and layout unless it already exists.
         """
         import mini_buildd.models.repository
 
@@ -147,7 +147,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             "unprepare")
 
     @classmethod
-    def syncdb(cls):
+    def _syncdb(cls):
         LOG.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)
 

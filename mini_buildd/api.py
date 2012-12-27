@@ -372,12 +372,12 @@ class Port(Command):
     def run(self, daemon):
         # Parse and pre-check all dists
         for d in self.args["to_distributions"].split(","):
-            info = "Port request {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=d)
+            info = "Port {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=d)
             try:
                 daemon.port(self.args["package"], self.args["from_distribution"], d)
-                self.results += "Uploaded: {i}.\n".format(i=info)
+                self.results += "Requested: {i}.\n".format(i=info)
             except Exception as e:
-                self.results += "FAILED  : {i}: {e}.\n".format(i=info, e=e)
+                self.results += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
                 mini_buildd.setup.log_exception(LOG, info, e)
 
     def __unicode__(self):
@@ -406,12 +406,12 @@ class PortExt(Command):
     def run(self, daemon):
         # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
-            info = "Port request {dsc} -> {d}".format(dsc=self.args["dsc_url"], d=d)
+            info = "External port {dsc} -> {d}".format(dsc=self.args["dsc_url"], d=d)
             try:
                 daemon.portext(self.args["dsc_url"], d)
-                self.results += "Uploaded: {i}.\n".format(i=info)
+                self.results += "Requested: {i}.\n".format(i=info)
             except Exception as e:
-                self.results += "FAILED  : {i}: {e}.\n".format(i=info, e=e)
+                self.results += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
                 mini_buildd.setup.log_exception(LOG, info, e)
 
     def __unicode__(self):

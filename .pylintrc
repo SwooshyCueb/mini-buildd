@@ -11,7 +11,7 @@ generated-members=add,all,build_keyring_package_for,codename,create_default_layo
 
 [BASIC]
 
-good-names=mini-buildd,mini-buildd-tool,urlpatterns,register
+good-names=mini-buildd,mini-buildd-tool,import-08x,urlpatterns,register
 variable-rgx=[a-z_][a-z0-9_]{0,30}$
 method-rgx=[a-z_][a-z0-9_]{1,40}$
 function-rgx=[a-z_][a-z0-9_]{1,40}$

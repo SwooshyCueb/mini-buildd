@@ -16,3 +16,7 @@ override_dh_auto_clean:
 override_dh_fixperms:
 	dh_fixperms
 	chmod 440 debian/mini-buildd/etc/sudoers.d/mini-buildd-sudoers
+
+# Don't compress anything in examples, so scripts and packages can be used as-is.
+override_dh_compress:
+	dh_compress -X examples/

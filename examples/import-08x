@@ -1,0 +1,124 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+from __future__ import print_function
+
+import os
+import re
+import tempfile
+import subprocess
+import argparse
+
+import debian.deb822
+import debian.debian_support
+
+
+def call(cmd, show=True, dry_run=False):
+    if show:
+        print("Calling (dry_run={d}): {c}".format(c=cmd, d=dry_run))
+
+    if dry_run:
+        return 0, "Dry run, skipped: {c}".format(c=cmd)
+    else:
+        output = tempfile.TemporaryFile()
+        res = subprocess.call(cmd.split(), stdout=output, stderr=subprocess.STDOUT)
+        output.seek(0)
+        output_str = output.read().decode("UTF-8")
+        if show:
+            print("Result={r}:".format(r=res))
+            print(output_str)
+        return res, output_str
+
+
+def cmp_versions(pair0, pair1):
+    """
+    Compare Debian package versions (on first item of pair).
+    """
+    return debian.debian_support.version_compare(pair0[0], pair1[0])
+
+
+PARSER = argparse.ArgumentParser(prog="import-08x",
+                                 description="Import package from an old mini-buildd 08x distribution into a reprepro distribution in cwd.",
+                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+PARSER.add_argument("path", help="complete path to a 08x dist repo")
+PARSER.add_argument("distribution", help="reprepro distribution to import to")
+PARSER.add_argument("-n", "--dry-run", action='store_true',
+                    help="dry run, just show what commands would be run")
+
+# Parse args
+ARGS = PARSER.parse_args()
+
+# Check we are in a reprepro dist
+assert os.path.exists("conf/distributions"), "No reprepro repository detected in cwd."
+
+# Check 08x path
+OLD_DIST = os.path.basename(ARGS.path)
+OLD_SPLIT = OLD_DIST.split("-")
+assert len(OLD_SPLIT) >= 2 and len(OLD_SPLIT) <= 3, "Malformed 08x dist '{d}'".format(d=OLD_DIST)
+
+OLD_CODENAME, OLD_REPOID = OLD_SPLIT[0], OLD_SPLIT[1]
+
+CODENAME, REPOID, _SUITE = ARGS.distribution.split("-")
+assert OLD_CODENAME == CODENAME, "08x and 1.0 base dist (codename) are DIFFERENT: {old} vs {new}".format(old=OLD_CODENAME, new=CODENAME)
+
+print("""
+Parsing packages from '{p}'...
+""".format(p=ARGS.path))
+
+# { PACKAGE: {VERSION: {"dsc": dsc, 'debs': [deb, deb,...]}}
+PACKAGES = {}
+
+for dsc in debian.deb822.Sources.iter_paragraphs(open(os.path.join(ARGS.path, "Sources"))):
+    print("Scanning source", dsc["package"], dsc["version"])
+    v = PACKAGES.setdefault(dsc["package"], {})
+    v[dsc["version"]] = {"dsc": dsc, "debs": []}
+    for deb in debian.deb822.Packages.iter_paragraphs(open(os.path.join(ARGS.path, "Packages"))):
+        if deb.get("source", deb["package"]) == dsc["package"] and deb["version"] == dsc["version"]:
+            v[dsc["version"]]["debs"].append(deb)
+
+if OLD_REPOID != REPOID:
+    raw_input("""
+WARN: Old/new repo ids different: '{old}' vs '{new}'.
+WARN: If this is just a typo, STOP HERE.
+WARN: If you did not create a new repo with the same id, and/or want to force the packages in, force continue.
+WARN: Continue (Ctr-C to cancel)?""".format(old=OLD_REPOID, new=REPOID))
+
+print("""
+{p}: {l} source packages. Trying to import to '{d}' in reprepo/cwd
+""".format(p=OLD_DIST, l=len(PACKAGES), d=ARGS.distribution))
+raw_input("Start import (dry_run={d}) (Ctrl-C to cancel)?".format(d=ARGS.dry_run))
+print()
+
+for package, versions in PACKAGES.items():
+    # The only possible check is to check that repropro's ls ouput is empty
+    res, output = call("reprepro list {d} {p}".format(d=ARGS.distribution, p=package), show=False)
+    if output:
+        print("** Skipping {p}: Already in dist '{d}'".format(d=ARGS.distribution, p=package))
+    else:
+        print("** Importing {p}".format(p=package))
+        r = -1
+        for v, items in sorted(versions.items(), cmp=cmp_versions, reverse=True):
+            dist = ARGS.distribution
+            if r >= 0:
+                dist += "-rollback{r}".format(r=r)
+            r += 1
+            print("* Importing {p}-{v} to {d}".format(p=package, v=v, d=dist))
+
+            dsc_file = None
+            for s in items["dsc"]["files"]:
+                if re.compile(r"^.*\.dsc$").match(s["name"]):
+                    dsc_file = os.path.join(ARGS.path, os.path.basename(s["name"]))
+                    break
+
+            res, output = call("reprepro includedsc {d} {f}".format(d=dist, f=dsc_file), dry_run=ARGS.dry_run)
+            if res != 0:
+                print("WARN: includedsc failed; retrying with priority/section=extra/misc...")
+                call("reprepro --priority extra --section misc includedsc {d} {f}".format(d=dist, f=dsc_file), dry_run=ARGS.dry_run)
+
+            for deb in items["debs"]:
+                deb_file = os.path.join(ARGS.path, os.path.basename(deb["filename"]))
+                _dummy, ext = os.path.splitext(deb_file)
+                typ = ext[1:]
+                call("reprepro include{t} {d} {f}".format(t=typ, d=dist, f=deb_file), dry_run=ARGS.dry_run)
+    print()

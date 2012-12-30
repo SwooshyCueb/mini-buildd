@@ -452,7 +452,7 @@ Example:
         action_generate_keyring_packages.short_description = "Generate keyring packages"
 # pylint: enable=R0201
 
-        actions = mini_buildd.models.base.StatusModel.Admin.actions + [action_generate_keyring_packages]
+        actions = [action_generate_keyring_packages]
 
     def __unicode__(self):
         return "{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())

@@ -36,7 +36,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         exclude = ("extra_options",)
 
     def __unicode__(self):
-        return "{i}: {n} ({s})".format(i=self.key_long_id, n=self.key_name, s=self.mbd_get_status_display())
+        return "{i}: {n} ({s})".format(i=self.key_long_id if self.key_long_id else self.key_id, n=self.key_name, s=self.mbd_get_status_display())
 
     def mbd_prepare(self, _request):
         with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:

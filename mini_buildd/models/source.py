@@ -34,6 +34,44 @@ class Archive(mini_buildd.models.base.Model):
         search_fields = ["url"]
         exclude = ("extra_options",)
 
+        @classmethod
+        def _add_or_create(cls, request, url):
+            if url:
+                _obj, created = Archive.objects.get_or_create(url=url)
+                if created:
+                    mini_buildd.models.base.Model.mbd_msg_info(request, "Archive added: {a}".format(a=url))
+                else:
+                    mini_buildd.models.base.Model.mbd_msg_debug(request, "Archive already exists: {a}".format(a=url))
+
+        def action_add_from_sources_list(self, request, _queryset):
+            try:
+                import aptsources.sourceslist
+                for src in aptsources.sourceslist.SourcesList():
+                    self._add_or_create(request, src.uri.rstrip("/"))
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG,
+                                                "Failed to scan local sources.lists for default mirrors ('python-apt' not installed?)",
+                                                e,
+                                                level=logging.WARN)
+
+        action_add_from_sources_list.short_description = "Add from sources.list [call with dummy selection]"
+
+        def action_add_debian(self, request, _queryset):
+            """
+            Add internet Debian sources.
+            """
+            for url in ["http://ftp.debian.org/debian",                  # Debian releases
+                        "http://backports.debian.org/debian-backports",  # Debian backports
+                        "http://archive.debian.org/debian",              # Archived Debian releases
+                        "http://archive.debian.org/backports.org/",      # Archived (sarge, etch, lenny) backports
+                        ]:
+                self._add_or_create(request, url)
+            mini_buildd.models.base.Model.mbd_msg_info(request, "Consider adapting these archives to you closest mirror(s); check netselect-apt.")
+
+        action_add_debian.short_description = "Add Debian archive mirrors [call with dummy selection]"
+
+        actions = [action_add_from_sources_list, action_add_debian]
+
     def __unicode__(self):
         return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
@@ -44,20 +82,30 @@ class Archive(mini_buildd.models.base.Model):
         self.mbd_ping(None)
         super(Archive, self).save(*args, **kwargs)
 
-    def mbd_download_release(self, dist, gnupg):
-        url = "{u}/dists/{d}/Release".format(u=self.url, d=dist)
+    def mbd_download_release(self, source, gnupg):
+        url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
         with tempfile.NamedTemporaryFile() as release:
             LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
             release.write(urllib.urlopen(url).read())
             release.flush()
-            if gnupg:
-                with tempfile.NamedTemporaryFile() as signature:
-                    LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
-                    signature.write(urllib.urlopen(url + ".gpg").read())
-                    signature.flush()
-                    gnupg.verify(signature.name, release.name)
             release.seek(0)
-            return debian.deb822.Release(release)
+            result = debian.deb822.Release(release)
+
+            # Check origin and codename
+            origin = result["Origin"]
+            codename = result["Codename"]
+            if not (source.origin == origin and source.codename == codename):
+                raise Exception("Not for source '{so}:{sc}': Found '{o}:{c}'".format(so=source.origin, sc=source.codename, o=origin, c=codename))
+
+            # Check signature
+            with tempfile.NamedTemporaryFile() as signature:
+                LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
+                signature.write(urllib.urlopen(url + ".gpg").read())
+                signature.flush()
+                gnupg.verify(signature.name, release.name)
+
+            # Ok, this is for this source
+            return result
 
     def mbd_ping(self, request):
         """
@@ -114,9 +162,10 @@ class Source(mini_buildd.models.base.StatusModel):
     # Apt Secure
     apt_keys = django.db.models.ManyToManyField(mini_buildd.models.gnupg.AptKey, blank=True,
                                                 help_text="""\
-Keys this source is signed with. You must at least add the
-_first_ key the relase file is signed with. Not specifying any
-key will disable the key verification.
+Apt keys this source is signed with. Please add all keys the
+resp. Release file is signed with (Run s.th. like
+'gpg --verify Release.gpg Release'
+manually run on a Debian system to be sure.
 """)
 
     # Extra
@@ -134,11 +183,43 @@ key will disable the key verification.
         ordering = ["origin", "codename"]
 
     class Admin(mini_buildd.models.base.StatusModel.Admin):
+        list_display = mini_buildd.models.base.StatusModel.Admin.list_display + ["origin", "codename"]
         search_fields = ["origin", "codename"]
+        ordering = ["origin", "codename"]
+
         readonly_fields = ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
             ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
+
+        @classmethod
+        def _add_or_create(cls, request, origin, codename, keys):
+            obj, created = Source.objects.get_or_create(origin=origin, codename=codename)
+            if created:
+                mini_buildd.models.base.Model.mbd_msg_info(request, "Source added: {s}".format(s=obj))
+                for key_id in keys:
+                    apt_key, _created = mini_buildd.models.gnupg.AptKey.objects.get_or_create(key_id=key_id)
+                    obj.apt_keys.add(apt_key)
+                    mini_buildd.models.base.Model.mbd_msg_info(request, "Apt key added: {k}".format(s=obj, k=apt_key))
+                obj.save()
+            else:
+                mini_buildd.models.base.Model.mbd_msg_debug(request, "Source already exists: {s}".format(s=obj))
+
+        def action_add_debian(self, request, _queryset):
+            for origin, codename, keys in [("Debian", "etch", ["55BE302B", "ADB11277"]),
+                                           ("Debian", "lenny", ["473041FA", "F42584E6"]),
+                                           ("Debian", "squeeze", ["473041FA", "B98321F9"]),
+                                           ("Debian", "wheezy", ["473041FA"]),
+                                           ("Debian", "sid", ["473041FA"]),
+                                           ("Backports.org archive", "etch-backports", ["16BA136C"]),
+                                           ("Debian Backports", "lenny-backports", ["473041FA"]),
+                                           ("Debian Backports", "squeeze-backports", ["473041FA"]),
+                                           ]:
+                self._add_or_create(request, origin, codename, keys)
+
+        action_add_debian.short_description = "Add well-known Debian sources [call with dummy selection]"
+
+        actions = [action_add_debian]
 
     def __unicode__(self):
         return "{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
@@ -169,19 +250,17 @@ key will disable the key verification.
 
     def mbd_prepare(self, request):
         self.archives = []
+        if not self.apt_keys.all():
+            raise Exception("Please add apt keys to this source.")
+
         with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
             for k in self.apt_keys.all():
                 gpg.add_pub_key(k.key)
 
             for m in Archive.objects.all():
                 try:
-                    release = m.mbd_download_release(self.codename, gpg if self.apt_keys.all() else None)
-                    origin = release["Origin"]
-                    codename = release["Codename"]
-                    if not (self.origin == origin and self.codename == codename):
-                        raise Exception("Release says: origin={o}, codename={c}".format(o=origin, c=codename))
+                    release = m.mbd_download_release(self, gpg)
 
-                    self.mbd_msg_info(request, "{o}: Adding archive: {m}".format(o=self, m=m))
                     self.archives.add(m)
                     self.description = release["Description"]
 
@@ -194,7 +273,7 @@ key will disable the key verification.
                             version = release["Version"].split(".")
                             self.codeversion = version[0] + version[1]
                         except:
-                            self.codeversion = codename.upper()
+                            self.codeversion = release["Codename"].upper()
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
@@ -207,8 +286,10 @@ key will disable the key verification.
                         if created:
                             self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
                         self.components.add(new_component)
+                    self.mbd_msg_info(request, "{o}: Added archive: {m}".format(o=self, m=m))
+
                 except Exception as e:
-                    self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.DEBUG)
+                    self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
 
         self.mbd_check(request)
 

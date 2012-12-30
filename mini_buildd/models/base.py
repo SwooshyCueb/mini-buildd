@@ -374,7 +374,7 @@ this would mean losing all packages!
 # pylint: enable=R0201
 
         actions = [mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_prepare, mbd_action_unprepare]
-        list_display = ('colored_status', '__unicode__')
+        list_display = ["colored_status", "__unicode__"]
 
     def mbd_activate(self, request):
         "Per default, nothing is to be done on 'activate'."

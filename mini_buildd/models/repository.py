@@ -254,7 +254,7 @@ class Distribution(mini_buildd.models.base.Model):
         (RESOLVER_APT, "apt"),
         (RESOLVER_APTITUDE, "aptitude"),
         (RESOLVER_INTERNAL, "internal"))
-    build_dep_resolver = django.db.models.IntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APT)
+    build_dep_resolver = django.db.models.IntegerField(choices=RESOLVER_CHOICES, default=RESOLVER_APTITUDE)
 
     apt_allow_unauthenticated = django.db.models.BooleanField(default=False)
 

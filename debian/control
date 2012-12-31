@@ -42,6 +42,7 @@ Depends: ${misc:Depends},
          ${python:Depends},
          ${sphinxdoc:Depends},
          python-mini-buildd (= ${binary:Version}),
+         mini-buildd-common (= ${binary:Version}),
          python-daemon (>= 1.5.5),
          python-cherrypy3,
          python-pyftpdlib,
@@ -70,9 +71,8 @@ Description: Minimal Debian build daemon
 
 Package: mini-buildd-common
 Architecture: all
-Depends: ${misc:Depends},
-         mini-buildd (= ${binary:Version})
-Description: minimal Debian build daemon 0.8.x - common files (transitional dummy package)
- This is a transitional dummy package for upgrading to
- mini-buildd 1.0. It's now obsolete, and may be removed from the
- system.
+Depends: ${misc:Depends}
+Description: minimal Debian build daemon - 08x upgrade dummy package
+ This is a dummy package assuring mini-buildd-common is
+ upgraded (as a possible purge of the 0.8.x package
+ would badly break mini-buildd 1.0).

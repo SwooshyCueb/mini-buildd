@@ -114,15 +114,12 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
             Includes all 'sudo' prefix for chroot-setup-commands below.
 
             .. seealso:: :py:class:`~mini_buildd.models.chroot.Chroot`
-
-        .. note:: sbuild bug: long option '--jobs=N' does not work though advertised in man page (using '-jN')
         """
         self._breq.untar(path=self._build_dir)
         self._generate_sbuildrc()
         self.started = self._get_started_stamp()
 
         sbuild_cmd = ["sbuild",
-                      "-j{0}".format(self._sbuild_jobs),
                       "--dist={0}".format(self._breq["Distribution"]),
                       "--arch={0}".format(self._breq["Architecture"]),
                       "--chroot={c}".format(c=self._chroot),
@@ -158,7 +155,8 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
             retval = subprocess.call(sbuild_cmd,
                                      cwd=self._build_dir,
                                      env=mini_buildd.misc.taint_env({"HOME": self._build_dir,
-                                                                     "GNUPGHOME": os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg")}),
+                                                                     "GNUPGHOME": os.path.join(mini_buildd.setup.HOME_DIR, ".gnupg"),
+                                                                     "DEB_BUILD_OPTIONS": "parallel={j}".format(j=self._sbuild_jobs)}),
                                      stdout=l, stderr=subprocess.STDOUT)
 
         # Add build results to build request object

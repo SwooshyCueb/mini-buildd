@@ -268,12 +268,10 @@ manually run on a Debian system to be sure.
                     self.codeversion = ""
                     if self.codeversion_override:
                         self.codeversion = self.codeversion_override
+                        self.mbd_msg_warn(request, "{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
                     else:
-                        try:
-                            version = release["Version"].split(".")
-                            self.codeversion = version[0] + version[1]
-                        except:
-                            self.codeversion = release["Codename"].upper()
+                        self.codeversion = mini_buildd.misc.guess_codeversion(release)
+                        self.mbd_msg_info(request, "{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):

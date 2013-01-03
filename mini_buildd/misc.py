@@ -249,6 +249,38 @@ class Distribution(object):
             return int(re.sub(r"\D", "", self.rollback))
 
 
+def guess_codeversion(release):
+    """
+    Guess the 'codeversion' aka the first two digits of a Debian
+    release version; for releases without version, this falls
+    back to the uppercase codename.
+
+    Point release prior lenny had the 'M.PrN' syntax:
+
+    >>> guess_codeversion({"Version": "3.1r8", "Codename": "sarge"})
+    u'31'
+    >>> guess_codeversion({"Version": "4.0r9", "Codename": "etch"})
+    u'40'
+    >>> guess_codeversion({"Version": "6.0.6", "Codename": "squeeze"})
+    u'60'
+
+    Testing and unstable do not gave a version in Release and
+    fall back to uppercase codename:
+
+    >>> guess_codeversion({"Codename": "wheezy"})
+    u'WHEEZY'
+    >>> guess_codeversion({"Codename": "sid"})
+    u'SID'
+    """
+    try:
+        ver_split = release["Version"].split(".")
+        digit0 = ver_split[0]
+        digit1 = ver_split[1].partition("r")[0]
+        return digit0 + digit1
+    except:
+        return release["Codename"].upper()
+
+
 def subst_placeholders(template, placeholders):
     """Substitue placeholders in string from a dict.
 

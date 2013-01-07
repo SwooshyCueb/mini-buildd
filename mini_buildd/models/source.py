@@ -222,7 +222,16 @@ manually run on a Debian system to be sure.
         actions = [action_add_debian]
 
     def __unicode__(self):
-        return "{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
+        """
+        .. note:: Workaround for django 1.4.3 bug/new behaviour.
+
+            Since django 1.4.3, accessing 'self.archives.all()'
+            does not work anymore: "maximum recursion depth
+            exceeded" when trying to add a new source. Seems to
+            be a django bug (?). Just not using it for now.
+        """
+        #return "{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
+        return "{i}: {d} ({s})".format(i=self.mbd_id(), d=self.description, s=self.mbd_get_status_display())
 
     def mbd_id(self):
         return "{o} '{c}'".format(o=self.origin, c=self.codename)

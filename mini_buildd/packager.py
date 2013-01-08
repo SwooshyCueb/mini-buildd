@@ -164,7 +164,10 @@ class Package(mini_buildd.misc.Status):
             return "{a} ({s}): {b}\n".format(
                 a=arch,
                 s=bres.bres_stat,
-                b=self.daemon.model.mbd_get_http_url() + "/log/" + bres.get_archive_dir(self.get_status() == self.INSTALLED) + "/" + bres.buildlog_name)
+                b=os.path.join(self.daemon.model.mbd_get_http_url(),
+                               "log",
+                               bres.get_archive_dir(self.get_status() == self.INSTALLED),
+                               bres.buildlog_name))
 
         results = header(self.__unicode__(), "=")
         results += "\n"

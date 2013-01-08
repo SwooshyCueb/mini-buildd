@@ -354,10 +354,12 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         return [a.architecture.name for a in self.architectureoption_set.all() if not a.optional]
 
     def mbd_get_apt_line(self, repository, suite_option):
-        return "deb {u}/{r}/{i} {d} {c}".format(
+        return "deb {u}{r}/{i}/ {d} {c}".format(
             u=self.mbd_get_daemon().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
-            i=repository.identity, d=suite_option.mbd_get_distribution_string(repository, self), c=" ".join(self.mbd_get_components()))
+            i=repository.identity,
+            d=suite_option.mbd_get_distribution_string(repository, self),
+            c=" ".join(self.mbd_get_components()))
 
     def mbd_get_apt_sources_list(self, repository, suite_option):
         result = "# Base: {p}\n".format(p=self.base_source.mbd_get_apt_pin())

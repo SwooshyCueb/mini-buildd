@@ -228,7 +228,7 @@ activate/deactivate actions will start/stop the 'daemon'.
         return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(mini_buildd.setup.HTTPD_BIND).port))
 
     def mbd_get_http_url(self):
-        return "http://{h}".format(h=self.mbd_get_http_hopo().string)
+        return "http://{h}/".format(h=self.mbd_get_http_hopo().string)
 
     def mbd_get_archive_origin(self):
         return "Mini-Buildd archive {i} on {h}".format(i=self.identity, h=self.hostname)

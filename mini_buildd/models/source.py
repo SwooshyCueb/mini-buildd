@@ -23,8 +23,12 @@ LOG = logging.getLogger(__name__)
 
 class Archive(mini_buildd.models.base.Model):
     url = django.db.models.URLField(primary_key=True, max_length=512,
-                                    default="http://ftp.debian.org/debian",
-                                    help_text="The URL of an apt archive (there must be a 'dists/' infrastructure below.")
+                                    default="http://ftp.debian.org/debian/",
+                                    help_text="""
+The URL of an apt archive (there must be a 'dists/' infrastructure below).
+
+Use the 'directory' notation with exactly one trailing slash (like 'http://example.org/path/').
+""")
     ping = django.db.models.FloatField(default=-1.0, editable=False)
 
     class Meta(mini_buildd.models.base.Model.Meta):
@@ -47,7 +51,8 @@ class Archive(mini_buildd.models.base.Model):
             try:
                 import aptsources.sourceslist
                 for src in aptsources.sourceslist.SourcesList():
-                    self._add_or_create(request, src.uri.rstrip("/"))
+                    # These URLs come from the user. 'normalize' the uri first to have exactly one trailing slash.
+                    self._add_or_create(request, src.uri.rstrip("/") + "/")
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG,
                                                 "Failed to scan local sources.lists for default mirrors ('python-apt' not installed?)",
@@ -60,10 +65,10 @@ class Archive(mini_buildd.models.base.Model):
             """
             Add internet Debian sources.
             """
-            for url in ["http://ftp.debian.org/debian",                  # Debian releases
-                        "http://backports.debian.org/debian-backports",  # Debian backports
-                        "http://archive.debian.org/debian",              # Archived Debian releases
-                        "http://archive.debian.org/backports.org/",      # Archived (sarge, etch, lenny) backports
+            for url in ["http://ftp.debian.org/debian/",                  # Debian releases
+                        "http://backports.debian.org/debian-backports/",  # Debian backports
+                        "http://archive.debian.org/debian/",              # Archived Debian releases
+                        "http://archive.debian.org/backports.org/",       # Archived (sarge, etch, lenny) backports
                         ]:
                 self._add_or_create(request, url)
             mini_buildd.models.base.Model.mbd_msg_info(request, "Consider adapting these archives to you closest mirror(s); check netselect-apt.")
@@ -77,10 +82,15 @@ class Archive(mini_buildd.models.base.Model):
 
     def save(self, *args, **kwargs):
         """
-        Custom save(). Implicitely sets the ping value.
+        Implicitely set the ping value on save.
         """
         self.mbd_ping(None)
         super(Archive, self).save(*args, **kwargs)
+
+    def clean(self, *args, **kwargs):
+        if self.url[-1] != "/" or self.url[-2] == "/":
+            raise django.core.exceptions.ValidationError("The URL must have exactly one trailing slash (like 'http://example.org/path/').")
+        super(Archive, self).clean(*args, **kwargs)
 
     def mbd_download_release(self, source, gnupg):
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)

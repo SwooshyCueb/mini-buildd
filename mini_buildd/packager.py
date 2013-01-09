@@ -67,17 +67,14 @@ class Package(mini_buildd.misc.Status):
         if not self.repository.mbd_is_active():
             raise Exception("Repository '{r}' is not active".format(r=self.repository))
 
-        self.repository.mbd_check_version(self.changes["Version"], self.distribution, self.suite)
-
         # Authenticate
         if self.repository.allow_unauthenticated_uploads:
             LOG.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self.changes.file_name))
         else:
             uploader_keyrings[self.repository.identity].verify(self.changes.file_path)
 
-        # Check if this version is already in repository
-        if self.repository.mbd_package_find(self.changes["Source"], version=self.changes["Version"]):
-            raise Exception("Version '{v}' already installed".format(v=self.changes["Version"]))
+        # Repository package prechecks
+        self.repository.mbd_package_precheck(self.distribution, self.suite, self.changes["Source"], self.changes["Version"])
 
         # Generate build requests
         self.requests = self.changes.gen_buildrequests(self.daemon.model, self.repository, self.distribution, self.suite)

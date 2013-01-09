@@ -9,6 +9,8 @@ import re
 import socket
 import logging
 
+import debian.debian_support
+
 import django.db
 import django.core.exceptions
 import django.contrib.auth.models
@@ -459,11 +461,6 @@ Example:
     def __unicode__(self):
         return "{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
 
-    def mbd_check_version(self, version, distribution, suite_option):
-        mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, distribution, suite_option)
-        if not re.compile(mandatory_regex).search(version):
-            raise Exception("Mandatory version check failed for suite '{s}': '{m}' not in '{v}'".format(s=suite_option.suite.name, m=mandatory_regex, v=version))
-
     def mbd_generate_keyring_packages(self, request):
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
             for d in self.distributions.all():
@@ -764,6 +761,31 @@ DscIndices: Sources Release . .gz .bz2
                     mini_buildd.setup.log_exception(LOG, inf, e, logging.WARN)
                     res += "WARNING: {i}: {e}\n".format(i=inf, e=e)
             return res
+
+    def mbd_package_precheck(self, distribution, suite_option, package, version):
+        # 1st, check that the given version matches the distribution's version restrictions
+        mandatory_regex = self.layout.mbd_get_mandatory_version_regex(self, distribution, suite_option)
+        if not re.compile(mandatory_regex).search(version):
+            raise Exception("Version restrictions failed for suite '{s}': '{m}' not in '{v}'".format(s=suite_option.suite.name,
+                                                                                                     m=mandatory_regex,
+                                                                                                     v=version))
+
+        pkg_show = self._mbd_reprepro().show(package)
+        dist_str = suite_option.mbd_get_distribution_string(self, distribution)
+
+        # 2nd: Check whether the very same version is already in any distribution
+        pkg_version_in_repo = self._mbd_package_find(pkg_show, version=version)
+        if pkg_version_in_repo:
+            raise Exception("Package '{p}' with same version '{v}' already installed in '{d}'".format(p=package,
+                                                                                                      v=version,
+                                                                                                      d=pkg_version_in_repo["distribution"]))
+
+        # 3rd: Check that distribution's current version is smaller than the to-be installed version
+        pkg_in_dist = self._mbd_package_find(pkg_show, distribution=dist_str)
+        if pkg_in_dist and debian.debian_support.Version(version) < debian.debian_support.Version(pkg_in_dist["sourceversion"]):
+            raise Exception("Package '{p}' has greater version '{v}' installed in '{d}'".format(p=package,
+                                                                                                v=pkg_in_dist["sourceversion"],
+                                                                                                d=dist_str))
 
     def _mbd_package_install(self, bres):
         with contextlib.closing(mini_buildd.misc.TmpDir()) as t:

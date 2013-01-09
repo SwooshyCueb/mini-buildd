@@ -17,6 +17,20 @@ _head()
 	printf "\n=> ${*}\n"
 }
 
+_check_prog()
+{
+	local path
+	for path in $(printf "${PATH}" | tr ":" " "); do
+		local prog="${path}/${1}"
+		if [ -x "${prog}" ]; then
+			printf "I: Found: ${prog}.\n"
+			return 0
+		fi
+	done
+	printf "E: '${1}' not found in path; please install.\n" >&2
+	exit 1
+}
+
 PYPATH="$(readlink -f $(dirname $0))"
 DJSETTINGS="doc.django_settings"
 PYLINTRC="${PYPATH}/.pylintrc"
@@ -35,6 +49,7 @@ pyenv()
 
 mbd_pep8()
 {
+	_check_prog pep8
 	(
 		set +e
 		pyenv
@@ -76,6 +91,7 @@ mbd_pydoctests()
 
 mbd_pyflakes()
 {
+	_check_prog pyflakes
 	(
 		pyenv
 		pyflakes mini-buildd mini_buildd/
@@ -96,6 +112,7 @@ mbd_pylintgeneratedmembers()
 mbd_pylint()
 {
 	[ "$(lsb_release -s -c)" != "squeeze" ] || { printf "W: Skipping pylint on squeeze\n" >&2; return; }
+	_check_prog pylint
 	(
 		pyenv
 		pylint --rcfile="$(pwd)/.pylintrc" --reports=no setup.py mini-buildd mini-buildd-tool mini_buildd/
@@ -104,6 +121,7 @@ mbd_pylint()
 
 mbd_pychecker()
 {
+	_check_prog pychecker
 	(
 		pyenv
 		pychecker mini-buildd mini-buildd-tool $(find mini_buildd/ -name "*.py")
@@ -112,6 +130,7 @@ mbd_pychecker()
 
 mbd_pydjangolint()
 {
+	_check_prog django-lint
 	(
 		pyenv
 		! django-lint mini_buildd/ | grep --invert-match \
@@ -138,6 +157,7 @@ mbd_check()
 
 mbd_sfood()
 {
+	_check_prog sfood
 	(
 		pyenv
 		sfood --internal-only mini_buildd/ | sfood-graph | dot -Tpdf >dependency.pdf

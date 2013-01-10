@@ -192,6 +192,14 @@ a:hover
 	margin: 15px 15px 10px 15px;
 }
 
+#mbd_content div.api_confirm
+{
+	text-align: center;
+	color: red;
+	font-family: monospace;
+	margin: 15px 15px 10px 15px;
+}
+
 
 /* Page Header */
 
@@ -442,6 +450,11 @@ a:hover
 	font-style: italic;
 }
 
+#mbd_repository_portext div
+{
+	margin: 15px 15px 15px 15px;
+}
+
 #mbd_repository_misc ul
 {
 	list-style: none;
@@ -462,11 +475,6 @@ a:hover
 #mbd_package_propagation_results ul
 {
 	margin-left: 0px;
-}
-
-#mbd_api_confirm div
-{
-	align: center;
 }
 
 

@@ -58,79 +58,94 @@ $(document).ready(
 		<div id="mbd_index_repositories">
 			<div class="box">
 				<h1 class="box-caption">Packager: {{ daemon.tpl.packages|length }} packaging</h1>
-				<h2>Repositories:</h2>
-				<ul>
-					{% for r in repositories %}
-						<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
-					{% endfor %}
-				</ul>
+
+				<h2>Repositories: {{ repositories|length }}</h2>
+				{% if repositories %}
+					<ul>
+						{% for r in repositories %}
+							<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 
 				<hr />
-				<h2>Active:</h2>
-				<ul>
-					{% for k, p in daemon.tpl.packages.items %}
-						<li>{{ p }}</li>
-					{% endfor %}
-				</ul>
+				<h2>Active: {{ daemon.tpl.packages.items|length }}</h2>
+				{% if daemon.tpl.packages.items %}
+					<ul>
+						{% for k, p in daemon.tpl.packages.items %}
+							<li>{{ p }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 
 				<hr />
 				<h2>Last packages: <span id="mbd_lp_count">0</span> (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
-				<ul id="mbd_last_packages">
-					{% for p in daemon.tpl.last_packages %}
-						<li>
-							<a href="/mini_buildd/api?command=show&package={{ p.package|urlencode }}">{{ p.package }}</a>:
-							{{ p }}
-							<br />
-							Build results:
-							{% for arch, bres in p.success.items %}
-								<a href="../log/{{ bres.log }}">+{{ arch }}</a> ({{ bres.stat }})
-							{% endfor %}
-							{% for arch, bres in p.failed.items %}
-								<a href="../log/{{ bres.log }}">-{{ arch }}</a> ({{ bres.stat }})
-							{% endfor %}
-						</li>
-					{% endfor %}
-				</ul>
+				{% if daemon.tpl.last_packages %}
+					<ul id="mbd_last_packages">
+						{% for p in daemon.tpl.last_packages %}
+							<li>
+								<a href="/mini_buildd/api?command=show&amp;package={{ p.package|urlencode }}">{{ p.package }}</a>:
+								{{ p }}
+								<br />
+								Build results:
+								{% for arch, bres in p.success.items %}
+									<a href="../log/{{ bres.log }}">+{{ arch }}</a> ({{ bres.stat }})
+								{% endfor %}
+								{% for arch, bres in p.failed.items %}
+									<a href="../log/{{ bres.log }}">-{{ arch }}</a> ({{ bres.stat }})
+								{% endfor %}
+							</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 			</div>
 		</div>
 
 		<div id="mbd_index_chroots">
 			<div class="box">
 				<h1 class="box-caption">Builder: {{ daemon.tpl.build_queue }}</h1>
-				<h2>Chroots:</h2>
-				<ul>
-					{% for c in chroots %}
-						<li>{{ c }}</li>
-					{% endfor %}
-				</ul>
+				<h2>Chroots: {{ chroots|length }}</h2>
+				{% if chroots %}
+					<ul>
+						{% for c in chroots %}
+							<li>{{ c }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 
 				<hr />
-				<h2>Active:</h2>
-				<ul>
-					{% for k, b in daemon.tpl.builds.items %}
-						<li>{{ b }}</li>
-					{% endfor %}
-				</ul>
+				<h2>Active: {{ daemon.tpl.builds.items|length }}</h2>
+				{% if daemon.tpl.builds.items %}
+					<ul>
+						{% for k, b in daemon.tpl.builds.items %}
+							<li>{{ b }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 
 				<hr />
 				<h2>Last builds: <span id="mbd_lb_count">0</span>  (<span id="mbd_lb_click_me"><a id="mbd_lb_anchor" href="#">show</a></span>)</h2>
-				<ul id="mbd_last_builds">
-					{% for b in daemon.tpl.last_builds %}
-						<li>{{ b }}</li>
-					{% endfor %}
-				</ul>
+				{% if daemon.tpl.last_builds %}
+					<ul id="mbd_last_builds">
+						{% for b in daemon.tpl.last_builds %}
+							<li>{{ b }}</li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 			</div>
 		</div>
 
 		<div id="mbd_index_remotes">
 			<div class="box">
 				<h1 class="box-caption">Network: {{ daemon.tpl.remotes|length }} remotes</h1>
-				<h2>Remotes:</h2>
-				<ul>
-					{% for r in remotes %}
-						<li><a href="http://{{ r.http }}">{{ r }}</a></li>
-					{% endfor %}
-				</ul>
+				<h2>Remotes: {{ remotes|length }}</h2>
+				{% if remotes %}
+					<ul>
+						{% for r in remotes %}
+							<li><a href="http://{{ r.http }}">{{ r }}</a></li>
+						{% endfor %}
+					</ul>
+				{% endif %}
 			</div>
 		</div>
 	</div>

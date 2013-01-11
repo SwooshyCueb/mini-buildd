@@ -1,3 +1,23 @@
+mini-buildd (1.0.0~beta.2) experimental; urgency=low
+
+  Second beta release. For the most part miscellaneous cumulated bug
+  fixes.
+  * [2290bbe] examples/import-08x: Add 08x importer script.
+  * [c9dd542] api+webapp: Some code cleanup.
+  * [769bad8] reprepro: Allow udeb packages to be installed.
+  * [4f4e447] archives+sources: Add convenience actions to add local and well-known Debian archives, well-known Debian sources.
+  * [1e28b62] debian/control: Ensure 0.8.x *-common package is really gone when mini-buildd 1.0 is installed.
+  * [2854685] distribution: Change default resolver to "aptitude" (was: "apt").
+  * [355893e] builder: Use env. DEB_BUILD_OPTIONS='parallel=N' instead of 'd-p -jN' (Fixes: Builds for <= etch).
+  * [9ac9f56] source: Improve codeversion guesser (Fixes: Wrong guesses for '4.0r8' (<=etch) revisioned point releases).
+  * [fa09283] source: Workaround for strange django 1.4.3 behaviour (Fixes: Adding new sources with django >=1.4.3).
+  * [4aa25b4] Enforce 'directory' notation (exactly one trailing slash) for archive URLs (Fixes: Possible duplicates).
+  * [9bcd871] devel: Better check for needed extra check progs (Fixes: 'check' not failing if appr. progs not installed).
+  * [ee0fa83] packager: Add extra pre-check to assure version > current in the dist to build for.
+  * [b0ce846] html: Another round of w3c conformity fixes.
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 11 Jan 2013 10:26:16 +0000
+
 mini-buildd (1.0.0~beta.1) experimental; urgency=low
 
   Initial beta release. Many fixes, but also two important new features:

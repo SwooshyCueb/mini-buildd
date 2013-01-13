@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import os
 import shutil
+import datetime
 import email.mime.text
 import email.utils
 import logging
@@ -29,6 +30,9 @@ class Package(mini_buildd.misc.Status):
                    self.INSTALLING: "INSTALLING",
                    self.INSTALLED: "INSTALLED"})
 
+        self.started = datetime.datetime.now()
+        self.finished = None
+
         self.daemon = daemon
         self.changes = changes
         self.pid = changes.get_pkg_id()
@@ -53,6 +57,10 @@ class Package(mini_buildd.misc.Status):
             d=self.changes["Distribution"],
             a=" ".join(arch_status()),
             desc=self.status_desc)
+
+    @property
+    def took(self):
+        return round(mini_buildd.misc.timedelta_total_seconds(self.finished - self.started), 1) if self.finished else "n/a"
 
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes
@@ -116,7 +124,8 @@ class Package(mini_buildd.misc.Status):
             self.failed[arch] = bres
 
         missing = len(self.requests) - len(self.success) - len(self.failed)
-        return missing <= 0
+        if missing <= 0:
+            self.finished = datetime.datetime.now()
 
     def install(self):
         """
@@ -194,25 +203,42 @@ class Package(mini_buildd.misc.Status):
 
 
 class LastPackage(mini_buildd.misc.API):
-    __API__ = -100
+    """
+    Subset of 'Package' for pickled statistics.
+    """
+    __API__ = -99
 
     def __init__(self, package):
         super(LastPackage, self).__init__()
 
-        self.package = package.changes["Source"]
         self.identity = package.__unicode__()
 
+        self.started = package.started
+        self.took = package.took
+        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_archive_dir(package.get_status() == package.INSTALLED)))
+
+        self.changes = {}
+        for k in ["source", "distribution", "version"]:
+            self.changes[k] = package.changes[k]
+
+        self.status = package.status
+        self.status_desc = package.status_desc
+
+        self.requests = {}
+        for a, r in package.requests.items():
+            self.requests[a] = {"remote_http_url": r.remote_http_url}
+
+        def cp_bres(src, dst):
+            for a, r in src.items():
+                dst[a] = {"remote_http_url": r.remote_http_url,
+                          "bres_stat": r.bres_stat,
+                          "log": os.path.join("/log", r.get_archive_dir(package.get_status() == package.INSTALLED), r.buildlog_name)}
+
         self.success = {}
-        for arch, bres in package.success.items():
-            self.success[arch] = {
-                "log": os.path.join(bres.get_archive_dir(package.get_status() == package.INSTALLED), bres.buildlog_name),
-                "stat": bres.bres_stat}
+        cp_bres(package.success, self.success)
 
         self.failed = {}
-        for arch, bres in package.failed.items():
-            self.failed[arch] = {
-                "log": os.path.join(bres.get_archive_dir(package.get_status() == package.INSTALLED), bres.buildlog_name),
-                "stat": bres.bres_stat}
+        cp_bres(package.failed, self.failed)
 
     def __unicode__(self):
         return self.identity
@@ -226,7 +252,8 @@ def run(daemon, changes, remotes_keyring, uploader_keyrings):
         package = daemon.packages[changes.get_pkg_id()]
 
         try:
-            if package.add_buildresult(changes, remotes_keyring):
+            package.add_buildresult(changes, remotes_keyring)
+            if package.finished:
                 package.install()
                 package.set_status(package.INSTALLED)
                 package.archive()

@@ -54,6 +54,9 @@ class Changes(debian.deb822.Changes):
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
+        # This is just for stat/display purposes
+        self.remote_http_url = None
+
     def __unicode__(self):
         if self.type == self.TYPE_BREQ:
             return "Buildrequest from '{h}': {i}".format(h=self.get("Upload-Result-To"), i=self.get_pkg_id(with_arch=True))
@@ -196,7 +199,7 @@ class Changes(debian.deb822.Changes):
                 remote.mbd_check(_request=None)
                 status = remote.mbd_get_status()
                 if status.running and status.has_chroot(codename, arch):
-                    remotes[status.load] = status.ftp
+                    remotes[status.load] = status
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Builder check failed", e, logging.WARNING)
 
@@ -210,13 +213,13 @@ class Changes(debian.deb822.Changes):
         if not remotes:
             raise Exception("No builder found for {c}/{a}".format(c=codename, a=arch))
 
-        for load, ftp in sorted(remotes.items()):
+        for _load, remote in sorted(remotes.items()):
             try:
-                hopo = mini_buildd.misc.HoPo(ftp)
-                self.upload(hopo)
-                return load, hopo
+                self.upload(mini_buildd.misc.HoPo(remote.ftp))
+                self.remote_http_url = "http://{r}".format(r=remote.http)
+                return
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Uploading to '{h}' failed".format(h=ftp), e, logging.WARNING)
+                mini_buildd.setup.log_exception(LOG, "Uploading to '{h}' failed".format(h=remote.ftp), e, logging.WARNING)
 
         raise Exception("Buildrequest upload failed for {a}/{c}".format(a=arch, c=codename))
 

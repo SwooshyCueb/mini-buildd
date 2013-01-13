@@ -1,9 +1,13 @@
 {% extends "mini_buildd/page.html" %}
 
 {% block title %}mini-buildd{% endblock %}
-{% block page_title %}{{ daemon.tpl.model.identity }}{% endblock %}
-{% block page_sub_title %}<span class="status {{ daemon.tpl.style }}">{{ daemon.tpl.running_text }}: {{ daemon.tpl.model }}</span>{% endblock %}
-{% block mbd_page_footer %} GnuPG long key and fingerprint: <tt>{{ daemon.tpl.model.mbd_gnupg_long_id }}: {{ daemon.tpl.model.mbd_gnupg_fingerprint }}</tt>{% endblock %}
+{% block page_title %}{{ daemon.model.identity }}{% endblock %}
+{% block page_sub_title %}
+	<span class="status {% if daemon.is_running %}running{% else %}stopped{% endif %}">
+		{% if daemon.is_running %}Running{% else %}Stopped{% endif %}: {{ daemon.model }}
+	</span>
+{% endblock %}
+{% block mbd_page_footer %} GnuPG long key and fingerprint: <tt>{{ daemon.model.mbd_gnupg_long_id }}: {{ daemon.model.mbd_gnupg_fingerprint }}</tt>{% endblock %}
 
 {% block localscript %}
 function toggleLastBuilds()
@@ -17,7 +21,6 @@ function toggleLastBuilds()
 	);
 }
 
-
 function toggleLastPackages()
 {
 	$('#mbd_lp_click_me').click(
@@ -29,123 +32,77 @@ function toggleLastPackages()
 	);
 }
 
-
-function updateLastBuildsCount()
-{
-	$('#mbd_lb_count').html($('#mbd_last_builds li').size());
-}
-
-
-function updateLastPackagesCount()
-{
-	$('#mbd_lp_count').html($('#mbd_last_packages li').size());
-}
-
-
 $(document).ready(
 	function()
 	{
 		toggleLastBuilds();
 		toggleLastPackages();
-		updateLastBuildsCount();
-		updateLastPackagesCount();
 	}
 );
 {% endblock %}
+
 
 {% block content %}
 	<div id="mbd_index_status">
 		<div id="mbd_index_repositories">
 			<div class="box">
-				<h1 class="box-caption">Packager: {{ daemon.tpl.packages|length }} packaging</h1>
-
-				<h2>Repositories: {{ repositories|length }}</h2>
-				{% if repositories %}
-					<ul>
-						{% for r in repositories %}
-							<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
-						{% endfor %}
-					</ul>
+				<h1 class="box-caption">Packager: {{ daemon.packages|length }} packaging</h1>
+				{% if daemon.packages.items %}
+					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.packages.values id="mbd_active_packages" %}
 				{% endif %}
 
-				<hr />
-				<h2>Active: {{ daemon.tpl.packages.items|length }}</h2>
-				{% if daemon.tpl.packages.items %}
-					<ul>
-						{% for k, p in daemon.tpl.packages.items %}
-							<li>{{ p }}</li>
-						{% endfor %}
-					</ul>
+				<h2>Last packages: {{ daemon.last_packages|length }} (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
+
+				{% if daemon.last_packages %}
+					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages id="mbd_last_packages" %}
 				{% endif %}
 
-				<hr />
-				<h2>Last packages: <span id="mbd_lp_count">0</span> (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
-				{% if daemon.tpl.last_packages %}
-					<ul id="mbd_last_packages">
-						{% for p in daemon.tpl.last_packages %}
-							<li>
-								<a href="/mini_buildd/api?command=show&amp;package={{ p.package|urlencode }}">{{ p.package }}</a>:
-								{{ p }}
-								<br />
-								Build results:
-								{% for arch, bres in p.success.items %}
-									<a href="../log/{{ bres.log }}">+{{ arch }}</a> ({{ bres.stat }})
-								{% endfor %}
-								{% for arch, bres in p.failed.items %}
-									<a href="../log/{{ bres.log }}">-{{ arch }}</a> ({{ bres.stat }})
-								{% endfor %}
-							</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
+				<h2>Repositories:</h2>
+				<ul>
+					{% for r in repositories %}
+						<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+					{% empty %}
+						<li>No repositories.</li>
+					{% endfor %}
+				</ul>
 			</div>
 		</div>
 
 		<div id="mbd_index_chroots">
 			<div class="box">
-				<h1 class="box-caption">Builder: {{ daemon.tpl.build_queue }}</h1>
-				<h2>Chroots: {{ chroots|length }}</h2>
-				{% if chroots %}
-					<ul>
-						{% for c in chroots %}
-							<li>{{ c }}</li>
-						{% endfor %}
-					</ul>
+				<h1 class="box-caption">Builder: {{ daemon.build_queue }} building</h1>
+				{% if daemon.builds.items %}
+					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.builds.values id="mbd_active_builds" %}
 				{% endif %}
 
-				<hr />
-				<h2>Active: {{ daemon.tpl.builds.items|length }}</h2>
-				{% if daemon.tpl.builds.items %}
-					<ul>
-						{% for k, b in daemon.tpl.builds.items %}
-							<li>{{ b }}</li>
-						{% endfor %}
-					</ul>
+				<h2>Last builds: {{ daemon.last_builds|length }} (<span id="mbd_lb_click_me"><a id="mbd_lb_anchor" href="#">show</a></span>)</h2>
+
+				{% if daemon.last_builds %}
+					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.last_builds id="mbd_last_builds" %}
 				{% endif %}
 
-				<hr />
-				<h2>Last builds: <span id="mbd_lb_count">0</span>  (<span id="mbd_lb_click_me"><a id="mbd_lb_anchor" href="#">show</a></span>)</h2>
-				{% if daemon.tpl.last_builds %}
-					<ul id="mbd_last_builds">
-						{% for b in daemon.tpl.last_builds %}
-							<li>{{ b }}</li>
-						{% endfor %}
-					</ul>
-				{% endif %}
+				<h2>Chroots:</h2>
+				<ul>
+					{% for c in chroots %}
+						<li>{{ c }}</li>
+					{% empty %}
+						<li>No chroots.</li>
+					{% endfor %}
+				</ul>
 			</div>
 		</div>
 
 		<div id="mbd_index_remotes">
 			<div class="box">
-				<h1 class="box-caption">Network: {{ daemon.tpl.remotes|length }} remotes</h1>
-				<h2>Remotes: {{ remotes|length }}</h2>
-				{% if remotes %}
-					<ul>
-						{% for r in remotes %}
-							<li><a href="http://{{ r.http }}">{{ r }}</a></li>
-						{% endfor %}
-					</ul>
-				{% endif %}
+				<h1 class="box-caption">Network: {{ daemon.remotes|length }} remotes</h1>
+				<h2>Remotes:</h2>
+				<ul>
+					{% for r in remotes %}
+						<li><a href="http://{{ r.http }}">{{ r }}</a></li>
+					{% empty %}
+						<li>No remotes.</li>
+					{% endfor %}
+				</ul>
 			</div>
 		</div>
 	</div>

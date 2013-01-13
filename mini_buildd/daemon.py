@@ -487,18 +487,6 @@ class Daemon():
                               self.model.mbd_fullname,
                               self.model.email_address)
 
-    @property
-    def tpl(self):
-        return {
-            "model": self.model,
-            "style": "running" if self.is_running() else "stopped",
-            "running_text": "Running" if self.is_running() else "Stopped",
-            "packages": self.packages,
-            "last_packages": self.last_packages,
-            "build_queue": self.build_queue,
-            "builds": self.builds,
-            "last_builds": self.last_builds}
-
 _INSTANCE = None
 
 

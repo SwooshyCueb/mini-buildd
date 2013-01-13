@@ -1,0 +1,40 @@
+{% load base %}
+
+<table id="{{ id }}">
+	<tr>
+		<th>Started</th>
+		<th>Package</th>
+		<th>Distribution</th>
+		<th>Version</th>
+		<th>Architectures</th>
+		<th title="in seconds">Took</th>
+		<th>Status</th>
+	</tr>
+	{% for p in packages %}
+		<tr>
+			<td>{{ p.started|date:"r" }}</td>
+			<td><a href="/mini_buildd/api?command=show&amp;package={{ p.changes.source|urlencode }}" title="Show package">{{ p.changes.source }}</a></td>
+			<td>{{ p.changes.distribution }}</td>
+			<td>
+				{% if p.log %}
+					<a href="{{ p.log }}" title="Go to log page">{{ p.changes.version }}</a>
+				{% else %}
+					{{ p.changes.version }}
+				{%endif %}
+			</td>
+			<td>
+				{% for arch, breq in p.requests.items %}
+					{% with success=p.success|mbd_dict_get:arch failed=p.failed|mbd_dict_get:arch %}
+						<a class="status {% if success %}SUCCESS{% elif failed %}FAILED{% else %}BUILDING{% endif %}"
+							 href="{% firstof success.log failed.log breq.remote_http_url "no_remote_found"%}"
+							 title="{{ breq.remote_http_url }}: {% firstof success.bres_stat failed.bres_stat "Go to remote" %}">
+							{{ arch }}
+						</a>
+					{% endwith %}
+				{% endfor %}
+			</td>
+			<td>{{ p.took }}</td>
+			<td class="status {{ p.status }}" title="{{ p.status_desc }}">{{ p.status }}</td>
+		</tr>
+	{% endfor %}
+</table>

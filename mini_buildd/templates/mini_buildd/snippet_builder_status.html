@@ -1,0 +1,24 @@
+<table id="{{ id }}">
+	<tr>
+		<th>Started</th>
+		<th>Package</th>
+		<th>Distribution</th>
+		<th>Version</th>
+		<th>Architecture</th>
+		<th title="in seconds">Took</th>
+		<th>Upload to</th>
+		<th>Status</th>
+	</tr>
+	{% for b in builds %}
+		<tr>
+			<td>{{ b.started|date:"r" }}</td>
+			<td>{{ b.package }}</td>
+			<td>{{ b.distribution }}</td>
+			<td>{{ b.version }}</td>
+			<td>{{ b.architecture }}</td>
+			<td>{{ b.took }}</td>
+			<td title="Uploaded on: {{ b.uploaded|date:"r" }}">{{ b.upload_result_to }}</td>
+			<td class="status {{ b.status }}" title="{{ b.status_desc }}">{{ b.status }}</td>
+		</tr>
+	{% endfor %}
+</table>

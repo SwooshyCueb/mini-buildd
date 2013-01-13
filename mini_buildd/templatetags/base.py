@@ -8,6 +8,11 @@ import mini_buildd
 register = django.template.Library()
 
 
+@register.filter
+def mbd_dict_get(dict_, key):
+    return dict_.get(key)
+
+
 @register.simple_tag
 def mbd_version():
     return mini_buildd.__version__

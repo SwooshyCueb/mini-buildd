@@ -108,6 +108,34 @@ a:hover
 	margin: 15px 15px 15px 15px;
 }
 
+/* BUILDER+PACKAGER+BRES STATUS DISPLAYS */
+
+#mbd_content .status.BUILDING
+{
+	color: blue;
+	text-decoration: blink;
+}
+
+#mbd_content .status.INSTALLED, .status.UPLOADED, .status.SUCCESS
+{
+	color: green;
+}
+
+#mbd_content .status.REJECTED
+{
+	color: purple;
+}
+
+#mbd_content .status.FAILED
+{
+	color: red;
+}
+
+#mbd_content .status.UPLOADING
+{
+	color: yellow;
+}
+
 #mbd_content .box
 {
 	border: 1px solid #aec1c3;

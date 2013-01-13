@@ -35,7 +35,7 @@ class Build(mini_buildd.misc.Status):
         self._sbuild_jobs = sbuild_jobs
 
         self._build_dir = self._breq.get_spool_dir()
-        self._chroot = "mini-buildd-{d}-{a}".format(d=self._breq["Base-Distribution"], a=self._breq["Architecture"])
+        self._chroot = "mini-buildd-{d}-{a}".format(d=self._breq["Base-Distribution"], a=self.architecture)
 
         self._bres = breq.gen_buildresult()
 
@@ -53,17 +53,37 @@ class Build(mini_buildd.misc.Status):
         date_format = "%Y-%b-%d %H:%M:%S"
         return "{s}: [{h}] {k} ({c}): Started {start} ({took} seconds), uploaded {uploaded}: {desc}".format(
             s=self.status,
-            h=self._breq["Upload-Result-To"],
+            h=self.upload_result_to,
             k=self.key,
             c=self._chroot,
             start=self.started.strftime(date_format) if self.started else "n/a",
-            took=round(mini_buildd.misc.timedelta_total_seconds(self.built - self.started), 1) if self.built else "n/a",
+            took=self.took,
             uploaded=self.uploaded.strftime(date_format) if self.uploaded else "n/a",
             desc=self.status_desc)
 
     @property
     def key(self):
         return self._breq.get_pkg_id(with_arch=True)
+
+    @property
+    def package(self):
+        return self._breq["Source"]
+
+    @property
+    def version(self):
+        return self._breq["Version"]
+
+    @property
+    def architecture(self):
+        return self._breq["Architecture"]
+
+    @property
+    def distribution(self):
+        return self._breq["Distribution"]
+
+    @property
+    def upload_result_to(self):
+        return self._breq["Upload-Result-To"]
 
     @property
     def sbuildrc_path(self):
@@ -76,6 +96,10 @@ class Build(mini_buildd.misc.Status):
     def _get_built_stamp(self):
         if os.path.exists(self._bres.file_path):
             return datetime.datetime.fromtimestamp(os.path.getmtime(self._bres.file_path))
+
+    @property
+    def took(self):
+        return round(mini_buildd.misc.timedelta_total_seconds(self.built - self.started), 1) if self.built else "n/a"
 
     def _generate_sbuildrc(self):
         """
@@ -120,8 +144,8 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         self.started = self._get_started_stamp()
 
         sbuild_cmd = ["sbuild",
-                      "--dist={0}".format(self._breq["Distribution"]),
-                      "--arch={0}".format(self._breq["Architecture"]),
+                      "--dist={0}".format(self.distribution),
+                      "--arch={0}".format(self.architecture),
                       "--chroot={c}".format(c=self._chroot),
                       "--chroot-setup-command=sudo cp {p}/apt_sources.list /etc/apt/sources.list".format(p=self._build_dir),
                       "--chroot-setup-command=cat /etc/apt/sources.list",
@@ -166,9 +190,9 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         LOG.info("{p}: Sbuild finished: Sbuildretval={r}, Status={s}".format(p=self.key, r=retval, s=self._bres.get("Sbuild-Status")))
         self._bres.add_file(buildlog)
         build_changes_file = os.path.join(self._build_dir,
-                                          mini_buildd.changes.Changes.gen_changes_file_name(self._breq["Source"],
-                                                                                            self._breq["Version"],
-                                                                                            self._breq["Architecture"]))
+                                          mini_buildd.changes.Changes.gen_changes_file_name(self.package,
+                                                                                            self.version,
+                                                                                            self.architecture))
         if os.path.exists(build_changes_file):
             build_changes = mini_buildd.changes.Changes(build_changes_file)
             build_changes.tar(tar_path=self._bres.file_path + ".tar")
@@ -178,7 +202,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         self.built = self._get_built_stamp()
 
     def upload(self):
-        hopo = mini_buildd.misc.HoPo(self._breq["Upload-Result-To"])
+        hopo = mini_buildd.misc.HoPo(self.upload_result_to)
         self._bres.upload(hopo)
         self.uploaded = datetime.datetime.now()
 
@@ -191,11 +215,25 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
 
 class LastBuild(mini_buildd.misc.API):
-    __API__ = -100
+    """
+    Subset of 'Build' for pickled statistics.
+    """
+    __API__ = -99
 
     def __init__(self, build):
         super(LastBuild, self).__init__()
         self.identity = build.__unicode__()
+        self.status = build.status
+        self.status_desc = build.status_desc
+
+        self.started = build.started
+        self.took = build.took
+        self.package = build.package
+        self.version = build.version
+        self.distribution = build.distribution
+        self.architecture = build.architecture
+        self.uploaded = build.uploaded
+        self.upload_result_to = build.upload_result_to
 
     def __unicode__(self):
         return self.identity

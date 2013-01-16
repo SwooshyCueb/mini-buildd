@@ -58,6 +58,8 @@ class Status(Command):
         self.chroots = {}
         self.repositories = {}
         self.remotes = {}
+        self.packaging = []
+        self.building = []
 
     def run(self, daemon):
         # version string
@@ -87,23 +89,35 @@ class Status(Command):
         # remotes: ["host1.xyz.org:8066", "host2.xyz.org:8066"]
         self.remotes = [r.http for r in daemon.get_active_remotes()]
 
+        # packaging/building: string/unicode
+        self.packaging = ["{0}".format(p) for p in daemon.packages.values()]
+        self.building = ["{0}".format(b) for b in daemon.builds.values()]
+
     def __unicode__(self):
         return """\
-Mini-buildd : {hs}: http://{h} ({v})
-Daemon      : {ds}: ftp://{f} (load {l})
+Mini-buildd: {hs}: http://{h} ({v})
+Daemon     : {ds}: ftp://{f} (load {l})
 
 Repositories: {r}
 Chroots     : {c}
 Remotes     : {rm}
-""".format(h=self.http,
-           v=self.version,
-           hs="UP" if self.running else "UP  ",
-           ds="UP" if self.running else "DOWN",
-           f=self.ftp,
-           l=self.load,
-           r=", ".join(["{i}: {c}".format(i=identity, c=" ".join(codenames)) for identity, codenames in self.repositories.items()]),
-           c=", ".join(["{a}: {c}".format(a=arch, c=" ".join(codenames)) for arch, codenames in self.chroots.items()]),
-           rm=", ".join(self.remotes))
+
+Packager: {p_len} packaging
+{p}
+Builder: {b_len} building
+{b}""".format(h=self.http,
+              v=self.version,
+              hs="UP" if self.running else "UP  ",
+              ds="UP" if self.running else "DOWN",
+              f=self.ftp,
+              l=self.load,
+              r=", ".join(["{i}: {c}".format(i=identity, c=" ".join(codenames)) for identity, codenames in self.repositories.items()]),
+              c=", ".join(["{a}: {c}".format(a=arch, c=" ".join(codenames)) for arch, codenames in self.chroots.items()]),
+              rm=", ".join(self.remotes),
+              p_len=len(self.packaging),
+              p="\n".join(self.packaging) + "\n" if self.packaging else "",
+              b_len=len(self.building),
+              b="\n".join(self.building) + "\n" if self.building else "")
 
     def has_chroot(self, codename, arch):
         return codename in self.chroots and arch in self.chroots[codename]

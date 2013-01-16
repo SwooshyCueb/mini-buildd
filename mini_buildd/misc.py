@@ -361,11 +361,28 @@ def mkdirs(path):
             LOG.debug("Directory already exists, ignoring; {d}".format(d=path))
 
 
+def log_call_output(log, prefix, output):
+    output.seek(0)
+    for line in output:
+        log("{p}: {l}".format(p=prefix, l=line.decode("UTF-8").rstrip('\n')))
+
+
 def sose_call(args):
+    """
+    >>> sose_call(["echo", "-n", "hallo"])
+    u'hallo'
+    >>> sose_call(["ls", "__no_such_file__"])
+    Traceback (most recent call last):
+    ...
+    Exception: SoSe call failed (ret=2): ls __no_such_file__
+    """
     result = tempfile.TemporaryFile()
-    subprocess.check_call(args,
+    ret = subprocess.call(args,
                           stdout=result,
                           stderr=subprocess.STDOUT)
+    if ret != 0:
+        log_call_output(LOG.error, "SoSe call failed", result)
+        raise Exception("SoSe call failed (ret={r}): {s}".format(r=ret, s=" ".join(args)))
     result.seek(0)
     return result.read().decode("UTF-8")
 
@@ -397,12 +414,8 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
         finally:
             try:
                 if log_output:
-                    stdout.seek(0)
-                    for line in stdout:
-                        olog("Call stdout: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
-                    stderr.seek(0)
-                    for line in stderr:
-                        olog("Call stderr: {l}".format(l=line.decode("UTF-8").rstrip('\n')))
+                    log_call_output(olog, "Call stdout", stdout)
+                    log_call_output(olog, "Call stderr", stderr)
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Output logging failed (char enc?)", e)
     except:

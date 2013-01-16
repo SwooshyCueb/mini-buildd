@@ -93,8 +93,7 @@ class Package(mini_buildd.misc.Status):
                 breq.upload_buildrequest(self.daemon.model.mbd_get_http_hopo())
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG,
-                                                "{i}: Buildrequest upload to {h} failed".format(i=breq.get_pkg_id(),
-                                                                                                h=self.daemon.model.mbd_get_ftp_hopo()),
+                                                "{i}: Buildrequest upload failed".format(i=breq.get_pkg_id()),
                                                 e)
                 # Upload failure build result to ourselves
                 breq.upload_failed_buildresult(self.daemon.model.mbd_gnupg, self.daemon.model.mbd_get_ftp_hopo(), 100, "upload-failed", e)
@@ -244,45 +243,50 @@ class LastPackage(mini_buildd.misc.API):
         return self.identity
 
 
-def run(daemon, changes, remotes_keyring, uploader_keyrings):
-    if changes.type == changes.TYPE_BRES:
-        if not changes.get_pkg_id() in daemon.packages:
-            raise Exception("No active package for that build result.")
+def package_close(daemon, package):
+    """
+    Close package. Just continue on errors, but log them; guarantee to remove it from the packages dict.
+    """
+    try:
+        package.archive()
+        package.notify()
+        daemon.last_packages.appendleft(LastPackage(package))
+    except Exception as e:
+        mini_buildd.setup.log_exception(LOG, "Error closing package '{p}'".format(p=package.pid), e, level=logging.CRITICAL)
+    finally:
+        del daemon.packages[package.pid]
 
-        package = daemon.packages[changes.get_pkg_id()]
+
+def run(daemon, changes, remotes_keyring, uploader_keyrings):
+    pid = changes.get_pkg_id()
+
+    if changes.type == changes.TYPE_BRES:
+        if not pid in daemon.packages:
+            raise Exception("{p}: Stray build result (not building here).".format(q=pid))
+
+        package = daemon.packages[pid]
 
         try:
             package.add_buildresult(changes, remotes_keyring)
             if package.finished:
                 package.install()
                 package.set_status(package.INSTALLED)
-                package.archive()
-                package.notify()
-                del daemon.packages[changes.get_pkg_id()]
-                daemon.last_packages.appendleft(mini_buildd.packager.LastPackage(package))
+                package_close(daemon, package)
         except Exception as e:
             package.set_status(package.FAILED, unicode(e))
-            package.archive()
-            package.notify()
-            del daemon.packages[changes.get_pkg_id()]
-            daemon.last_packages.appendleft(mini_buildd.packager.LastPackage(package))
-
-            mini_buildd.setup.log_exception(LOG, "Package FAILED", e)
+            package_close(daemon, package)
+            mini_buildd.setup.log_exception(LOG, "Package '{p}' FAILED".format(p=pid), e)
 
     else:  # User upload
-        if changes.get_pkg_id() in daemon.packages:
+        if pid in daemon.packages:
             raise Exception("Internal error: Uploaded package already in packages list.")
 
         package = mini_buildd.packager.Package(daemon, changes)
-        daemon.packages[changes.get_pkg_id()] = package
+        daemon.packages[pid] = package
         try:
             package.precheck(uploader_keyrings)
             package.set_status(package.BUILDING)
         except Exception as e:
             package.set_status(package.REJECTED, unicode(e))
-            package.archive()
-            package.notify()
-            del daemon.packages[changes.get_pkg_id()]
-            daemon.last_packages.appendleft(mini_buildd.packager.LastPackage(package))
-
-            mini_buildd.setup.log_exception(LOG, "Package REJECTED", e)
+            package_close(daemon, package)
+            mini_buildd.setup.log_exception(LOG, "Package '{p}' REJECTED".format(p=pid), e)

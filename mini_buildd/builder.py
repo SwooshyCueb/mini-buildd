@@ -239,6 +239,20 @@ class LastBuild(mini_buildd.misc.API):
         return self.identity
 
 
+def build_close(daemon, build):
+    """
+    Close build. Just continue on errors, but log them; guarantee to remove it from the builds dict.
+    """
+    try:
+        build.clean()
+        daemon.last_builds.appendleft(LastBuild(build))
+    except Exception as e:
+        mini_buildd.setup.log_exception(LOG, "Error closing build '{p}'".format(p=build.key), e, level=logging.CRITICAL)
+    finally:
+        if build.key in daemon.builds:
+            del daemon.builds[build.key]
+
+
 def build(daemon_, remotes_keyring, breq):
     build = None
     try:
@@ -272,10 +286,7 @@ def build(daemon_, remotes_keyring, breq):
 
     finally:
         if build:
-            build.clean()
-            daemon_.last_builds.appendleft(LastBuild(build))
-            if build.key in daemon_.builds:
-                del daemon_.builds[build.key]
+            build_close(daemon_, build)
         daemon_.build_queue.task_done()
 
 

@@ -338,16 +338,16 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         inlines = (ArchitectureOptionInline,)
 
     def __unicode__(self):
-        def xtra():
-            result = ""
-            for e in self.extra_sources.all():
-                result += "+ " + e.mbd_id()
-            return result
-
-        return "{b} {e} [{c}]".format(b=self.base_source.mbd_id(), e=xtra(), c=" ".join(self.mbd_get_components()))
+        return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source.mbd_id(),
+                                                c=" ".join(self.mbd_get_components()),
+                                                a=" ".join(self.mbd_get_architectures()),
+                                                x=",".join([e.mbd_id() for e in self.extra_sources.all()]))
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]
+
+    def mbd_get_architectures(self):
+        return [a.architecture.name for a in self.architectureoption_set.all()]
 
     def mbd_get_archall_architectures(self):
         return [a.architecture.name for a in self.architectureoption_set.all() if a.build_architecture_all]
@@ -459,7 +459,7 @@ Example:
         actions = [action_generate_keyring_packages]
 
     def __unicode__(self):
-        return "{i}: {d} dists ({s})".format(i=self.identity, d=len(self.distributions.all()), s=self.mbd_get_status_display())
+        return "{i}: {d} ({s})".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]), s=self.mbd_get_status_display())
 
     def mbd_generate_keyring_packages(self, request):
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:

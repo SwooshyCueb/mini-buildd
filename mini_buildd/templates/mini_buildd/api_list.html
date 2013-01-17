@@ -18,8 +18,9 @@
 				<tr>
 					<th>Package</th>
 					<th>Type</th>
-					<th>Arch</th>
+					<th>Architecture</th>
 					<th>Distribution</th>
+					<th>Component</th>
 					<th>Version</th>
 					<th>Source</th>
 				</tr>
@@ -29,6 +30,7 @@
 						<td>{{ package.type }}</td>
 						<td>{{ package.architecture }}</td>
 						<td>{{ package.distribution }}</td>
+						<td>{{ package.component }}</td>
 						<td>{{ package.version }}</td>
 						<td><a href="/mini_buildd/api?command=show&amp;package={{ package.source|urlencode }}">{{ package.source }}</a></td>
 					</tr>

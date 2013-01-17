@@ -32,7 +32,7 @@ class Reprepro():
     def list(self, pattern, distribution, typ=None, list_max=50):
         result = []
         for item in mini_buildd.misc.call(self._cmd +
-                                          ["--list-format=${package}|${$type}|${architecture}|${version}|${$source}|${$sourceversion}|${$codename};",
+                                          ["--list-format=${package}|${$type}|${architecture}|${version}|${$source}|${$sourceversion}|${$codename}|${$component};",
                                            "--list-max={m}".format(m=list_max)] +
                                           (["--type={t}".format(t=typ)] if typ else []) +
                                           ["listmatched",
@@ -47,6 +47,7 @@ class Reprepro():
                                "source": item_split[4],
                                "sourceversion": item_split[5],
                                "distribution": item_split[6],
+                               "component": item_split[7],
                                })
         return result
 

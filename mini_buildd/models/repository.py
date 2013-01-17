@@ -577,14 +577,15 @@ DscIndices: Sources Release . .gz .bz2
     def _mbd_reprepro(self):
         return mini_buildd.reprepro.Reprepro(basedir=self.mbd_get_path())
 
-    def mbd_package_list(self, pattern, typ=None, with_rollbacks=False):
+    def mbd_package_list(self, pattern, typ=None, with_rollbacks=False, dist_regex=""):
         result = []
         for d in self.distributions.all():
             for s in self.layout.suiteoption_set.all():
                 rollbacks = s.rollback if with_rollbacks else 0
                 for rollback in [None] + range(rollbacks):
-                    res = self._mbd_reprepro().list(pattern, s.mbd_get_distribution_string(self, d, rollback), typ=typ)
-                    result.extend(res)
+                    dist_str = s.mbd_get_distribution_string(self, d, rollback)
+                    if re.search(dist_regex, dist_str):
+                        result.extend(self._mbd_reprepro().list(pattern, dist_str, typ=typ))
         return result
 
     def mbd_get_dsc_url(self, distribution, package, version):

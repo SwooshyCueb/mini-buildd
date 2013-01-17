@@ -209,6 +209,9 @@ class List(Command):
         (["--with-rollbacks", "-r"], {"action": "store_true",
                                       "default": False,
                                       "help": "also list packages on rollback distributions"}),
+        (["--distribution", "-D"], {"action": "store", "metavar": "DIST",
+                                    "default": "",
+                                    "help": "limit distributions to those matching this regex"}),
         (["--type", "-T"], {"action": "store", "metavar": "TYPE",
                             "default": "",
                             "help": "package type: dsc, deb or udeb (like reprepo --type)"})]
@@ -222,7 +225,8 @@ class List(Command):
         for r in daemon.get_active_repositories():
             r_result = r.mbd_package_list(self.args["pattern"],
                                           typ=self.args["type"] if self.args["type"] else None,
-                                          with_rollbacks=self.has_flag("with_rollbacks"))
+                                          with_rollbacks=self.has_flag("with_rollbacks"),
+                                          dist_regex=self.args["distribution"])
             if r_result:
                 self.repositories[r.identity] = r_result
 
@@ -233,8 +237,9 @@ class List(Command):
         fmt, hdr, fmt_tle, sep0, sep1 = _get_table_format(self.repositories,
                                                           [("package", "Package"),
                                                            ("type", "Type"),
-                                                           ("architecture", "Arch"),
+                                                           ("architecture", "Architecture"),
                                                            ("distribution", "Distribution"),
+                                                           ("component", "Component"),
                                                            ("version", "Version"),
                                                            ("source", "Source")])
 

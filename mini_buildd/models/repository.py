@@ -594,19 +594,21 @@ DscIndices: Sources Release . .gz .bz2
         """
         subdir = package[:4] if package.startswith("lib") else package[0]
 
-        dsc = ""
         for c in sorted(distribution.components.all(), cmp=mini_buildd.models.source.cmp_components):
             dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c, d=subdir, p=package, v=version)
             LOG.debug("Checking dsc: {d}".format(d=dsc))
             if os.path.exists(os.path.join(mini_buildd.setup.REPOSITORIES_DIR, dsc)):
-                break
-        return os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)
+                return c, os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)
+
+        # Not found in pool
+        return None, None
 
     def mbd_package_show(self, package):
         """
-        Result if of the form:
+        Result is of the form:
 
         [(CODENAME, [{"distribution": DIST,
+                      "component": COMPONENT,
                       "source": PKG_NAME,
                       "sourceversion": VERSION,
                       "migrates_to": DIST,
@@ -626,9 +628,9 @@ DscIndices: Sources Release . .gz .bz2
             LOG.debug("Codename pair created: {c}".format(c=codename))
             return new
 
-        def get_or_create_distribution(codename, distribution):
+        def get_or_create_distribution(codename, distribution, component):
             for p in codename:
-                if p["distribution"] == distribution:
+                if p["distribution"] == distribution and (not component or component == p["component"]):
                     return p
             new = {}
             codename.append(new)
@@ -645,11 +647,15 @@ DscIndices: Sources Release . .gz .bz2
             # Get list of dicts with unique distributions
             codename = get_or_create_codename(dist.codename)
 
+            # Get component and URL early
+            component, dsc_url = self.mbd_get_dsc_url(distribution, r["source"], r["sourceversion"])
+
             # Get dict with distribution values
-            values = get_or_create_distribution(codename, dist.get(rollback=False))
+            values = get_or_create_distribution(codename, dist.get(rollback=False), component)
 
             # Always set valid default values (in case of rollback version w/o a version in actual dists, or if the rollback comes first)
             values.setdefault("distribution", dist.get(rollback=False))
+            values.setdefault("component", component)
             values.setdefault("source", "")
             values.setdefault("sourceversion", "")
             values.setdefault("dsc_url", "")
@@ -663,16 +669,16 @@ DscIndices: Sources Release . .gz .bz2
             if dist.is_rollback:
                 # Add to rollback list with "no" appended
                 r["no"] = dist.rollback_no
-                r["dsc_url"] = self.mbd_get_dsc_url(distribution, r["source"], r["sourceversion"])
+                r["component"] = component
+                r["dsc_url"] = dsc_url
                 values["rollbacks"].append(r)
             else:
                 # Copy all reprepro values
                 for k, v in r.items():
                     values[k] = v
 
-                # Extra: DSC_URL, is_migrated flag
-                values["dsc_url"] = self.mbd_get_dsc_url(distribution, values["source"], values["sourceversion"])
-
+                # Extra: URL, is_migrated flag
+                values["dsc_url"] = dsc_url
                 values["is_migrated"] = \
                     values["migrates_to"] and \
                     self._mbd_package_find(pkg_show, distribution=values["migrates_to"], version=values["sourceversion"])
@@ -699,13 +705,13 @@ DscIndices: Sources Release . .gz .bz2
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Rollback failed (ignoring)", e)
 
-    def mbd_package_migrate(self, package, distribution, suite, rollback=None):
+    def mbd_package_migrate(self, package, distribution, suite, rollback=None, version=None):
         src_dist = suite.mbd_get_distribution_string(self, distribution)
         pkg_show = self._mbd_reprepro().show(package)
 
         if rollback is not None:
             LOG.info("Rollback restore of '{p}' from rollback {r} to '{d}'".format(p=package, r=rollback, d=src_dist))
-            if self._mbd_package_find(pkg_show, distribution=src_dist):
+            if self._mbd_package_find(pkg_show, distribution=src_dist, version=version):
                 raise Exception("Package '{p}' exists in '{d}': Remove first to restore rollback".format(p=package, d=src_dist))
 
             rob_dist = suite.mbd_get_distribution_string(self, distribution, rollback=rollback)
@@ -713,7 +719,7 @@ DscIndices: Sources Release . .gz .bz2
                 raise Exception("Package '{p}' has no rollback '{r}'".format(p=package, r=rollback))
 
             # Actually migrate package in reprepro
-            return self._mbd_reprepro().migrate(package, rob_dist, src_dist)
+            return self._mbd_reprepro().migrate(package, rob_dist, src_dist, version)
 
         # Get src and dst dist strings, and check we are configured to migrate
         if not suite.migrates_to:
@@ -734,9 +740,9 @@ DscIndices: Sources Release . .gz .bz2
             self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
 
         # Actually migrate package in reprepro
-        return self._mbd_reprepro().migrate(package, src_dist, dst_dist)
+        return self._mbd_reprepro().migrate(package, src_dist, dst_dist, version)
 
-    def mbd_package_remove(self, package, distribution, suite, rollback=None):
+    def mbd_package_remove(self, package, distribution, suite, rollback=None, version=None):
         dist_str = suite.mbd_get_distribution_string(self, distribution, rollback)
         if not self.mbd_package_find(package, distribution=dist_str):
             raise Exception("Package '{p}' not in '{d}'".format(p=package, d=dist_str))
@@ -745,10 +751,10 @@ DscIndices: Sources Release . .gz .bz2
             # Shift rollbacks
             self._mbd_package_shift_rollbacks(distribution, suite, package)
             # Remove package
-            return self._mbd_reprepro().remove(package, dist_str)
+            return self._mbd_reprepro().remove(package, dist_str, version)
         else:
             # Rollback removal
-            res = self._mbd_reprepro().remove(package, dist_str)
+            res = self._mbd_reprepro().remove(package, dist_str, version)
 
             # Fix up empty rollback dist
             for r in range(rollback, suite.rollback - 1):

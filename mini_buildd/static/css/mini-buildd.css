@@ -456,7 +456,27 @@ a:hover
 	background-color: #e7e7e7;
 }
 
-#mbd_content a.button-migrate:hover
+#mbd_content a.button-migrate-rollback:hover
+{
+	background-color: #f7f7f7;
+}
+
+#mbd_content a.button-rebuild:link, #mbd_content a.button-rebuild:visited
+{
+	background: url("/static/images/mbd_rebuild.png") no-repeat scroll 3px 50% #e7e7e7;
+	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
+	border-style: solid;
+	border-width: 1px;
+	margin: 0px 0px 0px 0px;
+	padding: 4px 6px 4px 16px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: normal;
+	color: #222222;
+	background-color: #e7e7e7;
+}
+
+#mbd_content a.button-rebuild:hover
 {
 	background-color: #f7f7f7;
 }

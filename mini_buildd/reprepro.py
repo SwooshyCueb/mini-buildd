@@ -67,11 +67,11 @@ class Reprepro():
                                })
         return result
 
-    def migrate(self, package, src_distribution, dst_distribution):
-        return mini_buildd.misc.sose_call(self._cmd + ["copysrc", dst_distribution, src_distribution, package])
+    def migrate(self, package, src_distribution, dst_distribution, version=None):
+        return mini_buildd.misc.sose_call(self._cmd + ["copysrc", dst_distribution, src_distribution, package] + ([version] if version else []))
 
-    def remove(self, package, distribution):
-        return mini_buildd.misc.sose_call(self._cmd + ["removesrc", distribution, package])
+    def remove(self, package, distribution, version=None):
+        return mini_buildd.misc.sose_call(self._cmd + ["removesrc", distribution, package] + ([version] if version else []))
 
     def install(self, changes, distribution):
         return mini_buildd.misc.sose_call(self._cmd + ["include", distribution, changes])

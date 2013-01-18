@@ -17,6 +17,7 @@
 				<table>
 					<tr>
 						<th>Distribution</th>
+						<th>Component</th>
 						<th colspan="2">Version</th>
 						<th>Migration</th>
 						<th>Removal</th>
@@ -25,11 +26,12 @@
 					</tr>
 					{% for codename, distributions in codenames %}
 						<tr>
-							<td class="codename" colspan="8">{{ codename }}</td>
+							<td class="codename" colspan="9">{{ codename }}</td>
 						</tr>
 						{% for values in distributions|dictsort:"sort_no" %}
 							<tr>
 								<td class="distribution">{{ values.distribution }}</td>
+								<td>{{ values.component }}</td>
 								<td class="version">
 									{% if values.sourceversion %}
 										<a href="/mini_buildd/log/{{ repository }}/{{ api_cmd.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
@@ -43,7 +45,8 @@
 								<td>
 									{% if values.migrates_to %}
 										{% if values.sourceversion and not values.is_migrated %}
-											<a class="button-migrate" title="...to {{ values.migrates_to }}" href="/mini_buildd/api?command=migrate&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}">Migrate</a>
+											<a class="button-migrate" title="...to {{ values.migrates_to }}"
+												 href="/mini_buildd/api?command=migrate&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Migrate</a>
 										{% elif values.sourceversion %}
 											<div title="...to {{ values.migrates_to }}"><b>Migrated</b></div>
 										{% else %}
@@ -53,14 +56,20 @@
 								</td>
 								<td>
 									{% if values.sourceversion %}
-										<a class="button-remove" title="...from {{ values.distribution }}" href="/mini_buildd/api?command=remove&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}">Remove</a>
+										<a class="button-remove"
+											 title="...from {{ values.distribution }}"
+											 href="/mini_buildd/api?command=remove&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Remove</a>
 									{% endif %}
 								</td>
 								<td>
 									{% for rollback in values.rollbacks|dictsort:"no" %}
-										<a class="button-remove" title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}" href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}">{{ rollback.no }}</a>
+										<a class="button-remove"
+											 title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}"
+											 href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}">{{ rollback.no }}</a>
 										{% if not values.sourceversion %}
-											<a class="button-migrate-rollback" title="Restore rollback {{ rollback.sourceversion }} from {{ rollback.distribution }}" href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}">{{ rollback.no }}</a>
+											<a class="button-migrate-rollback"
+												 title="Restore rollback {{ rollback.sourceversion }} from {{ rollback.distribution }}"
+												 href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}">{{ rollback.no }}</a>
 										{% endif %}
 									{% endfor %}
 									<span title="{{ values.rollback }} rollback distributions">{{ values.rollbacks|length }}/{{ values.rollback }}</span>
@@ -68,7 +77,9 @@
 
 								<td>
 									{% if values.sourceversion and values.uploadable %}
-										<a class="button-rebuild" title="...in {{ values.distribution }}" href="/mini_buildd/api?command=port&amp;package={{ values.source|urlencode }}&amp;from_distribution={{ values.distribution|urlencode }}&amp;to_distributions={{ values.distribution|urlencode }}">Rebuild</a>
+										<a class="button-rebuild"
+											 title="...in {{ values.distribution }}"
+											 href="/mini_buildd/api?command=port&amp;package={{ values.source|urlencode }}&amp;from_distribution={{ values.distribution|urlencode }}&amp;to_distributions={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Rebuild</a>
 									{% endif %}
 								</td>
 								<td>
@@ -78,6 +89,7 @@
 												<input type="hidden" name="command" value="port" />
 												<input type="hidden" name="package" value="{{ values.source }}" />
 												<input type="hidden" name="from_distribution" value="{{ values.distribution }}" />
+												<input type="hidden" name="version" value="{{ values.sourceversion }}" />
 												<input name="to_distributions" type="text" size="10" title="Comma separated list of distributions to port to" value="" />
 												<input type="submit" value="Port" title="Port this package version to other distribution(s)" />
 											</div>

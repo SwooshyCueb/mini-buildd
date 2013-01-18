@@ -354,7 +354,7 @@ class Daemon():
 
         return repository, distribution, suite, dist_parsed.rollback_no
 
-    def port(self, package, from_dist, to_dist):
+    def port(self, package, from_dist, to_dist, version):
         def _sub_rightmost(pattern, repl, string):
             last_match = None
             for last_match in re.finditer(pattern, string):
@@ -366,9 +366,9 @@ class Daemon():
 
         # check from_dist
         from_repository, from_distribution, from_suite, _from_rollback = self.parse_distribution(from_dist)
-        p = from_repository.mbd_package_find(package, from_dist)
+        p = from_repository.mbd_package_find(package, distribution=from_dist, version=version)
         if not p:
-            raise Exception("Port failed: Package '{p}' not in '{d}'".format(p=package, d=from_dist))
+            raise Exception("Port failed: Package (version) for '{p}' not found in '{d}'".format(p=package, d=from_dist))
 
         # check to_dist
         to_repository, to_distribution, to_suite, to_rollback = self.parse_distribution(to_dist)
@@ -381,19 +381,17 @@ class Daemon():
         if to_dist == from_dist:
             # Rebuild
             stamp = StampVersion()
-            version = _sub_rightmost(r"\+rebuilt" + stamp.regex,
-                                     "+rebuilt" + stamp.version,
-                                     p["sourceversion"])
+            port_version = _sub_rightmost(r"\+rebuilt" + stamp.regex,
+                                          "+rebuilt" + stamp.version,
+                                          p["sourceversion"])
         else:
             # Internal port
-            version = _sub_rightmost(from_repository.layout.mbd_get_mandatory_version_regex(from_repository, from_distribution, from_suite),
-                                     to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite),
-                                     p["sourceversion"])
+            port_version = _sub_rightmost(from_repository.layout.mbd_get_mandatory_version_regex(from_repository, from_distribution, from_suite),
+                                          to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite),
+                                          p["sourceversion"])
 
-        self._port(from_repository.mbd_get_dsc_url(from_distribution, package, p["sourceversion"]),
-                   package,
-                   to_dist,
-                   version)
+        _component, url = from_repository.mbd_get_dsc_url(from_distribution, package, p["sourceversion"])
+        self._port(url, package, to_dist, port_version)
 
     def portext(self, dsc_url, to_dist):
         # check to_dist

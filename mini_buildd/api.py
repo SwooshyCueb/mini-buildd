@@ -15,6 +15,14 @@ class Command(object):
     CONFIRM = False
     ARGUMENTS = []
 
+    COMMON_ARG_VERSION = (["--version", "-V"], {"action": "store", "metavar": "VERSION",
+                                                "default": "",
+                                                "help": """
+limit command to that version. Use it for the rare case of
+multiple version of the same package in one distribution (in
+different components), or just as safeguard
+"""})
+
     @classmethod
     def _filter_api_args(cls, args):
         result = {}
@@ -39,6 +47,10 @@ class Command(object):
 
     def has_flag(self, flag):
         return self.args.get(flag, "False") == "True"
+
+    def arg_false2none(self, key):
+        value = self.args.get(key)
+        return value if value else None
 
 
 class Status(Command):
@@ -224,7 +236,7 @@ class List(Command):
         # Save all results of all repos in a top-level dict (don't add repos with empty results).
         for r in daemon.get_active_repositories():
             r_result = r.mbd_package_list(self.args["pattern"],
-                                          typ=self.args["type"] if self.args["type"] else None,
+                                          typ=self.arg_false2none("type"),
                                           with_rollbacks=self.has_flag("with_rollbacks"),
                                           dist_regex=self.args["distribution"])
             if r_result:
@@ -331,7 +343,8 @@ class Migrate(Command):
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
-        (["distribution"], {"help": "distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore)"})]
+        (["distribution"], {"help": "distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore)"}),
+        Command.COMMON_ARG_VERSION]
 
     def __init__(self, args):
         super(Migrate, self).__init__(args)
@@ -339,7 +352,11 @@ class Migrate(Command):
 
     def run(self, daemon):
         repository, distribution, suite, rollback = daemon.parse_distribution(self.args["distribution"])
-        self.cmd_out = repository.mbd_package_migrate(self.args["package"], distribution, suite, rollback)
+        self.cmd_out = repository.mbd_package_migrate(self.args["package"],
+                                                      distribution,
+                                                      suite,
+                                                      rollback=rollback,
+                                                      version=self.arg_false2none("version"))
 
     def __unicode__(self):
         return self.cmd_out
@@ -354,7 +371,8 @@ class Remove(Command):
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
-        (["distribution"], {"help": "distribution to remove from"})]
+        (["distribution"], {"help": "distribution to remove from"}),
+        Command.COMMON_ARG_VERSION]
 
     def __init__(self, args):
         super(Remove, self).__init__(args)
@@ -362,7 +380,11 @@ class Remove(Command):
 
     def run(self, daemon):
         repository, distribution, suite, rollback = daemon.parse_distribution(self.args["distribution"])
-        self.cmd_out = repository.mbd_package_remove(self.args["package"], distribution, suite, rollback)
+        self.cmd_out = repository.mbd_package_remove(self.args["package"],
+                                                     distribution,
+                                                     suite,
+                                                     rollback=rollback,
+                                                     version=self.arg_false2none("version"))
 
     def __unicode__(self):
         return self.cmd_out
@@ -370,9 +392,11 @@ class Remove(Command):
 
 class Port(Command):
     """
-    Port a package internally.
+    Port an internal package.
 
-    A 'port' is a unchanged rebuild of the given source package.
+    An internal 'port' is a no-changes (i.e., only the changelog
+    will be adapted) rebuild of the given locally-installed
+    package.
     """
     COMMAND = "port"
     LOGIN = True
@@ -380,7 +404,8 @@ class Port(Command):
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
         (["from-distribution"], {"help": "distribution to port from"}),
-        (["to-distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"})]
+        (["to-distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"}),
+        Command.COMMON_ARG_VERSION]
 
     def __init__(self, args):
         super(Port, self).__init__(args)
@@ -390,10 +415,13 @@ class Port(Command):
 
     def run(self, daemon):
         # Parse and pre-check all dists
-        for d in self.args["to_distributions"].split(","):
-            info = "Port {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=d)
+        for to_distribution in self.args["to_distributions"].split(","):
+            info = "Port {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=to_distribution)
             try:
-                daemon.port(self.args["package"], self.args["from_distribution"], d)
+                daemon.port(self.args["package"],
+                            self.args["from_distribution"],
+                            to_distribution,
+                            version=self.arg_false2none("version"))
                 self.results += "Requested: {i}.\n".format(i=info)
             except Exception as e:
                 self.results += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
@@ -407,7 +435,8 @@ class PortExt(Command):
     """
     Port an external package.
 
-    A 'port' is a unchanged rebuild of the given source package.
+    An external 'port' is a no-changes (i.e., only the changelog
+    will be adapted) rebuild of any given source package.
     """
     COMMAND = "portext"
     LOGIN = True

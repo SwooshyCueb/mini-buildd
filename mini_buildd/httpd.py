@@ -73,8 +73,8 @@ def run(bind, wsgi_app):
                        root="/usr/share/pyshared/django/contrib/admin",
                        path="/static/admin")
 
-    # Serve our Debian-installed html manual directly
-    add_static_handler(directory=".", root="/usr/share/doc/mini-buildd/html", path="/manual")
+    # Serve our Debian-installed html documentation directly
+    add_static_handler(directory=".", root="/usr/share/doc/mini-buildd/html", path="/doc")
 
     # Serve repositories and log directories
     add_static_handler(directory=".", root=mini_buildd.setup.REPOSITORIES_DIR, path="/repositories")

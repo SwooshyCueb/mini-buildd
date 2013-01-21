@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 r"""
-Generic module for models of the django app *mini_buildd*::
+Generic module for models of the django app *mini_buildd*.
 
 Naming conventions
 ==================

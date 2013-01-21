@@ -23,7 +23,7 @@ class Reprepro():
     Abstraction to reprepro repository commands.
 
     Locking
-    =======
+
     This implicitly provides a locking mechanism to avoid
     parallel calls to the same repository from mini-buildd
     itself. This rules out any failed call due to reprepro

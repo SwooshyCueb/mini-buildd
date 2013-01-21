@@ -1,34 +1,4 @@
 # -*- coding: utf-8 -*-
-"""
-.. graphviz::
-
-  digraph flow_simple
-  {
-    subgraph cluster_0
-    {
-      style=filled;
-      color=lightgrey;
-      label="mini-buildd";
-      "Packager";
-      "Repository";
-    }
-    subgraph cluster_1
-    {
-      style=filled;
-      color=lightgrey;
-      label="mini-buildd";
-      "Builder";
-      label = "mini-buildd";
-    }
-    "Developer" -> "Packager" [label="Upload source package"];
-    "Packager" -> "Builder" [label="Build request amd64"];
-    "Packager" -> "Builder" [label="Build request i386"];
-    "Builder" -> "Packager" [label="Build result amd64"];
-    "Builder" -> "Packager" [label="Build result i386"];
-    "Packager" -> "Repository" [label="install(amd64, i386)"];
-    "Repository" -> "User" [label="apt"];
-  }
-"""
 from __future__ import unicode_literals
 
 import os

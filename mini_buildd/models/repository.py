@@ -449,6 +449,14 @@ Example:
         fieldsets = (
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "reprepro_morguedir", "external_home_url")}),)
+        readonly_fields = []
+
+        def get_readonly_fields(self, _request, obj=None):
+            "Forbid change identity on existing repository."
+            fields = self.readonly_fields
+            if obj:
+                fields.append("identity")
+            return fields
 
 # pylint: disable=R0201
         def action_generate_keyring_packages(self, request, queryset):

@@ -182,6 +182,11 @@ are actually supported by the current model.
     def mbd_set_pickled_data(self, data):
         self.pickled_data = pickle.dumps(data)
 
+    @classmethod
+    def mbd_validate_regex(cls, regex, value, field_name):
+        if not re.match(regex, value):
+            raise django.core.exceptions.ValidationError("{n} field does not match regex {r}".format(n=field_name, r=regex))
+
 
 class StatusModel(Model):
     """

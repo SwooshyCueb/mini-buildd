@@ -108,6 +108,19 @@ a:hover
 	margin: 15px 15px 15px 15px;
 }
 
+/* MODEL STATUS DISPLAYS */
+
+#mbd_content .status.Prepared
+{
+	color: blue;
+}
+
+#mbd_content .status.Active
+{
+	color: green;
+	font-weight: bold;
+}
+
 /* BUILDER+PACKAGER+BRES STATUS DISPLAYS */
 
 #mbd_content .status.BUILDING

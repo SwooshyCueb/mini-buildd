@@ -16,7 +16,7 @@ function toggleLastBuilds()
 		function()
 		{
 			$('#mbd_last_builds').toggle();
-			$('#mbd_last_builds').is(":visible") ?  $('#mbd_lb_anchor').html("hide") : $('#mbd_lb_anchor').html("show");
+			$('#mbd_last_builds').is(":visible") ? $('#mbd_lb_anchor').html("hide") : $('#mbd_lb_anchor').html("show");
 		}
 	);
 }
@@ -57,10 +57,10 @@ $(document).ready(
 					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages id="mbd_last_packages" %}
 				{% endif %}
 
-				<h2>Repositories:</h2>
+				<h2 title="Active and prepared repositories">Repositories:</h2>
 				<ul>
 					{% for r in repositories %}
-						<li><a href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+						<li><a class="status {{ r.get_status_display }}" href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
 					{% empty %}
 						<li>No repositories.</li>
 					{% endfor %}
@@ -81,10 +81,10 @@ $(document).ready(
 					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.last_builds id="mbd_last_builds" %}
 				{% endif %}
 
-				<h2>Chroots:</h2>
+				<h2 title="Active and prepared chroots">Chroots:</h2>
 				<ul>
 					{% for c in chroots %}
-						<li>{{ c }}</li>
+						<li><span class="status {{ c.get_status_display }}">{{ c }}</span></li>
 					{% empty %}
 						<li>No chroots.</li>
 					{% endfor %}
@@ -95,10 +95,10 @@ $(document).ready(
 		<div id="mbd_index_remotes">
 			<div class="box">
 				<h1 class="box-caption">Network: {{ daemon.remotes|length }} remotes</h1>
-				<h2>Remotes:</h2>
+				<h2 title="Active and prepared remotes">Remotes:</h2>
 				<ul>
 					{% for r in remotes %}
-						<li><a href="http://{{ r.http }}">{{ r }}</a></li>
+						<li><a class="status {{ r.get_status_display }}" href="http://{{ r.http }}">{{ r }}</a></li>
 					{% empty %}
 						<li>No remotes.</li>
 					{% endfor %}

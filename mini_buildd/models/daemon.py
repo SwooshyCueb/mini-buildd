@@ -174,6 +174,9 @@ activate/deactivate actions will start/stop the 'daemon'.
 
     def clean(self, *args, **kwargs):
         super(Daemon, self).clean(*args, **kwargs)
+
+        self.mbd_validate_regex(r"^[a-zA-Z0-9\-]+$", self.identity, "Identity")
+
         if Daemon.objects.count() > 0 and self.id != Daemon.objects.get().id:
             raise django.core.exceptions.ValidationError("You can only create one Daemon instance!")
 

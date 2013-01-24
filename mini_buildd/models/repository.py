@@ -51,6 +51,10 @@ class Suite(mini_buildd.models.base.Model):
     def __unicode__(self):
         return self.name
 
+    def clean(self, *args, **kwargs):
+        self.mbd_validate_regex(r"^[a-z]+$", self.name, "Name")
+        super(Suite, self).clean(*args, **kwargs)
+
 
 class SuiteOption(mini_buildd.models.base.Model):
     layout = django.db.models.ForeignKey("Layout")
@@ -460,6 +464,10 @@ Example:
 
     def __unicode__(self):
         return "{i}: {d} ({s})".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]), s=self.mbd_get_status_display())
+
+    def clean(self, *args, **kwargs):
+        self.mbd_validate_regex(r"^[a-z]+$", self.identity, "Identity")
+        super(Repository, self).clean(*args, **kwargs)
 
     def mbd_generate_keyring_packages(self, request):
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:

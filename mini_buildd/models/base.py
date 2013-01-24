@@ -39,6 +39,7 @@ from __future__ import unicode_literals
 
 import datetime
 import StringIO
+import re
 import pickle
 import logging
 

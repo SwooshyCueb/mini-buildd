@@ -141,13 +141,12 @@ activate/deactivate actions will start/stop the 'daemon'.
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
 
-    def __unicode__(self):
-        return "{i}: Serving {r} repositories, {c} chroots, {R} remotes ({s})".format(
+    def mbd_unicode(self):
+        return "{i}: Serving {r} repositories, {c} chroots, {R} remotes".format(
             i=self.identity,
             r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
             c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),
-            R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()),
-            s=self.mbd_get_status_display())
+            R=len(mini_buildd.models.gnupg.Remote.mbd_get_active()))
 
     def __init__(self, *args, **kwargs):
         super(Daemon, self).__init__(*args, **kwargs)

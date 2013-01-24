@@ -77,9 +77,6 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 
         actions = [action_add_from_sources_list, action_add_debian]
 
-    def __unicode__(self):
-        return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
-
     def save(self, *args, **kwargs):
         """
         Implicitely set the ping value on save.
@@ -91,6 +88,9 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         if self.url[-1] != "/" or self.url[-2] == "/":
             raise django.core.exceptions.ValidationError("The URL must have exactly one trailing slash (like 'http://example.org/path/').")
         super(Archive, self).clean(*args, **kwargs)
+
+    def mbd_unicode(self):
+        return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
     def mbd_download_release(self, source, gnupg):
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
@@ -137,14 +137,14 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return self.name
 
 
 class Component(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return self.name
 
 
@@ -231,7 +231,7 @@ manually run on a Debian system to be sure.
 
         actions = [action_add_debian]
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         """
         .. note:: Workaround for django 1.4.3 bug/new behaviour.
 
@@ -240,11 +240,8 @@ manually run on a Debian system to be sure.
             exceeded" when trying to add a new source. Seems to
             be a django bug (?). Just not using it for now.
         """
-        #return "{i}: {d}: {m} archives ({s})".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()), s=self.mbd_get_status_display())
-        return "{i}: {d} ({s})".format(i=self.mbd_id(), d=self.description, s=self.mbd_get_status_display())
-
-    def mbd_id(self):
-        return "{o} '{c}'".format(o=self.origin, c=self.codename)
+        #return "{i}: {d}: {m} archives".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()))
+        return "{o} '{c}': {d}".format(o=self.origin, c=self.codename, d=self.description)
 
     def mbd_get_archive(self):
         """
@@ -344,11 +341,8 @@ class PrioritySource(mini_buildd.models.base.Model):
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return "{i}: Priority={p}".format(i=self.source, p=self.priority)
-
-    def mbd_id(self):
-        return "{i} (prio={p})".format(i=self.source.mbd_id(), p=self.priority)
 
     def mbd_get_apt_preferences(self):
         return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(pin=self.source.mbd_get_apt_pin(), prio=self.priority)

@@ -36,7 +36,7 @@ class EmailAddress(mini_buildd.models.base.Model):
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return "{n} <{a}>".format(n=self.name, a=self.address)
 
 
@@ -48,7 +48,7 @@ class Suite(mini_buildd.models.base.Model):
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return self.name
 
     def clean(self, *args, **kwargs):
@@ -95,7 +95,7 @@ lintian) as non-lethal, and will install anyway.
     class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ("suite", "layout")
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return "{l}: {e}{n}{e} [{u}]{m}".format(
             l=self.layout.name,
             n=self.suite.name,
@@ -198,7 +198,7 @@ class Layout(mini_buildd.models.base.Model):
                                             "experimental_default_version", "experimental_mandatory_version_regex")}),)
         inlines = (SuiteOptionInline,)
 
-    def __unicode__(self):
+    def mbd_unicode(self):
         return self.name
 
     @classmethod
@@ -341,11 +341,11 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
         inlines = (ArchitectureOptionInline,)
 
-    def __unicode__(self):
-        return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source.mbd_id(),
+    def mbd_unicode(self):
+        return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source,
                                                 c=" ".join(self.mbd_get_components()),
                                                 a=" ".join(self.mbd_get_architectures()),
-                                                x=",".join([e.mbd_id() for e in self.extra_sources.all()]))
+                                                x=",".join(["{e}".format(e=e) for e in self.extra_sources.all()]))
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]
@@ -470,8 +470,8 @@ Example:
 
         actions = [action_generate_keyring_packages]
 
-    def __unicode__(self):
-        return "{i}: {d} ({s})".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]), s=self.mbd_get_status_display())
+    def mbd_unicode(self):
+        return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]))
 
     def clean(self, *args, **kwargs):
         self.mbd_validate_regex(r"^[a-z]+$", self.identity, "Identity")

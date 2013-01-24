@@ -63,8 +63,10 @@ go to the default mapping.
               "description": "Supported extra options: 'Debootstrap-Command: Alternate command to run instead of standard debootstrap'",
               "fields": ("extra_options",)})]
 
-    def __unicode__(self):
-        return "{c}/{a} ({s})".format(c=self.source.codename, a=self.architecture.name, s=self.mbd_get_status_display())
+    def mbd_unicode(self):
+        return "{c}/{a} ({f})".format(c=self.source.codename,
+                                      a=self.architecture.name,
+                                      f=self.mbd_get_backend().mbd_backend_flavor())
 
     def mbd_get_backend(self):
         for cls, sub in {"filechroot": [], "dirchroot": [], "lvmchroot": ["looplvmchroot"]}.items():
@@ -189,6 +191,9 @@ See 'man 5 schroot.conf'
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("Dir options", {"fields": ("union_type",)})]
 
+    def mbd_backend_flavor(self):
+        return self.get_union_type_display()
+
     def mbd_get_chroot_dir(self):
         return os.path.join(self.mbd_get_path(), "source")
 
@@ -244,6 +249,9 @@ class FileChroot(Chroot):
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("File options", {"fields": ("compression",)})]
 
+    def mbd_backend_flavor(self):
+        return self.TAR_SUFFIX[self.compression]
+
     def mbd_get_tar_file(self):
         return os.path.join(self.mbd_get_path(), "source." + self.TAR_SUFFIX[self.compression])
 
@@ -283,6 +291,9 @@ class LVMChroot(Chroot):
 
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("LVM options", {"fields": ("volume_group", "filesystem", "snapshot_size")})]
+
+    def mbd_backend_flavor(self):
+        return "lvm={grp}/{fs}/{size}G".format(grp=self.volume_group, fs=self.filesystem, size=self.snapshot_size)
 
     def mbd_get_volume_group(self):
         try:
@@ -326,6 +337,10 @@ class LoopLVMChroot(LVMChroot):
 
     class Admin(LVMChroot.Admin):
         fieldsets = LVMChroot.Admin.fieldsets + [("Loop options", {"fields": ("loop_size",)})]
+
+    def mbd_backend_flavor(self):
+        return "{size}G loop: {l}".format(size=self.loop_size,
+                                          l=super(LoopLVMChroot, self).mbd_backend_flavor())
 
     def mbd_get_volume_group(self):
         return "mini-buildd-loop-{d}-{a}".format(d=self.source.codename, a=self.architecture.name)

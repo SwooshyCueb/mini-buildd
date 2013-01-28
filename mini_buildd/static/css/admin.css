@@ -123,3 +123,15 @@
 {
 	width: 100%;
 }
+
+.Activate {
+	color: green;
+}
+
+.Unprepare {
+	color: red;
+}
+
+.Deactivate {
+	color: blue;
+}

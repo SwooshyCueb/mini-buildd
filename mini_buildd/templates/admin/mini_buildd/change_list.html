@@ -24,7 +24,7 @@
                 $('<button>')
                     .appendTo(buttons)
                     .attr('name', this.value)
-                    .addClass('button')
+                    .addClass('button ' + this.text)
                     .text(this.text)
                     .click(function () {
                         container.find('select')

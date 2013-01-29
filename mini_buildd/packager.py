@@ -262,7 +262,7 @@ def run(daemon, changes, remotes_keyring, uploader_keyrings):
 
     if changes.type == changes.TYPE_BRES:
         if not pid in daemon.packages:
-            raise Exception("{p}: Stray build result (not building here).".format(q=pid))
+            raise Exception("{p}: Stray build result (not building here).".format(p=pid))
 
         package = daemon.packages[pid]
 

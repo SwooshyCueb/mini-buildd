@@ -109,7 +109,9 @@ class Remote(GnuPGPublicKey):
         readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_data"]
 
     def mbd_unicode(self):
-        return "{h}".format(h=self.http)
+        status = self.mbd_get_status()
+        return "{h}: {c}".format(h=self.http,
+                                 c=status.chroots_str())
 
     def mbd_get_status(self):
         return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}))

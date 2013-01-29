@@ -123,13 +123,19 @@ Builder: {b_len} building
               ds="UP" if self.running else "DOWN",
               f=self.ftp,
               l=self.load,
-              r=", ".join(["{i}: {c}".format(i=identity, c=" ".join(codenames)) for identity, codenames in self.repositories.items()]),
-              c=", ".join(["{a}: {c}".format(a=arch, c=" ".join(codenames)) for arch, codenames in self.chroots.items()]),
+              r=self.repositories_str(),
+              c=self.chroots_str(),
               rm=", ".join(self.remotes),
               p_len=len(self.packaging),
               p="\n".join(self.packaging) + "\n" if self.packaging else "",
               b_len=len(self.building),
               b="\n".join(self.building) + "\n" if self.building else "")
+
+    def repositories_str(self):
+        return ", ".join(["{i}: {c}".format(i=identity, c=" ".join(codenames)) for identity, codenames in self.repositories.items()])
+
+    def chroots_str(self):
+        return ", ".join(["{a}: {c}".format(a=arch, c=" ".join(codenames)) for arch, codenames in self.chroots.items()])
 
     def has_chroot(self, codename, arch):
         return codename in self.chroots and arch in self.chroots[codename]

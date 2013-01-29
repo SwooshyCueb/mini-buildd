@@ -238,11 +238,10 @@ class Daemon():
         self.last_packages = None
         self.last_builds = None
 
-        # Finally, start daemon right now if active
         try:
-            self.start()
+            self.restart(force_check=True)
         except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Could not start daemon", e)
+            mini_buildd.setup.log_exception(LOG, "Error starting daemon", e)
 
     @classmethod
     def _new_model_object(cls):
@@ -278,19 +277,11 @@ class Daemon():
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Error adding persisted last builds/packages (ignoring)", e, logging.WARN)
 
-    def start(self, activate_action=False, request=None):
+    def start(self, request=None):
         if not self.thread:
             self._update_model()
-
-            if not activate_action and (self.model.mbd_is_active() or self.model.auto_reactivate):
-                # Check if this can be auto-reactivated
-                mini_buildd.models.daemon.Daemon.Admin.mbd_action(request, (self.model,), "check")
-
-            if activate_action or self.model.mbd_is_active():
-                self.thread = mini_buildd.misc.run_as_thread(run)
-                mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon started.")
-            else:
-                mini_buildd.models.base.Model.mbd_msg_warn(request, "Daemon deactivated (won't start).")
+            self.thread = mini_buildd.misc.run_as_thread(run)
+            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon started.")
         else:
             mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already running.")
 
@@ -310,9 +301,21 @@ class Daemon():
         else:
             mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already stopped.")
 
-    def restart(self, activate_action=False, request=None):
+    @classmethod
+    def check(cls, request=None, force=False):
+        mini_buildd.models.daemon.Daemon.Admin.mbd_action(request,
+                                                          mini_buildd.models.repository.Repository.mbd_get_prepared(),
+                                                          "check",
+                                                          force=force)
+
+    def restart(self, request=None, force_check=False):
         self.stop(request=request)
-        self.start(activate_action=activate_action, request=request)
+        self._update_model()
+        self.check(force=force_check)
+        if self.model.mbd_is_active():
+            self.start(request=request)
+        else:
+            LOG.warn("Daemon deactivated (won't start).")
 
     def is_running(self):
         return bool(self.thread)

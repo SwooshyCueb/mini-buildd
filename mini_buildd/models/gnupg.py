@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import urllib
+import urllib2
 import contextlib
 
 import django.db.models
@@ -65,6 +65,9 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         if self.key_id:
             self.key = ""
 
+    def mbd_sync(self, request):
+        self._mbd_sync_by_purge_and_create(request)
+
     def mbd_check(self, _request):
         """
         Checks that we actually have the key and long_id. This should always be true after "prepare".
@@ -113,13 +116,16 @@ class Remote(GnuPGPublicKey):
         return "{h}: {c}".format(h=self.http,
                                  c=status.chroots_str())
 
-    def mbd_get_status(self):
+    def mbd_get_status(self, update=False):
+        if update:
+            url = "http://{h}/mini_buildd/api?command=status&output=python".format(h=self.http)
+            self.pickled_data = urllib2.urlopen(url, timeout=10).read()
         return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}))
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/api?command=getkey&output=plain".format(h=self.http)
         self.mbd_msg_info(request, "Downloading '{u}'...".format(u=url))
-        self.key = urllib.urlopen(url).read()
+        self.key = urllib2.urlopen(url).read()
         if self.key:
             self.mbd_msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
         else:
@@ -132,8 +138,8 @@ class Remote(GnuPGPublicKey):
         self.mbd_msg_info(request, "Remote key and state removed.")
 
     def mbd_check(self, _request):
-        url = "http://{h}/mini_buildd/api?command=status&output=python".format(h=self.http)
-        self.pickled_data = urllib.urlopen(url).read()
-        status = self.mbd_get_status()
-        if not status.running:
-            raise Exception("Remote down: {r}".format(r=self.http))
+        """
+        Check whether the remote mini-buildd is running.
+        """
+        super(Remote, self).mbd_check(_request)
+        self.mbd_get_status(update=True)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import copy
 import os
 import shutil
 import glob
@@ -62,6 +63,14 @@ go to the default mapping.
              {"classes": ("collapse",),
               "description": "Supported extra options: 'Debootstrap-Command: Alternate command to run instead of standard debootstrap'",
               "fields": ("extra_options",)})]
+
+        def get_readonly_fields(self, _request, obj=None):
+            "Forbid change source/arch on existing chroot (we would loose the path to the associated data)."
+            fields = copy.copy(self.readonly_fields)
+            if obj:
+                fields.append("source")
+                fields.append("architecture")
+            return fields
 
     def mbd_unicode(self):
         return "{c}/{a} ({f})".format(c=self.source.codename,
@@ -156,17 +165,26 @@ personality={p}
 """.format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf())).save()
 
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
-        self.mbd_msg_info(request, "Chroot {c}: Prepared on system for schroot.".format(c=self))
+        self.mbd_msg_info(request, "{c}: Prepared on system for schroot.".format(c=self))
 
     def mbd_unprepare(self, request):
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
-        shutil.rmtree(self.mbd_get_path())
-        self.mbd_msg_info(request, "Chroot {c}: Removed from system.".format(c=self))
+        shutil.rmtree(self.mbd_get_path(),
+                      onerror=lambda f, p, e: self.mbd_msg_warn(request,
+                                                                "{c}: Failure removing data dir '{p}' (ignoring): {e}".format(c=self,
+                                                                                                                              p=self.mbd_get_path(),
+                                                                                                                              e=e)))
+        self.mbd_msg_info(request, "{c}: Removed from system.".format(c=self))
 
-    def mbd_check(self, _request):
+    def mbd_sync(self, request):
+        self._mbd_sync_by_purge_and_create(request)
+
+    def mbd_check(self, request):
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--info"])
+        mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--directory=/", "--", "/bin/ls"])
+        self.mbd_msg_info(request, "{c}: 'ls' in snapshot successful.".format(c=self))
 
-    def mbd_get_status_dependencies(self):
+    def mbd_get_mandatory_dependencies(self):
         return [self.source]
 
 

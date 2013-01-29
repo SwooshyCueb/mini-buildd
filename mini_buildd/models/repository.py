@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import copy
 import contextlib
 import shutil
 import glob
@@ -453,7 +454,7 @@ Example:
 
         def get_readonly_fields(self, _request, obj=None):
             "Forbid change identity on existing repository."
-            fields = self.readonly_fields
+            fields = copy.copy(self.readonly_fields)
             if obj:
                 fields.append("identity")
             return fields
@@ -474,7 +475,7 @@ Example:
         return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]))
 
     def clean(self, *args, **kwargs):
-        self.mbd_validate_regex(r"^[a-z]+$", self.identity, "Identity")
+        self.mbd_validate_regex(r"^[a-z0-9]+$", self.identity, "Identity")
         super(Repository, self).clean(*args, **kwargs)
 
     def mbd_generate_keyring_packages(self, request):
@@ -611,10 +612,10 @@ DscIndices: Sources Release . .gz .bz2
         subdir = package[:4] if package.startswith("lib") else package[0]
 
         for c in sorted(distribution.components.all(), cmp=mini_buildd.models.source.cmp_components):
-            dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c, d=subdir, p=package, v=version)
+            dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c.name, d=subdir, p=package, v=version)
             LOG.debug("Checking dsc: {d}".format(d=dsc))
             if os.path.exists(os.path.join(mini_buildd.setup.REPOSITORIES_DIR, dsc)):
-                return c, os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)
+                return c.name, os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)
 
         # Not found in pool
         return None, None
@@ -854,7 +855,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_prepare(self, _request):
         """
-        Idempotent repository preparation. This may be used as-is as mbd_check.
+        Idempotent repository preparation. This may be used as-is as mbd_sync.
         """
         # Architecture sanity checks
         for d in self.distributions.all():
@@ -889,17 +890,19 @@ gnupghome {h}
         # (Re-)index
         self._mbd_reprepro().reindex()
 
+    def mbd_sync(self, request):
+        self.mbd_prepare(request)
+
     def mbd_unprepare(self, _request):
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
 
-    def mbd_check(self, request):
-        self.mbd_prepare(request)
+    def mbd_check(self, _request):
+        self._mbd_reprepro().check()
 
-    def mbd_get_status_dependencies(self):
+    def mbd_get_mandatory_dependencies(self):
         result = []
         for d in self.distributions.all():
             result.append(d.base_source)
-            for e in d.extra_sources.all():
-                result.append(e.source)
+            result += [e.source for e in d.extra_sources.all()]
         return result

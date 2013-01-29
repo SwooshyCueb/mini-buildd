@@ -2,7 +2,7 @@
 from __future__ import unicode_literals
 
 import tempfile
-import urllib
+import urllib2
 import logging
 import datetime
 import contextlib
@@ -96,7 +96,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
         with tempfile.NamedTemporaryFile() as release:
             LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
-            release.write(urllib.urlopen(url).read())
+            release.write(urllib2.urlopen(url).read())
             release.flush()
             release.seek(0)
             result = debian.deb822.Release(release)
@@ -110,7 +110,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             # Check signature
             with tempfile.NamedTemporaryFile() as signature:
                 LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
-                signature.write(urllib.urlopen(url + ".gpg").read())
+                signature.write(urllib2.urlopen(url + ".gpg").read())
                 signature.flush()
                 gnupg.verify(signature.name, release.name)
 
@@ -123,7 +123,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         """
         try:
             t0 = datetime.datetime.now()
-            urllib.urlopen(self.url)
+            urllib2.urlopen(self.url)
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
             self.mbd_msg_info(request, "{s}: Ping!".format(s=self))
@@ -275,8 +275,11 @@ manually run on a Debian system to be sure.
 
             for m in Archive.objects.all():
                 try:
+                    # Get release if this archive serves us, else exception
                     release = m.mbd_download_release(self, gpg)
 
+                    # Implicitely save ping value for this archive
+                    m.save()
                     self.archives.add(m)
                     self.description = release["Description"]
 
@@ -305,7 +308,8 @@ manually run on a Debian system to be sure.
                 except Exception as e:
                     self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
 
-        self.mbd_check(request)
+    def mbd_sync(self, request):
+        self._mbd_sync_by_purge_and_create(request)
 
     def mbd_unprepare(self, _request):
         self.archives = []
@@ -314,19 +318,16 @@ manually run on a Debian system to be sure.
         self.description = ""
 
     def mbd_check(self, _request):
-        # Update ping value for all archives
+        """
+        Check that this source has at least one working archive left.
+        """
+        # Update all ping values
         for a in self.archives.all():
-            # Save will implicitely ping
             a.save()
-
-        # Check if we still get an archive
         self.mbd_get_archive()
 
-    def mbd_get_status_dependencies(self):
-        dependencies = []
-        for k in self.apt_keys.all():
-            dependencies.append(k)
-        return dependencies
+    def mbd_get_mandatory_dependencies(self):
+        return self.apt_keys.all()
 
 
 class PrioritySource(mini_buildd.models.base.Model):

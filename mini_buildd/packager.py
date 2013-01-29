@@ -142,7 +142,8 @@ class Package(mini_buildd.misc.Status):
             try:
                 self.daemon.port(self.changes["Source"],
                                  self.changes["Distribution"],
-                                 dist)
+                                 dist,
+                                 self.changes["Version"])
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=dist), e)
 

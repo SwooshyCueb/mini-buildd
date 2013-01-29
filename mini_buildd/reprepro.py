@@ -29,6 +29,9 @@ class Reprepro():
         # Finally, rebuild all indices
         mini_buildd.misc.call(self._cmd + ["export"])
 
+    def check(self):
+        mini_buildd.misc.call(self._cmd + ["check"])
+
     def list(self, pattern, distribution, typ=None, list_max=50):
         result = []
         for item in mini_buildd.misc.call(self._cmd +

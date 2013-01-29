@@ -177,6 +177,13 @@ def nop(*_args, **_kwargs):
     pass
 
 
+def dont_care_run(func, *args, **kwargs):
+    try:
+        func(*args, **kwargs)
+    except:
+        pass
+
+
 def timedelta_total_seconds(delta):
     """
     python 2.6 compat for timedelta.total_seconds() from python >= 2.7.
@@ -425,13 +432,13 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
             return value_on_error
         else:
             raise
-    LOG.info("Call successful: {a}".format(a=" ".join(args)))
+    LOG.debug("Call successful: {a}".format(a=" ".join(args)))
     stdout.seek(0)
     return stdout.read().decode("UTF-8")
 
 
 def call_sequence(calls, run_as_root=False, value_on_error=None, log_output=True, rollback_only=False, **kwargs):
-    """Run sequences of calls with rolbback support.
+    """Run sequences of calls with rollback support.
 
     >>> call_sequence([(["echo", "-n", "cmd0"], ["echo", "-n", "rollback cmd0"])])
     >>> call_sequence([(["echo", "cmd0"], ["echo", "rollback cmd0"])], rollback_only=True)

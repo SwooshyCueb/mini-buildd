@@ -1,3 +1,27 @@
+mini-buildd (1.0.0~beta.3) experimental; urgency=low
+
+  Third beta. Convenience release: Status handling improvements, some eye
+  candy and more.
+  * [bebb9ca] html(home): Improve active package/builds status.
+  * [2804ef7] Make builder/packager top level logic more fail-safe on item clean up.
+  * [13ce63a] misc.sose_call(): Log call output in case of error.
+  * [24a8f85] api(status): Show active packages and builds.
+  * [160ecb6] api(list): Add arg '--distribution' to regex-limit on dist; add "Component" to the displayed items.
+  * [8985396] api(migrate,remove,port): Add (optional) arg '--version', and generally handle multiple per-dist package versions (via components).
+  * [3caecef] Improve display name for Distribution, Repository and Remote models.
+  * [8160a4f] Daemon, Suite, Repository: Add regex-validation for resp. model identities/names.
+  * [edd51f8] html(home): Renice Repository/Chroot/Remote lists.
+  * [02ebd2a] Repository: Forbid changing identity on an existing instance.
+  * [19024e3] models: Make instance display strings more generic, and better (tm).
+  * [c675911] html/css: Add colors for admin actions (activate, unprepare, deactivate).
+  * [01ca74f] misc.py: log+doc cosmetics, add meta func dont_care_run().
+  * [c90153f] remote: Add chroots to display name.
+  * [e7112ad] mini_buildd/packager.py: Fix wrong syntax on exception text format.
+  * [1a94a72] Improve status model handling (Fixes long waits on start-up, some possible status glitches).
+  * [272dd60] reprepro: Avoid parallel reprepro calls (Fixes possible locking errors).
+
+ -- Stephan Sürken <absurd@debian.org>  Wed, 30 Jan 2013 17:11:36 +0000
+
 mini-buildd (1.0.0~beta.2) experimental; urgency=low
 
   Second beta release. For the most part miscellaneous cumulated bug

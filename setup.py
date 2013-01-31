@@ -18,7 +18,8 @@ def sphinx_build_workaround(build_dir="./build/sphinx"):
     os.makedirs(build_dir + "/_static")
 
     # Call apidoc (local script for sphinx < 1.1)
-    apidoc_arguments = ['doc/apidoc.py', '--force', '--output-dir', build_dir, './mini_buildd/']
+    apidoc = "/usr/bin/sphinx-apidoc" if os.path.exists("/usr/bin/sphinx-apidoc") else "./doc/apidoc.py"
+    apidoc_arguments = [apidoc, '--force', '--output-dir', build_dir, './mini_buildd/']
     doc.apidoc.main(apidoc_arguments)
 
     # Generate man pages via help2man

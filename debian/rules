@@ -9,6 +9,10 @@ override_dh_auto_build:
 	dh_auto_build
 	python setup.py build_sphinx --source-dir=build/sphinx
 
+	# Code to enable latex+pdf manual: Deps: texlive-latex-extra texlive-fonts-recommended
+	#sphinx-build -b latex ./build/sphinx ./build/sphinx/latex
+	#make --directory ./build/sphinx/latex
+
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf build/ *.egg-info/

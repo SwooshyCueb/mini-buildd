@@ -20,7 +20,7 @@ LOG = logging.getLogger("mini_buildd")
 mini_buildd.misc.setup_console_logging(logging.DEBUG)
 
 PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
-                                 description="Mini-buildd user tool.",
+                                 description="mini-buildd user tool.",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 PARSER.add_argument('--version', action='version', version=mini_buildd.__version__)

@@ -196,7 +196,7 @@ htmlhelp_basename = 'mini-buildddoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
     ('index', 'mini-buildd.tex', u'mini-buildd Documentation',
-     u'Mini-buildd Maintainers', 'manual')]
+     u'mini-buildd maintainers', 'manual')]
 
 # The name of an image file (relative to this directory) to place at the top of
 # the title page.

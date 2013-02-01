@@ -107,7 +107,7 @@ class Status(Command):
 
     def __unicode__(self):
         return """\
-Mini-buildd: {hs}: http://{h} ({v})
+mini-buildd: {hs}: http://{h} ({v})
 Daemon     : {ds}: ftp://{f} (load {l})
 
 Repositories: {r}

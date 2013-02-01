@@ -12,10 +12,10 @@ print "I: Using setuptools: {v}".format(v=setuptools.__version__)
 
 
 def sphinx_build_workaround(build_dir="./build/sphinx"):
-    # Prepare build dir
+    # Prepare build dir: doc/, plus static files from app.mini_buildd
     shutil.rmtree(build_dir, ignore_errors=True)
     shutil.copytree("./doc", build_dir)
-    os.makedirs(build_dir + "/_static")
+    shutil.copytree("./mini_buildd/static", os.path.join(build_dir, "_static"))
 
     # Call apidoc (local script for sphinx < 1.1)
     apidoc = "/usr/bin/sphinx-apidoc" if os.path.exists("/usr/bin/sphinx-apidoc") else "./doc/apidoc.py"

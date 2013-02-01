@@ -70,7 +70,7 @@ a:hover
 #mbd_branding img
 {
 	float: left;
-	margin: 8px 10px 8px 10px;
+	margin: 8px 0px 8px 10px;
 	border: 0;
 }
 
@@ -79,7 +79,7 @@ a:hover
 
 #mbd_navigation ul
 {
-	margin: 35px 0px 0px 6px;
+	margin: 35px 0px 0px -30px;
 }
 
 #mbd_navigation li
@@ -94,6 +94,26 @@ a:hover
 {
 	padding-left: 0px;
 	border-left: 0;
+}
+
+#mbd_navigation ul.left
+{
+	float: left;
+}
+
+#mbd_navigation ul.right
+{
+	float: right;
+}
+
+#mbd_navigation a.logged-in
+{
+	color: red;
+}
+
+#mbd_navigation a.logged-out
+{
+	color: yellow;
 }
 
 #mbd_custom_header

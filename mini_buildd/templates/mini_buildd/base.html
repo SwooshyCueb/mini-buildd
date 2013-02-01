@@ -19,13 +19,21 @@
 				<a class="image" title="Mini-buildd Home" href="/"><img src="/static/images/icon_48x48.png" alt="mini-buildd logo" /></a>
 			</div>
 			<div id="mbd_navigation">
-				<ul>
-					<li class="first"><a href="/mini_buildd/">Home</a></li>
-					<li><a href="/admin/">Configure</a></li>
+				<ul class="left">
+					<li class="first"><a href="/admin/">Configure</a></li>
 					<li><a href="/doc/index.html">Documentation</a></li>
 					<li><a href="/mini_buildd/api?command=getkey">Archive Key</a></li>
 					<li><a href="/mini_buildd/api?command=getdputconf">Dput Config</a></li>
 					<li><a href="/mini_buildd/api?command=logcat">Daemon log</a></li>
+				</ul>
+				<ul class="right">
+					<li>
+						{% if user.is_authenticated %}
+							<a class="logged-in" href="/admin/logout" title="Logout"><b>{{ user.username }}</b></a>
+						{% else %}
+							<a class="logged-out" href="/admin/">Log in</a>
+						{% endif %}
+					</li>
 				</ul>
 			</div>
 		</div>

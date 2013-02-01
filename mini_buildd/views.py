@@ -73,15 +73,16 @@ def error500_internal(request, description="Sorry, something went wrong", api_cm
                  api_cmd)
 
 
-def home(_request):
+def home(request):
     return django.shortcuts.render_to_response("mini_buildd/home.html",
                                                {"daemon": mini_buildd.daemon.get(),
                                                 "repositories": mini_buildd.models.repository.Repository.mbd_get_prepared(),
                                                 "chroots": mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
-                                                "remotes": mini_buildd.models.gnupg.Remote.mbd_get_prepared()})
+                                                "remotes": mini_buildd.models.gnupg.Remote.mbd_get_prepared()},
+                                               django.template.RequestContext(request))
 
 
-def log(_request, repository, package, version):
+def log(request, repository, package, version):
     def get_logs(installed=True):
         result = {}
         path = os.path.join(mini_buildd.setup.LOG_DIR, repository, "" if installed else "_failed", package, version)
@@ -96,7 +97,8 @@ def log(_request, repository, package, version):
                                                 "package": package,
                                                 "version": version,
                                                 "logs": {"installed": get_logs(),
-                                                         "failed": get_logs(installed=False)}})
+                                                         "failed": get_logs(installed=False)}},
+                                               django.template.RequestContext(request))
 
 
 def api(request):
@@ -126,7 +128,8 @@ def api(request):
                 return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
             else:
                 return django.shortcuts.render_to_response("mini_buildd/api_confirm.html",
-                                                           {"api_cmd": api_cmd})
+                                                           {"api_cmd": api_cmd},
+                                                           django.template.RequestContext(request))
 
         # Run API call (dep-injection via daemon object)
         api_cmd.run(mini_buildd.daemon.get())
@@ -134,7 +137,8 @@ def api(request):
         # Generate API call output
         if output == "html":
             return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command), "mini_buildd/api_default.html".format(c=command)],
-                                                       {"api_cmd": api_cmd})
+                                                       {"api_cmd": api_cmd},
+                                                       django.template.RequestContext(request))
         elif output == "plain":
             return django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
         elif output == "python":

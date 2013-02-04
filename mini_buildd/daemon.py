@@ -271,17 +271,10 @@ class Daemon():
         else:
             mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already stopped.")
 
-    @classmethod
-    def check(cls, request=None, force=False):
-        mini_buildd.models.daemon.Daemon.Admin.mbd_action(request,
-                                                          mini_buildd.models.repository.Repository.mbd_get_prepared(),
-                                                          "check",
-                                                          force=force)
-
     def restart(self, request=None, force_check=False):
         self.stop(request=request)
         self._update_model()
-        self.check(force=force_check)
+        mini_buildd.models.daemon.Daemon.Admin.mbd_action(request, (self.model,), "check", force=force_check)
         if self.model.mbd_is_active():
             self.start(request=request)
         else:

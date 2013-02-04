@@ -184,7 +184,7 @@ personality={p}
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--directory=/", "--", "/bin/ls"])
         self.mbd_msg_info(request, "{c}: 'ls' in snapshot successful.".format(c=self))
 
-    def mbd_get_mandatory_dependencies(self):
+    def mbd_get_dependencies(self):
         return [self.source]
 
 

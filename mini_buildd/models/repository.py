@@ -219,6 +219,10 @@ class Layout(mini_buildd.models.base.Model):
             self.experimental_default_version if suite_option.experimental else self.default_version,
             repository, distribution)
 
+    def mbd_get_reverse_dependencies(self):
+        "When the layout changes, all repos that use that layout also change."
+        return [r for r in self.repository_set.all()]
+
 
 class ArchitectureOption(mini_buildd.models.base.Model):
     architecture = django.db.models.ForeignKey("Architecture")
@@ -239,6 +243,10 @@ class ArchitectureOption(mini_buildd.models.base.Model):
         if self.build_architecture_all and self.optional:
             raise django.core.exceptions.ValidationError("Optional architectures must not be architecture all!")
         super(ArchitectureOption, self).clean(*args, **kwargs)
+
+    def mbd_unicode(self):
+        return "{a} for {d}".format(a=self.architecture.mbd_unicode(),
+                                    d=self.distribution)
 
 
 class ArchitectureOptionInline(django.contrib.admin.TabularInline):
@@ -400,6 +408,10 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, self.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(self.sbuildrc_snippet, {"LIBDIR": libdir}))
+
+    def mbd_get_reverse_dependencies(self):
+        "When the distribution changes, all repos that use that distribution also change."
+        return [r for r in self.repository_set.all()]
 
 
 class Repository(mini_buildd.models.base.StatusModel):
@@ -900,7 +912,7 @@ gnupghome {h}
     def mbd_check(self, _request):
         self._mbd_reprepro().check()
 
-    def mbd_get_mandatory_dependencies(self):
+    def mbd_get_dependencies(self):
         result = []
         for d in self.distributions.all():
             result.append(d.base_source)

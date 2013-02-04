@@ -98,32 +98,34 @@ are actually supported by the current model.
 
     class Admin(django.contrib.admin.ModelAdmin):
         @classmethod
-        def _mbd_save_or_delete_model(cls, request, obj, needs_restart, func):
-            "Save/delete triggers: Automatically trigger Daemon restart on object change."
-            if needs_restart:
-                obj.mbd_msg_warn(request, "Auto-restarting daemon (consider temporary deactivation for extensive maintenance)")
-                mini_buildd.misc.dont_care_run(obj.mbd_get_daemon().stop, request=request)
-            func()
-            if needs_restart:
-                mini_buildd.misc.dont_care_run(obj.mbd_get_daemon().start, request=request)
+        def _mbd_on_change(cls, request, obj):
+            "Global actions to take when an object changes."
+            if obj.mbd_get_daemon().is_running():
+                # Auto-deactivate daemon
+                daemon = mini_buildd.models.daemon.Daemon.objects.get(id=1)
+                StatusModel.Admin.mbd_action(request, (daemon,), "deactivate")
+                daemon.last_checked = StatusModel.CHECK_REACTIVATE
+                daemon.save()
+                obj.mbd_msg_warn(request, "Daemon auto-deactivated due to changes.")
+
+            for o in obj.mbd_get_reverse_dependencies():
+                o.mbd_set_changed(request)
+                o.save()
 
         def save_model(self, request, obj, form, change):
-            self._mbd_save_or_delete_model(request,
-                                           obj,
-                                           needs_restart=obj.mbd_get_daemon().is_running() and change and form.changed_data,
-                                           func=obj.save)
+            if change:
+                self._mbd_on_change(request, obj)
+
+            obj.save()
 
         def delete_model(self, request, obj):
-            def unprepare_and_delete():
-                is_prepared_func = getattr(obj, "mbd_is_prepared", None)
-                if is_prepared_func and is_prepared_func():
-                    self.mbd_unprepare(request, obj)
-                obj.delete()
+            self._mbd_on_change(request, obj)
 
-            self._mbd_save_or_delete_model(request,
-                                           obj,
-                                           needs_restart=obj.mbd_get_daemon().is_running(),
-                                           func=unprepare_and_delete)
+            is_prepared_func = getattr(obj, "mbd_is_prepared", None)
+            if is_prepared_func and is_prepared_func():
+                self.mbd_unprepare(request, obj)
+
+            obj.delete()
 
     def __unicode__(self):
         return "{C}: {u}".format(C=self.__class__.__name__, u=self.mbd_unicode())
@@ -197,6 +199,14 @@ are actually supported by the current model.
         if not re.match(regex, value):
             raise django.core.exceptions.ValidationError("{n} field does not match regex {r}".format(n=field_name, r=regex))
 
+    def mbd_get_dependencies(self):
+        LOG.debug("No mandatory dependencies for {s}".format(s=self))
+        return []
+
+    def mbd_get_reverse_dependencies(self):
+        LOG.debug("No reverse dependencies for {s}".format(s=self))
+        return []
+
 
 class StatusModel(Model):
     """
@@ -221,16 +231,16 @@ class StatusModel(Model):
     CHECK_NONE = datetime.datetime(datetime.MINYEAR, 1, 1, tzinfo=None)
     CHECK_CHANGED = datetime.datetime(datetime.MINYEAR, 1, 2, tzinfo=None)
     CHECK_FAILED = datetime.datetime(datetime.MINYEAR, 1, 3, tzinfo=None)
-    CHECK_FAILED_REACTIVATE = datetime.datetime(datetime.MINYEAR, 1, 4, tzinfo=None)
-    _CHECK_MAX = CHECK_FAILED_REACTIVATE
+    CHECK_REACTIVATE = datetime.datetime(datetime.MINYEAR, 1, 4, tzinfo=None)
+    _CHECK_MAX = CHECK_REACTIVATE
     CHECK_STRINGS = {
         CHECK_NONE: {"char": "-", "string": "Unchecked"},
         CHECK_CHANGED: {"char": "*", "string": "Model changed"},
         CHECK_FAILED: {"char": "x", "string": "Failed"},
-        CHECK_FAILED_REACTIVATE: {"char": "A", "string": "Failed; Auto-activate when check succeeds (again))"}}
+        CHECK_REACTIVATE: {"char": "A", "string": "Failed; Auto-activate when check succeeds (again))"}}
     last_checked = django.db.models.DateTimeField(default=CHECK_NONE, editable=False)
 
-    # Obsoleted by CHECK_FAILED_REACTIVATE prepared data state
+    # Obsoleted by CHECK_REACTIVATE prepared data state
     auto_reactivate = django.db.models.BooleanField(default=False, editable=False)
 
     class Meta(Model.Meta):
@@ -240,23 +250,14 @@ class StatusModel(Model):
 # pylint: disable=E1002
         def save_model(self, request, obj, form, change):
             if change and form.changed_data:
-                if obj.mbd_is_active():
-                    obj.status = obj.STATUS_PREPARED
-                    obj.mbd_msg_warn(request, "{o}: Deactivated due to changes. Prepare data again.".format(o=obj))
-                obj.last_checked = obj.CHECK_CHANGED
-                obj.mbd_msg_warn(request, "{o}: Marked as changed.".format(o=obj))
+                obj.mbd_set_changed(request)
             super(StatusModel.Admin, self).save_model(request, obj, form, change)
 # pylint: enable=E1002
 
         @classmethod
         def _mbd_run_dependencies(cls, request, obj, func, **kwargs):
-            for o in obj.mbd_get_mandatory_dependencies():
+            for o in obj.mbd_get_dependencies():
                 func(request, o, **kwargs)
-            for o in obj.mbd_get_optional_dependencies():
-                try:
-                    func(request, o, **kwargs)
-                except:
-                    obj.mbd_msg_warn(request, "{o}: Failed, but optional. Ignoring...".format(o=o))
 
         @classmethod
         def mbd_prepare(cls, request, obj):
@@ -269,6 +270,7 @@ class StatusModel(Model):
                 obj.mbd_msg_info(request, "{o}: Prepare successful.".format(o=obj))
             elif obj.mbd_is_changed():
                 # Update data on change
+                cls._mbd_run_dependencies(request, obj, cls.mbd_prepare)
                 obj.mbd_sync(request)
                 obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_NONE
                 obj.save()
@@ -283,12 +285,13 @@ class StatusModel(Model):
                     # Also run for all status dependencies
                     cls._mbd_run_dependencies(request, obj, cls.mbd_check,
                                               force=force,
-                                              needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_FAILED_REACTIVATE)
+                                              needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_REACTIVATE)
 
                     if force or not obj.mbd_is_checked():
                         obj.mbd_check(request)
-                        if obj.last_checked == obj.CHECK_FAILED_REACTIVATE:
+                        if obj.last_checked == obj.CHECK_REACTIVATE:
                             obj.status = StatusModel.STATUS_ACTIVE
+                            obj.mbd_activate(request)
                             obj.mbd_msg_info(request, "{o}: Auto-reactivated.".format(o=obj))
                         obj.last_checked = datetime.datetime.now()
 
@@ -303,7 +306,8 @@ class StatusModel(Model):
                     # Check failed, auto-deactivate and re-raise exception
                     obj.last_checked = max(obj.last_checked, obj.CHECK_FAILED)
                     if obj.mbd_is_active():
-                        obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_FAILED_REACTIVATE
+                        obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_REACTIVATE
+                        obj.mbd_deactivate(request)
                         obj.mbd_msg_error(request, "{o}: Automatically deactivated.".format(o=obj))
                     obj.save()
                     raise
@@ -318,21 +322,19 @@ class StatusModel(Model):
                 obj.status = obj.STATUS_ACTIVE
                 obj.save()
                 obj.mbd_msg_info(request, "{o}: Activate successful.".format(o=obj))
-            elif obj.mbd_is_prepared() and obj.last_checked == obj.CHECK_FAILED:
-                obj.last_checked = obj.CHECK_FAILED_REACTIVATE
+            elif obj.mbd_is_prepared() and (obj.last_checked == obj.CHECK_FAILED or obj.last_checked == obj.CHECK_NONE):
+                obj.last_checked = obj.CHECK_REACTIVATE
                 obj.save()
                 obj.mbd_msg_info(request, "{o}: Set to auto-activate when check succeeds.".format(o=obj))
             elif obj.mbd_is_active():
                 obj.mbd_msg_info(request, "{o}: Already active.".format(o=obj))
-            else:
-                obj.mbd_msg_warn(request, "{o}: Must be prepared and checked to activate.".format(o=obj))
 
         @classmethod
         def mbd_deactivate(cls, request, obj):
             if obj.mbd_is_active():
                 obj.mbd_deactivate(request)
             obj.status = min(obj.STATUS_PREPARED, obj.status)
-            if obj.last_checked == obj.CHECK_FAILED_REACTIVATE:
+            if obj.last_checked == obj.CHECK_REACTIVATE:
                 obj.last_checked = obj.CHECK_FAILED
             obj.save()
             obj.mbd_msg_info(request, "{o}: Deactivate successful.".format(o=obj))
@@ -412,6 +414,14 @@ this would mean losing all packages!
     def __unicode__(self):
         return "{u} ({s})".format(u=super(StatusModel, self).__unicode__(), s=self.mbd_get_status_display())
 
+    def mbd_set_changed(self, request):
+        if self.mbd_is_active():
+            self.status = self.STATUS_PREPARED
+            self.mbd_deactivate(request)
+            self.mbd_msg_warn(request, "{o}: Deactivated due to changes. Prepare data again.".format(o=self))
+        self.last_checked = self.CHECK_CHANGED
+        self.mbd_msg_warn(request, "{o}: Marked as changed.".format(o=self))
+
     #
     # Action default hooks and helpers
     #
@@ -449,7 +459,7 @@ this would mean losing all packages!
     @classmethod
     def mbd_get_active_or_auto_reactivate(cls):
         return cls.objects.filter(django.db.models.Q(status__gte=cls.STATUS_ACTIVE) |
-                                  django.db.models.Q(last_checked=cls.CHECK_FAILED_REACTIVATE))
+                                  django.db.models.Q(last_checked=cls.CHECK_REACTIVATE))
 
     @classmethod
     def mbd_get_prepared(cls):
@@ -460,11 +470,3 @@ this would mean losing all packages!
         if self.status == self.STATUS_PREPARED and self.last_checked <= self._CHECK_MAX:
             p = " [{p}]".format(p=self.CHECK_STRINGS.get(self.last_checked, {}).get("char", self.last_checked))
         return "{s}{p}".format(s=self.get_status_display(), p=p)
-
-    def mbd_get_mandatory_dependencies(self):
-        LOG.debug("No mandatory dependencies for {s}".format(s=self))
-        return []
-
-    def mbd_get_optional_dependencies(self):
-        LOG.debug("No optional dependencies for {s}".format(s=self))
-        return []

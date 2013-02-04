@@ -192,21 +192,20 @@ activate/deactivate actions will start/stop the 'daemon'.
         self._mbd_gnupg.unprepare()
         self.mbd_msg_info(request, "Daemon GnuPG key removed.")
 
-    def mbd_check(self, _request):
+    def mbd_check(self, request):
+        # Don't care check run on all active or auto-reactivate repos, chroots and remotes.
+        for model in [mini_buildd.models.repository.Repository, mini_buildd.models.chroot.Chroot, mini_buildd.models.gnupg.Remote]:
+            model.Admin.mbd_action(request, model.mbd_get_active_or_auto_reactivate(), "check")
+
+        # Just warn in case there are no repos and no chroots
         if not self.mbd_get_daemon().get_active_repositories() and not self.mbd_get_daemon().get_active_chroots():
-            raise Exception("At least one chroot or repository must be active to start the daemon.")
+            self.mbd_msg_warn(request, "No active chroot or repository (starting anyway).")
 
     def mbd_activate(self, request):
         self.mbd_get_daemon().start(request=request)
 
     def mbd_deactivate(self, request):
         self.mbd_get_daemon().stop(request=request)
-
-    def mbd_get_optional_dependencies(self):
-        return \
-            [r for r in mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate()] + \
-            [c for c in mini_buildd.models.chroot.Chroot.mbd_get_active_or_auto_reactivate()] + \
-            [r for r in mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate()]
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

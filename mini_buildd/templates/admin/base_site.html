@@ -17,12 +17,16 @@
 
 	{% mbd_admin_check_daemon_running %}
 
-	{% if daemon_running %}
-		<div id="mbd_django_admin_daemon_status">
-			<p><span class="warning">Warning:</span>
-				The daemon is <span style="font-weight: bold">running</span>!&nbsp;
-				<a class="stop-daemon" href="/admin/mini_buildd/daemon/" title="goto daemon section">Consider temporary deactivation</a> for extensive maintenance work!</p>
-		</div>
-	{% endif %}
+	<div id="mbd_django_admin_daemon_status">
+		<p>
+			<span class="warning">Warning:</span>
+			{% if daemon_running %}
+				The daemon is <span style="font-weight: bold">running</span>!&nbsp; Will be automatically deactivated on first change.
+			{% else %}
+				The daemon is <span style="font-weight: bold">stopped</span>!&nbsp;
+				<a class="stop-daemon" href="/admin/mini_buildd/daemon/" title="goto daemon section">Check/activate daemon</a> when done.
+			{% endif %}
+		</p>
+	</div>
 
 {% endblock %}

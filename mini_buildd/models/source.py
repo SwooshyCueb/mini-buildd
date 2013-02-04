@@ -6,6 +6,7 @@ import urllib2
 import logging
 import datetime
 import contextlib
+import copy
 
 import django.db.models
 import django.contrib.admin
@@ -202,6 +203,14 @@ manually run on a Debian system to be sure.
             ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
 
+        def get_readonly_fields(self, _request, obj=None):
+            "Forbid to change identity on existing source (usually a bad idea; repos/chroots that refer to us may break)."
+            fields = copy.copy(self.readonly_fields)
+            if obj:
+                fields.append("origin")
+                fields.append("codename")
+            return fields
+
         @classmethod
         def _add_or_create(cls, request, origin, codename, keys):
             obj, created = Source.objects.get_or_create(origin=origin, codename=codename)
@@ -308,6 +317,8 @@ manually run on a Debian system to be sure.
                 except Exception as e:
                     self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
 
+        self.mbd_check(request)
+
     def mbd_sync(self, request):
         self._mbd_sync_by_purge_and_create(request)
 
@@ -326,8 +337,16 @@ manually run on a Debian system to be sure.
             a.save()
         self.mbd_get_archive()
 
-    def mbd_get_mandatory_dependencies(self):
+    def mbd_get_dependencies(self):
         return self.apt_keys.all()
+
+    def mbd_get_reverse_dependencies(self):
+        "Return all chroots and repositories that use us."
+        result = [c for c in self.chroot_set.all()]
+        for d in self.distribution_set.all():
+            for r in d.mbd_get_reverse_dependencies():
+                result.append(r)
+        return result
 
 
 class PrioritySource(mini_buildd.models.base.Model):

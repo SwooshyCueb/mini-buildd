@@ -124,14 +124,32 @@
 	width: 100%;
 }
 
-.Activate {
-	color: green;
+.Prepare {
+	border-color: yellow;
+	border-width: 3px;
+	font-weight: bold;
 }
 
-.Unprepare {
-	color: red;
+.Check {
+	border-color: blue;
+	border-width: 3px;
+	font-weight: bold;
+}
+
+.Activate {
+	border-color: green;
+	border-width: 3px;
+	font-weight: bold;
 }
 
 .Deactivate {
-	color: blue;
+	border-color: yellow;
+	border-width: 3px;
+	font-weight: bold;
+}
+
+.Remove {
+	border-color: red;
+	border-width: 3px;
+	font-weight: bold;
 }

@@ -99,7 +99,7 @@ Name-Email: {e}
         else:
             LOG.info("GnuPG key already prepared...")
 
-    def unprepare(self):
+    def remove(self):
         if os.path.exists(self.home):
             shutil.rmtree(self.home)
             LOG.info("GnuPG setup removed: {h}".format(h=self.home))

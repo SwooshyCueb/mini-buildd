@@ -167,7 +167,7 @@ personality={p}
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
         self.mbd_msg_info(request, "{c}: Prepared on system for schroot.".format(c=self))
 
-    def mbd_unprepare(self, request):
+    def mbd_remove(self, request):
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path(),
                       onerror=lambda f, p, e: self.mbd_msg_warn(request,

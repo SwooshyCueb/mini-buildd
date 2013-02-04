@@ -136,7 +136,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     @classmethod
     def remove_system_artifacts(cls):
         """
-        Bulk-unprepare all model instances that might have
+        Bulk-remove all model instances that might have
         produced cruft on the system (i.e., outside
         mini-buildd's home).
         """
@@ -144,7 +144,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         mini_buildd.models.chroot.Chroot.Admin.mbd_action(
             None,
             mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
-            "unprepare")
+            "remove")
 
     @classmethod
     def _syncdb(cls):

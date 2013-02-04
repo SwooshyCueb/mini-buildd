@@ -322,7 +322,7 @@ manually run on a Debian system to be sure.
     def mbd_sync(self, request):
         self._mbd_sync_by_purge_and_create(request)
 
-    def mbd_unprepare(self, _request):
+    def mbd_remove(self, _request):
         self.archives = []
         self.components = []
         self.architectures = []

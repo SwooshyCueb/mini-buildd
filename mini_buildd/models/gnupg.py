@@ -56,7 +56,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
                 if key[0] == "fpr":
                     self.key_fingerprint = key[9]
 
-    def mbd_unprepare(self, _request):
+    def mbd_remove(self, _request):
         self.key_long_id = ""
         self.key_created = ""
         self.key_expires = ""
@@ -73,7 +73,7 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         Checks that we actually have the key and long_id. This should always be true after "prepare".
         """
         if not self.key and not self.key_long_id:
-            raise Exception("GnuPG key with inconsistent state -- try unprepare,prepare to fix.")
+            raise Exception("GnuPG key with inconsistent state -- try remove,prepare to fix.")
 
 
 class AptKey(GnuPGPublicKey):
@@ -132,8 +132,8 @@ class Remote(GnuPGPublicKey):
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)
 
-    def mbd_unprepare(self, request):
-        super(Remote, self).mbd_unprepare(request)
+    def mbd_remove(self, request):
+        super(Remote, self).mbd_remove(request)
         self.pickled_data = ""
         self.mbd_msg_info(request, "Remote key and state removed.")
 

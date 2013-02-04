@@ -131,7 +131,7 @@ prevent original package maintainers to be spammed.
             (None, {"fields": (), "description": """\
 The daemon instance. There is always exactly one instance of this.
 
-prepare/unprepare actions will generate/remove the GnuPG key.
+prepare/remove actions will generate/remove the GnuPG key.
 
 activate/deactivate actions will start/stop the 'daemon'.
 """}),
@@ -186,10 +186,10 @@ activate/deactivate actions will start/stop the 'daemon'.
         self.mbd_msg_info(request, "Daemon GnuPG key generated: {i}: {f}".format(i=self._mbd_gnupg_long_id, f=self._mbd_gnupg_fingerprint))
 
     def mbd_sync(self, request):
-        self.mbd_msg_warn(request, "The GnuPG key will never be updated automatically. Explicitly run unprepare+prepare to achive this.")
+        self.mbd_msg_warn(request, "The GnuPG key will never be updated automatically. Explicitly run remove+prepare to achive this.")
 
-    def mbd_unprepare(self, request):
-        self._mbd_gnupg.unprepare()
+    def mbd_remove(self, request):
+        self._mbd_gnupg.remove()
         self.mbd_msg_info(request, "Daemon GnuPG key removed.")
 
     def mbd_check(self, request):

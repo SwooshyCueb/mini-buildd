@@ -123,7 +123,7 @@ are actually supported by the current model.
 
             is_prepared_func = getattr(obj, "mbd_is_prepared", None)
             if is_prepared_func and is_prepared_func():
-                self.mbd_unprepare(request, obj)
+                self.mbd_remove(request, obj)
 
             obj.delete()
 
@@ -212,22 +212,22 @@ class StatusModel(Model):
     """
     Abstract model class for all models that carry a status. See Manual: :ref:`admin_configuration`.
     """
-    # The main statuses: unprepared, prepared, active
-    STATUS_UNPREPARED = 0
+    # The main statuses: removed, prepared, active
+    STATUS_REMOVED = 0
     STATUS_PREPARED = 1
     STATUS_ACTIVE = 2
     STATUS_CHOICES = (
-        (STATUS_UNPREPARED, "Unprepared"),
+        (STATUS_REMOVED, "Removed"),
         (STATUS_PREPARED, "Prepared"),
         (STATUS_ACTIVE, "Active"))
     STATUS_COLORS = {
-        STATUS_UNPREPARED: {"bg": "yellow", "fg": "black"},
-        STATUS_PREPARED: {"bg": "blue", "fg": "white"},
+        STATUS_REMOVED: {"bg": "red", "fg": "black"},
+        STATUS_PREPARED: {"bg": "yellow", "fg": "black"},
         STATUS_ACTIVE: {"bg": "green", "fg": "white"}}
-    status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_UNPREPARED, editable=False)
+    status = django.db.models.IntegerField(choices=STATUS_CHOICES, default=STATUS_REMOVED, editable=False)
 
     # Statuses of the prepared data, relevant for status "Prepared" only.
-    # For "Unprepared" it's always NONE, for "Active" it's always the stamp of the last check.
+    # For "Removed" it's always NONE, for "Active" it's always the stamp of the last check.
     CHECK_NONE = datetime.datetime(datetime.MINYEAR, 1, 1, tzinfo=None)
     CHECK_CHANGED = datetime.datetime(datetime.MINYEAR, 1, 2, tzinfo=None)
     CHECK_FAILED = datetime.datetime(datetime.MINYEAR, 1, 3, tzinfo=None)
@@ -312,7 +312,7 @@ class StatusModel(Model):
                     obj.save()
                     raise
             else:
-                raise Exception("{o}: Can't check unprepared or changed object.".format(o=obj))
+                raise Exception("{o}: Can't check removed or changed object.".format(o=obj))
 
         @classmethod
         def mbd_activate(cls, request, obj):
@@ -340,14 +340,14 @@ class StatusModel(Model):
             obj.mbd_msg_info(request, "{o}: Deactivate successful.".format(o=obj))
 
         @classmethod
-        def mbd_unprepare(cls, request, obj):
+        def mbd_remove(cls, request, obj):
             if obj.mbd_is_prepared():
-                obj.mbd_unprepare(request)
-                obj.status, obj.last_checked = obj.STATUS_UNPREPARED, obj.CHECK_NONE
+                obj.mbd_remove(request)
+                obj.status, obj.last_checked = obj.STATUS_REMOVED, obj.CHECK_NONE
                 obj.save()
-                obj.mbd_msg_info(request, "{o}: Unprepare successful.".format(o=obj))
+                obj.mbd_msg_info(request, "{o}: Remove successful.".format(o=obj))
             else:
-                obj.mbd_msg_info(request, "{o}: Already unprepared.".format(o=obj))
+                obj.mbd_msg_info(request, "{o}: Already removed.".format(o=obj))
 
         @classmethod
         def mbd_action(cls, request, queryset, action, **kwargs):
@@ -377,9 +377,9 @@ class StatusModel(Model):
             self.mbd_action(request, queryset, "deactivate")
         mbd_action_deactivate.short_description = "Deactivate"
 
-        def mbd_action_unprepare(self, request, queryset):
+        def mbd_action_remove(self, request, queryset):
             if request.POST.get("confirm"):
-                self.mbd_action(request, queryset, "unprepare")
+                self.mbd_action(request, queryset, "remove")
             else:
                 return django.template.response.TemplateResponse(
                     request,
@@ -387,7 +387,7 @@ class StatusModel(Model):
                     {
                         "title": ("Are you sure?"),
                         "queryset": queryset,
-                        "action": "mbd_action_unprepare",
+                        "action": "mbd_action_remove",
                         "desc": """\
 Unpreparing means all the data associated by preparation will be
 removed from the system. Especially for repositories,
@@ -395,11 +395,11 @@ this would mean losing all packages!
 """,
                         "action_checkbox_name": django.contrib.admin.helpers.ACTION_CHECKBOX_NAME},
                     current_app=self.admin_site.name)
-        mbd_action_unprepare.short_description = "Unprepare"
+        mbd_action_remove.short_description = "Remove"
 
 # pylint: disable=R0201
         def colored_status(self, obj):
-            return '<div style="background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="Last check: {t}">{o}</div>'.format(
+            return '<div style="font-weight:bold;background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="Last check: {t}">{o}</div>'.format(
                 bc=obj.STATUS_COLORS[obj.status].get("bg"),
                 fc=obj.STATUS_COLORS[obj.status].get("fg"),
                 t=obj.CHECK_STRINGS.get(obj.last_checked, {}).get("string", obj.last_checked),
@@ -408,8 +408,9 @@ this would mean losing all packages!
         colored_status.allow_tags = True
 # pylint: enable=R0201
 
-        actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_unprepare]
+        actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_remove]
         list_display = ["colored_status", "__unicode__"]
+        list_display_links = ["__unicode__"]
 
     def __unicode__(self):
         return "{u} ({s})".format(u=super(StatusModel, self).__unicode__(), s=self.mbd_get_status_display())
@@ -434,7 +435,7 @@ this would mean losing all packages!
         pass
 
     def _mbd_sync_by_purge_and_create(self, request):
-        mini_buildd.models.base.StatusModel.Admin.mbd_unprepare(request, self)
+        mini_buildd.models.base.StatusModel.Admin.mbd_remove(request, self)
         mini_buildd.models.base.StatusModel.Admin.mbd_prepare(request, self)
 
     #

@@ -905,7 +905,7 @@ gnupghome {h}
     def mbd_sync(self, request):
         self.mbd_prepare(request)
 
-    def mbd_unprepare(self, _request):
+    def mbd_remove(self, _request):
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
 

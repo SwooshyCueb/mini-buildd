@@ -60,7 +60,7 @@ Comma-separated list of special debugging options:
         group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
                               help="INTERNAL USE ONLY, use with care! Load JSON file into database (see 'django-admin loaddata').")
         group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
-                              help="INTERNAL USE ONLY, use with care! Bulk-unprepare all objects that might have produced artifacts on the system.")
+                              help="INTERNAL USE ONLY, use with care! Bulk-remove associated data of all objects that might have produced artifacts on the system.")
 
         args = parser.parse_args()
 

@@ -133,6 +133,26 @@ Distributions and Repositories
 Chroots
 =======
 
+.. todo:: **FAQ**: *How to use foreign-architecture chroots with qemu.*
+
+	 Tested with 'armel' (other archs might work as well, but not tested).
+
+	 Install these additional packages::
+
+		 # apt-get install binfmt-support qemu-user-static
+
+	 You will need a version of qemu-user-static with [#debbug683205]_ fixed.
+
+	 In the Chroot configuration, add a line::
+
+		 Debootstrap-Command: /usr/sbin/qemu-debootstrap
+
+	 to the extra options. That's it. Now just prepare && activate as usual.
+
+	 .. rubric:: References:
+	 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
+
+
 .. todo:: **FAQ**: *Chroot creating fails due to missing arch in archive (partial mirror).*
 
 	 This might occur, for example, if you use a (local) partial

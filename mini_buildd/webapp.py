@@ -72,48 +72,55 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         snapshot, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="snapshot")
         experimental, created = mini_buildd.models.repository.Suite.objects.get_or_create(name="experimental")
 
-        default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name="Default")
-        if created:
-            so_stable = mini_buildd.models.repository.SuiteOption(
-                layout=default_layout,
-                suite=stable,
-                uploadable=False,
-                extra_options="Rollback: 6\n")
-            so_stable.save()
+        for name, extra_options in {"Default": {"stable": "Rollback: 6\n",
+                                                "testing": "Rollback: 3\n",
+                                                "unstable": "Rollback: 9\n",
+                                                "snapshot": "Rollback: 12\n",
+                                                "experimental": "Rollback: 6\n"},
+                                    "Default (no rollbacks)": {}}.items():
 
-            so_testing = mini_buildd.models.repository.SuiteOption(
-                layout=default_layout,
-                suite=testing,
-                uploadable=False,
-                migrates_to=so_stable,
-                extra_options="Rollback: 3\n")
-            so_testing.save()
+            default_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(name=name)
+            if created:
+                so_stable = mini_buildd.models.repository.SuiteOption(
+                    layout=default_layout,
+                    suite=stable,
+                    uploadable=False,
+                    extra_options=extra_options.get("stable", ""))
+                so_stable.save()
 
-            so_unstable = mini_buildd.models.repository.SuiteOption(
-                layout=default_layout,
-                suite=unstable,
-                migrates_to=so_testing,
-                build_keyring_package=True,
-                extra_options="Rollback: 9\n")
-            so_unstable.save()
+                so_testing = mini_buildd.models.repository.SuiteOption(
+                    layout=default_layout,
+                    suite=testing,
+                    uploadable=False,
+                    migrates_to=so_stable,
+                    extra_options=extra_options.get("testing", ""))
+                so_testing.save()
 
-            so_snapshot = mini_buildd.models.repository.SuiteOption(
-                layout=default_layout,
-                suite=snapshot,
-                uploadable=True,
-                experimental=True,
-                but_automatic_upgrades=True,
-                extra_options="Rollback: 12\n")
-            so_snapshot.save()
+                so_unstable = mini_buildd.models.repository.SuiteOption(
+                    layout=default_layout,
+                    suite=unstable,
+                    migrates_to=so_testing,
+                    build_keyring_package=True,
+                    extra_options=extra_options.get("unstable", ""))
+                so_unstable.save()
 
-            so_experimental = mini_buildd.models.repository.SuiteOption(
-                layout=default_layout,
-                suite=experimental,
-                uploadable=True,
-                experimental=True,
-                but_automatic_upgrades=False,
-                extra_options="Rollback: 6\n")
-            so_experimental.save()
+                so_snapshot = mini_buildd.models.repository.SuiteOption(
+                    layout=default_layout,
+                    suite=snapshot,
+                    uploadable=True,
+                    experimental=True,
+                    but_automatic_upgrades=True,
+                    extra_options=extra_options.get("snapshot", ""))
+                so_snapshot.save()
+
+                so_experimental = mini_buildd.models.repository.SuiteOption(
+                    layout=default_layout,
+                    suite=experimental,
+                    uploadable=True,
+                    experimental=True,
+                    but_automatic_upgrades=False,
+                    extra_options=extra_options.get("experimental", ""))
+                so_experimental.save()
 
     @classmethod
     def set_admin_password(cls, password):

@@ -189,3 +189,15 @@ Provide keyring packages
 **************************
 Migrate 0.8.x repositories
 **************************
+
+
+
+********
+Glossary
+********
+
+.. glossary::
+
+	 Codename
+		 The name identifying a Debian base distribution; like
+		 *squeeze* for Debian or *quantal* for Ubuntu.

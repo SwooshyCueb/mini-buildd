@@ -137,22 +137,26 @@ class BlockQueue(Queue.Queue):
     """
     def __init__(self, maxsize):
         self._maxsize = maxsize
+        self._pending = 0
         self._active = Queue.Queue(maxsize=maxsize)
         Queue.Queue.__init__(self, maxsize=maxsize)
 
     def __unicode__(self):
-        return "{l}: {n}/{m}".format(
+        return "{l}: {n}/{m} ({p} pending)".format(
             l=self.load,
             n=self._active.qsize(),
-            m=self._maxsize)
+            m=self._maxsize,
+            p=self._pending)
 
     @property
     def load(self):
         return round(float(self._active.qsize()) / self._maxsize, 2)
 
     def put(self, item, **kwargs):
+        self._pending += 1
         self._active.put(item)
         Queue.Queue.put(self, item, **kwargs)
+        self._pending -= 1
 
     def task_done(self):
         self._active.get()

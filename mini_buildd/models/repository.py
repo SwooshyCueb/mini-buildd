@@ -506,12 +506,18 @@ Example:
         gpg = mini_buildd.gnupg.TmpGnuPG()
         # Add keys from django users
         for u in django.contrib.auth.models.User.objects.filter(is_active=True):
-            p = u.get_profile()
-            if p.mbd_is_active():
-                for r in p.may_upload_to.all():
-                    if r.identity == self.identity:
-                        gpg.add_pub_key(p.key)
-                        LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=p.key_long_id, n=p.key_name))
+            LOG.debug("Checking user: {u}".format(u=u))
+
+            uploader = None
+            try:
+                uploader = u.get_profile()
+            except:
+                LOG.warn("User '{u}' does not have an uploader profile (deliberately removed?)".format(u=u))
+
+            if uploader and uploader.mbd_is_active() and uploader.may_upload_to.all().filter(identity=self.identity):
+                gpg.add_pub_key(uploader.key)
+                LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=uploader.key_long_id, n=uploader.key_name))
+
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()

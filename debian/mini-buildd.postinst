@@ -9,7 +9,7 @@ DEFAULT_FILE=/etc/default/mini-buildd
 db_get mini-buildd/options
 MINI_BUILDD_OPTIONS="${RET}"
 grep -Eq '^ *MINI_BUILDD_OPTIONS=' "${DEFAULT_FILE}" || printf "MINI_BUILDD_OPTIONS=''\n" >>"${DEFAULT_FILE}"
-sed -i "s/^ *MINI_BUILDD_OPTIONS=.*/MINI_BUILDD_OPTIONS=\"${MINI_BUILDD_OPTIONS}\"/" "${DEFAULT_FILE}"
+sed -i "s|^ *MINI_BUILDD_OPTIONS=.*|MINI_BUILDD_OPTIONS=\"${MINI_BUILDD_OPTIONS}\"|" "${DEFAULT_FILE}"
 
 #
 # Handle mini-buildd user

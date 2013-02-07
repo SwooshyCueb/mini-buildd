@@ -263,18 +263,28 @@ class Changes(debian.deb822.Changes):
         Build buildrequest files for all architectures.
         """
 
-        # Extra check on all files from the dsc: Check md5 against possible pool files, add missing from pool (orig.tar.gz).
+        # Extra check on all DSC/source package files
+        # - Check md5 against possible pool files.
+        # - Add missing from pool (i.e., orig.tar.gz).
+        # - make sure all files from dsc are actually available
         files_from_pool = []
         dsc_file = os.path.join(os.path.dirname(self._file_path), self.dsc_name)
         dsc = debian.deb822.Dsc(file(dsc_file))
         for f in dsc["Files"]:
+            in_changes = f["name"] in self.get_files(key="name")
+            from_pool = False
             for p in glob.glob(os.path.join(repository.mbd_get_path(), "pool", "*", "*", self["Source"], f["name"])):
                 if f["md5sum"] == mini_buildd.misc.md5_of_file(p):
-                    if not f["name"] in self.get_files(key="name"):
+                    if not in_changes:
                         files_from_pool.append(p)
+                        from_pool = True
                         LOG.info("Buildrequest: File added from pool: {f}".format(f=p))
                 else:
                     raise Exception("MD5 mismatch in uploaded dsc vs. pool: {f}".format(f=f["name"]))
+
+            # Check that this file is available
+            if not in_changes and not from_pool:
+                raise Exception("Missing file '{f}' neither in upload, nor in pool (use '-sa' for uploads with new upstream)".format(f=f["name"]))
 
         breq_dict = {}
         for ao in dist.architectureoption_set.all():

@@ -1,3 +1,32 @@
+mini-buildd (1.0.0~beta.4) experimental; urgency=low
+
+  Fourth beta. Mainly initial efforts of the manual (re)write;
+  already includes a fixed basic structure, plus a heap of docs
+  dumped in as FAQ-like items; hth, though it's not nearly
+  finished yet.
+  * [8bfa4cc] setup.py: Use 'sphinx-apidoc' when available.
+  * [fecf632] Add initial proper documentation (main structure, intro, admin and user manual).
+  * [e1797a5] debian/rules: Add (inactive) snippet to create latex/pdf docs.
+  * [bc93b4b] html: Add user log-in information to every page (right-top).
+  * [149f01a] doc: Make logo work when docs are viewed stand-alone.
+  * [0e38c00] doc/text: Agree to use 'mini-buildd' not 'Mini-buildd' everywhere.
+  * [392f809] status: Phase out some more glitches.
+  * [9ff4ba9] Wording change: Unprepare(d) -> Remove(d). We also use even more colors now...
+  * [0f06eda] Add default layout without rollbacks.
+  * [885c2f1] BlockQueue: Add support to show number of pending items (affects builder status box title).
+  * [34df94c] doc: Add FAQ entry for foreign chroot creation; add needed packages to Suggests.
+  * [39be56c] devel: Add "doc" target.
+  * [8bc1dc4] doc/admin.rst: Add glossary example.
+  * [3c93949] debian/mini-buildd.postinst: Allow "/" in custom mini-buildd options.
+    Thanks to Tzafrir Cohen (Closes: 699086)
+  * [0bd3b58] .pylintrc: Update generated members exceptions.
+  * [33f6941] Users: Handle possibly missing uploader profile gracefully.
+    Thanks to Tzafrir Cohen (Closes: 699196)
+  * [2413d72] buildrequest: Detect missing files from dsc early (improvement+workaround for stalled sbuild)
+  * [519bbbb] doc/introduction.rst: Mostly finished.
+
+ -- Stephan Sürken <absurd@debian.org>  Sat, 09 Feb 2013 11:37:52 +0000
+
 mini-buildd (1.0.0~beta.3) experimental; urgency=low
 
   Third beta. Convenience release: Status handling improvements, some eye

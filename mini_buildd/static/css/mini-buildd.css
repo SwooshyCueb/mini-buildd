@@ -79,7 +79,8 @@ a:hover
 
 #mbd_navigation ul
 {
-	margin: 35px 0px 0px -30px;
+	margin: 35px 0px 0px 10px;
+	padding: 0;
 }
 
 #mbd_navigation li

@@ -2,14 +2,41 @@
 
 . /usr/share/debconf/confmodule
 
-#
-# Handle /etc/default/mini-buildd
-#
-DEFAULT_FILE=/etc/default/mini-buildd
-db_get mini-buildd/options
-MINI_BUILDD_OPTIONS="${RET}"
-grep -Eq '^ *MINI_BUILDD_OPTIONS=' "${DEFAULT_FILE}" || printf "MINI_BUILDD_OPTIONS=''\n" >>"${DEFAULT_FILE}"
-sed -i "s|^ *MINI_BUILDD_OPTIONS=.*|MINI_BUILDD_OPTIONS=\"${MINI_BUILDD_OPTIONS}\"|" "${DEFAULT_FILE}"
+DEFAULT_FILE="/etc/default/mini-buildd"
+
+# Generate default file if it does not exist (it usually should, as we ship it)
+if [ ! -e "${DEFAULT_FILE}" ]; then
+	touch "${DEFAULT_FILE}"
+fi
+
+_update_file()
+{
+	local db_id="${1}"
+	local sh_id="${2}"
+	local default="${3}"
+
+	# Get value (RET) from db
+	db_get ${db_id}
+
+	# Replace existing line or add new
+	if grep -Eq "^ *${sh_id}=" "${DEFAULT_FILE}"; then
+		# Existing config; remove the config line if the new value is the default.
+		if [ "${default}" = "${RET}" ]; then
+			sed -i "/^ *${sh_id}=.*/d" "${DEFAULT_FILE}"
+		else
+			sed -i "s|^ *${sh_id}=.*|${sh_id}=\"${RET}\"|" "${DEFAULT_FILE}"
+		fi
+	else
+		# New config line; only do it if this is not the default, so
+		# we don't get unnecessarily changed default file.
+		if [ "${default}" != "${RET}" ]; then
+			printf "${sh_id}='${RET}'\n" >>"${DEFAULT_FILE}"
+		fi
+	fi
+}
+
+# Default values values must by synced in *.postinst, *.templates and *.init.
+_update_file mini-buildd/options MINI_BUILDD_OPTIONS "--verbose"
 
 #
 # Handle mini-buildd user

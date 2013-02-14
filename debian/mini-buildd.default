@@ -1,7 +1,5 @@
-# mini-buildd default file
+# mini-buildd default config
 
 # All values are handled by debconf, so reconfiguring the
 # package is recommended (you will also see more
 # explanations). Manual edits are fine, too, though.
-
-#MINI_BUILDD_OPTIONS="--verbose"

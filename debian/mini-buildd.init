@@ -12,12 +12,14 @@
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DAEMON=/usr/sbin/mini-buildd
 NAME=$(basename "${DAEMON}")
-DESC="mini build daemon"
+DESC="custom Debian build daemon"
+DEFAULT_FILE="/etc/default/mini-buildd"
 
-# Default is to run the daemon
-MINI_BUILDD_OPTIONS=""
-# Source defaults if given
-[ ! -e /etc/default/mini-buildd ] || . /etc/default/mini-buildd
+# Defaults
+MINI_BUILDD_OPTIONS="--verbose"
+if [ -e "${DEFAULT_FILE}" ]; then
+	. "${DEFAULT_FILE}"
+fi
 
 [ -x "${DAEMON}" ] || exit 0
 

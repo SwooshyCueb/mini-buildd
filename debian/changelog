@@ -1,3 +1,14 @@
+mini-buildd (1.0.0~beta.5) experimental; urgency=low
+
+  Fifth beta. Bug fixes/convenience only.
+  * [3b25f54] html/css: Fix 'logo click area'.
+  * [940c7ca] debian: Improve default file's debconf handling.
+  * [0d9fe91] daemon.py: Add DebianVersion class to abstract (port)
+    version generation (Fixes: Auto port version for +2,3,4 revisioned
+    packages).
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 15 Feb 2013 14:52:59 +0000
+
 mini-buildd (1.0.0~beta.4) experimental; urgency=low
 
   Fourth beta. Mainly initial efforts of the manual (re)write;

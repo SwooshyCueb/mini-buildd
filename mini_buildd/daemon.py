@@ -16,6 +16,7 @@ import email.utils
 import logging
 
 import debian.deb822
+import debian.debian_support
 
 import mini_buildd.misc
 import mini_buildd.changes
@@ -33,14 +34,128 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
-class StampVersion(object):
-    def __init__(self):
-        # 20121218151309
-        self.version = time.strftime("%Y%m%d%H%M%S", time.gmtime())
+class DebianVersion(debian.debian_support.Version):
+    @classmethod
+    def _sub_rightmost(cls, pattern, repl, string):
+        last_match = None
+        for last_match in re.finditer(pattern, string):
+            pass
+        if last_match:
+            return string[:last_match.start()] + repl + string[last_match.end():]
+        else:
+            return string + repl
 
-    @property
-    def regex(self):
-        return r"[0-9]{{{n}}}".format(n=len(self.version))
+    @classmethod
+    def _get_rightmost(cls, pattern, string):
+        last_match = None
+        for last_match in re.finditer(pattern, string):
+            pass
+        if last_match:
+            return string[last_match.start():last_match.end()]
+        else:
+            return ""
+
+    @classmethod
+    def stamp(cls):
+        # 20121218151309
+        return time.strftime("%Y%m%d%H%M%S", time.gmtime())
+
+    @classmethod
+    def stamp_regex(cls, stamp=None):
+        return r"[0-9]{{{n}}}".format(n=len(stamp if stamp else cls.stamp()))
+
+    def gen_internal_rebuild(self):
+        """
+        Generate an 'internal rebuild' version.
+
+        If the version is not already a rebuild version, just
+        append the rebuild appendix, otherwise replace the old
+        one. For example::
+
+          1.2.3 -> 1.2.3+rebuilt20130215100453
+          1.2.3+rebuilt20130215100453 -> 1.2.3+rebuilt20130217120517
+
+        Code samples:
+
+        >>> regex = r"^1\.2\.3\+rebuilt{s}$".format(s=DebianVersion.stamp_regex())
+        >>> bool(re.match(regex, DebianVersion("1.2.3").gen_internal_rebuild()))
+        True
+        >>> bool(re.match(regex, DebianVersion("1.2.3+rebuilt20130215100453").gen_internal_rebuild()))
+        True
+        """
+        stamp = self.stamp()
+        return self._sub_rightmost(r"\+rebuilt" + self.stamp_regex(stamp),
+                                   "+rebuilt" + stamp,
+                                   self.full_version)
+
+    def gen_external_port(self, default_version):
+        """
+        Generate an 'external port' version.
+
+        This currently just appends the given default version
+        appendix. For example:
+
+        1.2.3 -> 1.2.3~test60+1
+        """
+        return "{v}{d}".format(v=self.full_version, d=default_version)
+
+    def gen_internal_port(self, from_mandatory_version_regex, to_default_version):
+        """
+        Generate an 'internal port' version.
+
+        Tests for the (recommended) Default layout:
+
+        >>> sid_regex = r"~testSID\+[1-9]"
+        >>> sid_default = "~testSID+1"
+        >>> sid_exp_regex = r"~testSID\+0"
+        >>> sid_exp_default = "~testSID+0"
+        >>> wheezy_regex = r"~test70\+[1-9]"
+        >>> wheezy_default = "~test70+1"
+        >>> wheezy_exp_regex = r"~test70\+0"
+        >>> wheezy_exp_default = "~test70+0"
+        >>> squeeze_regex = r"~test60\+[1-9]"
+        >>> squeeze_default = "~test60+1"
+        >>> squeeze_exp_regex = r"~test60\+0"
+        >>> squeeze_exp_default = "~test60+0"
+
+        sid->wheezy ports:
+
+        >>> DebianVersion("1.2.3-1~testSID+1").gen_internal_port(sid_regex, wheezy_default)
+        u'1.2.3-1~test70+1'
+        >>> DebianVersion("1.2.3-1~testSID+4").gen_internal_port(sid_regex, wheezy_default)
+        u'1.2.3-1~test70+4'
+        >>> DebianVersion("1.2.3-1~testSID+4fud15").gen_internal_port(sid_regex, wheezy_default)
+        u'1.2.3-1~test70+4fud15'
+        >>> DebianVersion("1.2.3-1~testSID+0").gen_internal_port(sid_exp_regex, wheezy_exp_default)
+        u'1.2.3-1~test70+0'
+        >>> DebianVersion("1.2.3-1~testSID+0exp2").gen_internal_port(sid_exp_regex, wheezy_exp_default)
+        u'1.2.3-1~test70+0exp2'
+
+        wheezy->squeeze ports:
+
+        >>> DebianVersion("1.2.3-1~test70+1").gen_internal_port(wheezy_regex, squeeze_default)
+        u'1.2.3-1~test60+1'
+        >>> DebianVersion("1.2.3-1~test70+4").gen_internal_port(wheezy_regex, squeeze_default)
+        u'1.2.3-1~test60+4'
+        >>> DebianVersion("1.2.3-1~test70+4fud15").gen_internal_port(wheezy_regex, squeeze_default)
+        u'1.2.3-1~test60+4fud15'
+        >>> DebianVersion("1.2.3-1~test70+0").gen_internal_port(wheezy_exp_regex, squeeze_exp_default)
+        u'1.2.3-1~test60+0'
+        >>> DebianVersion("1.2.3-1~test70+0exp2").gen_internal_port(wheezy_exp_regex, squeeze_exp_default)
+        u'1.2.3-1~test60+0exp2'
+
+        No version restrictions: just add default version
+
+        >>> DebianVersion("1.2.3-1").gen_internal_port(".*", "~port+1")
+        u'1.2.3-1~port+1'
+        """
+        from_apdx = self._get_rightmost(from_mandatory_version_regex, self.full_version)
+        from_apdx_plus_revision = self._get_rightmost(r"\+[0-9]", from_apdx)
+        if from_apdx and from_apdx_plus_revision:
+            actual_to_default_version = self._sub_rightmost(r"\+[0-9]", from_apdx_plus_revision, to_default_version)
+        else:
+            actual_to_default_version = to_default_version
+        return self._sub_rightmost(from_mandatory_version_regex, actual_to_default_version, self.full_version)
 
 
 class KeyringPackage(mini_buildd.misc.TmpDir):
@@ -52,7 +167,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
             {"DEBEMAIL": debemail,
              "DEBFULLNAME": debfullname,
              "GNUPGHOME": gpg.home})
-        self.version = StampVersion().version
+        self.version = DebianVersion.stamp()
 
         # Copy template, and replace %ID% and %MAINT% in all files
         p = os.path.join(self.tmpdir, "package")
@@ -321,15 +436,6 @@ class Daemon():
         return repository, distribution, suite, dist_parsed.rollback_no
 
     def port(self, package, from_dist, to_dist, version):
-        def _sub_rightmost(pattern, repl, string):
-            last_match = None
-            for last_match in re.finditer(pattern, string):
-                pass
-            if last_match:
-                return string[:last_match.start()] + repl + string[last_match.end():]
-            else:
-                return string + repl
-
         # check from_dist
         from_repository, from_distribution, from_suite, _from_rollback = self.parse_distribution(from_dist)
         p = from_repository.mbd_package_find(package, distribution=from_dist, version=version)
@@ -344,17 +450,12 @@ class Daemon():
             raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=to_dist))
 
         # Ponder version to use
+        v = DebianVersion(p["sourceversion"])
         if to_dist == from_dist:
-            # Rebuild
-            stamp = StampVersion()
-            port_version = _sub_rightmost(r"\+rebuilt" + stamp.regex,
-                                          "+rebuilt" + stamp.version,
-                                          p["sourceversion"])
+            port_version = v.gen_internal_rebuild()
         else:
-            # Internal port
-            port_version = _sub_rightmost(from_repository.layout.mbd_get_mandatory_version_regex(from_repository, from_distribution, from_suite),
-                                          to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite),
-                                          p["sourceversion"])
+            port_version = v.gen_internal_port(from_repository.layout.mbd_get_mandatory_version_regex(from_repository, from_distribution, from_suite),
+                                               to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite))
 
         _component, url = from_repository.mbd_get_dsc_url(from_distribution, package, p["sourceversion"])
         self._port(url, package, to_dist, port_version)
@@ -370,10 +471,11 @@ class Daemon():
             raise Exception("Port failed: Rollback distribution requested: '{d}'".format(d=to_dist))
 
         dsc = debian.deb822.Dsc(urllib2.urlopen(dsc_url))
+        v = DebianVersion(dsc["Version"])
         self._port(dsc_url,
                    dsc["Source"],
                    to_dist,
-                   dsc["Version"] + to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite))
+                   v.gen_external_port(to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite)))
 
     def _port(self, dsc_url, package, dist, version):
         t = mini_buildd.misc.TmpDir()
@@ -460,6 +562,6 @@ def get():
 
 
 if __name__ == "__main__":
-    S = StampVersion()
-    print S.version
-    print S.regex
+    mini_buildd.misc.setup_console_logging()
+    import doctest
+    doctest.testmod()

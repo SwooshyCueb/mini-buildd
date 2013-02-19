@@ -28,6 +28,6 @@ Special pages
 	 todo
 	 Python package mini_buildd <modules>
 
-* :ref:`modindex` (:download:`Django Models Overview<_static/mini_buildd_models.png>`)
+* :ref:`modindex`
 * :ref:`genindex`
 * :ref:`search`

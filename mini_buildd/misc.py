@@ -150,7 +150,7 @@ class BlockQueue(Queue.Queue):
 
     @property
     def load(self):
-        return round(float(self._active.qsize()) / self._maxsize, 2)
+        return round(float(self._active.qsize() + self._pending) / self._maxsize, 2)
 
     def put(self, item, **kwargs):
         self._pending += 1

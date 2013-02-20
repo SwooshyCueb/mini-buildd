@@ -5,6 +5,7 @@ import copy
 import os
 import shutil
 import glob
+import contextlib
 import logging
 
 import django.db.models
@@ -99,6 +100,10 @@ go to the default mapping.
     def mbd_get_schroot_conf_file(self):
         return os.path.join(self.mbd_get_path(), "schroot.conf")
 
+    def mbd_get_keyring_file(self):
+        "Holds all keys from the source to verify the release via debootstrap's --keyring option."
+        return os.path.join(self.mbd_get_path(), "keyring.gpg")
+
     def mbd_get_system_schroot_conf_file(self):
         return os.path.join("/etc/schroot/chroot.d", self.mbd_get_name() + ".conf")
 
@@ -110,8 +115,13 @@ go to the default mapping.
             (["/bin/mkdir", "--verbose", self.mbd_get_tmp_dir()],
              ["/bin/rm", "--recursive", "--one-file-system", "--force", self.mbd_get_tmp_dir()])] + self.mbd_get_backend().mbd_get_pre_sequence() + [
             ([self.mbd_get_extra_option("Debootstrap-Command", "/usr/sbin/debootstrap"),
-              "--variant=buildd", "--arch={a}".format(a=self.architecture.name), "--include=sudo",
-              self.source.codename, self.mbd_get_tmp_dir(), self.source.mbd_get_archive().url],
+              "--variant=buildd",
+              "--keyring={k}".format(k=self.mbd_get_keyring_file()),
+              "--arch={a}".format(a=self.architecture.name),
+              "--include=sudo",
+              self.source.codename,
+              self.mbd_get_tmp_dir(),
+              self.source.mbd_get_archive().url],
              ["/bin/umount", "-v", os.path.join(self.mbd_get_tmp_dir(), "proc"), os.path.join(self.mbd_get_tmp_dir(), "sys")]),
 
             (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],
@@ -163,6 +173,12 @@ personality={p}
 # Backend specific config
 {b}
 """.format(n=self.mbd_get_name(), p=self.personality, b=self.mbd_get_backend().mbd_get_schroot_conf())).save()
+
+        # Gen keyring file to use with debootstrap
+        with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
+            for k in self.source.apt_keys.all():
+                gpg.add_pub_key(k.key)
+            gpg.export(self.mbd_get_keyring_file())
 
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
         self.mbd_msg_info(request, "{c}: Prepared on system for schroot.".format(c=self))

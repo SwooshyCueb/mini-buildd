@@ -1,0 +1,25 @@
+#!/bin/bash -e
+
+# Shit happens, and you might notice old schroot session around
+# that sbuild did not clean up somehow.
+#
+# Run this when there is no build running (or just stop
+# mini-buildd) to clean these up.
+#
+# Will also try to clean stray lvm loop snapshots.
+
+[ $(id -u) -eq 0 ] || { printf "E: Needs to be run as root.\n" >&2; exit 1; }
+
+read -e -i "Y" -p "Clean out all mini-buildd schroot sessions (Y/n)? " ANSWER
+if [ "${ANSWER}" = "Y" ]; then
+	for CHROOT in $(schroot --all-sessions --list | grep mini-buildd); do
+		schroot --verbose --chroot="${CHROOT}" --end-session || true
+	done
+fi
+
+read -e -i "Y" -p "Remove leftover mini-buildd lvm snapshot (Y/n)? " ANSWER
+if [ "${ANSWER}" = "Y" ]; then
+	for s in $(lvdisplay | grep 'LV Name.*/dev/mini-buildd-loop-.\+/mini-buildd-.\+-.\+-.\+-.\+-.\+-.\+' | rev | cut -d' ' -f1 | rev); do
+		lvremove --verbose --force "${s}" || true
+	done
+fi

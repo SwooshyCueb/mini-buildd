@@ -153,7 +153,8 @@ class Package(mini_buildd.misc.Status):
             c.archive(self.get_status() == self.INSTALLED)
         # Archive incoming changes
         self.changes.archive(self.get_status() == self.INSTALLED)
-        # Purge complete package dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
+
+        # Purge complete package spool dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
         # In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
@@ -161,6 +162,12 @@ class Package(mini_buildd.misc.Status):
         if tmpdir:
             LOG.debug("Purging port tmpdir: {t}".format(t=tmpdir))
             shutil.rmtree(tmpdir, ignore_errors=True)
+
+        # On installed, clean out the failed log dir, if any of the very same version
+        if self.get_status() == self.INSTALLED:
+            failed_logdir = os.path.dirname(os.path.join(mini_buildd.setup.LOG_DIR, self.changes.get_archive_dir(installed=False)))
+            LOG.debug("Purging failed log dir: {f}".format(f=failed_logdir))
+            shutil.rmtree(failed_logdir, ignore_errors=True)
 
     def notify(self):
         def header(title, underline="-"):
@@ -215,7 +222,7 @@ class LastPackage(mini_buildd.misc.API):
 
         self.started = package.started
         self.took = package.took
-        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_archive_dir(package.get_status() == package.INSTALLED)))
+        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_archive_dir(installed=True)))
 
         self.changes = {}
         for k in ["source", "distribution", "version"]:

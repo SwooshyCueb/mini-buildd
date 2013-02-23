@@ -83,21 +83,31 @@ def home(request):
 
 
 def log(request, repository, package, version):
-    def get_logs(installed=True):
-        result = {}
+    def get_logs(installed):
         path = os.path.join(mini_buildd.setup.LOG_DIR, repository, "" if installed else "_failed", package, version)
+
+        buildlogs = {}
         for buildlog in glob.glob("{p}/*/*.buildlog".format(p=path)):
             # buildlog: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.buildlog"
             arch = os.path.basename(os.path.dirname(buildlog))
-            result[arch] = buildlog.replace(mini_buildd.setup.LOG_DIR, "")
-        return result
+            buildlogs[arch] = buildlog.replace(mini_buildd.setup.LOG_DIR, "")
+
+        changes = None
+        for c in glob.glob("{p}/*/*.changes".format(p=path)):
+            # changes: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.changes"
+            if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
+                with open(c) as f:
+                    changes = f.read()
+                break
+
+        return {"changes": changes, "buildlogs": buildlogs}
 
     return django.shortcuts.render_to_response("mini_buildd/log.html",
                                                {"repository": repository,
                                                 "package": package,
                                                 "version": version,
-                                                "logs": {"installed": get_logs(),
-                                                         "failed": get_logs(installed=False)}},
+                                                "logs": [("Installed", get_logs(installed=True)),
+                                                         ("Failed", get_logs(installed=False))]},
                                                django.template.RequestContext(request))
 
 

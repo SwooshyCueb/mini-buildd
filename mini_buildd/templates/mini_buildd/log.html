@@ -8,24 +8,18 @@
 	<div id="mbd_package_propagation_results">
 		<div class="box">
 			<h1 class="box-caption">Logs for: {{ repository }}/{{ package }}/{{ version }}</h1>
-
-			{% if logs.installed.items %}
-				<h2>Installed</h2>
-				<ul>
-					{% for arch, uri in logs.installed.items %}
-						<li><a href="/log/{{ uri }}">{{ arch }}</a></li>
-					{% endfor %}
-				</ul>
-			{% endif %}
-
-			{% if logs.failed.items %}
-				<h2>Failed</h2>
-				<ul>
-					{% for arch, uri in logs.failed.items %}
-						<li><a href="/log/{{ uri }}">{{ arch }}</a></li>
-					{% endfor %}
-				</ul>
-			{% endif %}
+			{% for key, values in logs %}
+				{% if values.changes %}
+					<h2>{{ key }}</h2>
+					<p>
+						<em>Build logs:</em>
+						{% for arch, uri in values.buildlogs.items %}
+							<a href="/log/{{ uri }}">{{ arch }}</a>
+						{% endfor %}
+					</p>
+					<pre>{{ values.changes }}</pre>
+				{% endif %}
+			{% endfor %}
 		</div>
 	</div>
 {% endblock %}

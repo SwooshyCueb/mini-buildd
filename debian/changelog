@@ -1,3 +1,18 @@
+mini-buildd (1.0.0~beta.6) experimental; urgency=low
+
+  Sixth beta. Some bug fixes; new "retry" command and updates for logs.
+  * [f157f33] builder: BlockQueue: Include pending items in 'load' computation (Fixes/Improves buildrequest distribution).
+  * [3724889] examples: Add 'schroot-cleanup' example script (remove code from ./devel).
+  * [733ab5f] chroots: On debootstrap, generate and use keyring from associated source to authenticate archive (General fix; especially fixes etch chroot prepare under sid).
+  * [8919572] doc: Updates for the admin manual.
+  * [533a27f] ports: Always include last two changelog blocks in changes.
+  * [ee76269] html(logs): Also show changes.
+  * [60e8908] packager: Purge '_failed' logs when the same package version succeeds.
+  * [18730f7] logs: Only archive changes and buildlogs for "installed" packages.
+  * [900cb28] API: Add "retry" command, and add call support to log.html for failed package versions.
+
+ -- Stephan Sürken <absurd@debian.org>  Sat, 23 Feb 2013 17:12:55 +0000
+
 mini-buildd (1.0.0~beta.5) experimental; urgency=low
 
   Fifth beta. Bug fixes/convenience only.

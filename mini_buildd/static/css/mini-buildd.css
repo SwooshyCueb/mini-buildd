@@ -549,17 +549,6 @@ a:hover
 	width: 300px;
 }
 
-#mbd_package_propagation_results pre
-{
-	margin: 15px 15px;
-}
-
-#mbd_package_propagation_results ul
-{
-	margin-left: 0px;
-}
-
-
 /* API show */
 
 #mbd_api_show td.distribution
@@ -641,4 +630,25 @@ a:hover
 	padding: 0px 0px 0px 0px;
 	border: 0;
 	text-decoration: none;
+}
+
+#mbd_api pre
+{
+	margin: 15px 15px;
+}
+
+#mbd_api ul
+{
+	margin-left: 0px;
+}
+
+
+#mbd_api h2.Installed
+{
+	color: green;
+}
+
+#mbd_api h2.Failed
+{
+	color: red;
 }

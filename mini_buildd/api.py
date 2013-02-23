@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import pickle
+import os
+import glob
 import logging
 
 import mini_buildd.misc
@@ -472,6 +473,50 @@ class PortExt(Command):
         return self.results
 
 
+class Retry(Command):
+    """
+    Retry a previously failed package.
+    """
+    COMMAND = "retry"
+    LOGIN = True
+    CONFIRM = True
+    ARGUMENTS = [
+        (["package"], {"help": "source package name"}),
+        (["version"], {"help": "source package's version"}),
+        (["--repository", "-R"], {"action": "store", "metavar": "DIST",
+                                  "default": "*",
+                                  "help": "Repository name -- use only in case of multiple matches."}),
+        Command.COMMON_ARG_VERSION]
+
+    def __init__(self, args):
+        super(Retry, self).__init__(args)
+        self.results = ""
+
+    def run(self, daemon):
+        # Find changes files
+        path = os.path.join(mini_buildd.setup.LOG_DIR, self.args["repository"], "_failed", self.args["package"], self.args["version"])
+        changes = []
+        for c in glob.glob("{p}/*/*.changes".format(p=path)):
+            if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
+                LOG.info(c)
+                changes.append(c)
+
+        for c in changes:
+            self.results += "Found: {c}\n".format(c=c)
+
+        if len(changes) > 1:
+            self.results += "E: Multiple changes found (skipped); use --repository to make this unique."
+        elif len(changes) < 1:
+            self.results += "E: No matching changes found."
+        else:
+            for c in changes:
+                daemon.incoming_queue.put(c)
+                self.results += "Queued again: {c}\n".format(c=c)
+
+    def __unicode__(self):
+        return self.results
+
+
 COMMANDS = {Status.COMMAND: Status,
             GetKey.COMMAND: GetKey,
             GetDputConf.COMMAND: GetDputConf,
@@ -482,19 +527,11 @@ COMMANDS = {Status.COMMAND: Status,
             Remove.COMMAND: Remove,
             Port.COMMAND: Port,
             PortExt.COMMAND: PortExt,
+            Retry.COMMAND: Retry,
             }
 
 
 if __name__ == "__main__":
     mini_buildd.misc.setup_console_logging()
-
-    T0 = Status(True, "xyz:123", 0.5, {}, {})
-    pickle.dump(T0, open("./pickle.test", "w"))
-
-    T1 = pickle.load(open("./pickle.test"))
-    print("{}".format(T1))
-    print(T1.__class__.__name__)
-    print(T1.has_chroot("squeeze", "i386"))
-
     import doctest
     doctest.testmod()

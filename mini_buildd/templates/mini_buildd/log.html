@@ -5,12 +5,20 @@
 {% block mbd_page_footer %} &raquo; Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
 
 {% block content %}
-	<div id="mbd_package_propagation_results">
+	<div id="mbd_api">
 		<div class="box">
 			<h1 class="box-caption">Logs for: {{ repository }}/{{ package }}/{{ version }}</h1>
 			{% for key, values in logs %}
 				{% if values.changes %}
-					<h2>{{ key }}</h2>
+					<h2 class="{{ key }}">{{ key }}</h2>
+					{% ifequal key "Failed" %}
+						<p>
+							<a href="/mini_buildd/api?command=retry&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}"
+								 title="Retry {{ repository }}/{{ package }}/{{ version }}">
+								Retry now
+							</a>
+						</p>
+					{% endifequal %}
 					<p>
 						<em>Build logs:</em>
 						{% for arch, uri in values.buildlogs.items %}

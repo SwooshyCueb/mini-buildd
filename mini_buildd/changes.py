@@ -247,9 +247,12 @@ class Changes(debian.deb822.Changes):
             os.makedirs(logdir)
         LOG.info("Moving changes to log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
         for fd in [{"name": self._file_name}] + self.get_files():
-            f = os.path.join(os.path.dirname(self._file_path), fd["name"])
-            LOG.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
-            os.rename(f, os.path.join(logdir, fd["name"]))
+            # If not installed, just save all files.
+            # If installed, only save buildlogs and changes.
+            if not installed or re.match(r"(.*\.buildlog$|.*changes$)", fd["name"]):
+                f = os.path.join(os.path.dirname(self._file_path), fd["name"])
+                LOG.debug("Moving: '{f}' to '{d}'". format(f=fd["name"], d=logdir))
+                os.rename(f, os.path.join(logdir, fd["name"]))
 
     def remove(self):
         LOG.info("Removing changes: '{f}'".format(f=self._file_path))

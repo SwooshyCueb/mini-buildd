@@ -16,6 +16,7 @@ import email.utils
 import logging
 
 import debian.deb822
+import debian.changelog
 import debian.debian_support
 
 import mini_buildd.misc
@@ -527,15 +528,24 @@ class Daemon():
                                   cwd=t.tmpdir,
                                   env=env)
 
-            # Gen changes file
+            # Gen changes file name
             changes = os.path.join(t.tmpdir,
                                    mini_buildd.changes.Changes.gen_changes_file_name(package,
                                                                                      version,
                                                                                      "source"))
+
+            # Compute last version not to include in changes file
+            include_changes_version = mini_buildd.misc.list_get(
+                debian.changelog.Changelog(open(os.path.join(dst_path, "debian", "changelog"))).get_versions(),
+                2,
+                "0~")
+
+            # Generate Changes file
             with open(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",
-                                       "-sa"],
+                                       "-sa",
+                                       "-v{v}".format(v=include_changes_version)],
                                       cwd=dst_path,
                                       env=env,
                                       stdout=c)

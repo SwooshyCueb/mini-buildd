@@ -361,6 +361,13 @@ def get_cpus():
         return 1
 
 
+def list_get(list_, index, default=None):
+    try:
+        return list_[index]
+    except IndexError:
+        return default
+
+
 def mkdirs(path):
     try:
         os.makedirs(path)

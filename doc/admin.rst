@@ -81,6 +81,11 @@ extra **debug options** via the ``--debug`` command line flag.
 Just set these options by dpkg-reconfiguring mini-buildd; more
 details on the usage via ``mini-buildd --help``.
 
+You can `view mini-buildd's log
+</mini_buildd/api?command=logcat>`_ via the API call ``logcat``::
+
+  $ mini-buildd-tool --host=my.ho.st:8066 logcat
+
 .. _admin_configuration:
 
 *************
@@ -255,6 +260,46 @@ A repository represent one apt repository managed via reprepro.
 Chroots
 =======
 
+Adding (active) chroots to your mini-buildd instance implicitly
+makes it a **builder**.
+
+Preparing a chroots will both bootstrap it, and create
+configuration on the system so it can be used via ``schroot``.
+
+You can chose amongst a number of schroot backends; to be able
+to be supported by mini-buildd, the backend must support
+*snapshots* (compare ``man 5 schroot.conf``).
+
+At the time (Feb 2013) of this writing, mini-buildd supports
+these backends:
+
+============ ========================= ================ ======== ======== ===============================
+Type         Options                   Build size limit Speed    Extra fs Extra dependencies
+============ ========================= ================ ======== ======== ===============================
+File         compression               No               Low      No       No
+Dir          aufs[,overlayfs,unionfs]  No               Medium   No       Kernel support (fs)
+LVM          loop,given LVM setup      Yes              Fast     Yes      LVM tools, Kernel support (device mapper)
+============ ========================= ================ ======== ======== ===============================
+
+In short, we **recommend using directory based chroots via
+aufs**, using a the Debian Linux kernel >= 3.2.35 (for current
+aufs support) as best compromise. It offers acceptable speed,
+and no limits.
+
+**File chroots** are also fine, they will just always work; you
+may think about configuring schroot to use a tmpfs for its
+snapshots (if you have enough RAM), and use no compression to
+speed it up.
+
+If you are in for speed, or just already have a LVM setup on
+your system, **LVM chroots** are good alternative, too.
+
+:note: You may configure Distributions with generic build
+       options that may also affect the backend (like
+       pre-installing ``eatmydata``) or build (like configuring
+       ``ccache`` to be used) speed. See ``Distributions and
+       Repositories``.
+
 .. todo:: **FAQ**: *How to use foreign-architecture chroots with qemu.*
 
 	 Tested with 'armel' (other architectures might work as well, but not tested).
@@ -315,7 +360,7 @@ Migrate from 0.8.x
 1. Upgrade the Debian packages from 0.8.x to 1.0.
 
 	 You will then have 1.0 up and running, and ye olde 0.8.x
-	 repos still available as read-only apt repositories.
+	 repositories still available as read-only apt repositories.
 
 	 Just be sure you don't purge the old package, and then
 	 install 1.0, as this will remove the whole old repository.

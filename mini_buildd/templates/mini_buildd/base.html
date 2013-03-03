@@ -43,6 +43,17 @@
 			{% block page_header %}{% endblock %}
 		</div>
 
+		<!-- Messages -->
+		<div id="mbd_messages">
+			{% block messages %}
+				{% if messages %}
+					<ul class="messagelist">{% for message in messages %}
+						<li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+					{% endfor %}</ul>
+				{% endif %}
+			{% endblock messages %}
+		</div>
+
 		<!-- Content -->
 		<div id="mbd_content">
 			{% block content %}{% endblock %}

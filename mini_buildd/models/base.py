@@ -101,12 +101,8 @@ are actually supported by the current model.
         def _mbd_on_change(cls, request, obj):
             "Global actions to take when an object changes."
             if obj.mbd_get_daemon().is_running():
-                # Auto-deactivate daemon
-                daemon = mini_buildd.models.daemon.Daemon.objects.get(id=1)
-                StatusModel.Admin.mbd_action(request, (daemon,), "deactivate")
-                daemon.last_checked = StatusModel.CHECK_REACTIVATE
-                daemon.save()
-                obj.mbd_msg_warn(request, "Daemon auto-deactivated due to changes.")
+                obj.mbd_get_daemon().stop()
+                obj.mbd_msg_warn(request, "Daemon auto-stopped due to changes.")
 
             for o in obj.mbd_get_reverse_dependencies():
                 o.mbd_set_changed(request)
@@ -200,7 +196,7 @@ are actually supported by the current model.
             raise django.core.exceptions.ValidationError("{n} field does not match regex {r}".format(n=field_name, r=regex))
 
     def mbd_get_dependencies(self):
-        LOG.debug("No mandatory dependencies for {s}".format(s=self))
+        LOG.debug("No dependencies for {s}".format(s=self))
         return []
 
     def mbd_get_reverse_dependencies(self):
@@ -249,10 +245,17 @@ class StatusModel(Model):
     class Admin(Model.Admin):
 # pylint: disable=E1002
         def save_model(self, request, obj, form, change):
-            if change and form.changed_data:
+            if change:
                 obj.mbd_set_changed(request)
             super(StatusModel.Admin, self).save_model(request, obj, form, change)
 # pylint: enable=E1002
+
+        @classmethod
+        def _mbd_on_deactivation(cls, request, obj):
+            "Global actions to take when an object looses its active state."
+            if obj.mbd_get_daemon().is_running():
+                obj.mbd_get_daemon().stop()
+                obj.mbd_msg_warn(request, "Daemon auto-stopped due to deactivation.")
 
         @classmethod
         def _mbd_run_dependencies(cls, request, obj, func, **kwargs):
@@ -291,7 +294,6 @@ class StatusModel(Model):
                         obj.mbd_check(request)
                         if obj.last_checked == obj.CHECK_REACTIVATE:
                             obj.status = StatusModel.STATUS_ACTIVE
-                            obj.mbd_activate(request)
                             obj.mbd_msg_info(request, "{o}: Auto-reactivated.".format(o=obj))
                         obj.last_checked = datetime.datetime.now()
 
@@ -307,8 +309,8 @@ class StatusModel(Model):
                     obj.last_checked = max(obj.last_checked, obj.CHECK_FAILED)
                     if obj.mbd_is_active():
                         obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_REACTIVATE
-                        obj.mbd_deactivate(request)
                         obj.mbd_msg_error(request, "{o}: Automatically deactivated.".format(o=obj))
+                        cls._mbd_on_deactivation(request, obj)
                     obj.save()
                     raise
             else:
@@ -318,7 +320,6 @@ class StatusModel(Model):
         def mbd_activate(cls, request, obj):
             if obj.mbd_is_prepared() and obj.mbd_is_checked():
                 cls._mbd_run_dependencies(request, obj, cls.mbd_activate)
-                obj.mbd_activate(request)
                 obj.status = obj.STATUS_ACTIVE
                 obj.save()
                 obj.mbd_msg_info(request, "{o}: Activate successful.".format(o=obj))
@@ -331,11 +332,10 @@ class StatusModel(Model):
 
         @classmethod
         def mbd_deactivate(cls, request, obj):
-            if obj.mbd_is_active():
-                obj.mbd_deactivate(request)
             obj.status = min(obj.STATUS_PREPARED, obj.status)
             if obj.last_checked == obj.CHECK_REACTIVATE:
                 obj.last_checked = obj.CHECK_FAILED
+            cls._mbd_on_deactivation(request, obj)
             obj.save()
             obj.mbd_msg_info(request, "{o}: Deactivate successful.".format(o=obj))
 
@@ -418,22 +418,13 @@ this would mean losing all packages!
     def mbd_set_changed(self, request):
         if self.mbd_is_active():
             self.status = self.STATUS_PREPARED
-            self.mbd_deactivate(request)
             self.mbd_msg_warn(request, "{o}: Deactivated due to changes. Prepare data again.".format(o=self))
         self.last_checked = self.CHECK_CHANGED
         self.mbd_msg_warn(request, "{o}: Marked as changed.".format(o=self))
 
     #
-    # Action default hooks and helpers
+    # Action hooks helpers
     #
-    def mbd_activate(self, request):
-        "Per default, nothing is to be done on 'activate'."
-        pass
-
-    def mbd_deactivate(self, request):
-        "Per default, nothing is to be done on 'deactivate'."
-        pass
-
     def _mbd_sync_by_purge_and_create(self, request):
         mini_buildd.models.base.StatusModel.Admin.mbd_remove(request, self)
         mini_buildd.models.base.StatusModel.Admin.mbd_prepare(request, self)

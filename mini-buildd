@@ -181,23 +181,19 @@ Comma-separated list of special debugging options:
         elif self._args.dumpdata:
             webapp.dumpdata(self._args.dumpdata)
         else:
+            # Start httpd webapp
+            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
+
             # Get the daemon manager instance (due to django, import must be here)
             from mini_buildd.daemon import Daemon
             daemon = Daemon()
-
-            # Start httpd webapp
-            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
+            daemon.start(force_check=True)
 
             while True:
                 signal.pause()
                 if self._status == "RESTART":
-                    if daemon.is_running():
-                        try:
-                            daemon.restart(force_check=True)
-                        except Exception as e:
-                            mini_buildd.setup.log_exception(LOG, "Could not restart daemon", e)
-                    else:
-                        LOG.warn("Daemon not active (not restarted).")
+                    daemon.stop()
+                    daemon.start(force_check=True)
                 else:
                     break
 

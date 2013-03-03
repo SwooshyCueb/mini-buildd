@@ -324,10 +324,8 @@ class Daemon():
         self.last_packages = None
         self.last_builds = None
 
-        try:
-            self.restart(force_check=True)
-        except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Error starting daemon", e)
+    def __unicode__(self):
+        return "{r}: {d}".format(r="UP" if self.is_running() else "DOWN", d=self.model)
 
     @classmethod
     def _new_model_object(cls):
@@ -363,15 +361,19 @@ class Daemon():
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Error adding persisted last builds/packages (ignoring)", e, logging.WARN)
 
-    def start(self, request=None):
+    def start(self, force_check=False):
         if not self.thread:
             self._update_model()
-            self.thread = mini_buildd.misc.run_as_thread(run)
-            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon started.")
+            mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check", force=force_check)
+            if self.model.mbd_is_active():
+                self.thread = mini_buildd.misc.run_as_thread(run)
+                LOG.info("Daemon started.")
+            else:
+                LOG.warn("Daemon deactivated (won't start).")
         else:
-            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already running.")
+            LOG.info("Daemon already running.")
 
-    def stop(self, request=None):
+    def stop(self):
         if self.thread:
             # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
             # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
@@ -383,18 +385,9 @@ class Daemon():
             self.thread.join()
             self.thread = None
             self._update_model()
-            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon stopped.")
+            LOG.info("Daemon stopped.")
         else:
-            mini_buildd.models.base.Model.mbd_msg_info(request, "Daemon already stopped.")
-
-    def restart(self, request=None, force_check=False):
-        self.stop(request=request)
-        self._update_model()
-        mini_buildd.models.daemon.Daemon.Admin.mbd_action(request, (self.model,), "check", force=force_check)
-        if self.model.mbd_is_active():
-            self.start(request=request)
-        else:
-            LOG.warn("Daemon deactivated (won't start).")
+            LOG.info("Daemon already stopped.")
 
     def is_running(self):
         return bool(self.thread)

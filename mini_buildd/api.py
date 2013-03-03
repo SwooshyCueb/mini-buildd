@@ -108,8 +108,9 @@ class Status(Command):
 
     def __unicode__(self):
         return """\
-mini-buildd: {hs}: http://{h} ({v})
-Daemon     : {ds}: ftp://{f} (load {l})
+http://{h} ({v}):
+
+Daemon: {ds}: ftp://{f} (load {l})
 
 Repositories: {r}
 Chroots     : {c}
@@ -120,7 +121,6 @@ Packager: {p_len} packaging
 Builder: {b_len} building
 {b}""".format(h=self.http,
               v=self.version,
-              hs="UP" if self.running else "UP  ",
               ds="UP" if self.running else "DOWN",
               f=self.ftp,
               l=self.load,
@@ -140,6 +140,36 @@ Builder: {b_len} building
 
     def has_chroot(self, codename, arch):
         return codename in self.chroots and arch in self.chroots[codename]
+
+
+class Daemon(Command):
+    """
+    Start or stop the Daemon engine.
+    """
+    COMMAND = "daemon"
+    LOGIN = True
+    CONFIRM = True
+    ARGUMENTS = [
+        (["action"], {"help": "'start' or 'stop' the Daemon engine."}),
+        (["--force-check", "-C"], {"action": "store_true",
+                                   "default": False,
+                                   "help": "run checks on instances even if already checked."})]
+
+    def __init__(self, args):
+        super(Daemon, self).__init__(args)
+        self.status = None
+
+    def run(self, daemon):
+        if self.args["action"] == "start":
+            daemon.start(force_check=self.has_flag("force_check"))
+        elif self.args["action"] == "stop":
+            daemon.stop()
+        else:
+            raise Exception("Use 'start' or 'stop'.")
+        self.status = "{d}".format(d=daemon)
+
+    def __unicode__(self):
+        return self.status
 
 
 class GetKey(Command):
@@ -518,6 +548,7 @@ class Retry(Command):
 
 
 COMMANDS = {Status.COMMAND: Status,
+            Daemon.COMMAND: Daemon,
             GetKey.COMMAND: GetKey,
             GetDputConf.COMMAND: GetDputConf,
             LogCat.COMMAND: LogCat,

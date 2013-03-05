@@ -4,9 +4,9 @@
 {% block page_title %}{{ daemon.model.identity }}{% endblock %}
 {% block page_sub_title %}
 	{% if daemon.is_running %}
-		<a class="button-stop" title="Stop" href="/mini_buildd/api?command=daemon&amp;action=stop">Stop</a>
+		<a class="button-stop" title="Stop" href="/mini_buildd/api?command=daemon&amp;action=stop&amp;output=referer">Stop</a>
 	{% else %}
-		<a class="button-start" title="Start" href="/mini_buildd/api?command=daemon&amp;action=start">Start</a>
+		<a class="button-start" title="Start" href="/mini_buildd/api?command=daemon&amp;action=start&amp;output=referer">Start</a>
 	{% endif %}
 	<span class="status {% if daemon.is_running %}running{% else %}stopped{% endif %}">
 		{% if daemon.is_running %}Running{% else %}Stopped{% endif %}: {{ daemon.model }}

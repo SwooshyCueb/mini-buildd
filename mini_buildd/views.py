@@ -138,7 +138,8 @@ def api(request):
                 return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
             else:
                 return django.shortcuts.render_to_response("mini_buildd/api_confirm.html",
-                                                           {"api_cmd": api_cmd},
+                                                           {"api_cmd": api_cmd,
+                                                            "referer": request.META.get("HTTP_REFERER")},
                                                            django.template.RequestContext(request))
 
         # Run API call (dep-injection via daemon object)
@@ -153,6 +154,10 @@ def api(request):
             return django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
         elif output == "python":
             return django.http.HttpResponse(pickle.dumps(api_cmd), mimetype="application/python-pickle")
+        elif output[:7] == "referer":
+            for l in "{c}".format(c=api_cmd).splitlines():
+                django.contrib.messages.info(request, l)
+            return django.shortcuts.redirect(output[7:] if output[7:] else request.META.get("HTTP_REFERER", "/"))
         else:
             return django.http.HttpResponseBadRequest("<h1>Unknow output type {o}</h1>".format(o=output))
     except Exception as e:

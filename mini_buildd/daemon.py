@@ -66,7 +66,7 @@ class DebianVersion(debian.debian_support.Version):
         return r"[0-9]{{{n}}}".format(n=len(stamp if stamp else cls.stamp()))
 
     def gen_internal_rebuild(self):
-        """
+        r"""
         Generate an 'internal rebuild' version.
 
         If the version is not already a rebuild version, just
@@ -101,7 +101,7 @@ class DebianVersion(debian.debian_support.Version):
         return "{v}{d}".format(v=self.full_version, d=default_version)
 
     def gen_internal_port(self, from_mandatory_version_regex, to_default_version):
-        """
+        r"""
         Generate an 'internal port' version.
 
         Tests for the (recommended) Default layout:

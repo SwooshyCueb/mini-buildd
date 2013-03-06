@@ -24,6 +24,7 @@ import mini_buildd.reprepro
 import mini_buildd.models.source
 import mini_buildd.models.base
 
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -477,7 +478,7 @@ Example:
                 if s.mbd_is_active():
                     s.mbd_generate_keyring_packages(request)
                 else:
-                    s.mbd_msg_warn(request, "Repository not activated: {r}".format(r=s))
+                    MsgLog(LOG, request).warn("Repository not activated: {r}".format(r=s))
         action_generate_keyring_packages.short_description = "Generate keyring packages"
 # pylint: enable=R0201
 
@@ -498,9 +499,9 @@ Example:
                     info = "Keyring port for {d}".format(d=dist)
                     try:
                         self.mbd_get_daemon().portext("file://" + package.dsc, dist)
-                        self.mbd_msg_success(request, "Requested: {i}.".format(i=info))
+                        MsgLog(LOG, request).info("Requested: {i}.".format(i=info))
                     except Exception as e:
-                        self.mbd_msg_exception(request, "FAILED: {i}".format(i=info), e)
+                        MsgLog(LOG, request).exception("FAILED: {i}".format(i=info), e)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

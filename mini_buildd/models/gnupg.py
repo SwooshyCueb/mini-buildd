@@ -3,6 +3,7 @@ from __future__ import unicode_literals
 
 import urllib2
 import contextlib
+import logging
 
 import django.db.models
 import django.contrib.admin
@@ -12,6 +13,9 @@ import mini_buildd.misc
 import mini_buildd.gnupg
 
 import mini_buildd.models.base
+
+from mini_buildd.models.msglog import MsgLog
+LOG = logging.getLogger(__name__)
 
 
 class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
@@ -124,10 +128,10 @@ class Remote(GnuPGPublicKey):
 
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/api?command=getkey&output=plain".format(h=self.http)
-        self.mbd_msg_info(request, "Downloading '{u}'...".format(u=url))
+        MsgLog(LOG, request).info("Downloading '{u}'...".format(u=url))
         self.key = urllib2.urlopen(url).read()
         if self.key:
-            self.mbd_msg_warn(request, "Downloaded remote key integrated: Please check key manually before activation!")
+            MsgLog(LOG, request).warn("Downloaded remote key integrated: Please check key manually before activation!")
         else:
             raise Exception("Empty remote key from '{u}' -- maybe the remote is not prepared yet?".format(u=url))
         super(Remote, self).mbd_prepare(request)
@@ -135,7 +139,7 @@ class Remote(GnuPGPublicKey):
     def mbd_remove(self, request):
         super(Remote, self).mbd_remove(request)
         self.pickled_data = ""
-        self.mbd_msg_info(request, "Remote key and state removed.")
+        MsgLog(LOG, request).info("Remote key and state removed.")
 
     def mbd_check(self, _request):
         """

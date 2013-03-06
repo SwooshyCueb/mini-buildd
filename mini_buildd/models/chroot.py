@@ -4,8 +4,8 @@ from __future__ import unicode_literals
 import copy
 import os
 import shutil
-import glob
 import contextlib
+import glob
 import logging
 
 import django.db.models
@@ -18,6 +18,7 @@ import mini_buildd.misc
 import mini_buildd.models.base
 import mini_buildd.models.source
 
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -181,16 +182,15 @@ personality={p}
             gpg.export(self.mbd_get_keyring_file())
 
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), run_as_root=True)
-        self.mbd_msg_info(request, "{c}: Prepared on system for schroot.".format(c=self))
+        MsgLog(LOG, request).info("{c}: Prepared on system for schroot.".format(c=self))
 
     def mbd_remove(self, request):
         mini_buildd.misc.call_sequence(self.mbd_get_sequence(), rollback_only=True, run_as_root=True)
         shutil.rmtree(self.mbd_get_path(),
-                      onerror=lambda f, p, e: self.mbd_msg_warn(request,
-                                                                "{c}: Failure removing data dir '{p}' (ignoring): {e}".format(c=self,
-                                                                                                                              p=self.mbd_get_path(),
-                                                                                                                              e=e)))
-        self.mbd_msg_info(request, "{c}: Removed from system.".format(c=self))
+                      onerror=lambda f, p, e: MsgLog(LOG, request).warn("{c}: Failure removing data dir '{p}' (ignoring): {e}".format(c=self,
+                                                                                                                                      p=self.mbd_get_path(),
+                                                                                                                                      e=e)))
+        MsgLog(LOG, request).info("{c}: Removed from system.".format(c=self))
 
     def mbd_sync(self, request):
         self._mbd_sync_by_purge_and_create(request)
@@ -198,7 +198,7 @@ personality={p}
     def mbd_check(self, request):
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--info"])
         mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--directory=/", "--", "/bin/ls"])
-        self.mbd_msg_info(request, "{c}: 'ls' in snapshot successful.".format(c=self))
+        MsgLog(LOG, request).info("{c}: 'ls' in snapshot successful.".format(c=self))
 
     def mbd_get_dependencies(self):
         return [self.source]

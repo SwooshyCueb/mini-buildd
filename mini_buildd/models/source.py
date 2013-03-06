@@ -19,6 +19,7 @@ import mini_buildd.gnupg
 import mini_buildd.models.base
 import mini_buildd.models.gnupg
 
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -44,9 +45,9 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             if url:
                 _obj, created = Archive.objects.get_or_create(url=url)
                 if created:
-                    mini_buildd.models.base.Model.mbd_msg_info(request, "Archive added: {a}".format(a=url))
+                    MsgLog(LOG, request).info("Archive added: {a}".format(a=url))
                 else:
-                    mini_buildd.models.base.Model.mbd_msg_debug(request, "Archive already exists: {a}".format(a=url))
+                    MsgLog(LOG, request).debug("Archive already exists: {a}".format(a=url))
 
         def action_add_from_sources_list(self, request, _queryset):
             try:
@@ -72,7 +73,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
                         "http://archive.debian.org/backports.org/",       # Archived (sarge, etch, lenny) backports
                         ]:
                 self._add_or_create(request, url)
-            mini_buildd.models.base.Model.mbd_msg_info(request, "Consider adapting these archives to you closest mirror(s); check netselect-apt.")
+            MsgLog(LOG, request).info("Consider adapting these archives to you closest mirror(s); check netselect-apt.")
 
         action_add_debian.short_description = "Add Debian archive mirrors [call with dummy selection]"
 
@@ -127,10 +128,10 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             urllib2.urlopen(self.url)
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
-            self.mbd_msg_info(request, "{s}: Ping!".format(s=self))
+            MsgLog(LOG, request).info("{s}: Ping!".format(s=self))
         except:
             self.ping = -1.0
-            self.mbd_msg_error(request, "{s}: Does not ping.".format(s=self))
+            MsgLog(LOG, request).error("{s}: Does not ping.".format(s=self))
 
         return self.ping
 
@@ -215,14 +216,14 @@ manually run on a Debian system to be sure.
         def _add_or_create(cls, request, origin, codename, keys):
             obj, created = Source.objects.get_or_create(origin=origin, codename=codename)
             if created:
-                mini_buildd.models.base.Model.mbd_msg_info(request, "Source added: {s}".format(s=obj))
+                MsgLog(LOG, request).info("Source added: {s}".format(s=obj))
                 for key_id in keys:
                     apt_key, _created = mini_buildd.models.gnupg.AptKey.objects.get_or_create(key_id=key_id)
                     obj.apt_keys.add(apt_key)
-                    mini_buildd.models.base.Model.mbd_msg_info(request, "Apt key added: {k}".format(s=obj, k=apt_key))
+                    MsgLog(LOG, request).info("Apt key added: {k}".format(s=obj, k=apt_key))
                 obj.save()
             else:
-                mini_buildd.models.base.Model.mbd_msg_debug(request, "Source already exists: {s}".format(s=obj))
+                MsgLog(request).debug("Source already exists: {s}".format(s=obj))
 
         def action_add_debian(self, request, _queryset):
             for origin, codename, keys in [("Debian", "etch", ["55BE302B", "ADB11277"]),
@@ -296,26 +297,26 @@ manually run on a Debian system to be sure.
                     self.codeversion = ""
                     if self.codeversion_override:
                         self.codeversion = self.codeversion_override
-                        self.mbd_msg_warn(request, "{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
+                        MsgLog(LOG, request).warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
                     else:
                         self.codeversion = mini_buildd.misc.guess_codeversion(release)
-                        self.mbd_msg_info(request, "{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
+                        MsgLog(LOG, request).info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
                         new_arch, created = Architecture.objects.get_or_create(name=a)
                         if created:
-                            self.mbd_msg_info(request, "Auto-adding new architecture: {a}".format(a=a))
+                            MsgLog(LOG, request).info("Auto-adding new architecture: {a}".format(a=a))
                         self.architectures.add(new_arch)
                     for c in release["Components"].split(" "):
                         new_component, created = Component.objects.get_or_create(name=c)
                         if created:
-                            self.mbd_msg_info(request, "Auto-adding new component: {c}".format(c=c))
+                            MsgLog(LOG, request).info("Auto-adding new component: {c}".format(c=c))
                         self.components.add(new_component)
-                    self.mbd_msg_info(request, "{o}: Added archive: {m}".format(o=self, m=m))
+                    MsgLog(LOG, request).info("{o}: Added archive: {m}".format(o=self, m=m))
 
                 except Exception as e:
-                    self.mbd_msg_exception(request, "{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
+                    MsgLog(LOG, request).exception("{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
 
         self.mbd_check(request)
 

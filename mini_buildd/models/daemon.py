@@ -22,7 +22,7 @@ import mini_buildd.models.repository
 import mini_buildd.models.chroot
 import mini_buildd.models.gnupg
 
-
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -181,14 +181,15 @@ prepare/remove actions will generate/remove the GnuPG key.
         self._mbd_gnupg.prepare()
         self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key_long_id()
         self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint()
-        self.mbd_msg_info(request, "Daemon GnuPG key generated: {i}: {f}".format(i=self._mbd_gnupg_long_id, f=self._mbd_gnupg_fingerprint))
+        MsgLog(LOG, request).info("Daemon GnuPG key generated: {i}: {f}".format(i=self._mbd_gnupg_long_id, f=self._mbd_gnupg_fingerprint))
 
-    def mbd_sync(self, request):
-        self.mbd_msg_warn(request, "The GnuPG key will never be updated automatically. Explicitly run remove+prepare to achive this.")
+    @classmethod
+    def mbd_sync(cls, request):
+        MsgLog(LOG, request).warn("The GnuPG key will never be updated automatically. Explicitly run remove+prepare to achive this.")
 
     def mbd_remove(self, request):
         self._mbd_gnupg.remove()
-        self.mbd_msg_info(request, "Daemon GnuPG key removed.")
+        MsgLog(LOG, request).info("Daemon GnuPG key removed.")
 
     def mbd_get_dependencies(self):
         "All active or to-be active repositories, remotes and chroots."
@@ -201,7 +202,7 @@ prepare/remove actions will generate/remove the GnuPG key.
     def mbd_check(self, request):
         "Just warn in case there are no repos and no chroots."
         if not self.mbd_get_daemon().get_active_repositories() and not self.mbd_get_daemon().get_active_chroots():
-            self.mbd_msg_warn(request, "No active chroot or repository (starting anyway).")
+            MsgLog(LOG, request).warn("No active chroot or repository (starting anyway).")
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

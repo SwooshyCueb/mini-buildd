@@ -496,7 +496,7 @@ class CredsCache(object):
         self._file = cache_file
         self._creds = {}
         try:
-            self._creds = pickle.load(open(self._file))
+            self._creds = pickle.load(open(self._file, "rb"))
             LOG.debug("Creds cache pickled from '{c}'. {l} entries.".format(c=cache_file, l=len(self._creds)))
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
@@ -508,7 +508,8 @@ class CredsCache(object):
             answer = raw_input("Cache (unencrypted) in '{f}' (y/n)? ".format(f=self._file))
             if answer.upper() == "Y":
                 pickle.dump(self._creds,
-                            os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "w"))
+                            os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
+                            pickle.HIGHEST_PROTOCOL)
         else:
             LOG.debug("No changes in '{c}'".format(c=self._file))
 

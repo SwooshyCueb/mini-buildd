@@ -149,7 +149,7 @@ are actually supported by the current model.
             return default
 
     def mbd_set_pickled_data(self, data):
-        self.pickled_data = pickle.dumps(data)
+        self.pickled_data = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
 
     @classmethod
     def mbd_validate_regex(cls, regex, value, field_name):

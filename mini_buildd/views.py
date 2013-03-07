@@ -157,7 +157,8 @@ def api(request):
             response = django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
 
         elif output == "python":
-            response = django.http.HttpResponse(pickle.dumps(api_cmd), mimetype="application/python-pickle")
+            response = django.http.HttpResponse(pickle.dumps(api_cmd, pickle.HIGHEST_PROTOCOL),
+                                                mimetype="application/python-pickle")
 
         elif output[:7] == "referer":
             # Add all plain result lines as info messages on redirect

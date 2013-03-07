@@ -2,11 +2,13 @@
 from __future__ import unicode_literals
 
 import os
+import copy
 import glob
 import logging
 
 import mini_buildd.misc
 
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -43,8 +45,19 @@ different components), or just as safeguard
 
         return result
 
-    def __init__(self, args):
+    def __init__(self, args, request=None):
         self.args = self._filter_api_args(args)
+        self.msglog = MsgLog(LOG, request)
+        self._plain_result = ""
+
+    def __getstate__(self):
+        "Log object cannot be pickled."
+        pstate = copy.copy(self.__dict__)
+        del pstate["msglog"]
+        return pstate
+
+    def __unicode__(self):
+        return self._plain_result
 
     def has_flag(self, flag):
         return self.args.get(flag, "False") == "True"
@@ -60,8 +73,8 @@ class Status(Command):
     """
     COMMAND = "status"
 
-    def __init__(self, args):
-        super(Status, self).__init__(args)
+    def __init__(self, args, request=None):
+        super(Status, self).__init__(args, request)
 
         self.version = "-1"
         self.http = ""
@@ -142,34 +155,31 @@ Builder: {b_len} building
         return codename in self.chroots and arch in self.chroots[codename]
 
 
-class Daemon(Command):
+class Start(Command):
     """
-    Start or stop the Daemon engine.
+    Start the Daemon (engine).
     """
-    COMMAND = "daemon"
+    COMMAND = "start"
     LOGIN = True
-    CONFIRM = True
     ARGUMENTS = [
-        (["action"], {"help": "'start' or 'stop' the Daemon engine."}),
         (["--force-check", "-C"], {"action": "store_true",
                                    "default": False,
                                    "help": "run checks on instances even if already checked."})]
 
-    def __init__(self, args):
-        super(Daemon, self).__init__(args)
-        self.status = None
+    def run(self, daemon):
+        daemon.start(force_check=self.has_flag("force_check"), log=self.msglog)
+
+
+class Stop(Command):
+    """
+    Stop the Daemon (engine).
+    """
+    COMMAND = "stop"
+    LOGIN = True
+    ARGUMENTS = []
 
     def run(self, daemon):
-        if self.args["action"] == "start":
-            daemon.start(force_check=self.has_flag("force_check"))
-        elif self.args["action"] == "stop":
-            daemon.stop()
-        else:
-            raise Exception("Use 'start' or 'stop'.")
-        self.status = "{d}".format(d=daemon)
-
-    def __unicode__(self):
-        return self.status
+        daemon.stop(log=self.msglog)
 
 
 class GetKey(Command):
@@ -178,15 +188,8 @@ class GetKey(Command):
     """
     COMMAND = "getkey"
 
-    def __init__(self, args):
-        super(GetKey, self).__init__(args)
-        self.key = ""
-
     def run(self, daemon):
-        self.key = daemon.model.mbd_get_pub_key()
-
-    def __unicode__(self):
-        return self.key
+        self._plain_result = daemon.model.mbd_get_pub_key()
 
 
 class GetDputConf(Command):
@@ -197,15 +200,8 @@ class GetDputConf(Command):
     """
     COMMAND = "getdputconf"
 
-    def __init__(self, args):
-        super(GetDputConf, self).__init__(args)
-        self.conf = ""
-
     def run(self, daemon):
-        self.conf = daemon.model.mbd_get_dput_conf()
-
-    def __unicode__(self):
-        return self.conf
+        self._plain_result = daemon.model.mbd_get_dput_conf()
 
 
 class LogCat(Command):
@@ -218,15 +214,8 @@ class LogCat(Command):
                              "default": 50,
                              "help": "cat (approx.) the last N lines"})]
 
-    def __init__(self, args):
-        super(LogCat, self).__init__(args)
-        self.log = ""
-
     def run(self, daemon):
-        self.log = daemon.logcat(lines=int(self.args["lines"]))
-
-    def __unicode__(self):
-        return self.log
+        self._plain_result = daemon.logcat(lines=int(self.args["lines"]))
 
 
 def _get_table_format(dct, cols):
@@ -265,8 +254,8 @@ class List(Command):
                             "default": "",
                             "help": "package type: dsc, deb or udeb (like reprepo --type)"})]
 
-    def __init__(self, args):
-        super(List, self).__init__(args)
+    def __init__(self, args, request=None):
+        super(List, self).__init__(args, request)
         self.repositories = {}
 
     def run(self, daemon):
@@ -319,8 +308,8 @@ class Show(Command):
                                "default": False,
                                "help": "verbose output"})]
 
-    def __init__(self, args):
-        super(Show, self).__init__(args)
+    def __init__(self, args, request=None):
+        super(Show, self).__init__(args, request)
         self.repositories = {}
 
     def run(self, daemon):
@@ -383,20 +372,13 @@ class Migrate(Command):
         (["distribution"], {"help": "distribution to migrate from (if this is a '-rollbackN' distribution, this will perform a rollback restore)"}),
         Command.COMMON_ARG_VERSION]
 
-    def __init__(self, args):
-        super(Migrate, self).__init__(args)
-        self.cmd_out = ""
-
     def run(self, daemon):
         repository, distribution, suite, rollback = daemon.parse_distribution(self.args["distribution"])
-        self.cmd_out = repository.mbd_package_migrate(self.args["package"],
-                                                      distribution,
-                                                      suite,
-                                                      rollback=rollback,
-                                                      version=self.arg_false2none("version"))
-
-    def __unicode__(self):
-        return self.cmd_out
+        self._plain_result = repository.mbd_package_migrate(self.args["package"],
+                                                            distribution,
+                                                            suite,
+                                                            rollback=rollback,
+                                                            version=self.arg_false2none("version"))
 
 
 class Remove(Command):
@@ -411,20 +393,13 @@ class Remove(Command):
         (["distribution"], {"help": "distribution to remove from"}),
         Command.COMMON_ARG_VERSION]
 
-    def __init__(self, args):
-        super(Remove, self).__init__(args)
-        self.cmd_out = ""
-
     def run(self, daemon):
         repository, distribution, suite, rollback = daemon.parse_distribution(self.args["distribution"])
-        self.cmd_out = repository.mbd_package_remove(self.args["package"],
-                                                     distribution,
-                                                     suite,
-                                                     rollback=rollback,
-                                                     version=self.arg_false2none("version"))
-
-    def __unicode__(self):
-        return self.cmd_out
+        self._plain_result = repository.mbd_package_remove(self.args["package"],
+                                                           distribution,
+                                                           suite,
+                                                           rollback=rollback,
+                                                           version=self.arg_false2none("version"))
 
 
 class Port(Command):
@@ -444,12 +419,6 @@ class Port(Command):
         (["to-distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"}),
         Command.COMMON_ARG_VERSION]
 
-    def __init__(self, args):
-        super(Port, self).__init__(args)
-
-        # Parse and pre-check all dists
-        self.results = ""
-
     def run(self, daemon):
         # Parse and pre-check all dists
         for to_distribution in self.args["to_distributions"].split(","):
@@ -459,13 +428,10 @@ class Port(Command):
                             self.args["from_distribution"],
                             to_distribution,
                             version=self.arg_false2none("version"))
-                self.results += "Requested: {i}.\n".format(i=info)
+                self._plain_result += "Requested: {i}.\n".format(i=info)
             except Exception as e:
-                self.results += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
+                self._plain_result += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
                 mini_buildd.setup.log_exception(LOG, info, e)
-
-    def __unicode__(self):
-        return self.results
 
 
 class PortExt(Command):
@@ -482,25 +448,16 @@ class PortExt(Command):
         (["dsc-url"], {"help": "URL of any Debian source package (dsc) to port"}),
         (["distributions"], {"help": "comma-separated list of distributions to port to"})]
 
-    def __init__(self, args):
-        super(PortExt, self).__init__(args)
-
-        # Parse and pre-check all dists
-        self.results = ""
-
     def run(self, daemon):
         # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
             info = "External port {dsc} -> {d}".format(dsc=self.args["dsc_url"], d=d)
             try:
                 daemon.portext(self.args["dsc_url"], d)
-                self.results += "Requested: {i}.\n".format(i=info)
+                self._plain_result += "Requested: {i}.\n".format(i=info)
             except Exception as e:
-                self.results += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
+                self._plain_result += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
                 mini_buildd.setup.log_exception(LOG, info, e)
-
-    def __unicode__(self):
-        return self.results
 
 
 class Retry(Command):
@@ -518,37 +475,30 @@ class Retry(Command):
                                   "help": "Repository name -- use only in case of multiple matches."}),
         Command.COMMON_ARG_VERSION]
 
-    def __init__(self, args):
-        super(Retry, self).__init__(args)
-        self.results = ""
-
     def run(self, daemon):
         # Find changes files
         path = os.path.join(mini_buildd.setup.LOG_DIR, self.args["repository"], "_failed", self.args["package"], self.args["version"])
         changes = []
         for c in glob.glob("{p}/*/*.changes".format(p=path)):
             if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
-                LOG.info(c)
                 changes.append(c)
 
         for c in changes:
-            self.results += "Found: {c}\n".format(c=c)
+            self._plain_result += "Found: {c}\n".format(c=c)
 
         if len(changes) > 1:
-            self.results += "E: Multiple changes found (skipped); use --repository to make this unique."
+            self._plain_result += "E: Multiple changes found (skipped); use --repository to make this unique."
         elif len(changes) < 1:
-            self.results += "E: No matching changes found."
+            self._plain_result += "E: No matching changes found."
         else:
             for c in changes:
                 daemon.incoming_queue.put(c)
-                self.results += "Queued again: {c}\n".format(c=c)
-
-    def __unicode__(self):
-        return self.results
+                self._plain_result += "Queued again: {c}\n".format(c=c)
 
 
 COMMANDS = {Status.COMMAND: Status,
-            Daemon.COMMAND: Daemon,
+            Start.COMMAND: Start,
+            Stop.COMMAND: Stop,
             GetKey.COMMAND: GetKey,
             GetDputConf.COMMAND: GetDputConf,
             LogCat.COMMAND: LogCat,

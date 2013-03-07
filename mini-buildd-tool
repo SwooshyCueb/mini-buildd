@@ -62,6 +62,16 @@ def api_call(args):
     LOG.info("API call URL: {u}".format(u=call_url))
     response = urllib2.urlopen(call_url)
 
+    # Output messages to stderr
+    mbd_header = "x-mini-buildd-message"
+    msgs_printed = False
+    for msg in [v for k, v in response.headers.items() if mbd_header == k[:len(mbd_header)]]:
+        print(msg, file=sys.stderr)
+        msgs_printed = True
+    # Add new line if we had at least one message
+    if msgs_printed:
+        print("--", file=sys.stderr)
+
     # Return content as unicode string
     encoding = response.headers["content-type"].partition("charset=")[2]
     return unicode(response.read(), encoding if encoding else "UTF-8")
@@ -69,7 +79,7 @@ def api_call(args):
 def cmd_call(args):
     LOG.info("{h}: {c}".format(h=args.host, c=args.command))
     res = api_call(args)
-    print(res.encode(locale.getpreferredencoding()))
+    print(res.encode(locale.getpreferredencoding()), end="")
 
 
 SUBPARSERS = PARSER.add_subparsers()

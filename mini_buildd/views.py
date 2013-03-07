@@ -128,7 +128,7 @@ def api(request):
             return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=command))
 
         # Generate command object
-        api_cmd = api_cls(request.GET)
+        api_cmd = api_cls(request.GET, request)
 
         output = request.GET.get("output", "html")
 
@@ -146,20 +146,34 @@ def api(request):
         api_cmd.run(mini_buildd.daemon.get())
 
         # Generate API call output
+        response = None
         if output == "html":
-            return django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command), "mini_buildd/api_default.html".format(c=command)],
-                                                       {"api_cmd": api_cmd},
-                                                       django.template.RequestContext(request))
+            response = django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command),
+                                                            "mini_buildd/api_default.html".format(c=command)],
+                                                           {"api_cmd": api_cmd},
+                                                           django.template.RequestContext(request))
+
         elif output == "plain":
-            return django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
+            response = django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
+
         elif output == "python":
-            return django.http.HttpResponse(pickle.dumps(api_cmd), mimetype="application/python-pickle")
+            response = django.http.HttpResponse(pickle.dumps(api_cmd), mimetype="application/python-pickle")
+
         elif output[:7] == "referer":
-            for l in "{c}".format(c=api_cmd).splitlines():
-                django.contrib.messages.info(request, l)
-            return django.shortcuts.redirect(output[7:] if output[7:] else request.META.get("HTTP_REFERER", "/"))
+            # Add all plain result lines as info messages on redirect
+            for l in api_cmd.__unicode__().splitlines():
+                api_cmd.msglog.info(l)
+            response = django.shortcuts.redirect(output[7:] if output[7:] else request.META.get("HTTP_REFERER", "/"))
         else:
-            return django.http.HttpResponseBadRequest("<h1>Unknow output type {o}</h1>".format(o=output))
+            response = django.http.HttpResponseBadRequest("<h1>Unknow output type '{o}'</h1>".format(o=output))
+
+        # Add all user messages as as custom HTTP headers
+        n = 0
+        for l in reversed(api_cmd.msglog.plain.splitlines()):
+            response["X-Mini-Buildd-Message-{n}".format(n=n)] = l
+            n += 1
+        return response
+
     except Exception as e:
         # This might as well be just an internal error; in case of no bug in the code, 405 fits better though.
         # ['wontfix' unless we refactor to diversified exception classes]

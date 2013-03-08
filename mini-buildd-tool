@@ -35,7 +35,7 @@ PARSER.add_argument("-O", "--output", action='store', default="plain",
 PARSER.add_argument("-C", "--clear-creds", action='store_true',
                     help="clear credentials cache")
 
-def api_call(args):
+def cmd_call(args):
     # Construct base URL form host argument
     base_url = "http://{h}".format(h=args.host)
 
@@ -62,24 +62,19 @@ def api_call(args):
     LOG.info("API call URL: {u}".format(u=call_url))
     response = urllib2.urlopen(call_url)
 
-    # Output messages to stderr
-    mbd_header = "x-mini-buildd-message"
-    msgs_printed = False
-    for msg in [v for k, v in response.headers.items() if mbd_header == k[:len(mbd_header)]]:
-        print(msg, file=sys.stderr)
-        msgs_printed = True
-    # Add new line if we had at least one message
-    if msgs_printed:
-        print("--", file=sys.stderr)
+    # Output daemon messages to stderr
+    msgs_header = "x-mini-buildd-message"
+    for msg in [v for k, v in response.headers.items() if msgs_header == k[:len(msgs_header)]]:
+        print("Daemon message: {m}".format(m=msg), file=sys.stderr)
 
-    # Return content as unicode string
-    encoding = response.headers["content-type"].partition("charset=")[2]
-    return unicode(response.read(), encoding if encoding else "UTF-8")
-
-def cmd_call(args):
-    LOG.info("{h}: {c}".format(h=args.host, c=args.command))
-    res = api_call(args)
-    print(res.encode(locale.getpreferredencoding()), end="")
+    # Output result to stdout
+    result = response.read()
+    if sys.stdout.isatty() and http_args["output"] == "plain":
+        # On plain output to a tty, try to encode to the preferred locale
+        encoding = response.headers["content-type"].partition("charset=")[2]
+        sys.stdout.write(unicode(result, encoding if encoding else "UTF-8").encode(locale.getpreferredencoding()))
+    else:
+        sys.stdout.write(result)
 
 
 SUBPARSERS = PARSER.add_subparsers()

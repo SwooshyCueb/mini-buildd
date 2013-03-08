@@ -163,7 +163,7 @@ def api(request):
         elif output[:7] == "referer":
             # Add all plain result lines as info messages on redirect
             for l in api_cmd.__unicode__().splitlines():
-                api_cmd.msglog.info(l)
+                api_cmd.msglog.info("Result: {l}".format(l=l))
             response = django.shortcuts.redirect(output[7:] if output[7:] else request.META.get("HTTP_REFERER", "/"))
         else:
             response = django.http.HttpResponseBadRequest("<h1>Unknow output type '{o}'</h1>".format(o=output))

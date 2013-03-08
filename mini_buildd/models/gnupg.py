@@ -123,7 +123,7 @@ class Remote(GnuPGPublicKey):
     def mbd_get_status(self, update=False):
         if update:
             url = "http://{h}/mini_buildd/api?command=status&output=python".format(h=self.http)
-            self.pickled_data = urllib2.urlopen(url, timeout=10).read()
+            self.mbd_set_pickled_data_pickled(urllib2.urlopen(url, timeout=10).read())
         return self.mbd_get_pickled_data(default=mini_buildd.api.Status({}))
 
     def mbd_prepare(self, request):
@@ -138,7 +138,7 @@ class Remote(GnuPGPublicKey):
 
     def mbd_remove(self, request):
         super(Remote, self).mbd_remove(request)
-        self.pickled_data = ""
+        self.mbd_set_pickled_data(mini_buildd.api.Status({}))
         MsgLog(LOG, request).info("Remote key and state removed.")
 
     def mbd_check(self, _request):

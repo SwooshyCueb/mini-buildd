@@ -38,9 +38,9 @@ still keeps the logic where it belongs.
 from __future__ import unicode_literals
 
 import datetime
-import StringIO
 import re
 import pickle
+import base64
 import logging
 
 import django.db.models
@@ -144,12 +144,21 @@ are actually supported by the current model.
 
     def mbd_get_pickled_data(self, default=None):
         try:
-            return pickle.load(StringIO.StringIO(self.pickled_data.encode("UTF-8")))
-        except:
-            return default
+            return pickle.loads(base64.decodestring(self.pickled_data))
+        except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "Ignoring unpickling error", e)
+            try:
+                # Be nice and also try the olde way <1.0 beta.7
+                return pickle.loads(self.pickled_data.encode("UTF-8"))
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Ignoring compat unpickling error", e)
+                return default
+
+    def mbd_set_pickled_data_pickled(self, pickled_data):
+        self.pickled_data = base64.encodestring(pickled_data)
 
     def mbd_set_pickled_data(self, data):
-        self.pickled_data = pickle.dumps(data, pickle.HIGHEST_PROTOCOL)
+        self.mbd_set_pickled_data_pickled(pickle.dumps(data, pickle.HIGHEST_PROTOCOL))
 
     @classmethod
     def mbd_validate_regex(cls, regex, value, field_name):

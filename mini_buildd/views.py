@@ -20,6 +20,25 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
+def _add_messages(response, msgs1, msgs2):
+    "Add all texts in messages (must be one line each) as custom HTTP headers"
+    n = 0
+    for msg in msgs1:
+        response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
+        n += 1
+
+    for msg in msgs2:
+        response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
+        n += 1
+
+
+def _add_api_messages(response, api_cmd, msgs=None):
+    "Add all user messages from api_cmd, plus optional extra messages."
+    _add_messages(response,
+                  reversed(api_cmd.msglog.plain.splitlines()) if api_cmd else [],
+                  msgs if msgs else [])
+
+
 def error(request, code, meaning, description, api_cmd=None):
     # Note: Adding api_cmd if applicable; this will enable automated api links even on error pages.
     response = django.shortcuts.render(request,
@@ -29,7 +48,7 @@ def error(request, code, meaning, description, api_cmd=None):
                                         "description": description,
                                         "api_cmd": api_cmd},
                                        status=code)
-    response["X-Mini-Buildd-Error"] = description
+    _add_api_messages(response, api_cmd, ["E: {d}".format(d=description)])
     return response
 
 
@@ -169,10 +188,8 @@ def api(request):
             response = django.http.HttpResponseBadRequest("<h1>Unknow output type '{o}'</h1>".format(o=output))
 
         # Add all user messages as as custom HTTP headers
-        n = 0
-        for l in reversed(api_cmd.msglog.plain.splitlines()):
-            response["X-Mini-Buildd-Message-{n}".format(n=n)] = l
-            n += 1
+        _add_api_messages(response, api_cmd)
+
         return response
 
     except Exception as e:

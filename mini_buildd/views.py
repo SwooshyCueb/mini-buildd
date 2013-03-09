@@ -23,11 +23,11 @@ LOG = logging.getLogger(__name__)
 def _add_messages(response, msgs1, msgs2):
     "Add all texts in messages (must be one line each) as custom HTTP headers"
     n = 0
-    for msg in msgs1:
+    for msg in msgs2:
         response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
         n += 1
 
-    for msg in msgs2:
+    for msg in msgs1:
         response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
         n += 1
 

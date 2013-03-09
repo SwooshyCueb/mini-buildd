@@ -100,7 +100,7 @@ class Status(Command):
         # bool
         self.running = daemon.is_running()
 
-        # float value: 0 =< load <= 1
+        # float value: 0 =< load <= 1+
         self.load = daemon.build_queue.load
 
         # chroots: {"squeeze": ["i386", "amd64"], "wheezy": ["amd64"]}
@@ -119,8 +119,7 @@ class Status(Command):
         self.packaging = ["{0}".format(p) for p in daemon.packages.values()]
         self.building = ["{0}".format(b) for b in daemon.builds.values()]
 
-    def __unicode__(self):
-        return """\
+        self._plain_result = """\
 http://{h} ({v}):
 
 Daemon: {ds}: ftp://{f} (load {l})
@@ -167,7 +166,9 @@ class Start(Command):
                                    "help": "run checks on instances even if already checked."})]
 
     def run(self, daemon):
-        daemon.start(force_check=self.has_flag("force_check"), msglog=self.msglog)
+        if not daemon.start(force_check=self.has_flag("force_check"), msglog=self.msglog):
+            raise Exception("Could not start Daemon (check logs and messages).")
+        self._plain_result = "{d}".format(d=daemon)
 
 
 class Stop(Command):
@@ -179,7 +180,9 @@ class Stop(Command):
     ARGUMENTS = []
 
     def run(self, daemon):
-        daemon.stop(msglog=self.msglog)
+        if not daemon.stop(msglog=self.msglog):
+            raise Exception("Could not stop Daemon (check logs and messages).")
+        self._plain_result = "{d}".format(d=daemon)
 
 
 class GetKey(Command):
@@ -423,15 +426,13 @@ class Port(Command):
         # Parse and pre-check all dists
         for to_distribution in self.args["to_distributions"].split(","):
             info = "Port {p}/{d} -> {to_d}".format(p=self.args["package"], d=self.args["from_distribution"], to_d=to_distribution)
-            try:
-                daemon.port(self.args["package"],
-                            self.args["from_distribution"],
-                            to_distribution,
-                            version=self.arg_false2none("version"))
-                self._plain_result += "Requested: {i}.\n".format(i=info)
-            except Exception as e:
-                self._plain_result += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
-                mini_buildd.setup.log_exception(LOG, info, e)
+            self.msglog.info("Trying: {i}".format(i=info))
+            daemon.port(self.args["package"],
+                        self.args["from_distribution"],
+                        to_distribution,
+                        version=self.arg_false2none("version"))
+            self.msglog.info("Requested: {i}".format(i=info))
+            self._plain_result += to_distribution + " "
 
 
 class PortExt(Command):
@@ -452,12 +453,10 @@ class PortExt(Command):
         # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
             info = "External port {dsc} -> {d}".format(dsc=self.args["dsc"], d=d)
-            try:
-                daemon.portext(self.args["dsc"], d)
-                self._plain_result += "Requested: {i}.\n".format(i=info)
-            except Exception as e:
-                self._plain_result += "FAILED   : {i}: {e}.\n".format(i=info, e=e)
-                mini_buildd.setup.log_exception(LOG, info, e)
+            self.msglog.info("Trying: {i}".format(i=info))
+            daemon.portext(self.args["dsc"], d)
+            self.msglog.info("Requested: {i}".format(i=info))
+            self._plain_result += d + " "
 
 
 class Retry(Command):
@@ -484,16 +483,16 @@ class Retry(Command):
                 changes.append(c)
 
         for c in changes:
-            self._plain_result += "Found: {c}\n".format(c=c)
+            self.msglog.info("Found matching changes: {c}".format(c=c))
 
-        if len(changes) > 1:
-            self._plain_result += "E: Multiple changes found (skipped); use --repository to make this unique."
-        elif len(changes) < 1:
-            self._plain_result += "E: No matching changes found."
-        else:
-            for c in changes:
-                daemon.incoming_queue.put(c)
-                self._plain_result += "Queued again: {c}\n".format(c=c)
+        if len(changes) != 1:
+            raise Exception("No or unambigious match for your query.")
+
+        c = changes[0]
+        daemon.incoming_queue.put(c)
+        self.msglog.info("Queued again: {c}".format(c=os.path.basename(c)))
+
+        self._plain_result = os.path.basename(os.path.basename(c))
 
 
 COMMANDS = {Status.COMMAND: Status,

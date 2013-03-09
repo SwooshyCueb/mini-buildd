@@ -364,6 +364,7 @@ class Daemon():
     def start(self, force_check=False, msglog=LOG):
         if not self.thread:
             self._update_model()
+            msglog.info("Checking daemon (force={f}).".format(f=force_check))
             mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check", force=force_check)
             if self.model.mbd_is_active():
                 self.thread = mini_buildd.misc.run_as_thread(run)
@@ -372,6 +373,8 @@ class Daemon():
                 msglog.warn("Daemon is deactivated (won't start).")
         else:
             msglog.info("Daemon already running.")
+
+        return self.is_running()
 
     def stop(self, msglog=LOG):
         if self.thread:
@@ -388,6 +391,8 @@ class Daemon():
             msglog.info("Daemon stopped.")
         else:
             msglog.info("Daemon already stopped.")
+
+        return not self.is_running()
 
     def is_running(self):
         return bool(self.thread)

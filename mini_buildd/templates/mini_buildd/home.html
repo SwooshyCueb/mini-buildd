@@ -12,7 +12,9 @@
 		{% if daemon.is_running %}Running{% else %}Stopped{% endif %}: {{ daemon.model }}
 	</span>
 {% endblock %}
-{% block mbd_page_footer %} GnuPG long key and fingerprint: <tt>{{ daemon.model.mbd_gnupg_long_id }}: {{ daemon.model.mbd_gnupg_fingerprint }}</tt>{% endblock %}
+{% block mbd_page_footer %}
+	<a href="/mini_buildd/api?command=getkey">Archive Key</a>: <tt>{{ daemon.model.mbd_gnupg_long_id }}: {{ daemon.model.mbd_gnupg_fingerprint }}</tt>
+{% endblock %}
 
 {% block localscript %}
 function toggleLastBuilds()

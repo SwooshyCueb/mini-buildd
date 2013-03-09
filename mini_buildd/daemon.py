@@ -361,19 +361,19 @@ class Daemon():
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Error adding persisted last builds/packages (ignoring)", e, logging.WARN)
 
-    def start(self, force_check=False, log=LOG):
+    def start(self, force_check=False, msglog=LOG):
         if not self.thread:
             self._update_model()
             mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check", force=force_check)
             if self.model.mbd_is_active():
                 self.thread = mini_buildd.misc.run_as_thread(run)
-                log.info("Daemon started.")
+                msglog.info("Daemon started.")
             else:
-                log.warn("Daemon is deactivated (won't start).")
+                msglog.warn("Daemon is deactivated (won't start).")
         else:
-            log.info("Daemon already running.")
+            msglog.info("Daemon already running.")
 
-    def stop(self, log=LOG):
+    def stop(self, msglog=LOG):
         if self.thread:
             # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
             # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
@@ -385,9 +385,9 @@ class Daemon():
             self.thread.join()
             self.thread = None
             self._update_model()
-            log.info("Daemon stopped.")
+            msglog.info("Daemon stopped.")
         else:
-            log.info("Daemon already stopped.")
+            msglog.info("Daemon already stopped.")
 
     def is_running(self):
         return bool(self.thread)

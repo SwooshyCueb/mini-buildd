@@ -167,7 +167,7 @@ class Start(Command):
                                    "help": "run checks on instances even if already checked."})]
 
     def run(self, daemon):
-        daemon.start(force_check=self.has_flag("force_check"), log=self.msglog)
+        daemon.start(force_check=self.has_flag("force_check"), msglog=self.msglog)
 
 
 class Stop(Command):
@@ -179,7 +179,7 @@ class Stop(Command):
     ARGUMENTS = []
 
     def run(self, daemon):
-        daemon.stop(log=self.msglog)
+        daemon.stop(msglog=self.msglog)
 
 
 class GetKey(Command):
@@ -415,8 +415,8 @@ class Port(Command):
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
-        (["from-distribution"], {"help": "distribution to port from"}),
-        (["to-distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"}),
+        (["from_distribution"], {"help": "distribution to port from"}),
+        (["to_distributions"], {"help": "comma-separated list of distributions to port to (when this equals the from-distribution, a rebuild will be done)"}),
         Command.COMMON_ARG_VERSION]
 
     def run(self, daemon):
@@ -445,15 +445,15 @@ class PortExt(Command):
     LOGIN = True
     CONFIRM = True
     ARGUMENTS = [
-        (["dsc-url"], {"help": "URL of any Debian source package (dsc) to port"}),
+        (["dsc"], {"help": "URL of any Debian source package (dsc) to port"}),
         (["distributions"], {"help": "comma-separated list of distributions to port to"})]
 
     def run(self, daemon):
         # Parse and pre-check all dists
         for d in self.args["distributions"].split(","):
-            info = "External port {dsc} -> {d}".format(dsc=self.args["dsc_url"], d=d)
+            info = "External port {dsc} -> {d}".format(dsc=self.args["dsc"], d=d)
             try:
-                daemon.portext(self.args["dsc_url"], d)
+                daemon.portext(self.args["dsc"], d)
                 self._plain_result += "Requested: {i}.\n".format(i=info)
             except Exception as e:
                 self._plain_result += "FAILED   : {i}: {e}.\n".format(i=info, e=e)

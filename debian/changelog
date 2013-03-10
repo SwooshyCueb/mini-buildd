@@ -1,3 +1,25 @@
+mini-buildd (1.0.0~beta.7) experimental; urgency=low
+
+  Seventh beta. New 'start'/'stop' API commands, web app usage
+  improvements, and some more bug fixes.
+  * [4eebc14] doc: Updates for the admin manaul.
+  * [90fc7ff] status: Decouple daemon start/stop status from Daemon models "active" status.
+  * [651d804] api: Add output type "referer" (allows to improve web UI on API calls).
+  * [3c0766a] Add new module "msglog" to cope generally with logs that are also user messages.
+  * [bf29d06] html: Embed django messages in all mini_buildd pages.
+  * [067cd74] daemon.py: Some cosmetic fixes for pylint 0.27.
+  * [77e0c11] daemon.py: start/stop(): Update code for customized log.
+  * [b80c4a7] api: Upgrade to MsgLog and remove code redundancies.
+  * [1c18d4d] pickle: Always pickle with the highest protocol (status, last*, user creds).
+  * [92051f9] mini-buildd-tool: Improve/fix magic when to char-encode to preferred user char encoding.
+  * [8b72ef7] api(mini-buildd-tool): Fix positional argument names separated by hyphen (f.e. "to-distribution" is now "to_distribution").
+  * [ad2c026] http(api): Update to msglog support for the error case.
+  * [e631205] api: Upgrade all cmds to msglist.
+  * [2e6ab5c] html: Put getkey API call to footer, replacing top level "Archive Key" button.
+  * [e72c30f] html: Add API usage reference index.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 10 Mar 2013 21:06:41 +0100
+
 mini-buildd (1.0.0~beta.6) experimental; urgency=low
 
   Sixth beta. Some bug fixes; new "retry" command and updates for logs.

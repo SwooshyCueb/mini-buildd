@@ -1,0 +1,34 @@
+{% extends "mini_buildd/api.html" %}
+{% load base %}
+
+{% block page_title %}API index{% endblock %}
+{% block page_sub_title %}API usage reference{% endblock %}
+{% block mbd_page_footer %}API usage reference{% endblock %}
+
+{% block content %}
+	<div id="mbd_api">
+		<p>
+			Note: <tt><b>mini-buildd-tool</b></tt> is the
+			corresponding command line tool.
+		</p>
+		{% for name, cmd in COMMANDS.items %}
+			<div class="box">
+				<h1 class="box-caption">{{ name }}</h1>
+
+				<form action="/mini_buildd/api" method="get">
+					<div>
+						<input type="hidden" name="command" value="{{ name }}" />
+
+						<input type="submit" title="Run API command" value="{{ name }}" />
+						{% for k, v in cmd.args.items %}
+							{% with help=cmd.args_help|mbd_dict_get:k %}
+								<tt>{{ k }}=</tt><input type="text" title="{{ help }}" size="16" name="{{ k }}" value="{{ v }}" />
+							{% endwith %}
+						{% endfor %}
+					</div>
+				</form>
+				<pre>{{ cmd.docstring }}</pre>
+			</div>
+		{% endfor %}
+	</div>
+{% endblock %}

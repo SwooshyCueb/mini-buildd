@@ -27,7 +27,7 @@ different components), or just as safeguard
 """})
 
     @classmethod
-    def _filter_api_args(cls, args):
+    def _filter_api_args(cls, args, args_help, set_if_missing=False):
         result = {}
         for sargs, kvsargs in cls.ARGUMENTS:
             # Sanitize args
@@ -37,16 +37,27 @@ different components), or just as safeguard
                 result[arg] = args[arg]
             elif "default" in kvsargs:
                 result[arg] = kvsargs["default"]
+            elif set_if_missing:
+                result[arg] = arg.upper()
+
+            # Helper to access help via django templates
+            args_help[arg] = kvsargs.get("help")
 
             # Check required
             if sargs[0][:2] != "--" or ("required" in kvsargs and kvsargs["required"]):
-                if not arg in args or not args[arg]:
+                if not arg in result or not result[arg]:
                     raise Exception("Missing required argument {a}".format(a=arg))
 
         return result
 
+    @classmethod
+    def get_default_args(cls):
+        dummy = {}
+        return cls._filter_api_args({}, dummy, set_if_missing=True)
+
     def __init__(self, args, request=None):
-        self.args = self._filter_api_args(args)
+        self.args_help = {}
+        self.args = self._filter_api_args(args, self.args_help)
         self.msglog = MsgLog(LOG, request)
         self._plain_result = ""
 
@@ -58,6 +69,10 @@ different components), or just as safeguard
 
     def __unicode__(self):
         return self._plain_result
+
+    @classmethod
+    def docstring(cls):
+        return cls.__doc__
 
     def has_flag(self, flag):
         return self.args.get(flag, "False") == "True"
@@ -471,8 +486,7 @@ class Retry(Command):
         (["version"], {"help": "source package's version"}),
         (["--repository", "-R"], {"action": "store", "metavar": "DIST",
                                   "default": "*",
-                                  "help": "Repository name -- use only in case of multiple matches."}),
-        Command.COMMON_ARG_VERSION]
+                                  "help": "Repository name -- use only in case of multiple matches."})]
 
     def run(self, daemon):
         # Find changes files

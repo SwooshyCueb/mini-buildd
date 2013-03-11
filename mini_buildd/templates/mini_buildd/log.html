@@ -25,6 +25,9 @@
 							<a href="/log/{{ uri }}">{{ arch }}</a>
 						{% endfor %}
 					</p>
+					<p>
+						<em><a href="/log/{{ values.changes_path }}">Changes:</a></em>
+					</p>
 					<pre>{{ values.changes }}</pre>
 				{% endif %}
 			{% endfor %}

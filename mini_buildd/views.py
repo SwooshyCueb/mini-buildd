@@ -112,14 +112,16 @@ def log(request, repository, package, version):
             buildlogs[arch] = buildlog.replace(mini_buildd.setup.LOG_DIR, "")
 
         changes = None
+        changes_path = None
         for c in glob.glob("{p}/*/*.changes".format(p=path)):
             # changes: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.changes"
             if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
                 with open(c) as f:
                     changes = f.read()
+                changes_path = c.replace(mini_buildd.setup.LOG_DIR, "")
                 break
 
-        return {"changes": changes, "buildlogs": buildlogs}
+        return {"changes": changes, "changes_path": changes_path, "buildlogs": buildlogs}
 
     return django.shortcuts.render_to_response("mini_buildd/log.html",
                                                {"repository": repository,

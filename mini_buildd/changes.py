@@ -130,14 +130,33 @@ class Changes(debian.deb822.Changes):
     def is_new(self):
         return self._new
 
+    def _magic_get_changes(self):
+        """
+        Filter only the first block from the changes (changelog) entry.
+
+        We need this for the 'magic' values only. Uploads may
+        include multiple blocks from the changelog (internal
+        porting does it, for example), but we must only consider
+        values from the top one.
+        """
+        result = ""
+        header_found = False
+        for line in self.get("Changes", "").splitlines(True):
+            if re.match(r"^ [a-z0-9]+", line):
+                if header_found:
+                    break
+                header_found = True
+            result += line
+        return result
+
     @property
     def magic_auto_backports(self):
-        mres = re.search(r"\*\s*MINI_BUILDD:\s*AUTO_BACKPORTS:\s*([^*.\[\]]+)", self.get("Changes", ""))
+        mres = re.search(r"\*\s*MINI_BUILDD:\s*AUTO_BACKPORTS:\s*([^*.\[\]]+)", self._magic_get_changes())
         return (re.sub(r'\s+', '', mres.group(1))).split(",") if mres else []
 
     @property
     def magic_backport_mode(self):
-        return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self.get("Changes", "")))
+        return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self._magic_get_changes()))
 
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)

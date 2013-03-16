@@ -747,12 +747,12 @@ DscIndices: Sources Release . .gz .bz2
 
         if rollback is not None:
             LOG.info("Rollback restore of '{p}' from rollback {r} to '{d}'".format(p=package, r=rollback, d=src_dist))
-            if self._mbd_package_find(pkg_show, distribution=src_dist, version=version):
+            if self._mbd_package_find(pkg_show, distribution=src_dist):
                 raise Exception("Package '{p}' exists in '{d}': Remove first to restore rollback".format(p=package, d=src_dist))
 
             rob_dist = suite.mbd_get_distribution_string(self, distribution, rollback=rollback)
-            if not self._mbd_package_find(pkg_show, distribution=rob_dist):
-                raise Exception("Package '{p}' has no rollback '{r}'".format(p=package, r=rollback))
+            if not self._mbd_package_find(pkg_show, distribution=rob_dist, version=version):
+                raise Exception("Package '{p}' has no such version in rollback '{r}'".format(p=package, r=rollback))
 
             # Actually migrate package in reprepro
             return self._mbd_reprepro().migrate(package, rob_dist, src_dist, version)
@@ -763,11 +763,11 @@ DscIndices: Sources Release . .gz .bz2
         dst_dist = suite.migrates_to.mbd_get_distribution_string(self, distribution)
 
         # Check if package is in src_dst
-        src_pkg = self._mbd_package_find(pkg_show, distribution=src_dist)
+        src_pkg = self._mbd_package_find(pkg_show, distribution=src_dist, version=version)
         if src_pkg is None:
             raise Exception("Package '{p}' not in '{d}'".format(p=package, d=src_dist))
         # Check that version is not already migrated
-        dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist)
+        dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist, version=version)
         if dst_pkg is not None and src_pkg["sourceversion"] == dst_pkg["sourceversion"]:
             raise Exception("Version '{v}' already migrated to '{d}'".format(v=src_pkg["sourceversion"], d=dst_dist))
 
@@ -780,7 +780,7 @@ DscIndices: Sources Release . .gz .bz2
 
     def mbd_package_remove(self, package, distribution, suite, rollback=None, version=None):
         dist_str = suite.mbd_get_distribution_string(self, distribution, rollback)
-        if not self.mbd_package_find(package, distribution=dist_str):
+        if not self.mbd_package_find(package, distribution=dist_str, version=version):
             raise Exception("Package '{p}' not in '{d}'".format(p=package, d=dist_str))
 
         if rollback is None:

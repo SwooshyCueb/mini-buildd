@@ -1,3 +1,12 @@
+mini-buildd (1.0.0~beta.8) experimental; urgency=low
+
+  Eights beta. Two bug fixes.
+  * [dc45687] html(log): Add link to download 'changes' directly.
+  * [209d476] changes: Fix: Get 'magic' flags from top level changelog entry only.
+  * [82f3b00] migrate,remove: Fix a couple of places where 'version' arg was not looped through (Fixes: Migration of packages w/ mult. versions).
+
+ -- Stephan Sürken <absurd@debian.org>  Sat, 16 Mar 2013 11:51:08 +0100
+
 mini-buildd (1.0.0~beta.7) experimental; urgency=low
 
   Seventh beta. New 'start'/'stop' API commands, web app usage

@@ -63,7 +63,14 @@ go to the default mapping.
             ("Chroot identity", {"fields": (("source", "architecture"), "personality", "personality_override")}),
             ("Extra options",
              {"classes": ("collapse",),
-              "description": "Supported extra options: 'Debootstrap-Command: Alternate command to run instead of standard debootstrap'",
+              "description": """
+<b>Supported extra options</b>
+<p><tt>Debootstrap-Command: ALT_COMMAND</tt>: Alternate command to run instead of standard debootstrap.</p>
+<p>
+For example, <tt>Debootstrap-Command: /usr/sbin/qemu-debootstrap</tt> may be used to produce <em>armel</em>
+chroots (with <tt>qemu-user-static</tt> installed).
+</p>
+""",
               "fields": ("extra_options",)})]
 
         def get_readonly_fields(self, _request, obj=None):

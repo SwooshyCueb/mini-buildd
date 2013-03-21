@@ -223,7 +223,7 @@ manually run on a Debian system to be sure.
                     MsgLog(LOG, request).info("Apt key added: {k}".format(s=obj, k=apt_key))
                 obj.save()
             else:
-                MsgLog(request).debug("Source already exists: {s}".format(s=obj))
+                MsgLog(LOG, request).debug("Source already exists: {s}".format(s=obj))
 
         def action_add_debian(self, request, _queryset):
             for origin, codename, keys in [("Debian", "etch", ["55BE302B", "ADB11277"]),

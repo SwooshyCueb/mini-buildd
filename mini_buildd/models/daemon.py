@@ -139,6 +139,13 @@ prepare/remove actions will generate/remove the GnuPG key.
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
 
+# pylint: disable=E1002
+        def save_model(self, request, obj, form, change):
+            "Always update date the daemon object to model."
+            obj.mbd_get_daemon().update_to_model(obj)
+            super(Daemon.Admin, self).save_model(request, obj, form, change)
+# pylint: enable=E1002
+
     def mbd_unicode(self):
         return "{i}: Serving {r} repositories, {c} chroots, {R} remotes".format(
             i=self.identity,

@@ -110,11 +110,11 @@ prevent original package maintainers to be spammed.
     custom_hooks_directory = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
     show_last_packages = django.db.models.IntegerField(
-        default=30,
-        help_text="How many last packages to show in status.")
+        default=100,
+        help_text="How many 'last packages' data to keep for the status display.")
     show_last_builds = django.db.models.IntegerField(
-        default=30,
-        help_text="How many last builds to show in status.")
+        default=100,
+        help_text="How many 'last builds' data to keep for the status display.")
 
     wait_for_build_results = django.db.models.IntegerField(
         default=5,

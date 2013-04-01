@@ -1,3 +1,14 @@
+mini-buildd (1.0.0~beta.9) experimental; urgency=low
+
+  Ninth beta. Cumulated minor bug fixes.
+  * [30faee4] html: chroot: Beautify/improve extra_options help.
+  * [40ad88d] source.py: Fix typo/regression from the 'MsgLog update'.
+  * [4f937c6] Distribution: Update/fix hint how to set up 'eatmydata'.
+  * [ea68a13] Daemon: Pimp up last packages/builds default value to 100 (was 30).
+  * [3605362] Daemon.py: Fix last packages/builds not persisted on model change.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 01 Apr 2013 22:43:42 +0200
+
 mini-buildd (1.0.0~beta.8) experimental; urgency=low
 
   Eights beta. Two bug fixes.

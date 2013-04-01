@@ -312,11 +312,12 @@ Example:
 <pre>
 #!/bin/sh -e
 
-# Have 'ccache' ready in builds
-apt-get --yes --no-install-recommends install ccache
-
 # Use 'eatmydata' in builds; depending on the chroot type, this can speed up builds significantly
 apt-get --yes --no-install-recommends install eatmydata
+printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+
+# Have 'ccache' ready in builds
+apt-get --yes --no-install-recommends install ccache
 
 # Accept sun-java6 licence so we can build-depend on it
 echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose

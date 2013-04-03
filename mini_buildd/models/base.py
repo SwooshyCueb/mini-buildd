@@ -200,13 +200,13 @@ class StatusModel(Model):
     CHECK_REACTIVATE = datetime.datetime(datetime.MINYEAR, 1, 4, tzinfo=None)
     _CHECK_MAX = CHECK_REACTIVATE
     CHECK_STRINGS = {
-        CHECK_NONE: {"char": "-", "string": "Unchecked"},
-        CHECK_CHANGED: {"char": "*", "string": "Model changed"},
-        CHECK_FAILED: {"char": "x", "string": "Failed"},
-        CHECK_REACTIVATE: {"char": "A", "string": "Failed; Auto-activate when check succeeds (again))"}}
+        CHECK_NONE: {"char": "-", "string": "Unchecked (please run check)"},
+        CHECK_CHANGED: {"char": "*", "string": "Changed (please prepare again)"},
+        CHECK_FAILED: {"char": "x", "string": "Failed (please fix and check again)"},
+        CHECK_REACTIVATE: {"char": "A", "string": "Failed in active state (will auto-activate when check succeeds again)"}}
     last_checked = django.db.models.DateTimeField(default=CHECK_NONE, editable=False)
 
-    # Obsoleted by CHECK_REACTIVATE prepared data state
+    # Obsoleted by CHECK_REACTIVATE prepared data state (but we need to keep it to not change the db scheme)
     auto_reactivate = django.db.models.BooleanField(default=False, editable=False)
 
     class Meta(Model.Meta):

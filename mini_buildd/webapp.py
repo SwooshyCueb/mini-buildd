@@ -107,16 +107,13 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 so_snapshot = mini_buildd.models.repository.SuiteOption(
                     layout=default_layout,
                     suite=snapshot,
-                    uploadable=True,
                     experimental=True,
-                    but_automatic_upgrades=True,
                     extra_options=extra_options.get("snapshot", ""))
                 so_snapshot.save()
 
                 so_experimental = mini_buildd.models.repository.SuiteOption(
                     layout=default_layout,
                     suite=experimental,
-                    uploadable=True,
                     experimental=True,
                     but_automatic_upgrades=False,
                     extra_options=extra_options.get("experimental", ""))

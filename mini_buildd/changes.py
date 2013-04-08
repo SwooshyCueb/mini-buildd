@@ -121,7 +121,8 @@ class Changes(debian.deb822.Changes):
 
     def get_archive_dir(self, installed):
         " Archive path for this changes file: REPOID/[_failed]/PACKAGE/VERSION/ARCH "
-        return os.path.join(mini_buildd.misc.Distribution(self["Distribution"]).repository,
+        return os.path.join(mini_buildd.misc.Distribution(self["Distribution"],
+                                                          mini_buildd.models.repository.get_meta_distribution_map()).repository,
                             "" if installed else "_failed",
                             self["Source"],
                             self["Version"],

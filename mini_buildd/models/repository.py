@@ -197,7 +197,24 @@ class Layout(mini_buildd.models.base.Model):
             ("Basics", {"fields": ("name",)}),
             ("Version Options", {"classes": ("collapse",),
                                  "fields": ("default_version", "mandatory_version_regex",
-                                            "experimental_default_version", "experimental_mandatory_version_regex")}),)
+                                            "experimental_default_version", "experimental_mandatory_version_regex")}),
+            ("Extra Options", {"classes": ("collapse",),
+                               "description": """
+<b>Supported extra options</b>
+<p><em>Meta-Distributions: META=CODENAME-SUITE[ META=CODENAME-SUITE[...</em>: Support METAs alone as distribution identifier.</p>
+<p>
+Meta distribution identifiers should be unique across all
+repositories; usually, a layout with meta distributions should
+only be used by at most one repository.
+</p>
+<p>
+<em>Example</em>:
+<tt>Meta-Distributions: unstable=sid-unstable experimental=sid-experimental</tt>
+(see standard layout 'Debian Developer'), to allow upload/testing of
+packages (to unstable,experimental,..) aimed for Debian.
+</p>
+""",
+                               "fields": ("extra_options",)}),)
         inlines = (SuiteOptionInline,)
 
     def mbd_unicode(self):
@@ -534,6 +551,19 @@ Example:
     def mbd_get_description(self, distribution, suite_option):
         return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.codename, i=self.identity)
 
+    def mbd_get_meta_distributions(self, distribution, suite_option):
+        try:
+            result = []
+            for p in self.layout.mbd_get_extra_option("Meta-Distributions", "").split():
+                meta, d = p.split("=")
+                dist = "{c}-{r}-{s}".format(c=d.split("-")[0], r=self.identity, s=d.split("-")[1])
+                if dist == suite_option.mbd_get_distribution_string(self, distribution):
+                    result.append(meta)
+            return result
+        except Exception as e:
+            # Raise Exception with human-readable text
+            raise Exception("Please fix syntax error in extra option 'Meta-Distributions' in layout '{l}': {e}".format(l=self.layout, e=e))
+
     def _mbd_find_dist(self, distribution):
         LOG.debug("Finding dist for {d}".format(d=distribution.get()))
 
@@ -576,6 +606,7 @@ Example:
 Codename: {distribution}
 Suite: {distribution}
 Label: {distribution}
+AlsoAcceptFor: {meta_distributions}
 Origin: {origin}
 Components: {components}
 UDebComponents: {components}
@@ -592,6 +623,7 @@ DscIndices: Sources Release . .gz .bz2
             for s in self.layout.suiteoption_set.all():
                 result += dist_template.format(
                     distribution=s.mbd_get_distribution_string(self, d),
+                    meta_distributions=" ".join(self.mbd_get_meta_distributions(d, s)),
                     origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
                     components=" ".join(d.mbd_get_components()),
                     architectures=" ".join([x.name for x in d.architectures.all()]),
@@ -602,6 +634,7 @@ DscIndices: Sources Release . .gz .bz2
                 for r in range(s.rollback):
                     result += dist_template.format(
                         distribution=s.mbd_get_distribution_string(self, d, r),
+                        meta_distributions="",
                         origin=self.mbd_get_daemon().model.mbd_get_archive_origin(),
                         components=" ".join(d.mbd_get_components()),
                         architectures=" ".join([x.name for x in d.architectures.all()]),
@@ -831,12 +864,12 @@ DscIndices: Sources Release . .gz .bz2
                                                                                                 v=pkg_in_dist["sourceversion"],
                                                                                                 d=dist_str))
 
-    def _mbd_package_install(self, bres):
+    def _mbd_package_install(self, bres, dist_str):
         with contextlib.closing(mini_buildd.misc.TmpDir()) as t:
             bres.untar(path=t.tmpdir)
             self._mbd_reprepro().install(" ".join(glob.glob(os.path.join(t.tmpdir, "*.changes"))),
-                                         bres["Distribution"])
-            LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
+                                         dist_str)
+            LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=dist_str))
 
     def mbd_package_install(self, distribution, suite_option, bresults):
         """
@@ -863,7 +896,7 @@ DscIndices: Sources Release . .gz .bz2
             self._mbd_package_shift_rollbacks(distribution, suite_option, package)
 
         # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
-        self._mbd_package_install(bresults[archall])
+        self._mbd_package_install(bresults[archall], dist_str)
 
         # Second, install all other archs
         for bres in [s for a, s in bresults.items() if a != archall]:
@@ -871,7 +904,7 @@ DscIndices: Sources Release . .gz .bz2
             if bres.get("Sbuild-Status") == "skipped":
                 LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))
             else:
-                self._mbd_package_install(bres)
+                self._mbd_package_install(bres, dist_str)
 
     def mbd_prepare(self, _request):
         """
@@ -926,3 +959,15 @@ gnupghome {h}
             result.append(d.base_source)
             result += [e.source for e in d.extra_sources.all()]
         return result
+
+
+def get_meta_distribution_map():
+    " Get a dict of the meta distributions: meta -> actual. "
+    result = {}
+    for r in mini_buildd.models.repository.Repository.objects.all():
+        for d in r.distributions.all():
+            for s in r.layout.suiteoption_set.all():
+                for m in r.mbd_get_meta_distributions(d, s):
+                    result[m] = s.mbd_get_distribution_string(r, d)
+    LOG.debug("Got meta distribution map: {m}".format(m=result))
+    return result

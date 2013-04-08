@@ -119,6 +119,28 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                     extra_options=extra_options.get("experimental", ""))
                 so_experimental.save()
 
+        # Debian Developer layout
+        debdev_layout, created = mini_buildd.models.repository.Layout.objects.get_or_create(
+            name="Debian Developer",
+            defaults={"mandatory_version_regex": ".*",
+                      "experimental_mandatory_version_regex": ".*",
+                      "extra_options": "Meta-Distributions: stable=squeeze-unstable unstable=sid-unstable experimental=sid-experimental\n"})
+
+        if created:
+            debdev_unstable = mini_buildd.models.repository.SuiteOption(
+                layout=debdev_layout,
+                suite=unstable,
+                build_keyring_package=True)
+            debdev_unstable.save()
+
+            debdev_experimental = mini_buildd.models.repository.SuiteOption(
+                layout=debdev_layout,
+                suite=experimental,
+                uploadable=True,
+                experimental=True,
+                but_automatic_upgrades=False)
+            debdev_experimental.save()
+
     @classmethod
     def set_admin_password(cls, password):
         """

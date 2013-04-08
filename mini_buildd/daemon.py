@@ -428,7 +428,7 @@ class Daemon():
         Get repository, distribution and suite model objects (plus rollback no) from distribtion string.
         """
         # Check and parse changes distribution string
-        dist_parsed = mini_buildd.misc.Distribution(dist)
+        dist_parsed = mini_buildd.misc.Distribution(dist, mini_buildd.models.repository.get_meta_distribution_map())
 
         # Get repository for identity; django exceptions will suite quite well as-is
         repository = mini_buildd.models.repository.Repository.objects.get(identity=dist_parsed.repository)

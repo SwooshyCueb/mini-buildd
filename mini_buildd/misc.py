@@ -214,8 +214,12 @@ class Distribution(object):
     >>> d.rollback_no
     5
     """
-    def __init__(self, dist):
-        self._dsplit = dist.split("-")
+    def __init__(self, dist, meta_map=None):
+        self.given_dist = dist
+        self.dist = meta_map.get(dist, dist) if meta_map else dist
+        LOG.debug("Parsing dist {gd} (maps to {d})...".format(gd=self.given_dist, d=self.dist))
+
+        self._dsplit = self.dist.split("-")
 
         def some_empty():
             for d in self._dsplit:
@@ -224,7 +228,7 @@ class Distribution(object):
             return False
 
         if (len(self._dsplit) < 3 or len(self._dsplit) > 4) or some_empty():
-            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-REPOID-SUITE[-rollbackN]'".format(d=dist))
+            raise Exception("Malformed distribution '{d}': Must be 'CODENAME-REPOID-SUITE[-rollbackN]'".format(d=self.dist))
 
     def get(self, rollback=True):
         if rollback:

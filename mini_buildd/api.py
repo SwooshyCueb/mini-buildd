@@ -3,7 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import copy
-import glob
 import logging
 
 import mini_buildd.misc
@@ -489,24 +488,13 @@ class Retry(Command):
                                   "help": "Repository name -- use only in case of multiple matches."})]
 
     def run(self, daemon):
-        # Find changes files
-        path = os.path.join(mini_buildd.setup.LOG_DIR, self.args["repository"], "_failed", self.args["package"], self.args["version"])
-        changes = []
-        for c in glob.glob("{p}/*/*.changes".format(p=path)):
-            if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
-                changes.append(c)
+        pkg_log = mini_buildd.misc.PkgLog(self.args["repository"], False, self.args["package"], self.args["version"])
+        if not pkg_log.changes:
+            raise Exception("No matching changes found for your retry query.")
+        daemon.incoming_queue.put(pkg_log.changes)
+        self.msglog.info("Retrying: {c}".format(c=os.path.basename(pkg_log.changes)))
 
-        for c in changes:
-            self.msglog.info("Found matching changes: {c}".format(c=c))
-
-        if len(changes) != 1:
-            raise Exception("No or unambigious match for your query.")
-
-        c = changes[0]
-        daemon.incoming_queue.put(c)
-        self.msglog.info("Queued again: {c}".format(c=os.path.basename(c)))
-
-        self._plain_result = os.path.basename(os.path.basename(c))
+        self._plain_result = os.path.basename(os.path.basename(pkg_log.changes))
 
 
 COMMANDS = {Status.COMMAND: Status,

@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import os.path
-import glob
 import pickle
 import logging
 
@@ -103,25 +101,11 @@ def home(request):
 
 def log(request, repository, package, version):
     def get_logs(installed):
-        path = os.path.join(mini_buildd.setup.LOG_DIR, repository, "" if installed else "_failed", package, version)
+        pkg_log = mini_buildd.misc.PkgLog(repository, installed, package, version)
 
-        buildlogs = {}
-        for buildlog in glob.glob("{p}/*/*.buildlog".format(p=path)):
-            # buildlog: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.buildlog"
-            arch = os.path.basename(os.path.dirname(buildlog))
-            buildlogs[arch] = buildlog.replace(mini_buildd.setup.LOG_DIR, "")
-
-        changes = None
-        changes_path = None
-        for c in glob.glob("{p}/*/*.changes".format(p=path)):
-            # changes: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.changes"
-            if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
-                with open(c) as f:
-                    changes = f.read()
-                changes_path = c.replace(mini_buildd.setup.LOG_DIR, "")
-                break
-
-        return {"changes": changes, "changes_path": changes_path, "buildlogs": buildlogs}
+        return {"changes": open(pkg_log.changes).read() if pkg_log.changes else None,
+                "changes_path": pkg_log.make_relative(pkg_log.changes) if pkg_log.changes else None,
+                "buildlogs": dict((k, pkg_log.make_relative(v)) for k, v in pkg_log.buildlogs.iteritems())}
 
     return django.shortcuts.render_to_response("mini_buildd/log.html",
                                                {"repository": repository,

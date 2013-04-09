@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 import datetime
 import shutil
+import glob
 import errno
 import subprocess
 import threading
@@ -294,6 +295,37 @@ def guess_codeversion(release):
         return digit0 + digit1
     except:
         return release["Codename"].upper()
+
+
+class PkgLog(object):
+    @classmethod
+    def get_path(cls, repository, installed, package, version, architecture=None, relative=False):
+        return os.path.join("" if relative else mini_buildd.setup.LOG_DIR,
+                            repository,
+                            "" if installed else "_failed",
+                            package,
+                            version,
+                            architecture if architecture else "")
+
+    @classmethod
+    def make_relative(cls, path):
+        return path.replace(mini_buildd.setup.LOG_DIR, "")
+
+    def __init__(self, repository, installed, package, version):
+        self.path = self.get_path(repository, installed, package, version)
+
+        # Find build logs: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.buildlog"
+        self.buildlogs = {}
+        for buildlog in glob.glob("{p}/*/*.buildlog".format(p=self.path)):
+            arch = os.path.basename(os.path.dirname(buildlog))
+            self.buildlogs[arch] = buildlog
+
+        # Find changes: "LOG_DIR/REPO/[_failed/]PACKAGE/VERSION/ARCH/PACKAGE_VERSION_ARCH.changes"
+        self.changes = None
+        for c in glob.glob("{p}/*/*.changes".format(p=self.path)):
+            if not ("mini-buildd-buildrequest" in c or "mini-buildd-buildresult" in c):
+                self.changes = c
+                break
 
 
 def subst_placeholders(template, placeholders):

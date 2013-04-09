@@ -165,7 +165,7 @@ class Package(mini_buildd.misc.Status):
 
         # On installed, clean out the failed log dir, if any of the very same version
         if self.get_status() == self.INSTALLED:
-            failed_logdir = os.path.dirname(os.path.join(mini_buildd.setup.LOG_DIR, self.changes.get_archive_dir(installed=False)))
+            failed_logdir = os.path.dirname(self.changes.get_archive_dir(installed=False, relative=False))
             LOG.debug("Purging failed log dir: {f}".format(f=failed_logdir))
             shutil.rmtree(failed_logdir, ignore_errors=True)
 

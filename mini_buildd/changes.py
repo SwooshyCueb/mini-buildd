@@ -119,14 +119,15 @@ class Changes(debian.deb822.Changes):
     def buildlog_name(self):
         return "{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
 
-    def get_archive_dir(self, installed):
+    def get_archive_dir(self, installed, relative=True):
         " Archive path for this changes file: REPOID/[_failed]/PACKAGE/VERSION/ARCH "
-        return os.path.join(mini_buildd.misc.Distribution(self["Distribution"],
-                                                          mini_buildd.models.repository.get_meta_distribution_map()).repository,
-                            "" if installed else "_failed",
-                            self["Source"],
-                            self["Version"],
-                            self["Architecture"])
+        return mini_buildd.misc.PkgLog.get_path(mini_buildd.misc.Distribution(self["Distribution"],
+                                                                              mini_buildd.models.repository.get_meta_distribution_map()).repository,
+                                                installed,
+                                                self["Source"],
+                                                self["Version"],
+                                                architecture=self["Architecture"],
+                                                relative=relative)
 
     def is_new(self):
         return self._new
@@ -261,7 +262,7 @@ class Changes(debian.deb822.Changes):
             LOG.info("No tar file (skipping): {f}".format(f=tar_file))
 
     def archive(self, installed):
-        logdir = os.path.join(mini_buildd.setup.LOG_DIR, self.get_archive_dir(installed))
+        logdir = self.get_archive_dir(installed, relative=False)
 
         if not os.path.exists(logdir):
             os.makedirs(logdir)

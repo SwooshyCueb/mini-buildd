@@ -248,8 +248,6 @@ incoming = /incoming
             else:
                 LOG.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
 
-        m_from = "{u}@{h}".format(u="mini-buildd", h=self.hostname)
-
         for m in self.notify.all():
             add_to(m.address)
         if repository:
@@ -266,12 +264,12 @@ incoming = /incoming
         if m_to:
             try:
                 body['Subject'] = subject
-                body['From'] = m_from
+                body['From'] = self.email_address
                 body['To'] = ", ".join(m_to)
 
                 hopo = mini_buildd.misc.HoPo(self.smtp_server)
                 s = smtplib.SMTP(hopo.host, hopo.port)
-                s.sendmail(m_from, m_to, body.as_string())
+                s.sendmail(self.email_address, m_to, m_body.as_string())
                 s.quit()
                 LOG.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=m_to))
             except Exception as e:

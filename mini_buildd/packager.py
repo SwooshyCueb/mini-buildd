@@ -4,8 +4,6 @@ from __future__ import unicode_literals
 import os
 import shutil
 import datetime
-import email.mime.text
-import email.utils
 import logging
 
 import mini_buildd.misc
@@ -200,11 +198,9 @@ class Package(mini_buildd.misc.Status):
         results += header("Changes")
         results += self.changes.dump()
 
-        body = email.mime.text.MIMEText(results, _charset="UTF-8")
-
         self.daemon.model.mbd_notify(
             self.__unicode__(),
-            body,
+            results,
             self.repository,
             self.changes)
 

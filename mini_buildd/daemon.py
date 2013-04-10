@@ -11,8 +11,6 @@ import Queue
 import collections
 import codecs
 import urllib2
-import email.mime.text
-import email.utils
 import logging
 
 import debian.deb822
@@ -283,7 +281,7 @@ def run():
                 # Try to notify
                 try:
                     subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
-                    body = email.mime.text.MIMEText(open(event, "rb").read(), _charset="UTF-8")
+                    body = codecs.open(event, "r", encoding="UTF-8").read()
                     get().model.mbd_notify(subject, body)
                 except Exception as e:
                     mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)

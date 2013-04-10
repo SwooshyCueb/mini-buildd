@@ -263,9 +263,10 @@ incoming = /incoming
 
         if m_to:
             try:
-                body['Subject'] = subject
-                body['From'] = self.email_address
-                body['To'] = ", ".join(m_to)
+                m_body = email.mime.text.MIMEText(body, _charset="UTF-8")
+                m_body["Subject"] = subject
+                m_body["From"] = self.email_address
+                m_body["To"] = ", ".join(m_to)
 
                 hopo = mini_buildd.misc.HoPo(self.smtp_server)
                 s = smtplib.SMTP(hopo.host, hopo.port)

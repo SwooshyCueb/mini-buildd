@@ -49,12 +49,12 @@ class Package(mini_buildd.misc.Status):
                 result.append("{p}{a}".format(p=p, a=key))
             return result
 
-        return "{s}: {p} ({d}): {a}: {desc}".format(
-            s=self.status,
-            p=self.pid,
-            d=self.changes["Distribution"],
-            a=" ".join(arch_status()),
-            desc=self.status_desc)
+        return mini_buildd.misc.pkg_fmt(self.status,
+                                        self.changes["Distribution"],
+                                        self.changes["Source"],
+                                        self.changes["Version"],
+                                        extra=" ".join(arch_status()),
+                                        message=self.status_desc)
 
     @property
     def took(self):
@@ -169,7 +169,7 @@ class Package(mini_buildd.misc.Status):
 
     def notify(self):
         def header(title, underline="-"):
-            return "{t}:\n{u}\n".format(t=title, u=underline * (1 + len(title)))
+            return "{t}\n{u}\n".format(t=title, u=underline * len(title))
 
         def bres_result(arch, bres):
             return "{a} ({s}): {b}\n".format(

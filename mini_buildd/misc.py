@@ -49,7 +49,7 @@ class Status(object):
     Inheriting classes must give a stati dict to init.
     """
     def __init__(self, stati):
-        self.__status__, self.__status_desc__, self.__stati__ = 0, "n/a", stati
+        self.__status__, self.__status_desc__, self.__stati__ = 0, "", stati
 
     @property
     def status(self):
@@ -59,7 +59,7 @@ class Status(object):
     def status_desc(self):
         return self.__status_desc__
 
-    def set_status(self, status, desc="n/a"):
+    def set_status(self, status, desc=""):
         """
         Set status with optional description.
         """
@@ -295,6 +295,19 @@ def guess_codeversion(release):
         return digit0 + digit1
     except:
         return release["Codename"].upper()
+
+
+def pkg_fmt(status, distribution, package, version, extra=None, message=None):
+    "Generate a package status line."
+    fmt = "{status} ({distribution}): {package} {version}".format(status=status,
+                                                                  distribution=distribution,
+                                                                  package=package,
+                                                                  version=version)
+    if extra:
+        fmt += " [{extra}]".format(extra=extra)
+    if message:
+        fmt += ": {message}".format(message=message)
+    return fmt
 
 
 class PkgLog(object):

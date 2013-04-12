@@ -110,7 +110,7 @@ try:
     ARGS.func(ARGS)
 except urllib2.HTTPError as e:
     print_daemon_messages(e.headers)
-    mini_buildd.setup.log_exception(LOG, "{h}: {m}".format(h=ARGS.host, m=e.headers.get("X-Mini-Buildd-Error", "")), e)
+    mini_buildd.setup.log_exception(LOG, ARGS.host, e)
     sys.exit(1)
 except Exception as e:
     mini_buildd.setup.log_exception(LOG, "{h}".format(h=ARGS.host), e)

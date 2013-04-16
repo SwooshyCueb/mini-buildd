@@ -33,6 +33,20 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
+class Changelog(debian.changelog.Changelog):
+    def find_first_not(self, author):
+        "Find version and author of the first changelog block not by given author."
+        def s2u(string):
+            return unicode(string, encoding="UTF-8")
+
+        block = self._blocks[0]
+        for b in self._blocks:
+            if author not in s2u(b.author):
+                block = b
+                break
+        return block.version, s2u(block.author)
+
+
 class DebianVersion(debian.debian_support.Version):
     @classmethod
     def _sub_rightmost(cls, pattern, repl, string):
@@ -503,8 +517,14 @@ class Daemon():
                                   cwd=t.tmpdir,
                                   env=env)
 
-            # Change changelog in DST
             dst_path = os.path.join(t.tmpdir, dst)
+
+            # Get version and author from original changelog; use the first block not
+            original_version, original_author = Changelog(open(os.path.join(dst_path, "debian", "changelog")),
+                                                          max_blocks=100).find_first_not(self.model.email_address)
+            LOG.debug("Port: Found original version/author: {v}/{a}".format(v=original_version, a=original_author))
+
+            # Change changelog in DST
             mini_buildd.misc.call(["debchange",
                                    "--newversion={v}".format(v=version),
                                    "--force-distribution",
@@ -533,18 +553,13 @@ class Daemon():
                                                                                      version,
                                                                                      "source"))
 
-            # Compute last version not to include in changes file
-            include_changes_version = mini_buildd.misc.list_get(
-                debian.changelog.Changelog(open(os.path.join(dst_path, "debian", "changelog"))).get_versions(),
-                2,
-                "0~")
-
             # Generate Changes file
             with open(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",
                                        "-sa",
-                                       "-v{v}".format(v=include_changes_version)],
+                                       "-v{v}~".format(v=original_version),
+                                       "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
                                       cwd=dst_path,
                                       env=env,
                                       stdout=c)

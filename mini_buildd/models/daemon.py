@@ -257,7 +257,7 @@ incoming = /incoming
                 maintainer = changes.get("Maintainer")
                 if repository.notify_maintainer and maintainer:
                     add_to(email.utils.parseaddr(maintainer)[1])
-                changed_by = changes.get("Changed-By")
+                changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
                 if repository.notify_changed_by and changed_by:
                     add_to(email.utils.parseaddr(changed_by)[1])
 

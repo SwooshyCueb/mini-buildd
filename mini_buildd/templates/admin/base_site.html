@@ -21,10 +21,10 @@
 		<p>
 			<span class="warning">Warning:</span>
 			{% if daemon_running %}
-				The daemon is <span style="font-weight: bold">running</span>!&nbsp; Will be automatically deactivated on first change.
+				The daemon is <span style="font-weight: bold">running</span>!&nbsp; Will be automatically stopped on first change.
 			{% else %}
 				The daemon is <span style="font-weight: bold">stopped</span>!&nbsp;
-				<a class="stop-daemon" href="/admin/mini_buildd/daemon/" title="goto daemon section">Check/activate daemon</a> when done.
+				<a class="stop-daemon" title="Start" href="/mini_buildd/api?command=start&amp;output=referer">Restart daemon</a> when done.
 			{% endif %}
 		</p>
 	</div>

@@ -490,13 +490,12 @@ class Daemon():
         self._port(dsc_url,
                    dsc["Source"],
                    to_dist,
-                   v.gen_external_port(to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite)))
+                   v.gen_external_port(to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite)),
+                   extra_cl_entries=["External port from: {u}".format(u=dsc_url)])
 
-    def _port(self, dsc_url, package, dist, version):
+    def _port(self, dsc_url, package, dist, version, extra_cl_entries=None):
         t = mini_buildd.misc.TmpDir()
         try:
-            extra_cl_entries = ["MINI_BUILDD: BACKPORT_MODE"]
-
             env = mini_buildd.misc.taint_env({"DEBEMAIL": self.model.email_address,
                                               "DEBFULLNAME": self.model.mbd_fullname,
                                               "GNUPGHOME": self.model.mbd_gnupg.home})
@@ -536,7 +535,7 @@ class Daemon():
                                   cwd=dst_path,
                                   env=env)
 
-            for entry in extra_cl_entries:
+            for entry in (extra_cl_entries or []) + ["MINI_BUILDD: BACKPORT_MODE"]:
                 mini_buildd.misc.call(["debchange",
                                        "--append",
                                        entry],

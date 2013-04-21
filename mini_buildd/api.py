@@ -328,14 +328,15 @@ class Show(Command):
 
     def __init__(self, args, request=None):
         super(Show, self).__init__(args, request)
-        self.repositories = {}
+        # List of tuples: (repository, result)
+        self.repositories = []
 
     def run(self, daemon):
         # Save all results of all repos in a top-level dict (don't add repos with empty results).
         for r in daemon.get_active_repositories():
             r_result = r.mbd_package_show(self.args["package"])
             if r_result:
-                self.repositories[r.identity] = r_result
+                self.repositories.append((r, r_result))
 
     def __unicode__(self):
         if not self.repositories:
@@ -364,7 +365,7 @@ class Show(Command):
             rows.append(("rollbacks_str", "Rollbacks"))
 
         results = []
-        for repository, codenames in self.repositories.items():
+        for repository, codenames in self.repositories:
             # Add rollback_str
             for k, v in codenames:
                 for d in v:

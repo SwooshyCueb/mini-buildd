@@ -564,6 +564,14 @@ Example:
             # Raise Exception with human-readable text
             raise Exception("Please fix syntax error in extra option 'Meta-Distributions' in layout '{l}': {e}".format(l=self.layout, e=e))
 
+    @property
+    def mbd_uploadable_distributions(self):
+        result = []
+        for d in self.distributions.all():
+            for s in [s for s in self.layout.suiteoption_set.all() if s.uploadable]:
+                result.append(s.mbd_get_distribution_string(self, d))
+        return result
+
     def _mbd_find_dist(self, distribution):
         LOG.debug("Finding dist for {d}".format(d=distribution.get()))
 

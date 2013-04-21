@@ -5,12 +5,12 @@
 
 {% block content %}
 	<div id="mbd_api_show">
-		{% for repository, codenames in api_cmd.repositories.items %}
+		{% for repository, codenames in api_cmd.repositories %}
 			<div class="box">
 				<h1 class="box-caption">
 					<a class="box-anchor"
-						 title="goto repository {{ repository }}"
-						 href="/mini_buildd/repositories/{{ repository }}/">Repository '{{ repository }}'
+						 title="goto {{ repository }}"
+						 href="/mini_buildd/repositories/{{ repository.identity }}/">{{ repository }}
 					</a>
 				</h1>
 
@@ -34,7 +34,7 @@
 								<td>{{ values.component }}</td>
 								<td class="version">
 									{% if values.sourceversion %}
-										<a href="/mini_buildd/log/{{ repository }}/{{ api_cmd.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
+										<a href="/mini_buildd/log/{{ repository.identity }}/{{ api_cmd.args.package }}/{{ values.sourceversion }}/" title="Build logs">{{ values.sourceversion }}</a>
 									{% endif %}
 								</td>
 								<td>
@@ -90,7 +90,11 @@
 												<input type="hidden" name="package" value="{{ values.source }}" />
 												<input type="hidden" name="from_distribution" value="{{ values.distribution }}" />
 												<input type="hidden" name="version" value="{{ values.sourceversion }}" />
-												<input name="to_distributions" type="text" size="10" title="Comma separated list of distributions to port to" value="" />
+												<select name="to_distributions" title="Distribution to port to">
+													{% for d in repository.mbd_uploadable_distributions %}
+														<option>{{ d }}</option>
+													{% endfor %}
+												</select>
 												<input type="submit" value="Port" title="Port this package version to other distribution(s)" />
 											</div>
 										</form>

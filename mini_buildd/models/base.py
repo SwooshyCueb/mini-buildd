@@ -329,7 +329,7 @@ class StatusModel(Model):
                 try:
                     getattr(cls, "mbd_" + action)(request, o, **kwargs)
                 except Exception as e:
-                    MsgLog(LOG, request).exception("{o}: {a} failed".format(o=o, a=action), e)
+                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{o}: {a} failed".format(o=o, a=action), e)
 
         def mbd_action_prepare(self, request, queryset):
             self.mbd_action(request, queryset, "prepare")

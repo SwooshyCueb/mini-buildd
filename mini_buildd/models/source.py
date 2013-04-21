@@ -316,7 +316,7 @@ manually run on a Debian system to be sure.
                     MsgLog(LOG, request).info("{o}: Added archive: {m}".format(o=self, m=m))
 
                 except Exception as e:
-                    MsgLog(LOG, request).exception("{m}: Not hosting us".format(m=m), e, level=django.contrib.messages.WARNING)
+                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{m}: Not hosting us".format(m=m), e, level=logging.WARNING)
 
         self.mbd_check(request)
 

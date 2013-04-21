@@ -31,8 +31,6 @@ import inspect
 
 import django.contrib.messages
 
-import mini_buildd.setup
-
 LOG = logging.getLogger(__name__)
 
 
@@ -43,26 +41,26 @@ class MsgLog(object):
         self.plain = ""
 
     @classmethod
-    def _level2python(cls, level):
-        "Map default django log levels to python's."
-        return {django.contrib.messages.DEBUG: logging.DEBUG,
-                django.contrib.messages.INFO: logging.INFO,
-                django.contrib.messages.SUCCESS: logging.INFO,
-                django.contrib.messages.WARNING: logging.WARN,
-                django.contrib.messages.ERROR: logging.ERROR}[level]
+    def _level2django(cls, level):
+        "Map standard python log levels to django's."
+        return {logging.DEBUG: django.contrib.messages.DEBUG,
+                logging.INFO: django.contrib.messages.INFO,
+                logging.WARN: django.contrib.messages.WARNING,
+                logging.ERROR: django.contrib.messages.ERROR,
+                logging.CRITICAL: django.contrib.messages.ERROR}[level]
 
     @classmethod
     def _level2prefix(cls, level):
-        "Map default django log levels to prefixes (for text-only output)."
-        return {django.contrib.messages.DEBUG: "D",
-                django.contrib.messages.INFO: "I",
-                django.contrib.messages.SUCCESS: "I",
-                django.contrib.messages.WARNING: "W",
-                django.contrib.messages.ERROR: "E"}[level]
+        "Map log levels to prefixes (for text-only output)."
+        return {logging.DEBUG: "D",
+                logging.INFO: "I",
+                logging.WARN: "W",
+                logging.ERROR: "E",
+                logging.CRITICAL: "C"}[level]
 
-    def _msg(self, level, msg):
+    def log(self, level, msg):
         if self.request:
-            django.contrib.messages.add_message(self.request, level, msg)
+            django.contrib.messages.add_message(self.request, self._level2django(level), msg)
 
         # Ouch: Try to get the actual log call's meta flags
         # Ideally, we should be patching the actual line and mod used for standard formatting (seems non-trivial...)
@@ -76,22 +74,23 @@ class MsgLog(object):
         except:
             pass
 
-        self.pylog.log(self._level2python(level), "{m} [{mod}:{l}]".format(m=msg, mod=actual_mod, l=actual_line))
+        self.pylog.log(level, "{m} [{mod}:{l}]".format(m=msg, mod=actual_mod, l=actual_line))
         self.plain += "{p}: {m}\n".format(p=self._level2prefix(level), m=msg)
 
     def debug(self, msg):
-        self._msg(django.contrib.messages.DEBUG, msg)
+        self.log(logging.DEBUG, msg)
 
     def info(self, msg):
-        self._msg(django.contrib.messages.INFO, msg)
+        self.log(logging.INFO, msg)
 
     def warn(self, msg):
-        self._msg(django.contrib.messages.WARNING, msg)
+        self.log(logging.WARN, msg)
 
     def error(self, msg):
-        self._msg(django.contrib.messages.ERROR, msg)
+        self.log(logging.ERROR, msg)
 
-    def exception(self, msg, exception, level=django.contrib.messages.ERROR):
-        if self.request:
-            django.contrib.messages.add_message(self.request, level, "{m}: {e}".format(m=msg, e=exception))
-        mini_buildd.setup.log_exception(self.pylog, msg, exception, level=self._level2python(level))
+    def critical(self, msg):
+        self.log(logging.CRITICAL, msg)
+
+    def exception(self, msg):
+        self.pylog.exception(msg)

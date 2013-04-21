@@ -519,7 +519,7 @@ Example:
                         self.mbd_get_daemon().portext("file://" + package.dsc, dist)
                         MsgLog(LOG, request).info("Requested: {i}.".format(i=info))
                     except Exception as e:
-                        MsgLog(LOG, request).exception("FAILED: {i}".format(i=info), e)
+                        mini_buildd.setup.log_exception(MsgLog(LOG, request), "FAILED: {i}".format(i=info), e)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

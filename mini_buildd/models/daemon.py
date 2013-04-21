@@ -238,7 +238,7 @@ login    = anonymous
 incoming = /incoming
 """.format(i=self.identity, h=self.mbd_get_ftp_hopo().string)
 
-    def mbd_notify(self, subject, body, repository=None, changes=None):
+    def mbd_notify(self, subject, body, repository=None, changes=None, msglog=LOG):
         m_to = []
         m_to_allow = re.compile(self.allow_emails_to)
 
@@ -246,19 +246,23 @@ incoming = /incoming
             if address and m_to_allow.search(address):
                 m_to.append(address)
             else:
-                LOG.warn("EMail address does not match allowed regex '{r}' (ignoring): {a}".format(r=self.allow_emails_to, a=address))
+                msglog.warn("Notify: Address not allowed (only '{r}'), skipping: {a}".format(r=self.allow_emails_to, a=address))
 
         for m in self.notify.all():
+            msglog.debug("Notify: Adding daemon address: {a}".format(a=m.address))
             add_to(m.address)
         if repository:
             for m in repository.notify.all():
+                msglog.debug("Notify: Adding repository '{r}' address: {a}".format(r=repository.identity, a=m.address))
                 add_to(m.address)
             if changes:
                 maintainer = changes.get("Maintainer")
                 if repository.notify_maintainer and maintainer:
+                    msglog.debug("Notify: Adding package maintainer: {a}".format(a=maintainer))
                     add_to(email.utils.parseaddr(maintainer)[1])
                 changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
                 if repository.notify_changed_by and changed_by:
+                    msglog.debug("Notify: Adding uploader (Changed-By): {a}".format(a=changed_by))
                     add_to(email.utils.parseaddr(changed_by)[1])
 
         if m_to:
@@ -272,8 +276,8 @@ incoming = /incoming
                 s = smtplib.SMTP(hopo.host, hopo.port)
                 s.sendmail(self.email_address, m_to, m_body.as_string())
                 s.quit()
-                LOG.info("Sent: Mail '{s}' to '{r}'".format(s=subject, r=m_to))
+                msglog.info("Notify: Sent to '{r}'".format(s=subject, r=",".join(m_to)))
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Mail sending failed: '{s}' to '{r}'".format(s=subject, r=m_to), e)
+                mini_buildd.setup.log_exception(msglog, "Notify: Mail '{s}' failed to '{r}'".format(s=subject, r=m_to), e)
         else:
-            LOG.warn("No email addresses found, skipping: {s}".format(s=subject))
+            msglog.warn("Notify: No email addresses found, skipping: {s}".format(s=subject))

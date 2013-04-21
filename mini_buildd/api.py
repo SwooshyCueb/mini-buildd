@@ -397,7 +397,8 @@ class Migrate(Command):
                                                             distribution,
                                                             suite,
                                                             rollback=rollback,
-                                                            version=self.arg_false2none("version"))
+                                                            version=self.arg_false2none("version"),
+                                                            msglog=self.msglog)
 
 
 class Remove(Command):
@@ -418,7 +419,8 @@ class Remove(Command):
                                                            distribution,
                                                            suite,
                                                            rollback=rollback,
-                                                           version=self.arg_false2none("version"))
+                                                           version=self.arg_false2none("version"),
+                                                           msglog=self.msglog)
 
 
 class Port(Command):

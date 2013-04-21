@@ -765,12 +765,18 @@ DscIndices: Sources Release . .gz .bz2
     def mbd_package_find(self, package, distribution=None, version=None):
         return self._mbd_package_find(self._mbd_reprepro().show(package), distribution, version)
 
-    def mbd_package_notify(self, status, distribution, package, version, body, extra=None, message=None):
-        pkg_log = mini_buildd.misc.PkgLog(self.identity, True, package, version)
-        self.mbd_get_daemon().model.mbd_notify(mini_buildd.misc.pkg_fmt(status, distribution, package, version, extra=extra, message=message),
+    def mbd_package_notify(self, status, distribution, pkg, body, extra=None, message=None, msglog=LOG):
+        pkg_log = mini_buildd.misc.PkgLog(self.identity, True, pkg["source"], pkg["sourceversion"])
+        self.mbd_get_daemon().model.mbd_notify(mini_buildd.misc.pkg_fmt(status,
+                                                                        distribution,
+                                                                        pkg["source"],
+                                                                        pkg["sourceversion"],
+                                                                        extra=extra,
+                                                                        message=message),
                                                body,
                                                repository=self,
-                                               changes=mini_buildd.changes.Changes(pkg_log.changes) if pkg_log.changes else None)
+                                               changes=mini_buildd.changes.Changes(pkg_log.changes) if pkg_log.changes else None,
+                                               msglog=msglog)
 
     def _mbd_package_shift_rollbacks(self, distribution, suite_option, package_name):
         reprepro_output = ""
@@ -784,55 +790,59 @@ DscIndices: Sources Release . .gz .bz2
                 mini_buildd.setup.log_exception(LOG, "Rollback failed (ignoring)", e)
         return reprepro_output
 
-    def mbd_package_migrate(self, package, distribution, suite, rollback=None, version=None):
+    def mbd_package_migrate(self, package, distribution, suite, rollback=None, version=None, msglog=LOG):
         reprepro_output = ""
 
         src_dist = suite.mbd_get_distribution_string(self, distribution)
         pkg_show = self._mbd_reprepro().show(package)
+        src_pkg = None
 
         if rollback is not None:
-            LOG.info("Rollback restore of '{p}' from rollback {r} to '{d}'".format(p=package, r=rollback, d=src_dist))
-            if self._mbd_package_find(pkg_show, distribution=src_dist):
-                raise Exception("Package '{p}' exists in '{d}': Remove first to restore rollback".format(p=package, d=src_dist))
+            dst_dist = src_dist
+            msglog.info("Rollback restore of '{p}' from rollback {r} to '{d}'".format(p=package, r=rollback, d=dst_dist))
+            if self._mbd_package_find(pkg_show, distribution=dst_dist):
+                raise Exception("Package '{p}' exists in '{d}': Remove first to restore rollback".format(p=package, d=dst_dist))
 
             rob_dist = suite.mbd_get_distribution_string(self, distribution, rollback=rollback)
-            if not self._mbd_package_find(pkg_show, distribution=rob_dist, version=version):
+            src_pkg = self._mbd_package_find(pkg_show, distribution=rob_dist, version=version)
+            if src_pkg is None:
                 raise Exception("Package '{p}' has no such version in rollback '{r}'".format(p=package, r=rollback))
 
             # Actually migrate package in reprepro
-            return self._mbd_reprepro().migrate(package, rob_dist, src_dist, version)
+            reprepro_output += self._mbd_reprepro().migrate(package, rob_dist, dst_dist, version)
+        else:
+            # Get src and dst dist strings, and check we are configured to migrate
+            if not suite.migrates_to:
+                raise Exception("You can't migrate from '{d}'".format(d=src_dist))
+            dst_dist = suite.migrates_to.mbd_get_distribution_string(self, distribution)
 
-        # Get src and dst dist strings, and check we are configured to migrate
-        if not suite.migrates_to:
-            raise Exception("You can't migrate from '{d}'".format(d=src_dist))
-        dst_dist = suite.migrates_to.mbd_get_distribution_string(self, distribution)
+            # Check if package is in src_dst
+            src_pkg = self._mbd_package_find(pkg_show, distribution=src_dist, version=version)
+            if src_pkg is None:
+                raise Exception("Package '{p}' not in '{d}'".format(p=package, d=src_dist))
 
-        # Check if package is in src_dst
-        src_pkg = self._mbd_package_find(pkg_show, distribution=src_dist, version=version)
-        if src_pkg is None:
-            raise Exception("Package '{p}' not in '{d}'".format(p=package, d=src_dist))
-        # Check that version is not already migrated
-        dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist, version=version)
-        if dst_pkg is not None and src_pkg["sourceversion"] == dst_pkg["sourceversion"]:
-            raise Exception("Version '{v}' already migrated to '{d}'".format(v=src_pkg["sourceversion"], d=dst_dist))
+            # Check that version is not already migrated
+            dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist, version=version)
+            if dst_pkg is not None and src_pkg["sourceversion"] == dst_pkg["sourceversion"]:
+                raise Exception("Version '{v}' already migrated to '{d}'".format(v=src_pkg["sourceversion"], d=dst_dist))
 
-        # Shift rollbacks in the destination distributions
-        if dst_pkg is not None:
-            reprepro_output += self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
+            # Shift rollbacks in the destination distributions
+            if dst_pkg is not None:
+                reprepro_output += self._mbd_package_shift_rollbacks(distribution, suite.migrates_to, package)
 
-        # Actually migrate package in reprepro
-        reprepro_output += self._mbd_reprepro().migrate(package, src_dist, dst_dist, version)
+            # Actually migrate package in reprepro
+            reprepro_output += self._mbd_reprepro().migrate(package, src_dist, dst_dist, version)
 
         # Notify
-        self.mbd_package_notify("MIGRATED", dst_dist, package, version, reprepro_output)
-
+        self.mbd_package_notify("MIGRATED", dst_dist, src_pkg, reprepro_output, msglog=msglog)
         return reprepro_output
 
-    def mbd_package_remove(self, package, distribution, suite, rollback=None, version=None):
+    def mbd_package_remove(self, package, distribution, suite, rollback=None, version=None, msglog=LOG):
         reprepro_output = ""
 
         dist_str = suite.mbd_get_distribution_string(self, distribution, rollback)
-        if not self.mbd_package_find(package, distribution=dist_str, version=version):
+        src_pkg = self.mbd_package_find(package, distribution=dist_str, version=version)
+        if not src_pkg:
             raise Exception("Package '{p}' not in '{d}'".format(p=package, d=dist_str))
 
         if rollback is None:
@@ -852,12 +862,13 @@ DscIndices: Sources Release . .gz .bz2
                     reprepro_output += self._mbd_reprepro().migrate(package, src, dst)
                     reprepro_output += self._mbd_reprepro().remove(package, src)
                 except Exception as e:
-                    inf = "Rollback: Moving '{p}' from '{s}' to '{d}' FAILED (ignoring)".format(p=package, s=src, d=dst)
-                    mini_buildd.setup.log_exception(LOG, inf, e, logging.WARN)
-                    reprepro_output += "WARNING: {i}: {e}\n".format(i=inf, e=e)
+                    mini_buildd.setup.log_exception(msglog,
+                                                    "Rollback: Moving '{p}' from '{s}' to '{d}' FAILED (ignoring)".format(p=package, s=src, d=dst),
+                                                    e,
+                                                    logging.WARN)
 
         # Notify
-        self.mbd_package_notify("REMOVED", dist_str, package, version, reprepro_output)
+        self.mbd_package_notify("REMOVED", dist_str, src_pkg, reprepro_output, msglog=msglog)
         return reprepro_output
 
     def mbd_package_precheck(self, distribution, suite_option, package, version):

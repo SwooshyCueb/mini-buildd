@@ -1,3 +1,33 @@
+mini-buildd (1.0.0~beta.10) experimental; urgency=low
+
+  Tenth beta. Improved notify (email) support, meta distributions, and yet more
+  cumulated smaller fixes.
+  * [f3244fc] defaults: Code cosmetic: Don't explicitly set default values.
+  * [d684052] model stati: Improve human-readable "last changed" status wording.
+  * [28247eb] doc/user.rst: Add note about lintian being run from host.
+  * [0507cab] Layout: Support for (global) 'Meta-Distributions' (allows to configure uploads to distributions like "unstable").
+  * [acd69c6] misc: Abstract access to package logs via new 'PkgLog' class.
+  * [37a474a] examples/packages.testbuild: Use unstable as default suite.
+  * [224a50b] notify: Fix: Actually use configured 'email_address' as FROM address.
+  * [4f261b6] notify: 'body' arg now just (unicode) string (not MIMEText) (moves all email related code to mbd_notify() method).
+  * [f9352dc] notify: Use generic format for package-style notify subjects.
+  * [ef753e4] notify: Add support for package migration and removal.
+  * [0a26243] notify: Add magic to find the correct original 'Changed-By' (for automated ports).
+  * [ab06495] mini-buildd-tool: Remove support for 'X-Mini-Buildd-Error' HTTP header (was already generically replaced by 'MsgLog' HTTP headers).
+  * [c07a98a] api(show,list): output=plain: Fix newline handling with multiple repos.
+  * [1aaa0c3] MsgLog: Use base64 to transfer logs via HTTP header (fixes possibly non-ascii log lines).
+  * [98bac26] MsgLog: Implement missing log() method, and fix exception() method.
+  * [63cf639] MsgLog: Add support for api(install,remove) and notify.
+  * [22069e8] daemon: Change "smtp" default to 'localhost:25', not fqdn:25 (works for the default exim4 install).
+  * [57268b3] keyring package: Support key removal on package removal.
+  * [18e7939] html(admin): Update "daemon stopped" warning message and restart link.
+  * [1685ac1] changes: Fix: Some files not deleted from incoming (regression introduced with [18730f7]).
+  * [bbe6660] html(api_show): Convenience: Use selector for distribution to port to (not bare text).
+  * [3dd8942] api(portext): Add external URL to changelog.
+  * [d3a0401] tmpdir: Support "keep" debug options for port tmpdirs also.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 21 Apr 2013 21:35:59 +0200
+
 mini-buildd (1.0.0~beta.9) experimental; urgency=low
 
   Ninth beta. Cumulated minor bug fixes.

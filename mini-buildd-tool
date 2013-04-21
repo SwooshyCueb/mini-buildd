@@ -39,7 +39,7 @@ def print_daemon_messages(headers):
     "Output daemon messages to stderr"
     msgs_header = "x-mini-buildd-message"
     for msg in [v for k, v in headers.items() if msgs_header == k[:len(msgs_header)]]:
-        print("Daemon message: {m}".format(m=msg), file=sys.stderr)
+        print("Daemon message: {m}".format(m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
 
 def cmd_call(args):
     # Construct base URL form host argument

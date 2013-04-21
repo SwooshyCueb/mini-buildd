@@ -18,23 +18,21 @@ import mini_buildd.models.gnupg
 LOG = logging.getLogger(__name__)
 
 
-def _add_messages(response, msgs1, msgs2):
-    "Add all texts in messages (must be one line each) as custom HTTP headers"
+def _add_messages(response, msgs):
+    """
+    Add all texts in messages (must be one line each) as custom HTTP headers (using base64 with UTF-8 char encoding).
+    """
     n = 0
-    for msg in msgs2:
-        response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
-        n += 1
-
-    for msg in msgs1:
-        response["X-Mini-Buildd-Message-{n}".format(n=n)] = msg
+    for msg in msgs:
+        response["X-Mini-Buildd-Message-{n}".format(n=n)] = mini_buildd.misc.u2b64(msg)
         n += 1
 
 
 def _add_api_messages(response, api_cmd, msgs=None):
     "Add all user messages from api_cmd, plus optional extra messages."
     _add_messages(response,
-                  reversed(api_cmd.msglog.plain.splitlines()) if api_cmd else [],
-                  msgs if msgs else [])
+                  (api_cmd.msglog.plain.splitlines()[::-1] if api_cmd else []) +
+                  (msgs if msgs else []))
 
 
 def error(request, code, meaning, description, api_cmd=None):

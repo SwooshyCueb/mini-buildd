@@ -12,6 +12,7 @@ import Queue
 import multiprocessing
 import tempfile
 import hashlib
+import base64
 import re
 import urllib
 import urllib2
@@ -394,6 +395,32 @@ def md5_of_file(file_name):
 
 def sha1_of_file(file_name):
     return hash_of_file(file_name, hash_type="sha1")
+
+
+def u2b64(unicode_string):
+    """
+    Convert unicode string to base46 (using UTF-8 encoding).
+
+    >>> b64 = u2b64("Ünicode strüng")
+    >>> b64.__class__.__name__
+    'str'
+    >>> b64
+    'w5xuaWNvZGUgc3Ryw7xuZw=='
+    """
+    return base64.b64encode(unicode_string.encode("UTF-8"))
+
+
+def b642u(base64_bytestream):
+    """
+    Convert base46 string to unicode (using UTF-8 encoding).
+
+    >>> u = b642u('w5xuaWNvZGUgc3Ryw7xuZw==')
+    >>> u.__class__.__name__
+    'unicode'
+    >>> print(u)
+    Ünicode strüng
+    """
+    return unicode(base64.b64decode(base64_bytestream), encoding="UTF-8")
 
 
 def taint_env(taint):

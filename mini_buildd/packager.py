@@ -158,8 +158,7 @@ class Package(mini_buildd.misc.Status):
         # In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
         tmpdir = mini_buildd.misc.TmpDir.file_dir(self.changes.file_path)
         if tmpdir:
-            LOG.debug("Purging port tmpdir: {t}".format(t=tmpdir))
-            shutil.rmtree(tmpdir, ignore_errors=True)
+            mini_buildd.misc.TmpDir(tmpdir).close()
 
         # On installed, clean out the failed log dir, if any of the very same version
         if self.get_status() == self.INSTALLED:

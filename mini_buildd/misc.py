@@ -77,15 +77,16 @@ class TmpDir(object):
     """
     Use with contextlib.closing() to guarantee tmpdir is purged afterwards.
     """
-    def __init__(self):
-        self._tmpdir = tempfile.mkdtemp(dir=mini_buildd.setup.TMP_DIR)
+    def __init__(self, tmpdir=None):
+        self._tmpdir = tmpdir if tmpdir else tempfile.mkdtemp(dir=mini_buildd.setup.TMP_DIR)
         LOG.debug("TmpDir {t}".format(t=self._tmpdir))
 
     def close(self):
         if "keep" in mini_buildd.setup.DEBUG:
             LOG.warn("KEEP DEBUG MODE: Keeping tmpdir {t}".format(t=self._tmpdir))
         else:
-            shutil.rmtree(self._tmpdir)
+            LOG.debug("Purging tmpdir: {t}".format(t=self._tmpdir))
+            shutil.rmtree(self._tmpdir, ignore_errors=True)
 
     @property
     def tmpdir(self):

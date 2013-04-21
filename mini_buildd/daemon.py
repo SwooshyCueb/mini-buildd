@@ -182,7 +182,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
              "GNUPGHOME": gpg.home})
         self.version = DebianVersion.stamp()
 
-        # Copy template, and replace %ID% and %MAINT% in all files
+        # Copy template, and replace %ID%, %MAINT% and %KEY_ID% in all files
         p = os.path.join(self.tmpdir, "package")
         shutil.copytree(tpl_dir, p)
         for root, _dirs, files in os.walk(p):
@@ -193,6 +193,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                     mini_buildd.misc.subst_placeholders(
                         codecs.open(old_file, "r", encoding="UTF-8").read(),
                         {"ID": identity,
+                         "KEY_ID": gpg.pub_keys_ids()[0],
                          "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
                 os.rename(new_file, old_file)
 
@@ -204,7 +205,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                                "--create",
                                "--package={p}".format(p=self.package_name),
                                "--newversion={v}".format(v=self.version),
-                               "[mini-buildd] Automatic keyring package template for {i}.".format(i=identity)],
+                               "Automatic keyring package for archive '{i}'.".format(i=identity)],
                               cwd=p,
                               env=self.environment)
 

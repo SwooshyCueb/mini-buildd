@@ -1,0 +1,21 @@
+#!/bin/sh
+
+set -e
+
+APT_KEY="/usr/bin/apt-key"
+
+case "${1}" in
+	remove|purge)
+		if [ -x "${APT_KEY}" ]; then
+			${APT_KEY} del %KEY_ID% || true
+		fi
+		;;
+	upgrade|deconfigure)
+		;;
+	failed-upgrade)
+		;;
+	*)
+		echo "prerm: Unknown argument \`${1}'" >&2
+		exit 1
+		;;
+esac

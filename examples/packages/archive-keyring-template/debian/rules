@@ -22,7 +22,7 @@ binary-indep: checkroot
 
 	rm -rf debian/tmp
 	$(instdir) debian/tmp/DEBIAN/
-	$(instscript) debian/postinst debian/tmp/DEBIAN/
+	$(instscript) debian/postinst debian/prerm debian/tmp/DEBIAN/
 
 	$(instdir) debian/tmp/usr/share/keyrings/
 	$(instfile) %ID%-archive-keyring.gpg debian/tmp/usr/share/keyrings/

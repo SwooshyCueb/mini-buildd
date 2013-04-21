@@ -4,6 +4,16 @@ set -e
 
 APT_KEY="/usr/bin/apt-key"
 
-if [ -x "${APT_KEY}" ]; then
-	${APT_KEY} add /usr/share/keyrings/%ID%-archive-keyring.gpg
-fi
+case "${1}" in
+	configure)
+		if [ -x "${APT_KEY}" ]; then
+			${APT_KEY} add /usr/share/keyrings/%ID%-archive-keyring.gpg
+		fi
+		;;
+	abort-upgrade|abort-remove|abort-deconfigure)
+		;;
+	*)
+		echo "postinst: Unknown argument \`${1}'" >&2
+		exit 1
+		;;
+esac

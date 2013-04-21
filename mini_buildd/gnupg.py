@@ -40,6 +40,13 @@ class BaseGnuPG(object):
             res.append(l.split(":"))
         return res
 
+    def pub_keys_ids(self):
+        ids = []
+        for key in self.pub_keys_info():
+            if key[0] == "pub":
+                ids.append(key[4])
+        return ids
+
     def sec_keys_info(self):
         res = []
         for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-secret-keys", "--with-fingerprint", "--with-colons"]).splitlines():

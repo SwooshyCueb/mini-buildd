@@ -91,7 +91,7 @@ automatically added.""")
     # EMail options
     smtp_server = django.db.models.CharField(
         max_length=254,
-        default="{h}:25".format(h=socket.getfqdn()),
+        default="localhost:25",
         help_text="SMTP server (and optionally port) for mail sending.")
 
     notify = django.db.models.ManyToManyField(mini_buildd.models.repository.EmailAddress, blank=True)

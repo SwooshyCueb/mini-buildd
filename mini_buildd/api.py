@@ -305,11 +305,12 @@ class List(Command):
 {s0}
 {h}
 {s1}
-{p}""".format(t=fmt_tle.format(t=" Repository '{r}' ".format(r=repository)),
-              h=hdr,
-              s0=sep0,
-              s1=sep1,
-              p="\n".join([fmt.format(**p) for p in values]))
+{p}
+""".format(t=fmt_tle.format(t=" Repository '{r}' ".format(r=repository)),
+           h=hdr,
+           s0=sep0,
+           s1=sep1,
+           p="\n".join([fmt.format(**p) for p in values]))
 
         return "\n".join([p_table(k, v) for k, v in self.repositories.items()])
 
@@ -362,7 +363,7 @@ class Show(Command):
         else:
             rows.append(("rollbacks_str", "Rollbacks"))
 
-        result = ""
+        results = []
         for repository, codenames in self.repositories.items():
             # Add rollback_str
             for k, v in codenames:
@@ -372,9 +373,10 @@ class Show(Command):
                         ": " + " ".join(["{n}:{v}".format(n=r["no"], v=r["sourceversion"]) for r in d["rollbacks"]])
 
             fmt, hdr, fmt_tle, sep0, sep1 = _get_table_format(codenames, rows)
-            result += "{s}\n{t}\n".format(s=sep0, t=fmt_tle.format(t="Repository '{r}'".format(r=repository)))
-            result += "\n".join([p_codename(k, v) for k, v in codenames])
-        return result
+            results.append("{s}\n{t}\n".format(s=sep0, t=fmt_tle.format(t="Repository '{r}'".format(r=repository))) +
+                           "\n".join([p_codename(k, v) for k, v in codenames]) +
+                           "\n")
+        return "\n".join(results)
 
 
 class Migrate(Command):

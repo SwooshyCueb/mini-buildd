@@ -1,0 +1,7 @@
+Misc mini-buildd related example files:
+
+packages/           Some test packages and the archive keyring template (the latter should rather be someplace else, but then...)
+packages.testbuild  Helper script to build && upload the test packages.
+doctests/           Some extra files needed for in-code automated python-doctest testing.
+import-08x          Helper script to import an olde 0.8.x repo.
+schroot-cleanup     Example script to clean left over cruft from schroot.

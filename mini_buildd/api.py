@@ -228,7 +228,7 @@ class LogCat(Command):
     COMMAND = "logcat"
     ARGUMENTS = [
         (["--lines", "-n"], {"action": "store", "metavar": "N", "type": int,
-                             "default": 50,
+                             "default": 500,
                              "help": "cat (approx.) the last N lines"})]
 
     def run(self, daemon):

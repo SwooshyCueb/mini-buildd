@@ -1,0 +1,24 @@
+test (1.0.1-1~test60+0) squeeze-test-snapshot; urgency=low
+
+   * Automated port via mini-buildd (no changes).
+   * MINI_BUILDD: BACKPORT_MODE
+
+ -- Mini Buildd <mini-buildd@buildd.intra>  Mon, 22 Apr 2013 13:35:59 +0200
+
+test (1.0.1-1) unstable; urgency=low
+
+  * New upstream.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:33:33 +0200
+
+test (1.0.0-2) unstable; urgency=low
+
+  * Second revision.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:33:18 +0200
+
+test (1.0.0-1) unstable; urgency=low
+
+  * Initial packaging.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:32:56 +0200

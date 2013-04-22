@@ -1,0 +1,17 @@
+test (1.0.1-1) unstable; urgency=low
+
+  * New upstream.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:33:33 +0200
+
+test (1.0.0-2) unstable; urgency=low
+
+  * Second revision.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:33:18 +0200
+
+test (1.0.0-1) unstable; urgency=low
+
+  * Initial packaging.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 22 Apr 2013 13:32:56 +0200

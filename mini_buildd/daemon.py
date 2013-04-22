@@ -34,17 +34,27 @@ LOG = logging.getLogger(__name__)
 
 
 class Changelog(debian.changelog.Changelog):
+    """
+    Changelog class with some extra functions.
+
+    >>> cl = Changelog(open("./examples/doctests/changelog"), max_blocks=100)
+    >>> cl.find_first_not("mini-buildd@buildd.intra")
+    (Version('1.0.1-1'), u'Stephan S\\xfcrken <absurd@debian.org>')
+    >>> cl = Changelog(open("./examples/doctests/changelog.ported"), max_blocks=100)
+    >>> cl.find_first_not("mini-buildd@buildd.intra")
+    (Version('1.0.1-1'), u'Stephan S\\xfcrken <absurd@debian.org>')
+    """
     def find_first_not(self, author):
         "Find version and author of the first changelog block not by given author."
         def s2u(string):
-            return unicode(string, encoding="UTF-8")
+            "Compat for python-debian <= 0.1.19: Author strings are of class 'str', not 'unicode'."
+            return unicode(string, encoding="UTF-8") if isinstance(string, str) else string
 
-        block = self._blocks[0]
-        for b in self._blocks:
-            if author not in s2u(b.author):
-                block = b
+        block = None
+        for block in self._blocks:
+            if author not in s2u(block.author):
                 break
-        return block.version, s2u(block.author)
+        return (block.version, s2u(block.author)) if block else (None, None)
 
 
 class DebianVersion(debian.debian_support.Version):

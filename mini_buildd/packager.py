@@ -34,7 +34,7 @@ class Package(mini_buildd.misc.Status):
         self.daemon = daemon
         self.changes = changes
         self.pid = changes.get_pkg_id()
-        self.repository, self.distribution, self.suite = None, None, None
+        self.repository, self.distribution, self.suite, self.distribution_string = None, None, None, None
         self.requests, self.success, self.failed = {}, {}, {}
 
     def __unicode__(self):
@@ -50,7 +50,7 @@ class Package(mini_buildd.misc.Status):
             return result
 
         return mini_buildd.misc.pkg_fmt(self.status,
-                                        self.changes["Distribution"],
+                                        self.distribution_string,
                                         self.changes["Source"],
                                         self.changes["Version"],
                                         extra=" ".join(arch_status()),
@@ -63,6 +63,9 @@ class Package(mini_buildd.misc.Status):
     def precheck(self, uploader_keyrings):
         # Get/check repository, distribution and suite for changes
         self.repository, self.distribution, self.suite, rollback = self.daemon.parse_distribution(self.changes["Distribution"])
+        # Actual full distribution string; A shortcut for
+        # 'self.changes["Distribution"]', but may also differ if there's a meta distribution like unstable in changes.
+        self.distribution_string = self.suite.mbd_get_distribution_string(self.repository, self.distribution)
 
         if rollback is not None:
             raise Exception("Rollback distribution are not uploadable")
@@ -136,14 +139,14 @@ class Package(mini_buildd.misc.Status):
         self.repository.mbd_package_install(self.distribution, self.suite, self.success)
 
         # Installed. Finally, try to serve magic auto backports
-        for dist in self.changes.magic_auto_backports:
+        for to_dist_str in self.changes.magic_auto_backports:
             try:
                 self.daemon.port(self.changes["Source"],
-                                 self.changes["Distribution"],
-                                 dist,
+                                 self.distribution_string,
+                                 to_dist_str,
                                  self.changes["Version"])
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=dist), e)
+                mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=to_dist_str), e)
 
     def archive(self):
         # Archive build results and request

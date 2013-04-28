@@ -99,11 +99,15 @@ are actually supported by the current model.
 
     class Admin(django.contrib.admin.ModelAdmin):
         @classmethod
+        def _mbd_stop_daemon(cls, request, obj):
+            "Stop daemon if running."
+            if obj.mbd_get_daemon().is_running():
+                obj.mbd_get_daemon().stop(msglog=MsgLog(LOG, request))
+
+        @classmethod
         def _mbd_on_change(cls, request, obj):
             "Global actions to take when an object changes."
-            if obj.mbd_get_daemon().is_running():
-                obj.mbd_get_daemon().stop()
-                MsgLog(LOG, request).warn("Daemon auto-stopped due to changes.")
+            cls._mbd_stop_daemon(request, obj)
 
             for o in obj.mbd_get_reverse_dependencies():
                 o.mbd_set_changed(request)
@@ -221,13 +225,6 @@ class StatusModel(Model):
 # pylint: enable=E1002
 
         @classmethod
-        def _mbd_on_deactivation(cls, request, obj):
-            "Global actions to take when an object looses its active state."
-            if obj.mbd_get_daemon().is_running():
-                obj.mbd_get_daemon().stop()
-                MsgLog(LOG, request).warn("Daemon auto-stopped due to deactivation.")
-
-        @classmethod
         def _mbd_run_dependencies(cls, request, obj, func, **kwargs):
             for o in obj.mbd_get_dependencies():
                 func(request, o, **kwargs)
@@ -280,7 +277,7 @@ class StatusModel(Model):
                     if obj.mbd_is_active():
                         obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_REACTIVATE
                         MsgLog(LOG, request).error("{o}: Automatically deactivated.".format(o=obj))
-                        cls._mbd_on_deactivation(request, obj)
+                        cls._mbd_stop_daemon(request, obj)
                     obj.save()
                     raise
             else:
@@ -292,6 +289,7 @@ class StatusModel(Model):
                 cls._mbd_run_dependencies(request, obj, cls.mbd_activate)
                 obj.status = obj.STATUS_ACTIVE
                 obj.save()
+                cls._mbd_stop_daemon(request, obj)
                 MsgLog(LOG, request).info("{o}: Activate successful.".format(o=obj))
             elif obj.mbd_is_prepared() and (obj.last_checked == obj.CHECK_FAILED or obj.last_checked == obj.CHECK_NONE):
                 obj.last_checked = obj.CHECK_REACTIVATE
@@ -305,7 +303,7 @@ class StatusModel(Model):
             obj.status = min(obj.STATUS_PREPARED, obj.status)
             if obj.last_checked == obj.CHECK_REACTIVATE:
                 obj.last_checked = obj.CHECK_FAILED
-            cls._mbd_on_deactivation(request, obj)
+            cls._mbd_stop_daemon(request, obj)
             obj.save()
             MsgLog(LOG, request).info("{o}: Deactivate successful.".format(o=obj))
 

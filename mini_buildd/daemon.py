@@ -39,22 +39,33 @@ class Changelog(debian.changelog.Changelog):
 
     >>> cl = Changelog(open("./examples/doctests/changelog"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
-    (Version('1.0.1-1'), u'Stephan S\\xfcrken <absurd@debian.org>')
+    (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.0-2')
+
     >>> cl = Changelog(open("./examples/doctests/changelog.ported"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
-    (Version('1.0.1-1'), u'Stephan S\\xfcrken <absurd@debian.org>')
+    (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.0-2')
+
+    >>> cl = Changelog(open("./examples/doctests/changelog.oneblock"), max_blocks=100)
+    >>> cl.find_first_not("mini-buildd@buildd.intra")
+    (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.1-1~')
+
+    >>> cl = Changelog(open("./examples/doctests/changelog.oneblock.ported"), max_blocks=100)
+    >>> cl.find_first_not("mini-buildd@buildd.intra")
+    (u'Mini Buildd <mini-buildd@buildd.intra>', u'1.0.1-1~')
     """
     def find_first_not(self, author):
-        "Find version and author of the first changelog block not by given author."
+        "Find (author,version+1) of the first changelog block not by given author."
         def s2u(string):
             "Compat for python-debian <= 0.1.19: Author strings are of class 'str', not 'unicode'."
             return unicode(string, encoding="UTF-8") if isinstance(string, str) else string
 
-        block = None
-        for block in self._blocks:
+        result = (None, None)
+        for index, block in enumerate(self._blocks):
+            result = (s2u(block.author),
+                      "{v}".format(v=self._blocks[index + 1].version) if len(self._blocks) > (index + 1) else "{v}~".format(v=block.version))
             if author not in s2u(block.author):
                 break
-        return (block.version, s2u(block.author)) if block else (None, None)
+        return result
 
 
 class DebianVersion(debian.debian_support.Version):
@@ -530,7 +541,7 @@ class Daemon():
             dst_path = os.path.join(t.tmpdir, dst)
 
             # Get version and author from original changelog; use the first block not
-            original_version, original_author = Changelog(open(os.path.join(dst_path, "debian", "changelog")),
+            original_author, original_version = Changelog(open(os.path.join(dst_path, "debian", "changelog")),
                                                           max_blocks=100).find_first_not(self.model.email_address)
             LOG.debug("Port: Found original version/author: {v}/{a}".format(v=original_version, a=original_author))
 
@@ -568,7 +579,7 @@ class Daemon():
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",
                                        "-sa",
-                                       "-v{v}~".format(v=original_version),
+                                       "-v{v}".format(v=original_version),
                                        "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
                                       cwd=dst_path,
                                       env=env,

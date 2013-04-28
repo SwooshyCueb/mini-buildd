@@ -8,6 +8,8 @@ import fnmatch
 import re
 import logging
 
+import debian.deb822
+
 import pyftpdlib.ftpserver
 
 import mini_buildd
@@ -54,6 +56,48 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
         handle_incoming_file(self.mini_buildd_queue, file_name)
 
 
+class Incoming(object):
+    "Tool collection for some extra incoming directory handling."
+
+    @classmethod
+    def get_changes(cls):
+        return glob.glob(os.path.join(mini_buildd.setup.INCOMING_DIR, "*.changes"))
+
+    @classmethod
+    def remove_cruft(cls):
+        """
+        Remove all cruft files (i.e. not valid changes or referred from changes) from incoming.
+        """
+        valid_files = []
+        for changes_file in cls.get_changes():
+            try:
+                for fd in debian.deb822.Changes(open(changes_file)).get("Files", []):
+                    valid_files.append(fd["name"])
+                valid_files.append(os.path.basename(changes_file))
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Invalid changes file in incoming: {f}".format(f=changes_file), e, logging.WARNING)
+
+        LOG.debug("Incoming: Valid files in incoming: {v}".format(v=valid_files))
+
+        for f in glob.glob(os.path.join(mini_buildd.setup.INCOMING_DIR, "*")):
+            if os.path.basename(f) not in valid_files:
+                os.remove(f)
+                LOG.warning("Incoming: Cruft file removed: {f}".format(f=f))
+
+    @classmethod
+    def requeue_changes(cls, queue):
+        """
+        Re-queue all existing changes in incoming.
+
+        We must feed the the user uploads first, so the daemon
+        does not get any yet-unknown build results (hence the
+        sorting).
+        """
+        for c in sorted(cls.get_changes(), cmp=lambda c0, c1: 1 if fnmatch.fnmatch(c0, "*mini-buildd-build*") else -1):
+            LOG.info("Incoming: Re-queuing: {c}".format(c=c))
+            queue.put(c)
+
+
 def run(bind, queue):
     log_init()
 
@@ -67,13 +111,8 @@ def run(bind, queue):
     handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
     handler.mini_buildd_queue = queue
 
-    # Re-feed all existing changes in incoming
-    # We must feed the the user uploads first, so the daemon does not get any yet-unknown build results
-    changes = glob.glob(mini_buildd.setup.INCOMING_DIR + "/*.changes")
-    for f in [c for c in changes if not fnmatch.fnmatch(c, "*mini-buildd-build*")]:
-        queue.put(f)
-    for f in [c for c in changes if fnmatch.fnmatch(c, "*mini-buildd-build*")]:
-        queue.put(f)
+    Incoming.remove_cruft()
+    Incoming.requeue_changes(queue)
 
     ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
     LOG.info("Starting ftpd on '{b}'.".format(b=ba.string))

@@ -148,24 +148,24 @@ class Package(mini_buildd.misc.Status):
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=to_dist_str), e)
 
-    def archive(self):
+    def move_to_pkglog(self):
         # Archive build results and request
         for _arch, c in self.success.items() + self.failed.items() + self.requests.items():
-            c.archive(self.get_status() == self.INSTALLED)
+            c.move_to_pkglog(self.get_status() == self.INSTALLED)
         # Archive incoming changes
-        self.changes.archive(self.get_status() == self.INSTALLED)
+        self.changes.move_to_pkglog(self.get_status() == self.INSTALLED)
 
         # Purge complete package spool dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
         shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
 
-        # In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
+        # Hack: In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
         tmpdir = mini_buildd.misc.TmpDir.file_dir(self.changes.file_path)
         if tmpdir:
             mini_buildd.misc.TmpDir(tmpdir).close()
 
         # On installed, clean out the failed log dir, if any of the very same version
         if self.get_status() == self.INSTALLED:
-            failed_logdir = os.path.dirname(self.changes.get_archive_dir(installed=False, relative=False))
+            failed_logdir = os.path.dirname(self.changes.get_pkglog_dir(installed=False, relative=False))
             LOG.debug("Purging failed log dir: {f}".format(f=failed_logdir))
             shutil.rmtree(failed_logdir, ignore_errors=True)
 
@@ -179,7 +179,7 @@ class Package(mini_buildd.misc.Status):
                 s=bres.bres_stat,
                 b=os.path.join(self.daemon.model.mbd_get_http_url(),
                                "log",
-                               bres.get_archive_dir(self.get_status() == self.INSTALLED),
+                               bres.get_pkglog_dir(self.get_status() == self.INSTALLED),
                                bres.buildlog_name))
 
         results = header(self.__unicode__(), "=")
@@ -220,7 +220,7 @@ class LastPackage(mini_buildd.misc.API):
 
         self.started = package.started
         self.took = package.took
-        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_archive_dir(installed=True)))
+        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_pkglog_dir(installed=True)))
 
         self.changes = {}
         for k in ["source", "distribution", "version"]:
@@ -237,7 +237,7 @@ class LastPackage(mini_buildd.misc.API):
             for a, r in src.items():
                 dst[a] = {"remote_http_url": r.remote_http_url,
                           "bres_stat": r.bres_stat,
-                          "log": os.path.join("/log", r.get_archive_dir(package.get_status() == package.INSTALLED), r.buildlog_name)}
+                          "log": os.path.join("/log", r.get_pkglog_dir(package.get_status() == package.INSTALLED), r.buildlog_name)}
 
         self.success = {}
         cp_bres(package.success, self.success)
@@ -254,7 +254,7 @@ def package_close(daemon, package):
     Close package. Just continue on errors, but log them; guarantee to remove it from the packages dict.
     """
     try:
-        package.archive()
+        package.move_to_pkglog()
         package.notify()
         daemon.last_packages.appendleft(LastPackage(package))
     except Exception as e:

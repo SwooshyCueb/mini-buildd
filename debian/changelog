@@ -1,3 +1,18 @@
+mini-buildd (1.0.0~beta.11) experimental; urgency=low
+
+  Eleventh beta. Cumulated smaller fixes.
+  * [eb03c81] api(logcat): Push default lines shown to 500 (was 50).
+  * [3a868bf] Regr from beta 10: Broke changelog parsing for python-debian > 0.1.19 (i.e., sid).
+  * [c39368f] doc: Add examples/README.
+  * [1b636a2] changelog: Try to find an _existing_ version for 'dpkg-genchanges -vX' whenever possible (Fixes: all blocks from changelog used for some ports).
+  * [844890a] packager: Fix magic automatic ports for changes with meta-distributions.
+  * [2854b02] debian/rules: Run python doctests (dh_auto_test).
+  * [e28ab71] configuration: Also stop daemon on object activation (Fixes wrong daemon state after change/start/activate cycle (and some code redundancies))
+  * [5d151cb] changes, packager: Fix code wording: archive->pkglog.
+  * [d4ba48a] ftp/incoming: Support cruft file removal (on daemon start).
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 28 Apr 2013 19:56:48 +0200
+
 mini-buildd (1.0.0~beta.10) experimental; urgency=low
 
   Tenth beta. Improved notify (email) support, meta distributions, and yet more

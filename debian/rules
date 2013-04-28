@@ -13,6 +13,9 @@ override_dh_auto_build:
 	#sphinx-build -b latex ./build/sphinx ./build/sphinx/latex
 	#make --directory ./build/sphinx/latex
 
+override_dh_auto_test:
+	./devel pydoctests
+
 override_dh_auto_clean:
 	dh_auto_clean
 	rm -rf build/ *.egg-info/

@@ -77,6 +77,10 @@ class MsgLog(object):
         self.pylog.log(level, "{m} [{mod}:{l}]".format(m=msg, mod=actual_mod, l=actual_line))
         self.plain += "{p}: {m}\n".format(p=self._level2prefix(level), m=msg)
 
+    def log_text(self, text, level=logging.INFO):
+        for msg in text.splitlines():
+            self.log(level, msg)
+
     def debug(self, msg):
         self.log(logging.DEBUG, msg)
 

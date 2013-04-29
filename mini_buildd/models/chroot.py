@@ -202,10 +202,31 @@ personality={p}
     def mbd_sync(self, request):
         self._mbd_sync_by_purge_and_create(request)
 
+    def _mbd_schroot_run(self, args, namespace="chroot", user="root"):
+        return mini_buildd.misc.sose_call(["/usr/bin/schroot",
+                                           "--chroot={n}:{c}".format(n=namespace, c=self.mbd_get_name()),
+                                           "--user={u}".format(u=user)] +
+                                          args)
+
     def mbd_check(self, request):
-        mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--info"])
-        mini_buildd.misc.call(["/usr/bin/schroot", "--chroot={c}".format(c=self.mbd_get_name()), "--directory=/", "--", "/bin/ls"])
+        self._mbd_schroot_run(["--info"])
+        self._mbd_schroot_run(["--directory=/", "--", "/bin/ls"])
         MsgLog(LOG, request).info("{c}: 'ls' in snapshot successful.".format(c=self))
+
+    def mbd_maintenance(self, request):
+        for args, fatal in [(["update"], True),
+                            (["--ignore-missing", "dist-upgrade"], True),
+                            (["--purge", "autoremove"], False),
+                            (["clean"], True)]:
+            try:
+                MsgLog(LOG, request).info("=> Running: apt-get {args}:".format(args=" ".join(args)))
+                MsgLog(LOG, request).log_text(
+                    self._mbd_schroot_run(["--directory=/", "--", "/usr/bin/apt-get", "-q", "-o APT::Install-Recommends=false", "--yes"] + args,
+                                          namespace="source"))
+            except:
+                MsgLog(LOG, request).warn("'apt-get {args}' not supported in this chroot.".format(args=" ".join(args)))
+                if fatal:
+                    raise
 
     def mbd_get_dependencies(self):
         return [self.source]

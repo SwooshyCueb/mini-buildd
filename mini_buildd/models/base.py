@@ -258,12 +258,21 @@ class StatusModel(Model):
                                               needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_REACTIVATE)
 
                     if force or not obj.mbd_is_checked():
+                        # Do actual check first
                         obj.mbd_check(request)
+
+                        # Do maintenance if needed
+                        if obj.last_checked < (datetime.datetime.now() - datetime.timedelta(days=obj.days_until_maintenance)):
+                            MsgLog(LOG, request).info("{o}: Last check {d} days ago, running maintenance...".format(o=obj, d=obj.days_until_maintenance))
+                            obj.mbd_maintenance(request)
+
+                        # Handle special flags
                         if obj.last_checked == obj.CHECK_REACTIVATE:
                             obj.status = StatusModel.STATUS_ACTIVE
                             MsgLog(LOG, request).info("{o}: Auto-reactivated.".format(o=obj))
-                        obj.last_checked = datetime.datetime.now()
 
+                        # Finish up
+                        obj.last_checked = datetime.datetime.now()
                         obj.save()
                         MsgLog(LOG, request).info("{o}: Check successful.".format(o=obj))
                     else:
@@ -383,6 +392,11 @@ this would mean losing all packages!
     def __unicode__(self):
         return "{u} ({s})".format(u=super(StatusModel, self).__unicode__(), s=self.mbd_get_status_display())
 
+    @property
+    def days_until_maintenance(self):
+        " Field temporarily implemented as extra_option. "
+        return int(self.mbd_get_extra_option("Days-Until-Maintenance", "7"))
+
     def mbd_set_changed(self, request):
         if self.mbd_is_active():
             self.status = self.STATUS_PREPARED
@@ -396,6 +410,10 @@ this would mean losing all packages!
     def _mbd_sync_by_purge_and_create(self, request):
         mini_buildd.models.base.StatusModel.Admin.mbd_remove(request, self)
         mini_buildd.models.base.StatusModel.Admin.mbd_prepare(request, self)
+
+    def mbd_maintenance(self, request):
+        "The maintenance hook is optional; subclasses may override to actually implement it."
+        MsgLog(LOG, request).info("{o}: No maintenance implemented for this object.".format(o=self))
 
     #
     # Status abstractions and helpers

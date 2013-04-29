@@ -290,7 +290,7 @@ class StatusModel(Model):
                     obj.save()
                     raise
             else:
-                raise Exception("{o}: Can't check removed or changed object.".format(o=obj))
+                raise Exception("{o}: Can't check removed or changed object (run 'prepare' first).".format(o=obj))
 
         @classmethod
         def mbd_activate(cls, request, obj):

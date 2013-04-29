@@ -167,6 +167,13 @@ Builder: {b_len} building
     def has_chroot(self, codename, arch):
         return codename in self.chroots and arch in self.chroots[codename]
 
+    def __test_msglog(self):
+        self.msglog.debug("DEBUG USER MESSAGE")
+        self.msglog.info("INFO USER MESSAGE")
+        self.msglog.warn("WARN USER MESSAGE")
+        self.msglog.error("ERROR USER MESSAGE")
+        self.msglog.critical("CRITICAL USER MESSAGE")
+
 
 class Start(Command):
     """

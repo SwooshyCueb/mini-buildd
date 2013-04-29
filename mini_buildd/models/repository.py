@@ -990,8 +990,8 @@ gnupghome {h}
         if os.path.exists(self.mbd_get_path()):
             shutil.rmtree(self.mbd_get_path())
 
-    def mbd_check(self, _request):
-        self._mbd_reprepro().check()
+    def mbd_check(self, request):
+        MsgLog(LOG, request).log_text(self._mbd_reprepro().check())
 
     def mbd_get_dependencies(self):
         result = []

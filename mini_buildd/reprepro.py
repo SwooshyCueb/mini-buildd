@@ -60,7 +60,7 @@ class Reprepro():
             self._call(["export"])
 
     def check(self):
-        self._call_locked(["check"])
+        return self._call_locked(["check"])
 
     def list(self, pattern, distribution, typ=None, list_max=50):
         result = []

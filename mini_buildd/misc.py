@@ -314,12 +314,12 @@ def pkg_fmt(status, distribution, package, version, extra=None, message=None):
 
 class PkgLog(object):
     @classmethod
-    def get_path(cls, repository, installed, package, version, architecture=None, relative=False):
+    def get_path(cls, repository, installed, package, version=None, architecture=None, relative=False):
         return os.path.join("" if relative else mini_buildd.setup.LOG_DIR,
                             repository,
                             "" if installed else "_failed",
                             package,
-                            version,
+                            version if version else "",
                             architecture if architecture else "")
 
     @classmethod

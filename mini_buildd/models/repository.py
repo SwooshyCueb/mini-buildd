@@ -786,6 +786,21 @@ DscIndices: Sources Release . .gz .bz2
                                                changes=mini_buildd.changes.Changes(pkg_log.changes) if pkg_log.changes else None,
                                                msglog=msglog)
 
+    def _mbd_package_purge_orphaned_logs(self, package, msglog=LOG):
+        pkg_show = self._mbd_reprepro().show(package)
+        for pkg_log in glob.glob(mini_buildd.misc.PkgLog.get_path(self.identity, True, package, "*")):
+            msglog.debug("Checking package log: {p}".format(p=pkg_log))
+            if not self._mbd_package_find(pkg_show, version=os.path.basename(os.path.realpath(pkg_log))):
+                shutil.rmtree(pkg_log, ignore_errors=True)
+                msglog.info("Purging orphaned package log: {p}".format(p=pkg_log))
+
+    def mbd_package_purge_orphaned_logs(self, package=None, msglog=LOG):
+        if package:
+            self._mbd_package_purge_orphaned_logs(package, msglog=msglog)
+        else:
+            for pkg_dir in glob.glob(mini_buildd.misc.PkgLog.get_path(self.identity, True, "[!_]*")):
+                self._mbd_package_purge_orphaned_logs(os.path.basename(os.path.realpath(pkg_dir)), msglog=msglog)
+
     def _mbd_package_shift_rollbacks(self, distribution, suite_option, package_name):
         reprepro_output = ""
         for r in range(suite_option.rollback - 1, -1, -1):
@@ -841,8 +856,12 @@ DscIndices: Sources Release . .gz .bz2
             # Actually migrate package in reprepro
             reprepro_output += self._mbd_reprepro().migrate(package, src_dist, dst_dist, version)
 
+        # Finally, purge any now-maybe-orphaned package logs
+        self.mbd_package_purge_orphaned_logs(package, msglog=msglog)
+
         # Notify
         self.mbd_package_notify("MIGRATED", dst_dist, src_pkg, reprepro_output, msglog=msglog)
+
         return reprepro_output
 
     def mbd_package_remove(self, package, distribution, suite, rollback=None, version=None, msglog=LOG):
@@ -875,8 +894,12 @@ DscIndices: Sources Release . .gz .bz2
                                                     e,
                                                     logging.WARN)
 
+        # Finally, purge any now-maybe-orphaned package logs
+        self.mbd_package_purge_orphaned_logs(package, msglog=msglog)
+
         # Notify
         self.mbd_package_notify("REMOVED", dist_str, src_pkg, reprepro_output, msglog=msglog)
+
         return reprepro_output
 
     def mbd_package_precheck(self, distribution, suite_option, package, version):
@@ -946,6 +969,9 @@ DscIndices: Sources Release . .gz .bz2
             else:
                 self._mbd_package_install(bres, dist_str)
 
+        # Finally, purge any now-maybe-orphaned package logs
+        self.mbd_package_purge_orphaned_logs(package)
+
     def mbd_prepare(self, _request):
         """
         Idempotent repository preparation. This may be used as-is as mbd_sync.
@@ -992,6 +1018,9 @@ gnupghome {h}
 
     def mbd_check(self, request):
         MsgLog(LOG, request).log_text(self._mbd_reprepro().check())
+
+    def mbd_maintenance(self, request):
+        self.mbd_package_purge_orphaned_logs(msglog=MsgLog(LOG, request))
 
     def mbd_get_dependencies(self):
         result = []

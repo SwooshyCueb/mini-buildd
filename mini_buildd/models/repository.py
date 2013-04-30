@@ -1017,9 +1017,14 @@ gnupghome {h}
             shutil.rmtree(self.mbd_get_path())
 
     def mbd_check(self, request):
+        # Reprepro check
         MsgLog(LOG, request).log_text(self._mbd_reprepro().check())
 
-    def mbd_maintenance(self, request):
+        # Purge orphaned logs.
+        # Note: This may take some time on bigger repos. We
+        # usually run this per package on install/remove/migrate
+        # anyway, so maybe this could eventually be moved to a
+        # better place.
         self.mbd_package_purge_orphaned_logs(msglog=MsgLog(LOG, request))
 
     def mbd_get_dependencies(self):

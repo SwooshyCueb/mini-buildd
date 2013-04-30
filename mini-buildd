@@ -187,13 +187,13 @@ Comma-separated list of special debugging options:
             # Get the daemon manager instance (due to django, import must be here)
             from mini_buildd.daemon import Daemon
             daemon = Daemon()
-            daemon.start(force_check=True)
+            daemon.start()
 
             while True:
                 signal.pause()
                 if self._status == "RESTART":
                     daemon.stop()
-                    daemon.start(force_check=True)
+                    daemon.start()
                 else:
                     break
 

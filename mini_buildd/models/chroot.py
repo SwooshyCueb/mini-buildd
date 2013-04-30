@@ -120,6 +120,7 @@ chroots (with <tt>qemu-user-static</tt> installed).
 
     def mbd_get_pre_sequence(self):
         "Subclasses may implement this to do define an extra preliminary sequence."
+        LOG.debug("{c}: No pre-sequence defined.".format(c=self))
         return []
 
     def mbd_get_sequence(self):
@@ -212,21 +213,20 @@ personality={p}
                                            "--user={u}".format(u=user)] +
                                           args)
 
+    def mbd_backend_check(self, request):
+        "Subclasses may implement this to do extra backend checks."
+        MsgLog(LOG, request).info("{c}: No backend check implemented.".format(c=self))
+
     def mbd_check(self, request):
+        # Basic function checks
         self._mbd_schroot_run(["--info"])
         self._mbd_schroot_run(["--directory=/", "--", "/bin/ls"])
-        MsgLog(LOG, request).info("{c}: 'ls' in snapshot successful.".format(c=self))
 
-    def mbd_backend_maintenance(self, request):
-        "Subclasses may implement this to do extra backend maintenance."
-        MsgLog(LOG, request).info("{c}: No backend maintenance implemented.".format(c=self))
+        # Backend checks
+        MsgLog(LOG, request).info("{c}: Running backend check.".format(c=self))
+        self.mbd_get_backend().mbd_backend_check(request)
 
-    def mbd_maintenance(self, request):
-        # First, run backend maintenance
-        MsgLog(LOG, request).info("{c}: Running backend maintenance.".format(c=self))
-        self.mbd_get_backend().mbd_backend_maintenance(request)
-
-        # Run standard "apt update/upgrade" maintenance
+        # "apt update/upgrade" check
         for args, fatal in [(["update"], True),
                             (["--ignore-missing", "dist-upgrade"], True),
                             (["--purge", "autoremove"], False),
@@ -393,7 +393,7 @@ lvm-snapshot-options=--size {s}G
     def mbd_get_post_sequence(self):
         return [(["/bin/umount", "-v", self.mbd_get_tmp_dir()], [])]
 
-    def mbd_backend_maintenance(self, request):
+    def mbd_backend_check(self, request):
         MsgLog(LOG, request).info("{c}: Running file system check...".format(c=self))
         mini_buildd.misc.call(["/sbin/fsck", "-a", "-t{t}".format(t=self.filesystem), self.mbd_get_lvm_device()],
                               run_as_root=True)

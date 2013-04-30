@@ -10,7 +10,7 @@ mini-buildd ALL=NOPASSWD:/bin/mv
 mini-buildd ALL=NOPASSWD:/bin/tar
 
 # LVM: LVMChroot, LoopLVMChroot
-mini-buildd ALL=NOPASSWD:/sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove,/sbin/mkfs.*
+mini-buildd ALL=NOPASSWD:/sbin/pvcreate,/sbin/pvremove,/sbin/vgcreate,/sbin/vgremove,/sbin/lvcreate,/sbin/lvremove,/sbin/mkfs,/sbin/fsck
 
 # LOOP: LoopLVMChroot
 mini-buildd ALL=NOPASSWD:/sbin/losetup,/bin/dd

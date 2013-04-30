@@ -118,6 +118,10 @@ chroots (with <tt>qemu-user-static</tt> installed).
     def mbd_get_sudoers_workaround_file(self):
         return os.path.join(self.mbd_get_path(), "sudoers_workaround")
 
+    def mbd_get_pre_sequence(self):
+        "Subclasses may implement this to do define an extra preliminary sequence."
+        return []
+
     def mbd_get_sequence(self):
         return [
             (["/bin/mkdir", "--verbose", self.mbd_get_tmp_dir()],
@@ -213,7 +217,16 @@ personality={p}
         self._mbd_schroot_run(["--directory=/", "--", "/bin/ls"])
         MsgLog(LOG, request).info("{c}: 'ls' in snapshot successful.".format(c=self))
 
+    def mbd_backend_maintenance(self, request):
+        "Subclasses may implement this to do extra backend maintenance."
+        MsgLog(LOG, request).info("{c}: No backend maintenance implemented.".format(c=self))
+
     def mbd_maintenance(self, request):
+        # First, run backend maintenance
+        MsgLog(LOG, request).info("{c}: Running backend maintenance.".format(c=self))
+        self.mbd_get_backend().mbd_backend_maintenance(request)
+
+        # Run standard "apt update/upgrade" maintenance
         for args, fatal in [(["update"], True),
                             (["--ignore-missing", "dist-upgrade"], True),
                             (["--purge", "autoremove"], False),
@@ -265,10 +278,6 @@ type=directory
 directory={d}
 union-type={u}
 """.format(d=self.mbd_get_chroot_dir(), u=self.get_union_type_display())
-
-    def mbd_get_pre_sequence(self):
-        LOG.debug("No pre-squence for chroot {c}".format(c=self))
-        return []
 
     def mbd_get_post_sequence(self):
         return [
@@ -323,10 +332,6 @@ type=file
 file={t}
 """.format(t=self.mbd_get_tar_file())
 
-    def mbd_get_pre_sequence(self):
-        LOG.debug("No pre-squence for chroot {c}".format(c=self))
-        return []
-
     def mbd_get_post_sequence(self):
         return [
             (["/bin/tar",
@@ -379,7 +384,7 @@ lvm-snapshot-options=--size {s}G
             (["/sbin/lvcreate", "--size={s}G".format(s=self.snapshot_size), "--name={n}".format(n=self.mbd_get_name()), self.mbd_get_volume_group()],
              ["/sbin/lvremove", "--verbose", "--force", self.mbd_get_lvm_device()]),
 
-            (["/sbin/mkfs.{f}".format(f=self.filesystem), self.mbd_get_lvm_device()],
+            (["/sbin/mkfs", "-t{f}".format(f=self.filesystem), self.mbd_get_lvm_device()],
              []),
 
             (["/bin/mount", "-v", "-t{f}".format(f=self.filesystem), self.mbd_get_lvm_device(), self.mbd_get_tmp_dir()],
@@ -387,6 +392,11 @@ lvm-snapshot-options=--size {s}G
 
     def mbd_get_post_sequence(self):
         return [(["/bin/umount", "-v", self.mbd_get_tmp_dir()], [])]
+
+    def mbd_backend_maintenance(self, request):
+        MsgLog(LOG, request).info("{c}: Running file system check...".format(c=self))
+        mini_buildd.misc.call(["/sbin/fsck", "-a", "-t{t}".format(t=self.filesystem), self.mbd_get_lvm_device()],
+                              run_as_root=True)
 
 
 class LoopLVMChroot(LVMChroot):

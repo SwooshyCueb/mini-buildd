@@ -492,7 +492,7 @@ def call(args, run_as_root=False, value_on_error=None, log_output=True, error_lo
     """
 
     if run_as_root:
-        args = ["sudo"] + args
+        args = ["sudo", "-n"] + args
 
     stdout = tempfile.TemporaryFile()
     stderr = tempfile.TemporaryFile()

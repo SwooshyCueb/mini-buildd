@@ -61,6 +61,8 @@ distutils.core.setup(
                                   "templates/mini_buildd/*.html",
                                   "templates/admin/*.html",
                                   "templates/admin/mini_buildd/*.html",
+                                  "templates/registration/*.html",
+                                  "templates/registration/*.txt",
                                   "templatetags/*.py",
                                   "static/css/*.css",
                                   "static/images/*.png",

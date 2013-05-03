@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block mbd_page_footer %}
+	<tt>user accounts</tt>
+{% endblock %}
+
+{% block content %}
+	<div class="box">
+		<h1 class="box-caption">{% block title %}{% endblock %}</h1>
+			{% block reg_content %}{% endblock %}
+	</div>
+	<p>
+		<a href="{% url auth_password_change %}">Change password</a> | <a href="{% url auth_password_reset %}">Reset password</a> | <a href="{% url registration_register %}">Register new account</a>
+	</p>
+{% endblock %}

@@ -1,0 +1,11 @@
+Dear user,
+
+you have requested a registration for a mini-buildd user at {{ site.name }}.
+
+You may use this link within {{ expiration_days }} days to complete the registration:
+
+http://{{site.domain}}{% url registration_activate activation_key %}
+
+Good luck!
+
+Your mini-buildd at {{ site.name }}

@@ -46,6 +46,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             ROOT_URLCONF='mini_buildd.root_urls',
             STATIC_URL="/static/",
             AUTH_PROFILE_MODULE='mini_buildd.Uploader',
+            ACCOUNT_ACTIVATION_DAYS=3,
+            LOGIN_REDIRECT_URL="/mini_buildd/",
             INSTALLED_APPS=(
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
@@ -53,6 +55,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
                 'django.contrib.sessions',
                 'django.contrib.admindocs',
                 'django_extensions',
+                'registration',
                 'mini_buildd'))
 
         mini_buildd.models.import_all()
@@ -176,6 +179,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     def _syncdb(cls):
         LOG.info("Syncing database...")
         django.core.management.call_command('syncdb', interactive=False, verbosity=0)
+        django.core.management.call_command('cleanupregistration', interactive=False, verbosity=0)
 
     @classmethod
     def loaddata(cls, file_name):

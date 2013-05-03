@@ -1,0 +1,8 @@
+{% extends "registration/simple.html" %}
+{% block title %}
+	{% if account %}
+		{{ account }} activated
+	{% else %}
+		Activation failed
+	{% endif %}
+{% endblock %}

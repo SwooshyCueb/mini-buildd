@@ -17,7 +17,8 @@ Build-Depends: debhelper (>= 8.1.0~),
                python-cherrypy3,
                python-pyftpdlib,
                python-django (>= 1.4),
-               python-django-extensions (>= 0.4)
+               python-django-extensions (>= 0.4),
+               python-django-registration
 Standards-Version: 3.9.3
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
@@ -48,6 +49,7 @@ Depends: ${misc:Depends},
          python-pyftpdlib,
          python-django (>= 1.4),
          python-django-extensions (>= 0.4),
+         python-django-registration,
          libjs-jquery,
          adduser,
          sudo,

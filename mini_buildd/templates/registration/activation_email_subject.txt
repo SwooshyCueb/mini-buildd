@@ -1,0 +1,1 @@
+mini-buildd user registration request from {{ site.name }}

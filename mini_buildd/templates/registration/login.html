@@ -1,0 +1,26 @@
+{% extends "registration/base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block reg_content %}
+	{% if form.errors %}
+		<p>
+			<b>Login failed!</b>
+		</p>
+	{% endif %}
+	<p>
+		<b>Please log in with your user credentials.</b>
+	</p>
+
+	<form method="post" action="{% url django.contrib.auth.views.login %}">
+		{% csrf_token %}
+		<table>
+			<tr><th>{{ form.username.label_tag }}</th><td>{{ form.username }}</td></tr>
+			<tr><th>{{ form.password.label_tag }}</th><td>{{ form.password }}</td></tr>
+		</table>
+		<p>
+			<input type="submit" value="Login" />
+			<input type="hidden" name="next" value="{{ next }}" />
+		</p>
+	</form>
+{% endblock %}

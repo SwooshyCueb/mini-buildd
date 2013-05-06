@@ -13,7 +13,14 @@ LOG = logging.getLogger(__name__)
 
 class Command(object):
     COMMAND = None
-    LOGIN = False
+
+    # Auth
+    NONE = 0
+    LOGIN = 1
+    STAFF = 2
+    ADMIN = 3
+    AUTH = NONE
+
     CONFIRM = False
     ARGUMENTS = []
 
@@ -180,7 +187,7 @@ class Start(Command):
     Start the Daemon (engine).
     """
     COMMAND = "start"
-    LOGIN = True
+    AUTH = Command.STAFF
     ARGUMENTS = [
         (["--force-check", "-C"], {"action": "store_true",
                                    "default": False,
@@ -197,7 +204,7 @@ class Stop(Command):
     Stop the Daemon (engine).
     """
     COMMAND = "stop"
-    LOGIN = True
+    AUTH = Command.STAFF
     ARGUMENTS = []
 
     def run(self, daemon):
@@ -392,7 +399,7 @@ class Migrate(Command):
     Migrate a source package (along with all binary packages).
     """
     COMMAND = "migrate"
-    LOGIN = True
+    AUTH = Command.STAFF
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
@@ -414,7 +421,7 @@ class Remove(Command):
     Remove a source package (along with all binary packages).
     """
     COMMAND = "remove"
-    LOGIN = True
+    AUTH = Command.STAFF
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
@@ -440,7 +447,7 @@ class Port(Command):
     package.
     """
     COMMAND = "port"
-    LOGIN = True
+    AUTH = Command.STAFF
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
@@ -469,7 +476,7 @@ class PortExt(Command):
     will be adapted) rebuild of any given source package.
     """
     COMMAND = "portext"
-    LOGIN = True
+    AUTH = Command.STAFF
     CONFIRM = True
     ARGUMENTS = [
         (["dsc"], {"help": "URL of any Debian source package (dsc) to port"}),
@@ -490,7 +497,7 @@ class Retry(Command):
     Retry a previously failed package.
     """
     COMMAND = "retry"
-    LOGIN = True
+    AUTH = Command.STAFF
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),

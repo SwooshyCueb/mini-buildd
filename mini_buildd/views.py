@@ -136,8 +136,17 @@ def api(request):
         api_cls = mini_buildd.api.COMMANDS[command]
 
         # Authentication
-        if api_cls.LOGIN and not (request.user.is_authenticated() and request.user.is_staff):
+        def chk_login():
+            return request.user.is_authenticated() and request.user.is_active
+
+        if (api_cls.AUTH == api_cls.LOGIN) and not chk_login():
+            return error401_unauthorized(request, "API: '{c}': Needs user login".format(c=command))
+
+        if (api_cls.AUTH == api_cls.STAFF) and not (chk_login() and request.user.is_staff):
             return error401_unauthorized(request, "API: '{c}': Needs staff user login".format(c=command))
+
+        if (api_cls.AUTH == api_cls.ADMIN) and not (chk_login() and request.user.is_superuser):
+            return error401_unauthorized(request, "API: '{c}': Needs superuser login".format(c=command))
 
         # Generate command object
         api_cmd = api_cls(request.GET, request)

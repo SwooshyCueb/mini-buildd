@@ -612,7 +612,7 @@ class CredsCache(object):
         return username, password
 
 
-def web_login(url, credentials, login_loc="/admin/", next_loc="/mini_buildd/"):
+def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_buildd/"):
     username = None
     try:
         login_url = url + login_loc

@@ -29,6 +29,7 @@ import mini_buildd.models.daemon
 import mini_buildd.models.repository
 import mini_buildd.models.chroot
 import mini_buildd.models.gnupg
+import mini_buildd.models.subscription
 
 LOG = logging.getLogger(__name__)
 
@@ -455,6 +456,14 @@ class Daemon():
     @classmethod
     def get_active_remotes(cls):
         return mini_buildd.models.gnupg.Remote.mbd_get_active()
+
+    @classmethod
+    def get_subscription_objects(cls):
+        return mini_buildd.models.subscription.Subscription.objects
+
+    @classmethod
+    def get_subscriptions(cls, package, distribution):
+        return cls.get_subscription_objects().filter(package__in=[package, ""], distribution__in=[distribution, ""])
 
     @classmethod
     def parse_distribution(cls, dist):

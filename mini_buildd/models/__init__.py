@@ -18,6 +18,7 @@ def import_all():
     from mini_buildd.models import repository
     from mini_buildd.models import chroot
     from mini_buildd.models import daemon
+    from mini_buildd.models import subscription
 
     models = [
         gnupg.AptKey,
@@ -38,7 +39,8 @@ def import_all():
         chroot.FileChroot,
         chroot.LVMChroot,
         chroot.LoopLVMChroot,
-        daemon.Daemon]
+        daemon.Daemon,
+        subscription.Subscription]
 
     for m in models:
         m_admin = getattr(m, "Admin")

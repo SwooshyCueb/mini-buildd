@@ -516,6 +516,57 @@ class Retry(Command):
         self._plain_result = os.path.basename(os.path.basename(pkg_log.changes))
 
 
+class Subscription(Command):
+    """Manage subscriptions to package notifications.
+
+    A package subscription is a tuple 'PACKAGE:DISTRIBUTION',
+    where both PACKAGE or DISTRIBUTION may be empty to denote
+    all resp. items.
+    """
+    COMMAND = "subscription"
+    AUTH = Command.LOGIN
+    ARGUMENTS = [
+        (["--add", "-A"], {"action": "store",
+                           "metavar": "PACKAGE:DISTRIBUTION",
+                           "default": "",
+                           "help": "add a package subscription"}),
+        (["--delete", "-D"], {"action": "store",
+                              "metavar": "PACKAGE:DISTRIBUTION",
+                              "default": "",
+                              "help": "delete a package subscription"}),
+        (["--clear", "-C"], {"action": "store_true",
+                             "default": False,
+                             "help": "clear all package subscriptions"})]
+
+    def run(self, daemon):
+        if self.args["add"]:
+            # Add a subscription
+            package, _sep, distribution = self.args["add"].partition(":")
+            subscription, created = daemon.get_subscription_objects().get_or_create(subscriber=self.msglog.request.user,
+                                                                                    package=package,
+                                                                                    distribution=distribution)
+            self._plain_result += "{a}: {s}".format(a="Added" if created else "Exists", s=subscription)
+
+        elif self.args["delete"]:
+            # Delete a subscription
+            package, _sep, distribution = self.args["delete"].partition(":")
+            for subscription in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user,
+                                                                         package=package,
+                                                                         distribution=distribution):
+                self._plain_result += "Deleted: {s}".format(s=subscription)
+                subscription.delete()
+
+        elif self.has_flag("clear"):
+            # Clear all subscriptions
+            daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user).delete()
+            self._plain_result += "Cleared: {u}".format(u=self.msglog.request.user)
+
+        else:
+            # List all subscriptions
+            for s in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user):
+                self._plain_result += "{s}\n".format(s=s)
+
+
 COMMANDS = {Status.COMMAND: Status,
             Start.COMMAND: Start,
             Stop.COMMAND: Stop,
@@ -529,6 +580,7 @@ COMMANDS = {Status.COMMAND: Status,
             Port.COMMAND: Port,
             PortExt.COMMAND: PortExt,
             Retry.COMMAND: Retry,
+            Subscription.COMMAND: Subscription,
             }
 
 

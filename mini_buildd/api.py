@@ -526,45 +526,40 @@ class Subscription(Command):
     COMMAND = "subscription"
     AUTH = Command.LOGIN
     ARGUMENTS = [
-        (["--add", "-A"], {"action": "store",
-                           "metavar": "PACKAGE:DISTRIBUTION",
-                           "default": "",
-                           "help": "add a package subscription"}),
-        (["--delete", "-D"], {"action": "store",
-                              "metavar": "PACKAGE:DISTRIBUTION",
-                              "default": "",
-                              "help": "delete a package subscription"}),
-        (["--clear", "-C"], {"action": "store_true",
-                             "default": False,
-                             "help": "clear all package subscriptions"})]
+        (["action"], {"help": "one of 'list', 'add' or 'remove'"}),
+        (["subscription"], {"help": "subscription pattern"})]
 
     def run(self, daemon):
-        if self.args["add"]:
-            # Add a subscription
-            package, _sep, distribution = self.args["add"].partition(":")
+        package, _sep, distribution = self.args["subscription"].partition(":")
+
+        def _filter():
+            for s in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user):
+                if (package == "" or s.package == package) and (distribution == "" or s.distribution == distribution):
+                    yield s
+
+        def _delete(subscription):
+            result = "{s}".format(s=subscription)
+            subscription.delete()
+            return result
+
+        if self.args["action"] == "list":
+            self._plain_result = "\n".join(["{s}.".format(s=subscription) for subscription in _filter()])
+
+        elif self.args["action"] == "add":
             subscription, created = daemon.get_subscription_objects().get_or_create(subscriber=self.msglog.request.user,
                                                                                     package=package,
                                                                                     distribution=distribution)
-            self._plain_result += "{a}: {s}".format(a="Added" if created else "Exists", s=subscription)
+            self._plain_result = "{a}: {s}.".format(a="Added" if created else "Exists", s=subscription)
 
-        elif self.args["delete"]:
-            # Delete a subscription
-            package, _sep, distribution = self.args["delete"].partition(":")
-            for subscription in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user,
-                                                                         package=package,
-                                                                         distribution=distribution):
-                self._plain_result += "Deleted: {s}".format(s=subscription)
-                subscription.delete()
-
-        elif self.has_flag("clear"):
-            # Clear all subscriptions
-            daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user).delete()
-            self._plain_result += "Cleared: {u}".format(u=self.msglog.request.user)
+        elif self.args["action"] == "remove":
+            self._plain_result = "\n".join(["Removed: {s}.".format(s=_delete(subscription)) for subscription in _filter()])
 
         else:
-            # List all subscriptions
-            for s in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user):
-                self._plain_result += "{s}\n".format(s=s)
+            raise Exception("Unknown action '{c}': Use one of 'list', 'add' or 'remove'.".format(c=self.args["action"]))
+
+        # For convenience, say something if nothing matched
+        if not self._plain_result:
+            self._plain_result = "No matching subscriptions ({s}).".format(s=self.args["subscription"])
 
 
 COMMANDS = {Status.COMMAND: Status,

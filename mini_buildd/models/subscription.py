@@ -13,4 +13,6 @@ class Subscription(mini_buildd.models.base.Model):
     distribution = django.db.models.CharField(max_length=100, blank=True)
 
     def mbd_unicode(self):
-        return "{u}: '{p}:{d}'".format(u=self.subscriber, p=self.package, d=self.distribution)
+        return "User '{u}' subscribes to {p} in {d}".format(u=self.subscriber,
+                                                            p=self.package if self.package else "any package",
+                                                            d=self.distribution if self.distribution else "any distribution")

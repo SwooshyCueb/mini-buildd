@@ -171,7 +171,8 @@ def api(request):
         if output == "html":
             response = django.shortcuts.render_to_response(["mini_buildd/api_{c}.html".format(c=command),
                                                             "mini_buildd/api_default.html".format(c=command)],
-                                                           {"api_cmd": api_cmd},
+                                                           {"api_cmd": api_cmd,
+                                                            "repositories": mini_buildd.models.repository.Repository.mbd_get_prepared()},
                                                            django.template.RequestContext(request))
 
         elif output == "plain":

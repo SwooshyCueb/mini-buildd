@@ -304,6 +304,14 @@ a:hover
 	margin: 15px 15px 10px 15px;
 }
 
+/* Subscription */
+#mbd_subscription div
+{
+	text-align: left;
+	color: blue;
+	font-family: monospace;
+	margin: 15px 15px 10px 15px;
+}
 
 /* Page Header */
 

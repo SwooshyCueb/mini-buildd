@@ -7,9 +7,21 @@
 {% block content %}
 	<div class="box">
 		<h1 class="box-caption">{% block title %}{% endblock %}</h1>
-			{% block reg_content %}{% endblock %}
+		<p>
+			{% if user.is_authenticated %}
+				<a href="{% url django.contrib.auth.views.logout %}" title="Logout">Logout</a>
+				|
+				<a href="{% url auth_password_change %}">Change password</a>
+				|
+			{% else %}
+				<a href="{% url django.contrib.auth.views.login %}" title="Login">Login</a>
+				|
+			{% endif %}
+			<a href="{% url auth_password_reset %}">Reset password</a>
+			|
+			<a href="{% url registration_register %}">Register new account</a>
+		</p>
+		<hr />
+		{% block reg_content %}{% endblock %}
 	</div>
-	<p>
-		<a href="{% url auth_password_change %}">Change password</a> | <a href="{% url auth_password_reset %}">Reset password</a> | <a href="{% url registration_register %}">Register new account</a>
-	</p>
 {% endblock %}

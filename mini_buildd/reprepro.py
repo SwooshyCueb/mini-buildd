@@ -41,12 +41,13 @@ class Reprepro():
             self._lock = _LOCKS.setdefault(self._basedir, threading.Lock())
             LOG.debug("Lock for reprepro repository '{r}': {o}".format(r=self._basedir, o=self._lock))
 
-    def _call(self, args):
-        return mini_buildd.misc.sose_call(self._cmd + args)
+    def _call(self, args, show_command=False):
+        return "{command}{output}".format(command="Running {command}\n".format(command=" ".join(self._cmd + args)) if show_command else "",
+                                          output=mini_buildd.misc.sose_call(self._cmd + args))
 
-    def _call_locked(self, args):
+    def _call_locked(self, args, show_command=False):
         with self._lock:
-            return self._call(args)
+            return self._call(args, show_command)
 
     def reindex(self):
         with self._lock:
@@ -99,10 +100,10 @@ class Reprepro():
         return result
 
     def migrate(self, package, src_distribution, dst_distribution, version=None):
-        return self._call_locked(["copysrc", dst_distribution, src_distribution, package] + ([version] if version else []))
+        return self._call_locked(["copysrc", dst_distribution, src_distribution, package] + ([version] if version else []), show_command=True)
 
     def remove(self, package, distribution, version=None):
-        return self._call_locked(["removesrc", distribution, package] + ([version] if version else []))
+        return self._call_locked(["removesrc", distribution, package] + ([version] if version else []), show_command=True)
 
     def install(self, changes, distribution):
-        return self._call_locked(["include", distribution, changes])
+        return self._call_locked(["include", distribution, changes], show_command=True)

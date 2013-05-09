@@ -462,7 +462,10 @@ class Daemon():
         return mini_buildd.models.subscription.Subscription.objects
 
     @classmethod
-    def get_subscriptions(cls, package, distribution):
+    def get_subscriptions(cls, changes):
+        package = changes.get("Source", None)
+        changes_dist = changes.get("Source", None)
+        distribution = mini_buildd.models.repository.get_meta_distribution_map().get(changes_dist, changes_dist)
         return cls.get_subscription_objects().filter(package__in=[package, ""], distribution__in=[distribution, ""])
 
     @classmethod

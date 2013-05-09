@@ -263,9 +263,17 @@ incoming = /incoming
                 maintainer = changes.get("Maintainer")
                 if repository.notify_maintainer and maintainer:
                     add_to(maintainer, "maintainer", automatic=True)
+
                 changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
                 if repository.notify_changed_by and changed_by:
                     add_to(changed_by, "changed-by", automatic=True)
+
+                for s in self.mbd_get_daemon().get_subscriptions(changes):
+                    address = "{n} <{a}>".format(n=s.subscriber.get_full_name(), a=s.subscriber.email)
+                    if s.subscriber.is_active:
+                        add_to(address, "subscriber", automatic=False)
+                    else:
+                        msglog.debug("Notify: Skipping subscription address: {a}: Account disabled".format(a=address, r=self.allow_emails_to))
 
         try:
             django.core.mail.send_mass_mail([(subject, body, self.email_address, [to]) for to in m_to])

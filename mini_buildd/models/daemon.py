@@ -3,13 +3,12 @@ from __future__ import unicode_literals
 
 import re
 import socket
-import smtplib
-import email.mime.text
 import email.utils
 import logging
 
 import django.db
 import django.core.exceptions
+import django.core.mail
 import django.contrib.auth.models
 
 import mini_buildd.misc
@@ -240,43 +239,38 @@ incoming = /incoming
 
     def mbd_notify(self, subject, body, repository=None, changes=None, msglog=LOG):
         m_to = []
-        m_to_allow = re.compile(self.allow_emails_to)
+        m_to_raw = []
+        m_automatic_to_allow = re.compile(self.allow_emails_to)
 
-        def add_to(address):
-            if address and m_to_allow.search(address):
-                m_to.append(address)
+        def add_to(address, typ, automatic):
+            address_raw = email.utils.parseaddr(address)[1]
+            if not automatic or m_automatic_to_allow.search(address_raw):
+                if address_raw in m_to_raw:
+                    msglog.debug("Notify: Skipping {t} address: {a}: Duplicate".format(t=typ, a=address))
+                else:
+                    m_to.append(address)
+                    m_to_raw.append(address_raw)
+                    msglog.info("Notify: Adding {t} address: {a}".format(t=typ, a=address))
             else:
-                msglog.warn("Notify: Address not allowed (only '{r}'), skipping: {a}".format(r=self.allow_emails_to, a=address))
+                msglog.warn("Notify: Skipping {t} address: {a}: Not allowed (only '{r}')".format(t=typ, a=address, r=self.allow_emails_to))
 
         for m in self.notify.all():
-            msglog.debug("Notify: Adding daemon address: {a}".format(a=m.address))
-            add_to(m.address)
+            add_to(m.mbd_unicode(), "daemon", automatic=False)
         if repository:
             for m in repository.notify.all():
-                msglog.debug("Notify: Adding repository '{r}' address: {a}".format(r=repository.identity, a=m.address))
-                add_to(m.address)
+                add_to(m.mbd_unicode(), "repository", automatic=False)
             if changes:
                 maintainer = changes.get("Maintainer")
                 if repository.notify_maintainer and maintainer:
-                    msglog.debug("Notify: Adding package maintainer: {a}".format(a=maintainer))
-                    add_to(email.utils.parseaddr(maintainer)[1])
+                    add_to(maintainer, "maintainer", automatic=True)
                 changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
                 if repository.notify_changed_by and changed_by:
-                    msglog.debug("Notify: Adding uploader (Changed-By): {a}".format(a=changed_by))
-                    add_to(email.utils.parseaddr(changed_by)[1])
+                    add_to(changed_by, "changed-by", automatic=True)
 
         if m_to:
             try:
-                m_body = email.mime.text.MIMEText(body, _charset="UTF-8")
-                m_body["Subject"] = subject
-                m_body["From"] = self.email_address
-                m_body["To"] = ", ".join(m_to)
-
-                hopo = mini_buildd.misc.HoPo(self.smtp_server)
-                s = smtplib.SMTP(hopo.host, hopo.port)
-                s.sendmail(self.email_address, m_to, m_body.as_string())
-                s.quit()
-                msglog.info("Notify: Sent to '{r}'".format(s=subject, r=",".join(m_to)))
+                django.core.mail.send_mail(subject, body, self.email_address, m_to)
+                msglog.info("Notify: Sent '{s}'".format(s=subject))
             except Exception as e:
                 mini_buildd.setup.log_exception(msglog, "Notify: Mail '{s}' failed to '{r}'".format(s=subject, r=m_to), e)
         else:

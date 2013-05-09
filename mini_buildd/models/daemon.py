@@ -267,11 +267,8 @@ incoming = /incoming
                 if repository.notify_changed_by and changed_by:
                     add_to(changed_by, "changed-by", automatic=True)
 
-        if m_to:
-            try:
-                django.core.mail.send_mail(subject, body, self.email_address, m_to)
-                msglog.info("Notify: Sent '{s}'".format(s=subject))
-            except Exception as e:
-                mini_buildd.setup.log_exception(msglog, "Notify: Mail '{s}' failed to '{r}'".format(s=subject, r=m_to), e)
-        else:
-            msglog.warn("Notify: No email addresses found, skipping: {s}".format(s=subject))
+        try:
+            django.core.mail.send_mass_mail([(subject, body, self.email_address, [to]) for to in m_to])
+            msglog.info("Notify: Sent '{s}'".format(s=subject))
+        except Exception as e:
+            mini_buildd.setup.log_exception(msglog, "Notify: Mail '{s}' failed to '{r}'".format(s=subject, r=m_to), e)

@@ -70,10 +70,6 @@ class Changes(debian.deb822.Changes):
         return self._type
 
     @classmethod
-    def strip_epoch(cls, version):
-        return version.rpartition(":")[2]
-
-    @classmethod
     def gen_changes_file_name(cls, package, version, arch, mbd_type=TYPE_DEFAULT):
         """
         Gen any changes file name.
@@ -91,7 +87,7 @@ class Changes(debian.deb822.Changes):
         u'mypkg_1.2.3-1_mini-buildd-buildresult_mips.changes'
         """
         return "{p}_{v}{x}_{a}.changes".format(p=package,
-                                               v=cls.strip_epoch(version),
+                                               v=mini_buildd.misc.strip_epoch(version),
                                                a=arch,
                                                x=cls.TYPES[mbd_type])
 
@@ -101,7 +97,7 @@ class Changes(debian.deb822.Changes):
     @property
     def dsc_name(self):
         return "{s}_{v}.dsc".format(s=self["Source"],
-                                    v=self.strip_epoch(self["Version"]))
+                                    v=mini_buildd.misc.strip_epoch(self["Version"]))
 
     @property
     def bres_stat(self):

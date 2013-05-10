@@ -267,6 +267,11 @@ class Distribution(object):
             return int(re.sub(r"\D", "", self.rollback))
 
 
+def strip_epoch(version):
+    "Strip the epoch from a version string."
+    return version.rpartition(":")[2]
+
+
 def guess_codeversion(release):
     """
     Guess the 'codeversion' aka the first two digits of a Debian

@@ -681,7 +681,7 @@ DscIndices: Sources Release . .gz .bz2
         subdir = package[:4] if package.startswith("lib") else package[0]
 
         for c in sorted(distribution.components.all(), cmp=mini_buildd.models.source.cmp_components):
-            dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c.name, d=subdir, p=package, v=version)
+            dsc = "{r}/pool/{c}/{d}/{p}/{p}_{v}.dsc".format(r=self.identity, c=c.name, d=subdir, p=package, v=mini_buildd.misc.strip_epoch(version))
             LOG.debug("Checking dsc: {d}".format(d=dsc))
             if os.path.exists(os.path.join(mini_buildd.setup.REPOSITORIES_DIR, dsc)):
                 return c.name, os.path.join(self.mbd_get_daemon().model.mbd_get_http_url(), os.path.basename(mini_buildd.setup.REPOSITORIES_DIR), dsc)

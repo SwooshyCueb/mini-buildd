@@ -506,6 +506,9 @@ class Daemon():
                                                to_repository.layout.mbd_get_default_version(to_repository, to_distribution, to_suite))
 
         _component, url = from_repository.mbd_get_dsc_url(from_distribution, package, p["sourceversion"])
+        if not url:
+            raise Exception("Port failed: Can't find DSC for {p}-{v} in pool".format(p=package, v=p["sourceversion"]))
+
         self._port(url, package, to_dist, port_version)
 
     def portext(self, dsc_url, to_dist):

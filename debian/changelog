@@ -1,3 +1,34 @@
+mini-buildd (1.0.0~beta.12) experimental; urgency=low
+
+  Twelfths beta. Beside the usual fixes, this adds user
+  registration+subscription support and some yet chroot/repo maintenance
+  code.
+  * [98b87dc] StatusModel/check: Support a 'maintenance' hook, to be run after N days.
+  * [9b5f55e] text: Improve wording on check exception.
+  * [ed0de44] [devel: Add __test_msglog test/debugging method.]
+  * [08700bc] chroot: Add "update+upgrade" maintenance.
+  * [8030e27] html(admin.css): Copy/paste 'messagelist' setup from mini-buildd.css (Fixes debug msgs display in configuration).
+  * [078113e] repository check: Show reprepro's 'check' command output.
+  * [ff77998] repository: Add "obsoleted pkglogs removal" maintenance.
+  * [cd82522] misc: call with sudo: Always use "-n" (non-interactive) flag.
+  * [37157af] chroot: Add "fsck" maintenance (for LVM-backended chroots).
+  * [a4c5cf1] check: Integrate maintenance code into "check".
+  * [3049270] templates: Move mini_buildd/base.html to '..' (so it may also be used by other apps).
+  * [baca33c] Integrate python-registration (user-based account management).
+  * [4c77e5c] creds auth: Use python-registration account login (Fixes: Only 'staff' login works for mini-buildd-tool)
+  * [cd0a73b] api: Support 'login', 'staff' and 'admin' auth types for commands (previously, only 'staff' was possible).
+  * [035a2a6] api: Add user-based package subscription support.
+  * [8f4ea1a] html: Integrate user package subscription.
+  * [309aecd] reprepro: Show command being run in output for migrate, remove and install.
+  * [691102f] chroot: WTF! Gnome3 breaking mini-buildd ;). Fixed.
+  * [0f2e44c] notify: Switch to django's build-in email support, avoid duplicate mails and apply regex-filter on automatic addresses only.
+  * [4f10746] notify: Switch to send_mass_mail (one mail per recipient, no CC spam).
+  * [212130b] notify: Actually add support to email user package subscribers.
+  * [fc0cd1f] repository: Fix dsc url for packages with epoched version (Fixes dsc link and internal rebuilds for such packages).
+  * [e28e591] debian/control: Depend on python-django-registration >= 0.8 (older version would force us to use the extra "site" infrastructure).
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 20 May 2013 18:43:49 +0200
+
 mini-buildd (1.0.0~beta.11) experimental; urgency=low
 
   Eleventh beta. Cumulated smaller fixes.

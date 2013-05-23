@@ -5,7 +5,7 @@ if [ "${1}" = "remove" ]; then
 	# system. We need to properly run 'unprepare' to all of them
 	# to not leave artefacts (i.e., /etc/schroot/chroot.d/*.conf
 	# plus backend-related cruft like LVM setups).
-	# (We cannot do it in postrm/purge as we need mini-buildd for that.)
+	# (We cannot do it in postrm/purge as we need mini-buildd still installed for that.)
 	su mini-buildd -c "/usr/sbin/mini-buildd --foreground --verbose --remove-system-artifacts" || true
 fi
 

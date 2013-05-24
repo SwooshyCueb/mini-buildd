@@ -13,29 +13,29 @@
 						 href="/mini_buildd/repositories/{{ repository }}/">Repository '{{ repository }}': {{ results|length }} packages
 					</a>
 				</h1>
-			</div>
-			<table>
-				<tr>
-					<th>Package</th>
-					<th>Type</th>
-					<th>Architecture</th>
-					<th>Distribution</th>
-					<th>Component</th>
-					<th>Version</th>
-					<th>Source</th>
-				</tr>
-				{% for package in results %}
+				<table>
 					<tr>
-						<td>{{ package.package }}</td>
-						<td>{{ package.type }}</td>
-						<td>{{ package.architecture }}</td>
-						<td>{{ package.distribution }}</td>
-						<td>{{ package.component }}</td>
-						<td>{{ package.version }}</td>
-						<td><a href="/mini_buildd/api?command=show&amp;package={{ package.source|urlencode }}">{{ package.source }}</a></td>
+						<th>Package</th>
+						<th>Type</th>
+						<th>Architecture</th>
+						<th>Distribution</th>
+						<th>Component</th>
+						<th>Version</th>
+						<th>Source</th>
 					</tr>
-				{% endfor %}
-			</table>
+					{% for package in results %}
+						<tr>
+							<td>{{ package.package }}</td>
+							<td>{{ package.type }}</td>
+							<td>{{ package.architecture }}</td>
+							<td>{{ package.distribution }}</td>
+							<td>{{ package.component }}</td>
+							<td>{{ package.version }}</td>
+							<td><a href="/mini_buildd/api?command=show&amp;package={{ package.source|urlencode }}">{{ package.source }}</a></td>
+						</tr>
+					{% endfor %}
+				</table>
+			</div>
 		{% endfor %}
 	</div>
 {% endblock %}

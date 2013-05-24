@@ -29,9 +29,9 @@
 				<ul class="right">
 					<li>
 						{% if user.is_authenticated %}
-							<a class="logged-in" href="{% url django.contrib.auth.views.login %}" title="Manage account">User <b>{{ user.username }}</b></a>
+							<a class="logged-in" href="/accounts/login/" title="Manage account">User <b>{{ user.username }}</b></a>
 						{% else %}
-							<a class="logged-out" href="{% url django.contrib.auth.views.login %}" title="Login or register account">Logged off</a>
+							<a class="logged-out" href="/accounts/login/" title="Login or register account">Logged off</a>
 						{% endif %}
 					</li>
 				</ul>

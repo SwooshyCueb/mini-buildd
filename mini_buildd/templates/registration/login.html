@@ -12,7 +12,7 @@
 		<b>Please log in with your user credentials.</b>
 	</p>
 
-	<form method="post" action="{% url django.contrib.auth.views.login %}">
+	<form method="post" action="/accounts/login/">
 		{% csrf_token %}
 		<table>
 			<tr><th>{{ form.username.label_tag }}</th><td>{{ form.username }}</td></tr>

@@ -18,4 +18,4 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^admin/doc/", django.conf.urls.defaults.include("django.contrib.admindocs.urls")),
     (r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
     # registration
-    (r"^accounts/", django.conf.urls.defaults.include("registration.urls")),)
+    (r'^accounts/', django.conf.urls.defaults.include("registration.backends.default.urls")),)

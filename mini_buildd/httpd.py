@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
 import logging
 
 import cherrypy
@@ -70,7 +71,7 @@ def run(bind, wsgi_app):
 
     # Django: Add static support for the admin app
     add_static_handler(directory="static/admin",
-                       root="/usr/share/pyshared/django/contrib/admin",
+                       root="/usr/lib/python{major}.{minor}/dist-packages/django/contrib/admin".format(major=sys.version_info[0], minor=sys.version_info[1]),
                        path="/static/admin")
 
     # Serve our Debian-installed html documentation directly

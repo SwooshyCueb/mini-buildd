@@ -3,13 +3,15 @@
 {% block title %}mini-buildd{% endblock %}
 {% block page_title %}{{ daemon.model.identity }}{% endblock %}
 {% block page_sub_title %}
-	{% if daemon.is_running %}
-		<a class="button-stop" title="Stop" href="/mini_buildd/api?command=stop&amp;output=referer">Stop</a>
-	{% else %}
-		<a class="button-start" title="Start" href="/mini_buildd/api?command=start&amp;output=referer">Start</a>
+	{% if not daemon.is_busy %}
+		{% if daemon.is_running %}
+			<a class="button-stop" title="Stop" href="/mini_buildd/api?command=stop&amp;output=referer">Stop</a>
+		{% else %}
+			<a class="button-start" title="Start" href="/mini_buildd/api?command=start&amp;output=referer">Start</a>
+		{% endif %}
 	{% endif %}
-	<span class="status {% if daemon.is_running %}running{% else %}stopped{% endif %}">
-		{% if daemon.is_running %}Running{% else %}Stopped{% endif %}: {{ daemon.model }}
+	<span class="status {% if daemon.is_busy %}busy{% elif daemon.is_running %}running{% else %}stopped{% endif %}">
+		{% if daemon.is_busy %}Busy...{% elif daemon.is_running %}Running{% else %}Stopped{% endif %}: {{ daemon.model }}
 	</span>
 {% endblock %}
 {% block mbd_page_footer %}

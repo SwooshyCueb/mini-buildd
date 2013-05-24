@@ -362,6 +362,11 @@ a:hover
 	background: url("/static/images/mbd_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
 }
 
+#mbd_page_header span.status.busy
+{
+	color: yellow;
+}
+
 #mbd_page_header span.status.running
 {
 	color: green;

@@ -5,6 +5,7 @@ import os
 import re
 import time
 import shutil
+import threading
 import subprocess
 import contextlib
 import Queue
@@ -349,6 +350,8 @@ class Daemon():
 
         # When this is not None, daemon is running
         self.thread = None
+        # Protects start/stop from parallel calls
+        self.lock = threading.Lock()
 
         # Vars that are (re)generated when the daemon model is updated
         self.model = None
@@ -400,40 +403,45 @@ class Daemon():
         obj.mbd_set_pickled_data((self.last_packages, self.last_builds))
 
     def start(self, force_check=False, msglog=LOG):
-        if not self.thread:
-            self._update_from_model()
-            msglog.info("Checking daemon (force={f}).".format(f=force_check))
-            mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check", force=force_check)
-            if self.model.mbd_is_active():
-                self.thread = mini_buildd.misc.run_as_thread(run)
-                msglog.info("Daemon started.")
+        with self.lock:
+            if not self.thread:
+                self._update_from_model()
+                msglog.info("Checking daemon (force={f}).".format(f=force_check))
+                mini_buildd.models.daemon.Daemon.Admin.mbd_action(None, (self.model,), "check", force=force_check)
+                if self.model.mbd_is_active():
+                    self.thread = mini_buildd.misc.run_as_thread(run)
+                    msglog.info("Daemon started.")
+                else:
+                    msglog.warn("Daemon is deactivated (won't start).")
             else:
-                msglog.warn("Daemon is deactivated (won't start).")
-        else:
-            msglog.info("Daemon already running.")
+                msglog.info("Daemon already running.")
 
         return self.is_running()
 
     def stop(self, msglog=LOG):
-        if self.thread:
-            # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
-            # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
-            model = self._new_model_object()
-            self.update_to_model(model)
-            model.save()
+        with self.lock:
+            if self.thread:
+                # Save pickled persistend state; as a workaround, save the whole model but on fresh object/db state.
+                # With django 1.5, we could just use save(update_fields=["pickled_data"]) on self.model
+                model = self._new_model_object()
+                self.update_to_model(model)
+                model.save()
 
-            self.incoming_queue.put("SHUTDOWN")
-            self.thread.join()
-            self.thread = None
-            self._update_from_model()
-            msglog.info("Daemon stopped.")
-        else:
-            msglog.info("Daemon already stopped.")
+                self.incoming_queue.put("SHUTDOWN")
+                self.thread.join()
+                self.thread = None
+                self._update_from_model()
+                msglog.info("Daemon stopped.")
+            else:
+                msglog.info("Daemon already stopped.")
 
         return not self.is_running()
 
+    def is_busy(self):
+        return self.lock.locked()
+
     def is_running(self):
-        return bool(self.thread)
+        return not self.is_busy() and bool(self.thread)
 
     def get_status(self):
         status = mini_buildd.api.Status([])

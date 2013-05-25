@@ -88,22 +88,26 @@ automatically added.""")
         help_text="Degree of parallelism per build (via sbuild's '--jobs' option).")
 
     # EMail options
+    # DEPRECTATED/UNUSED: With the switch to django mail framework, this is now configured via the --smtp command line argument.
     smtp_server = django.db.models.CharField(
         max_length=254,
         default="localhost:25",
-        help_text="SMTP server (and optionally port) for mail sending.")
+        help_text="DEPRECATED/UNUSED: Replaced by '--smtp' command line option.")
 
-    notify = django.db.models.ManyToManyField(mini_buildd.models.repository.EmailAddress, blank=True)
+    notify = django.db.models.ManyToManyField(mini_buildd.models.repository.EmailAddress,
+                                              blank=True,
+                                              help_text="Addresses that get all notification emails unconditionally.")
     allow_emails_to = django.db.models.CharField(
         max_length=254,
         default=".*@{h}".format(h=socket.getfqdn()),
         help_text="""\
-Regex to allow sending E-Mails to. Use '.*' to allow all -- it's
-however recommended to put this to s.th. like '.*@myemail.domain', to
-prevent original package maintainers to be spammed.
+Regex to allow sending emails to automatically computed
+addresses (currently the 'Changed-By' or 'Maintainer' addresses
+when this feature is enabled for the resp. repository).
 
-[Spamming could occur if you enable the 'Changed-By' or
-'Maintainer' notify options in repositories.]
+Use '.*' to allow all -- it's however recommended to put this to
+s.th. like '.*@myemail.domain', to avoid original package
+maintainers to be accidentially spammed.
 """)
 
     custom_hooks_directory = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
@@ -137,6 +141,9 @@ prepare/remove actions will generate/remove the GnuPG key.
             ("Load Options", {"fields": ("build_queue_size", "sbuild_jobs")}),
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
+
+        # These are depcrecated or not used yet
+        readonly_fields = ["smtp_server", "ftpd_options", "custom_hooks_directory"]
 
         def save_model(self, request, obj, form, change):
             "Always update date the daemon object to model."

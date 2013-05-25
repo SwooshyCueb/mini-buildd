@@ -17,20 +17,54 @@ import mini_buildd.models
 LOG = logging.getLogger(__name__)
 
 
+class SMTPCreds(object):
+    """
+    SMTP creds string parser. Format "USER:PASSWORD@smtp|ssmtp://HOST:PORT".
+
+    >>> d = SMTPCreds(":@smtp://localhost:25")
+    >>> (d.user, d.password, d.protocol, d.host, d.port)
+    (u'', u'', u'smtp', u'localhost', 25)
+    >>> d = SMTPCreds("kuh:sa:ck@smtp://colahost:44")
+    >>> (d.user, d.password, d.protocol, d.host, d.port)
+    (u'kuh', u'sa:ck', u'smtp', u'colahost', 44)
+    """
+    def __init__(self, creds):
+        self.creds = creds
+        at = creds.partition("@")
+
+        usrpass = at[0].partition(":")
+        self.user = usrpass[0]
+        self.password = usrpass[2]
+
+        smtp = at[2].partition(":")
+        self.protocol = smtp[0]
+
+        hopo = smtp[2].partition(":")
+        self.host = hopo[0][2:]
+        self.port = int(hopo[2])
+
+
 class WebApp(django.core.handlers.wsgi.WSGIHandler):
     """
     This class represents mini-buildd's web application.
     """
 
-    def __init__(self):
+    def __init__(self, smtp_string):
         LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
+        smtp = SMTPCreds(smtp_string)
         debug = "django" in mini_buildd.setup.DEBUG
         django.conf.settings.configure(
             DEBUG=debug,
             TEMPLATE_DEBUG=debug,
             MESSAGE_LEVEL=django.contrib.messages.constants.DEBUG if debug else django.contrib.messages.constants.INFO,
+
+            EMAIL_HOST=smtp.host,
+            EMAIL_PORT=smtp.port,
+            EMAIL_USE_TLS=smtp.protocol == "ssmtp",
+            EMAIL_HOST_USER=smtp.user,
+            EMAIL_HOST_PASSWORD=smtp.password,
 
             TEMPLATE_DIRS=['/usr/share/pyshared/mini_buildd/templates'],
             TEMPLATE_LOADERS=(

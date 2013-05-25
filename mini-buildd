@@ -32,6 +32,8 @@ class Main():
         group_conf = parser.add_argument_group("daemon arguments")
         group_conf.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
                                 help="Web Server IP/Hostname and port to bind to.")
+        group_conf.add_argument("-S", "--smtp", action='store', default=":@smtp://localhost:25",
+                                help="SMTP credentials in format '[USER]:[PASSWORD]@smtp|ssmtp://HOST:PORT'.")
         group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
                                 help="Run with this home dir. The only use case to change this for debugging, really.")
         group_conf.add_argument("-f", "--foreground", action='store_true',
@@ -169,7 +171,7 @@ Comma-separated list of special debugging options:
 
     def run(self):
         # Get the django project instance
-        webapp = mini_buildd.webapp.WebApp()
+        webapp = mini_buildd.webapp.WebApp(self._args.smtp)
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:

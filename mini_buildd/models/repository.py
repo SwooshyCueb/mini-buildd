@@ -462,8 +462,9 @@ Example:
 </pre>
 """)
 
-    notify = django.db.models.ManyToManyField(EmailAddress, blank=True,
-                                              help_text="Arbitrary list of email addresses to notify.")
+    notify = django.db.models.ManyToManyField(EmailAddress,
+                                              blank=True,
+                                              help_text="Addresses that get all notification emails unconditionally.")
     notify_changed_by = django.db.models.BooleanField(default=False,
                                                       help_text="Notify the address in the 'Changed-By' field of the uploaded changes file.")
     notify_maintainer = django.db.models.BooleanField(default=False,

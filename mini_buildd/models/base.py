@@ -17,12 +17,12 @@ displays the internal names intelligently to the end user).
 
 For example, **don't** try to do sort of "grouping" using names like::
 
-  email_smtpserver
+  email_notify
   email_allow_regex
 
 This should rather read::
 
-  smtp_server
+  notify
   allow_emails_to
 
 To group fields together for the end user, use AdminModel's *fieldset* option.

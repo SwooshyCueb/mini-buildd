@@ -1,3 +1,23 @@
+mini-buildd (1.0.0~beta.13) experimental; urgency=low
+
+  Thirteenths beta. Make it work for django 1.5 and other fine fixes.
+  NOTE: Will only really work with 1.5 when this is fixed: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=709622
+  * [6e9da53] debian/control: Argl: for mini-buildd.deb also: Depend on python-django-registration >= 0.8.
+  * [a5ae5ab] mini-buildd.prerm: Improve comment wording why we remove chroots on remove, not purge.
+  * [dc0cce5] django 1.5: Replace deprecated adminmediatags taglib and media_prefix by STATIC_URL.
+  * [24d0c3a] django 1.5: Fix usage of 'url' tag.
+  * [974a991] python-registration: Don't use deprecated default url include.
+  * [bbee152] django 1.5: Use "dist-packages" path for django's admin static files (Fixes: jquery static files).
+  * [667e437] html(api::list): Fix per-repo box boundary.
+  * [d453c5e] django 1.5: pylint: Globally disable E1002 (too many false-positives with django 1.5).
+  * [de9f256] daemon: Protect start/stop with a lock, and show busy state in html when locked.
+  * [c0f48af] notify: Move smtp (email) config from daemon model to '--smtp' command line arg.
+  * [ff8afab] [devel: Cosmetic fixes.]
+  * [a3a97d1] doc: Add note about sbuild bug 706086.
+  * [066c58c] notify: Add signature for all notification mails.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 26 May 2013 18:22:41 +0200
+
 mini-buildd (1.0.0~beta.12) experimental; urgency=low
 
   Twelfths beta. Beside the usual fixes, this adds user

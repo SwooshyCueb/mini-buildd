@@ -242,6 +242,21 @@ login    = anonymous
 incoming = /incoming
 """.format(i=self.identity, h=self.mbd_get_ftp_hopo().string)
 
+    def _mbd_notify_signature(self, typ):
+        reason = {"daemon": "Your address is configured to get any notifications (contact administrators if you don't want this).",
+                  "repository": "Your address is configured to get any notifications for this repository (contact administrators if you don't want this).",
+                  "changed-by": "Your address is the uploader of the package ('Changed-By' in changes).",
+                  "maintainer": "Your address is the maintainer of the package ('Maintainer' in changes).",
+                  "subscriber": "Your user account has a matching subscription.",
+                  }.get(typ, "Unknown")
+        return """
+--\N{SPACE}
+mini-buildd instance '{id}' at {host} <{email}>
+Reason for this mail: {reason}
+Visit mini-buildd   : {url}
+Manage your account : {url}accounts/login/
+""".format(id=self.identity, host=self.hostname, email=self.email_address, reason=reason, url=self.mbd_get_http_url())
+
     def mbd_notify(self, subject, body, repository=None, changes=None, msglog=LOG):
         m_to = []
         m_to_raw = []
@@ -253,7 +268,7 @@ incoming = /incoming
                 if address_raw in m_to_raw:
                     msglog.debug("Notify: Skipping {t} address: {a}: Duplicate".format(t=typ, a=address))
                 else:
-                    m_to.append(address)
+                    m_to.append((subject, body + self._mbd_notify_signature(typ), self.email_address, [address]))
                     m_to_raw.append(address_raw)
                     msglog.info("Notify: Adding {t} address: {a}".format(t=typ, a=address))
             else:
@@ -281,7 +296,7 @@ incoming = /incoming
                         msglog.debug("Notify: Skipping subscription address: {a}: Account disabled".format(a=address, r=self.allow_emails_to))
 
         try:
-            django.core.mail.send_mass_mail([(subject, body, self.email_address, [to]) for to in m_to])
+            django.core.mail.send_mass_mail(m_to)
             msglog.info("Notify: Sent '{s}'".format(s=subject))
         except Exception as e:
             mini_buildd.setup.log_exception(msglog, "Notify: Mail '{s}' failed to '{r}'".format(s=subject, r=m_to), e)

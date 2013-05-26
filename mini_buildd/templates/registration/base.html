@@ -9,17 +9,22 @@
 		<h1 class="box-caption">{% block title %}{% endblock %}</h1>
 		<p>
 			{% if user.is_authenticated %}
+				<b>{{user}}:</b>
 				<a href="/accounts/logout/" title="Logout">Logout</a>
 				|
 				<a href="/accounts/password/change/">Change password</a>
 				|
+				Subscriptions:
+				<a href="/mini_buildd/api?command=subscription&amp;action=list&amp;subscription=:&amp;output=referer">List</a></li>
+				<a href="/mini_buildd/api?command=subscription&amp;action=remove&amp;subscription=:&amp;output=referer">Clear</a></li>
 			{% else %}
+				<em>Logged off:</em>
 				<a href="/accounts/login/" title="Login">Login</a>
 				|
+				<a href="/accounts/password/reset/">Reset password</a>
+				|
+				<a href="/accounts/register/">Register new account</a>
 			{% endif %}
-			<a href="/accounts/password/reset/">Reset password</a>
-			|
-			<a href="/accounts/register/">Register new account</a>
 		</p>
 		<hr />
 		{% block reg_content %}{% endblock %}

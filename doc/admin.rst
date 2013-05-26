@@ -320,6 +320,16 @@ your system, **LVM chroots** are good alternative, too.
 	 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 
 
+.. todo:: **BUG**: *Fails to build "all" packages with "build archall" flag set to arch "x" in case DSP has >= 1 arch "all" and >=1 arch "y" binary package*
+
+	 This is due to sbuild and in in more detail explained here [#debbug706086]_.
+
+	 A bad one-package workaround would be to change the "build archall" flag to arch "y".
+
+	 .. rubric:: References:
+	 .. [#debbug706086] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=706086
+
+
 .. todo:: **FAQ**: *Chroot creating fails due to missing arch in archive (partial mirror).*
 
 	 This might occur, for example, if you use a (local) partial

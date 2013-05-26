@@ -47,7 +47,7 @@ Repository maintenance
 Using the repository
 ********************
 
-.. todo:: **FAQ**: *lintian version from host is used for all distributions*
+.. todo:: **BUG**: *lintian version from host is used for all distributions*
 
 	 We use sbuild's --run-lintian option, which is currently runs lintian
 	 from the host, see [#debbug626361]_.
@@ -81,7 +81,7 @@ Using the repository
 	 .. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011
 	 .. [#debbug248561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=248561
 
-.. todo:: **FAQ**: *apt secure problems after initial (unauthorized) install of the archive-key package*
+.. todo:: **BUG**: *apt secure problems after initial (unauthorized) install of the archive-key package*
 
 	 - aptitude always shows <NULL> archive
 

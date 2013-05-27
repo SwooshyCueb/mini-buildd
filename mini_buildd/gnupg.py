@@ -28,7 +28,7 @@ class BaseGnuPG(object):
             mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
 
     def export(self, dest_file):
-        with open(dest_file, "w") as f:
+        with mini_buildd.misc.open_utf8(dest_file, "w") as f:
             subprocess.check_call(self.gpg_cmd + ["--export"], stdout=f)
 
     def get_pub_key(self, identity):

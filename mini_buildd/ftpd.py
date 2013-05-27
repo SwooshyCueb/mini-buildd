@@ -71,7 +71,7 @@ class Incoming(object):
         valid_files = []
         for changes_file in cls.get_changes():
             try:
-                for fd in debian.deb822.Changes(open(changes_file)).get("Files", []):
+                for fd in debian.deb822.Changes(mini_buildd.misc.open_utf8(changes_file)).get("Files", []):
                     valid_files.append(fd["name"])
                 valid_files.append(os.path.basename(changes_file))
             except Exception as e:

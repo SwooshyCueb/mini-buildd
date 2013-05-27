@@ -10,7 +10,6 @@ import subprocess
 import contextlib
 import Queue
 import collections
-import codecs
 import urllib2
 import logging
 
@@ -39,19 +38,19 @@ class Changelog(debian.changelog.Changelog):
     """
     Changelog class with some extra functions.
 
-    >>> cl = Changelog(open("./examples/doctests/changelog"), max_blocks=100)
+    >>> cl = Changelog(mini_buildd.misc.open_utf8("./examples/doctests/changelog"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
     (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.0-2')
 
-    >>> cl = Changelog(open("./examples/doctests/changelog.ported"), max_blocks=100)
+    >>> cl = Changelog(mini_buildd.misc.open_utf8("./examples/doctests/changelog.ported"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
     (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.0-2')
 
-    >>> cl = Changelog(open("./examples/doctests/changelog.oneblock"), max_blocks=100)
+    >>> cl = Changelog(mini_buildd.misc.open_utf8("./examples/doctests/changelog.oneblock"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
     (u'Stephan S\\xfcrken <absurd@debian.org>', u'1.0.1-1~')
 
-    >>> cl = Changelog(open("./examples/doctests/changelog.oneblock.ported"), max_blocks=100)
+    >>> cl = Changelog(mini_buildd.misc.open_utf8("./examples/doctests/changelog.oneblock.ported"), max_blocks=100)
     >>> cl.find_first_not("mini-buildd@buildd.intra")
     (u'Mini Buildd <mini-buildd@buildd.intra>', u'1.0.1-1~')
     """
@@ -59,7 +58,7 @@ class Changelog(debian.changelog.Changelog):
         "Find (author,version+1) of the first changelog block not by given author."
         def s2u(string):
             "Compat for python-debian <= 0.1.19: Author strings are of class 'str', not 'unicode'."
-            return unicode(string, encoding="UTF-8") if isinstance(string, str) else string
+            return unicode(string) if isinstance(string, str) else string
 
         result = (None, None)
         for index, block in enumerate(self._blocks):
@@ -212,9 +211,9 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
             for f in files:
                 old_file = os.path.join(root, f)
                 new_file = old_file + ".new"
-                codecs.open(new_file, "w", encoding="UTF-8").write(
+                mini_buildd.misc.open_utf8(new_file, "w").write(
                     mini_buildd.misc.subst_placeholders(
-                        codecs.open(old_file, "r", encoding="UTF-8").read(),
+                        mini_buildd.misc.open_utf8(old_file, "r").read(),
                         {"ID": identity,
                          "KEY_ID": gpg.pub_keys_ids()[0],
                          "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
@@ -319,7 +318,7 @@ def run():
                 # Try to notify
                 try:
                     subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
-                    body = codecs.open(event, "r", encoding="UTF-8").read()
+                    body = mini_buildd.misc.open_utf8(event, "r").read()
                     get().model.mbd_notify(subject, body)
                 except Exception as e:
                     mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
@@ -450,7 +449,7 @@ class Daemon():
 
     @classmethod
     def logcat(cls, lines):
-        logfile = codecs.open(mini_buildd.setup.LOG_FILE, "r", encoding="UTF-8")
+        logfile = mini_buildd.misc.open_utf8(mini_buildd.setup.LOG_FILE, "r")
         return mini_buildd.misc.tail(logfile, lines)
 
     @classmethod
@@ -564,7 +563,7 @@ class Daemon():
             dst_path = os.path.join(t.tmpdir, dst)
 
             # Get version and author from original changelog; use the first block not
-            original_author, original_version = Changelog(open(os.path.join(dst_path, "debian", "changelog")),
+            original_author, original_version = Changelog(mini_buildd.misc.open_utf8(os.path.join(dst_path, "debian", "changelog"), "r"),
                                                           max_blocks=100).find_first_not(self.model.email_address)
             LOG.debug("Port: Found original version/author: {v}/{a}".format(v=original_version, a=original_author))
 
@@ -598,7 +597,7 @@ class Daemon():
                                                                                      "source"))
 
             # Generate Changes file
-            with open(changes, "w") as c:
+            with mini_buildd.misc.open_utf8(changes, "w") as c:
                 subprocess.check_call(["dpkg-genchanges",
                                        "-S",
                                        "-sa",

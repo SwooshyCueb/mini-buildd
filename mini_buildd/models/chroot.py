@@ -429,7 +429,7 @@ class LoopLVMChroot(LVMChroot):
 
     def mbd_get_loop_device(self):
         for f in glob.glob("/sys/block/loop[0-9]*/loop/backing_file"):
-            if os.path.realpath(open(f).read().strip()) == os.path.realpath(self.mbd_get_backing_file()):
+            if os.path.realpath(mini_buildd.misc.open_utf8(f).read().strip()) == os.path.realpath(self.mbd_get_backing_file()):
                 return "/dev/" + f.split("/")[3]
         LOG.debug("No existing loop device for {b}, searching for free device".format(b=self.mbd_get_backing_file()))
         return mini_buildd.misc.call(["/sbin/losetup", "--find"], run_as_root=True).rstrip()

@@ -179,7 +179,7 @@ class Changes(debian.deb822.Changes):
     def save(self, gnupg):
         try:
             LOG.info("Saving changes: {f}".format(f=self._file_path))
-            self.dump(fd=open(self._file_path, "w+"))
+            self.dump(fd=mini_buildd.misc.open_utf8(self._file_path, "w+"))
             LOG.info("Signing changes: {f}".format(f=self._file_path))
             gnupg.sign(self._file_path)
             self._sha1 = mini_buildd.misc.sha1_of_file(self._file_path)
@@ -192,7 +192,7 @@ class Changes(debian.deb822.Changes):
     def upload(self, hopo):
         upload = os.path.splitext(self._file_path)[0] + ".upload"
         if os.path.exists(upload):
-            LOG.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=open(upload).read()))
+            LOG.info("FTP: '{f}' already uploaded to '{h}'...".format(f=self._file_name, h=mini_buildd.misc.open_utf8(upload).read()))
         else:
             ftp = ftplib.FTP()
             ftp.connect(hopo.host, hopo.port)
@@ -201,8 +201,8 @@ class Changes(debian.deb822.Changes):
             for fd in self.get_files() + [{"name": self._file_name}]:
                 f = fd["name"]
                 LOG.debug("FTP: Uploading file: '{f}'".format(f=f))
-                ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f)))
-            open(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
+                ftp.storbinary("STOR {f}".format(f=f), open(os.path.join(os.path.dirname(self._file_path), f), "rb"))
+            mini_buildd.misc.open_utf8(upload, "w").write("{h}:{p}".format(h=hopo.host, p=hopo.port))
             LOG.info("FTP: '{f}' uploaded to '{h}'...".format(f=self._file_name, h=hopo.host))
 
     def upload_buildrequest(self, local_hopo):
@@ -322,15 +322,15 @@ class Changes(debian.deb822.Changes):
                     breq[v] = self[v]
 
                 # Generate sources.list et.al. to be used
-                open(os.path.join(path, "apt_sources.list"), 'w').write(dist.mbd_get_apt_sources_list(repository, suite_option))
-                open(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences(repository, suite_option))
-                open(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(dist))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_sources.list"), 'w').write(dist.mbd_get_apt_sources_list(repository, suite_option))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences(repository, suite_option))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(dist))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-                open(chroot_setup_script, 'w').write(mini_buildd.misc.fromdos(dist.chroot_setup_script))
+                mini_buildd.misc.open_utf8(chroot_setup_script, 'w').write(mini_buildd.misc.fromdos(dist.chroot_setup_script))
 
                 os.chmod(chroot_setup_script, stat.S_IRWXU)
-                open(os.path.join(path, "sbuildrc_snippet"), 'w').write(dist.mbd_get_sbuildrc_snippet(ao.architecture.name))
+                mini_buildd.misc.open_utf8(os.path.join(path, "sbuildrc_snippet"), 'w').write(dist.mbd_get_sbuildrc_snippet(ao.architecture.name))
 
                 # Generate tar from original changes
                 self.tar(tar_path=breq.file_path + ".tar",
@@ -384,7 +384,7 @@ class Changes(debian.deb822.Changes):
         bres["Sbuildretval"] = unicode(retval)
         bres["Sbuild-Status"] = status
         buildlog = os.path.join(t, self.buildlog_name)
-        with open(buildlog, "w+") as l:
+        with mini_buildd.misc.open_utf8(buildlog, "w+") as l:
             l.write("""
 Host: {h}
 Build request failed: {r} ({s}): {e}

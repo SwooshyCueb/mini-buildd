@@ -55,7 +55,9 @@ def run(bind, wsgi_app):
                 section="/",
                 dir=directory,
                 root=root,
-                content_types={"log": "text/plain; charset=UTF-8", "buildlog": "text/plain; charset=UTF-8"}),
+                content_types={"log": "text/plain; charset=UTF-8",
+                               "buildlog": "text/plain; charset=UTF-8",
+                               "changes": "text/plain; charset=UTF-8"}),
             path)
 
     log_init()

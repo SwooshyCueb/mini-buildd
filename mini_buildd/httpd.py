@@ -50,14 +50,16 @@ def run(bind, wsgi_app):
     """
     def add_static_handler(directory, root, path):
         "Shortcut to add a static handler."
+        mime_text_plain = "text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING)
+
         cherrypy.tree.mount(
             cherrypy.tools.staticdir.handler(
                 section="/",
                 dir=directory,
                 root=root,
-                content_types={"log": "text/plain; charset=UTF-8",
-                               "buildlog": "text/plain; charset=UTF-8",
-                               "changes": "text/plain; charset=UTF-8"}),
+                content_types={"log": mime_text_plain,
+                               "buildlog": mime_text_plain,
+                               "changes": mime_text_plain}),
             path)
 
     log_init()

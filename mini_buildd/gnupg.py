@@ -18,12 +18,12 @@ class BaseGnuPG(object):
         self.home = home
         self.gpg_cmd = ["gpg",
                         "--homedir={h}".format(h=home),
-                        "--display-charset=utf-8",
+                        "--display-charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING),
                         "--batch"]
 
     def gen_secret_key(self, template):
         with tempfile.TemporaryFile() as t:
-            t.write(template.encode("UTF-8"))
+            t.write(template.encode(mini_buildd.setup.CHAR_ENCODING))
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
 
@@ -68,7 +68,7 @@ class BaseGnuPG(object):
 
     def add_pub_key(self, key):
         with tempfile.TemporaryFile() as t:
-            t.write(key.encode("UTF-8"))
+            t.write(key.encode(mini_buildd.setup.CHAR_ENCODING))
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
 

@@ -259,7 +259,7 @@ def gen_keyring():
     keyring["remotes"].add_pub_key(get().model.mbd_get_pub_key())
     for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
         keyring["remotes"].add_pub_key(r.key)
-        LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name).encode("UTF-8"))
+        LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name))
 
     try:
         yield keyring

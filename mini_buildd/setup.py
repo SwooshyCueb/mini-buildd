@@ -22,6 +22,9 @@ CHROOT_LIBDIR = None
 
 MANUAL_DIR = None
 
+# This should never ever be changed
+CHAR_ENCODING = "UTF-8"
+
 
 def log_exception(log, message, exception, level=logging.ERROR):
     msg = "{m}: {e}".format(m=message, e=exception)

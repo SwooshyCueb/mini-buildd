@@ -176,7 +176,8 @@ def api(request):
                                                            django.template.RequestContext(request))
 
         elif output == "plain":
-            response = django.http.HttpResponse(api_cmd.__unicode__().encode("UTF-8"), mimetype="text/plain; charset=utf-8")
+            response = django.http.HttpResponse(api_cmd.__unicode__().encode(mini_buildd.setup.CHAR_ENCODING),
+                                                mimetype="text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING))
 
         elif output == "python":
             response = django.http.HttpResponse(pickle.dumps(api_cmd, pickle.HIGHEST_PROTOCOL),

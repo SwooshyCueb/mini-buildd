@@ -153,7 +153,7 @@ are actually supported by the current model.
             mini_buildd.setup.log_exception(LOG, "Ignoring unpickling error", e)
             try:
                 # Be nice and also try the olde way <1.0 beta.7
-                return pickle.loads(self.pickled_data.encode("UTF-8"))
+                return pickle.loads(self.pickled_data.encode(mini_buildd.setup.CHAR_ENCODING))
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Ignoring compat unpickling error", e)
                 return default

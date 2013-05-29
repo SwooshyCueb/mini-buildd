@@ -11,10 +11,11 @@ import django.template
 
 import mini_buildd.daemon
 
+import mini_buildd.models.gnupg
 import mini_buildd.models.repository
 import mini_buildd.models.chroot
-import mini_buildd.models.gnupg
 
+from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -37,6 +38,7 @@ def _add_api_messages(response, api_cmd, msgs=None):
 
 def error(request, code, meaning, description, api_cmd=None):
     # Note: Adding api_cmd if applicable; this will enable automated api links even on error pages.
+    MsgLog(LOG, request).error(description)
     response = django.shortcuts.render(request,
                                        "mini_buildd/error.html",
                                        {"code": code,

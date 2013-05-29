@@ -4,11 +4,11 @@
 
 {% block reg_content %}
 	<form method="post" action="">
-		{% csrf_token %}
 		<p>
 			<b>Please register a new user account.</b>
 		</p>
 
+		<p>{% csrf_token %}</p>
 		<table>
 			{{ form }}
 		</table>

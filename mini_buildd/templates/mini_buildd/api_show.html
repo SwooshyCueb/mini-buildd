@@ -46,7 +46,7 @@
 									{% if values.migrates_to %}
 										{% if values.sourceversion and not values.is_migrated %}
 											<a class="button-migrate" title="...to {{ values.migrates_to }}"
-												 href="/mini_buildd/api?command=migrate&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Migrate</a>
+												 href="/mini_buildd/api?command=migrate&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}&amp;output=referer">Migrate</a>
 										{% elif values.sourceversion %}
 											<div title="...to {{ values.migrates_to }}"><b>Migrated</b></div>
 										{% else %}
@@ -58,18 +58,18 @@
 									{% if values.sourceversion %}
 										<a class="button-remove"
 											 title="...from {{ values.distribution }}"
-											 href="/mini_buildd/api?command=remove&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Remove</a>
+											 href="/mini_buildd/api?command=remove&amp;package={{ values.source|urlencode }}&amp;distribution={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}&amp;output=referer">Remove</a>
 									{% endif %}
 								</td>
 								<td>
 									{% for rollback in values.rollbacks|dictsort:"no" %}
 										<a class="button-remove"
 											 title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}"
-											 href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}">{{ rollback.no }}</a>
+											 href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
 										{% if not values.sourceversion %}
 											<a class="button-migrate-rollback"
 												 title="Restore rollback {{ rollback.sourceversion }} from {{ rollback.distribution }}"
-												 href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}">{{ rollback.no }}</a>
+												 href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
 										{% endif %}
 									{% endfor %}
 									<span title="{{ values.rollback }} rollback distributions">{{ values.rollbacks|length }}/{{ values.rollback }}</span>
@@ -79,7 +79,7 @@
 									{% if values.sourceversion and values.uploadable %}
 										<a class="button-rebuild"
 											 title="...in {{ values.distribution }}"
-											 href="/mini_buildd/api?command=port&amp;package={{ values.source|urlencode }}&amp;from_distribution={{ values.distribution|urlencode }}&amp;to_distributions={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}">Rebuild</a>
+											 href="/mini_buildd/api?command=port&amp;package={{ values.source|urlencode }}&amp;from_distribution={{ values.distribution|urlencode }}&amp;to_distributions={{ values.distribution|urlencode }}&amp;version={{ values.sourceversion|urlencode }}&amp;output=referer">Rebuild</a>
 									{% endif %}
 								</td>
 								<td>
@@ -95,6 +95,7 @@
 														<option>{{ d }}</option>
 													{% endfor %}
 												</select>
+												<input type="hidden" name="output" value="referer" />
 												<input type="submit" value="Port" title="Port this package version to other distribution(s)" />
 											</div>
 										</form>

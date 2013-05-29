@@ -36,16 +36,25 @@ def _add_api_messages(response, api_cmd, msgs=None):
                   (msgs if msgs else []))
 
 
+def _referer(request, output):
+    "output=referer[REFERER_URL]"
+    return output[7:] if (output[:7] == "referer" and output[7:]) else request.META.get("HTTP_REFERER", "/")
+
+
 def error(request, code, meaning, description, api_cmd=None):
     # Note: Adding api_cmd if applicable; this will enable automated api links even on error pages.
-    MsgLog(LOG, request).error(description)
-    response = django.shortcuts.render(request,
-                                       "mini_buildd/error.html",
-                                       {"code": code,
-                                        "meaning": meaning,
-                                        "description": description,
-                                        "api_cmd": api_cmd},
-                                       status=code)
+    MsgLog(LOG, request).error("{code} {meaning}: {description}".format(code=code, meaning=meaning, description=description))
+    output = request.GET.get("output", "html")
+    if output[:7] == "referer":
+        response = django.shortcuts.redirect(_referer(request, output))
+    else:
+        response = django.shortcuts.render(request,
+                                           "mini_buildd/error.html",
+                                           {"code": code,
+                                            "meaning": meaning,
+                                            "description": description,
+                                            "api_cmd": api_cmd},
+                                           status=code)
     _add_api_messages(response, api_cmd, ["E: {d}".format(d=description)])
     return response
 
@@ -157,13 +166,13 @@ def api(request):
 
         # Check confirmable calls
         if api_cls.CONFIRM and request.GET.get("confirm", None) != command:
-            if output != "html":
-                return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
-            else:
+            if output == "html" or output == "referer":
                 return django.shortcuts.render_to_response("mini_buildd/api_confirm.html",
                                                            {"api_cmd": api_cmd,
-                                                            "referer": request.META.get("HTTP_REFERER")},
+                                                            "referer": _referer(request, output)},
                                                            django.template.RequestContext(request))
+            else:
+                return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
 
         # Run API call (dep-injection via daemon object)
         api_cmd.run(mini_buildd.daemon.get())
@@ -189,7 +198,7 @@ def api(request):
             # Add all plain result lines as info messages on redirect
             for l in api_cmd.__unicode__().splitlines():
                 api_cmd.msglog.info("Result: {l}".format(l=l))
-            response = django.shortcuts.redirect(output[7:] if output[7:] else request.META.get("HTTP_REFERER", "/"))
+            response = django.shortcuts.redirect(_referer(request, output))
         else:
             response = django.http.HttpResponseBadRequest("<h1>Unknow output type '{o}'</h1>".format(o=output))
 

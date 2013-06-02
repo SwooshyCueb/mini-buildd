@@ -598,14 +598,19 @@ class Daemon():
 
             # Generate Changes file
             with mini_buildd.misc.open_utf8(changes, "w") as c:
-                subprocess.check_call(["dpkg-genchanges",
-                                       "-S",
-                                       "-sa",
-                                       "-v{v}".format(v=original_version),
-                                       "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
-                                      cwd=dst_path,
-                                      env=env,
-                                      stdout=c)
+                try:
+                    subprocess.check_call(["dpkg-genchanges",
+                                           "-S",
+                                           "-sa",
+                                           "-v{v}".format(v=original_version),
+                                           "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
+                                          cwd=dst_path,
+                                          env=env,
+                                          stdout=c)
+                except:
+                    LOG.warn("TMP DEBUG0: {v}/{a}".format(v=original_version.__class__.__name__, a=original_author.__class__.__name__))
+                    LOG.warn("TMP DEBUG1: {v}/{a}".format(v=original_version, a=original_author))
+                    raise
 
             # Sign and add to incoming queue
             self.model.mbd_gnupg.sign(changes)

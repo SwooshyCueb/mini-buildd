@@ -1,3 +1,18 @@
+mini-buildd (1.0.0~beta.14) experimental; urgency=low
+
+  Fourteenths beta. Wrap up for django 1.5+p-d-registration (now in
+  experimental).
+  * [720f7ae] unicode: Always use codecs.open(), not open() (might fix some spurious encoding problems).
+  * [43dd341] httpd: Deliver *.changes as text/plain, not text/html.
+  * [6c74932] encoding: Use setup.CHAR_ENCODING global const (to set UTF-8).
+  * [ebeb648] html(registration): Fix some w3c quirks.
+  * [fcf4488] views: Fix missing msglog on error pages.
+  * [1690eca] html(api::show): Nicer error handling for api calls.
+  * [e17dd8f] [daemon.py: port code: Add some temporary debug code for rare/random mysterious encoding exception.]
+  * [d76284f] control: Update version for py-reg to 0.9~.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 02 Jun 2013 13:42:35 +0200
+
 mini-buildd (1.0.0~beta.13) experimental; urgency=low
 
   Thirteenths beta. Make it work for django 1.5 and other fine fixes.

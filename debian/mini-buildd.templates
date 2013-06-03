@@ -41,7 +41,7 @@ _Description: Extra options:
 
 Template: mini-buildd/note
 Type: note
-Description: Package configuration complete
+_Description: Package configuration complete
  After the package installation is complete, visit the new home
  of your local mini-build instance. Unless you changed the
  defaults, this should be reachable via:

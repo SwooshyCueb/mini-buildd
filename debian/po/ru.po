@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd 0.8.13\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2012-04-18 19:10+0200\n"
+"POT-Creation-Date: 2013-06-03 20:40+0200\n"
 "PO-Revision-Date: 2010-05-05 21:28+0400\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
@@ -118,6 +118,33 @@ msgstr ""
 msgid ""
 "However, the only really recommended option to give here is to increase/"
 "decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
+msgstr ""
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:5001
+msgid "Package configuration complete"
+msgstr ""
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:5001
+msgid ""
+"After the package installation is complete, visit the new home of your local "
+"mini-build instance. Unless you changed the defaults, this should be "
+"reachable via:"
+msgstr ""
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:5001
+msgid "http://localhost:8066"
+msgstr ""
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:5001
+msgid "A good starting point is the online manual's Quickstart."
 msgstr ""
 
 #~ msgid "Repository purge"

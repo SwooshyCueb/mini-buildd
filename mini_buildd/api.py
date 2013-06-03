@@ -187,7 +187,7 @@ class Start(Command):
     Start the Daemon (engine).
     """
     COMMAND = "start"
-    AUTH = Command.STAFF
+    AUTH = Command.ADMIN
     ARGUMENTS = [
         (["--force-check", "-C"], {"action": "store_true",
                                    "default": False,
@@ -204,7 +204,7 @@ class Stop(Command):
     Stop the Daemon (engine).
     """
     COMMAND = "stop"
-    AUTH = Command.STAFF
+    AUTH = Command.ADMIN
     ARGUMENTS = []
 
     def run(self, daemon):

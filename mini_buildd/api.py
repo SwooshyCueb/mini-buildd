@@ -273,6 +273,7 @@ class List(Command):
     List packages matching a shell-like glob pattern; matches both source and binary package names.
     """
     COMMAND = "list"
+    AUTH = Command.LOGIN
     ARGUMENTS = [
         (["pattern"], {"help": "list source packages matching pattern"}),
         (["--with-rollbacks", "-r"], {"action": "store_true",

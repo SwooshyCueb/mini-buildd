@@ -240,6 +240,7 @@ class LogCat(Command):
     Cat last n lines of the mini-buildd's log.
     """
     COMMAND = "logcat"
+    AUTH = Command.STAFF
     ARGUMENTS = [
         (["--lines", "-n"], {"action": "store", "metavar": "N", "type": int,
                              "default": 500,

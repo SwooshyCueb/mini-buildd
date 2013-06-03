@@ -257,7 +257,7 @@ Visit mini-buildd   : {url}
 Manage your account : {url}accounts/login/
 """.format(id=self.identity, host=self.hostname, email=self.email_address, reason=reason, url=self.mbd_get_http_url())
 
-    def mbd_notify(self, subject, body, repository=None, changes=None, msglog=LOG):
+    def mbd_notify(self, subject, body, repository=None, changes=None, distribution=None, msglog=LOG):
         m_to = []
         m_to_raw = []
         m_automatic_to_allow = re.compile(self.allow_emails_to)
@@ -274,6 +274,15 @@ Manage your account : {url}accounts/login/
             else:
                 msglog.warn("Notify: Skipping {t} address: {a}: Not allowed (only '{r}')".format(t=typ, a=address, r=self.allow_emails_to))
 
+        def get_subscriptions():
+            package = changes.get("Source", None)
+            real_distribution = distribution
+            if real_distribution is None:
+                # If distribution was not given explicitely, try from changes, resolving meta dists if needed.
+                changes_dist = changes.get("Distribution", "")
+                real_distribution = mini_buildd.models.repository.get_meta_distribution_map().get(changes_dist, changes_dist)
+            return self.mbd_get_daemon().get_subscription_objects().filter(package__in=[package, ""], distribution__in=[real_distribution, ""])
+
         for m in self.notify.all():
             add_to(m.mbd_unicode(), "daemon", automatic=False)
         if repository:
@@ -288,7 +297,7 @@ Manage your account : {url}accounts/login/
                 if repository.notify_changed_by and changed_by:
                     add_to(changed_by, "changed-by", automatic=True)
 
-                for s in self.mbd_get_daemon().get_subscriptions(changes):
+                for s in get_subscriptions():
                     address = "{n} <{a}>".format(n=s.subscriber.get_full_name(), a=s.subscriber.email)
                     if s.subscriber.is_active:
                         add_to(address, "subscriber", automatic=False)

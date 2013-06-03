@@ -793,6 +793,7 @@ DscIndices: Sources Release . .gz .bz2
                                                body,
                                                repository=self,
                                                changes=mini_buildd.changes.Changes(pkg_log.changes) if pkg_log.changes else None,
+                                               distribution=distribution,
                                                msglog=msglog)
 
     def _mbd_package_purge_orphaned_logs(self, package, msglog=LOG):

@@ -469,13 +469,6 @@ class Daemon():
         return mini_buildd.models.subscription.Subscription.objects
 
     @classmethod
-    def get_subscriptions(cls, changes):
-        package = changes.get("Source", None)
-        changes_dist = changes.get("Distribution", None)
-        distribution = mini_buildd.models.repository.get_meta_distribution_map().get(changes_dist, changes_dist)
-        return cls.get_subscription_objects().filter(package__in=[package, ""], distribution__in=[distribution, ""])
-
-    @classmethod
     def parse_distribution(cls, dist):
         """
         Get repository, distribution and suite model objects (plus rollback no) from distribtion string.

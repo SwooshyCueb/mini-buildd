@@ -855,7 +855,7 @@ DscIndices: Sources Release . .gz .bz2
                 raise Exception("Package '{p}' not in '{d}'".format(p=package, d=src_dist))
 
             # Check that version is not already migrated
-            dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist, version=version)
+            dst_pkg = self._mbd_package_find(pkg_show, distribution=dst_dist)
             if dst_pkg is not None and src_pkg["sourceversion"] == dst_pkg["sourceversion"]:
                 raise Exception("Version '{v}' already migrated to '{d}'".format(v=src_pkg["sourceversion"], d=dst_dist))
 

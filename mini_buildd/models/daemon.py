@@ -261,6 +261,10 @@ Manage your account : {url}accounts/login/
         m_to = []
         m_to_raw = []
         m_automatic_to_allow = re.compile(self.allow_emails_to)
+        # Include all plain 'msglogs' so far
+        m_msglog = getattr(msglog, "plain", "")
+        if m_msglog:
+            m_msglog = "Daemon messages:\n{msgs}---\n".format(msgs=m_msglog)
 
         def add_to(address, typ, automatic):
             address_raw = email.utils.parseaddr(address)[1]
@@ -268,7 +272,7 @@ Manage your account : {url}accounts/login/
                 if address_raw in m_to_raw:
                     msglog.debug("Notify: Skipping {t} address: {a}: Duplicate".format(t=typ, a=address))
                 else:
-                    m_to.append((subject, body + self._mbd_notify_signature(typ), self.email_address, [address]))
+                    m_to.append((subject, m_msglog + body + self._mbd_notify_signature(typ), self.email_address, [address]))
                     m_to_raw.append(address_raw)
                     msglog.info("Notify: Adding {t} address: {a}".format(t=typ, a=address))
             else:

@@ -93,7 +93,10 @@ class Uploader(GnuPGPublicKey):
         readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
 
     def mbd_unicode(self):
-        return "'{u}': {s}".format(u=self.user, s=super(Uploader, self).mbd_unicode())
+        return "'{u}' may upload to '{r}' with key '{s}'".format(
+            u=self.user,
+            r=",".join([r.identity for r in self.may_upload_to.all()]),
+            s=super(Uploader, self).mbd_unicode())
 
 
 def cb_create_user_profile(sender, instance, created, **kwargs):

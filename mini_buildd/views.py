@@ -174,6 +174,9 @@ def api(request):
             else:
                 return error401_unauthorized(request, "API: '{c}': Needs to be confirmed".format(c=command))
 
+        # Show api command name and user calling it.
+        api_cmd.msglog.info("API call '{c}' by user '{u}'".format(c=command, u=request.user))
+
         # Run API call (dep-injection via daemon object)
         api_cmd.run(mini_buildd.daemon.get())
 

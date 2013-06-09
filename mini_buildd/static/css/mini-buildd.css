@@ -173,6 +173,11 @@ a:hover
 
 /* MODEL STATUS DISPLAYS */
 
+#mbd_content .status.Removed
+{
+	color: red;
+}
+
 #mbd_content .status.Prepared
 {
 	color: blue;
@@ -310,6 +315,13 @@ a:hover
 	text-align: left;
 	color: blue;
 	font-family: monospace;
+	margin: 15px 15px 10px 15px;
+}
+
+/* Registration doh wtf */
+#mbd_registration div
+{
+	text-align: left;
 	margin: 15px 15px 10px 15px;
 }
 

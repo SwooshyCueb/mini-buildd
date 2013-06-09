@@ -64,13 +64,14 @@ different components), or just as safeguard
     def __init__(self, args, request=None):
         self.args_help = {}
         self.args = self._filter_api_args(args, self.args_help)
+        self.request = request
         self.msglog = MsgLog(LOG, request)
         self._plain_result = ""
 
     def __getstate__(self):
         "Log object cannot be pickled."
         pstate = copy.copy(self.__dict__)
-        del pstate["msglog"]
+        del pstate["msglog", "request"]
         return pstate
 
     def __unicode__(self):
@@ -518,6 +519,36 @@ class Retry(Command):
         self._plain_result = os.path.basename(os.path.basename(pkg_log.changes))
 
 
+class SetUserKey(Command):
+    """
+    Set a user's GnuPG public key.
+    """
+    COMMAND = "setuserkey"
+    AUTH = Command.LOGIN
+    CONFIRM = True
+    ARGUMENTS = [
+        (["key"], {"help": "GnuPG public key; multiline inputs will be handled as ascii armored full key, one-liners as key ids"})]
+
+    def run(self, _daemon):
+        uploader = self.request.user.get_profile()
+        uploader.Admin.mbd_remove(self.request, uploader)
+        key = self.args["key"]
+
+        if "\n" in key:
+            self.msglog.info("Using given key argument as full ascii-armored GPG key")
+            uploader.key_id = ""
+            uploader.key = key
+        else:
+            self.msglog.info("Using given key argument as key ID")
+            uploader.key_id = key
+            uploader.key = ""
+
+        uploader.Admin.mbd_prepare(self.request, uploader)
+        uploader.Admin.mbd_check(self.request, uploader)
+        self.msglog.info("Uploader profile changed: {u}".format(u=uploader))
+        self.msglog.warn("Your uploader profile must be (re-)activated by the mini-buildd staff before you can actually use it.")
+
+
 class Subscription(Command):
     """Manage subscriptions to package notifications.
 
@@ -577,6 +608,7 @@ COMMANDS = {Status.COMMAND: Status,
             Port.COMMAND: Port,
             PortExt.COMMAND: PortExt,
             Retry.COMMAND: Retry,
+            SetUserKey.COMMAND: SetUserKey,
             Subscription.COMMAND: Subscription,
             }
 

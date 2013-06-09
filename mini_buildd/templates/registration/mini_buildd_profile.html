@@ -1,0 +1,43 @@
+{% extends "registration/base.html" %}
+
+{% block title %}Manage your profile{% endblock %}
+
+{% block reg_content %}
+	<h3>Package subscriptions</h3>
+	<p>
+		<em>Note:</em> At the moment, you can only list or
+		clear <em>all</em> you subscriptions here. You may handle
+		per package subscription when logged in viewing a package
+		via "show".
+	</p>
+	<p>
+		<a class="button-rebuild" title="List" href="/mini_buildd/api?command=subscription&amp;action=list&amp;subscription=:&amp;output=referer">List</a>
+		<a class="button-remove" title="Clear" href="/mini_buildd/api?command=subscription&amp;action=remove&amp;subscription=:&amp;output=referer">Clear</a>
+	</p>
+	<hr/>
+
+	<h3>Package uploads</h3>
+	<p>
+		<tt class="status {{ user.get_profile.get_status_display }}">{{ user.get_profile }}</tt>
+	</p>
+
+	<p>
+		<em>Note:</em> Setting a new key will <em>automatically
+		deactivate your uploader profile</em>; an administrator
+		needs to (verify your key and) manually re-activate you
+		later.
+	</p>
+
+	<div id="mbd_registration">
+		<form action="/mini_buildd/api" method="get">
+			<div>
+				<input type="hidden" name="command" value="setuserkey" />
+				<textarea name="key" title="Full ascii-armored GnuPG public key or one-line key ID (to be found on the keyserver)" cols="80" rows="10">{{ user.get_profile.key }}</textarea>
+				<input type="hidden" name="output" value="referer" />
+			</div>
+			<div>
+				<button type="submit" title="Set new user GPG public key">Set new key</button>
+			</div>
+		</form>
+	</div>
+{% endblock %}

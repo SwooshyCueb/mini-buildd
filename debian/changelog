@@ -1,3 +1,24 @@
+mini-buildd (1.0.0~beta.15) experimental; urgency=low
+
+  Fifteenths beta. New "setuserkey" command, minor usability fixes, and
+  more.
+  * [14715b4] notify: Fix typo in get_subscriptions() (Fixes subscriptions with dist != "").
+  * [3809641] notify: Use actual distribution (instead of changes' distribution) where available (Fixes subscriptions on non-uploadable dists).
+  * [743741c] api(start,stop): Change needed auth to "ADMIN" (was "STAFF").
+  * [7bb0f47] api(list): Change needed auth to "LOGIN" (was "NONE").
+  * [8c67c79] api(logcat): Change needed auth to "STAFF" (was "NONE").
+  * [0502d98] control: Update Std-Ver to 3.9.4 (no changes needed).
+  * [054bae8] templates: Fix "notes" template, and update po files.
+  * [baf0b87] migration: Fix wrong call of package_find (Fixes rollback handling on migrate())
+  * [77e8abe] notify: Include msglog in top of mail bodies.
+  * [e710ded] api: Add info message about api call + user before any run.
+  * [58f7790] uploader: Improve default display.
+  * [481a648] mini-buildd-tool: Use '[HOST] MSG' format for daemon message output.
+  * [4bfe8e2] html: Some w3c fixes for p-d-registration 0.9.
+  * [fdb943b] api/html: Add "setuserkey" API command -- let user set its own public key.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 09 Jun 2013 18:42:01 +0200
+
 mini-buildd (1.0.0~beta.14) experimental; urgency=low
 
   Fourteenths beta. Wrap up for django 1.5+p-d-registration (now in

@@ -3,12 +3,12 @@
 {% block title %}Register account{% endblock %}
 
 {% block reg_content %}
-	<form method="post" action="">
 		<p>
 			<b>Please register a new user account.</b>
 		</p>
 
-		<p>{% csrf_token %}</p>
+	<form method="post" action="">
+		{% csrf_token %}
 		<table>
 			{{ form }}
 		</table>

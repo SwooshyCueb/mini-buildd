@@ -35,11 +35,11 @@ PARSER.add_argument("-O", "--output", action='store', default="plain",
 PARSER.add_argument("-C", "--clear-creds", action='store_true',
                     help="clear credentials cache")
 
-def print_daemon_messages(headers):
+def print_daemon_messages(headers, host):
     "Output daemon messages to stderr"
     msgs_header = "x-mini-buildd-message"
     for msg in [v for k, v in headers.items() if msgs_header == k[:len(msgs_header)]]:
-        print("Daemon message: {m}".format(m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
+        print("[{h}] {m}".format(h=host, m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
 
 def cmd_call(args):
     # Construct base URL form host argument
@@ -69,7 +69,7 @@ def cmd_call(args):
     response = urllib2.urlopen(call_url)
 
     # Output daemon messages to stderr
-    print_daemon_messages(response.headers)
+    print_daemon_messages(response.headers, args.host)
 
     # Output result to stdout
     result = response.read()
@@ -109,7 +109,7 @@ try:
         CREDS_CACHE.clear()
     ARGS.func(ARGS)
 except urllib2.HTTPError as e:
-    print_daemon_messages(e.headers)
+    print_daemon_messages(e.headers, ARGS.host)
     mini_buildd.setup.log_exception(LOG, ARGS.host, e)
     sys.exit(1)
 except Exception as e:

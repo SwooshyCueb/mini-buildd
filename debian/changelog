@@ -1,3 +1,11 @@
+mini-buildd (1.0.0~beta.16) experimental; urgency=low
+
+  Sixteenths beta. Fix two blockers...
+  * [a222820] django 1.5: Set ALLOWED_HOSTS to '*' (omg). (Fixes any http requests when not started with --debug=django).
+  * [4dc1ecb] api.py: Fix broken code in __getstate__ (Fixes api calls with output=python).
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 10 Jun 2013 16:57:04 +0200
+
 mini-buildd (1.0.0~beta.15) experimental; urgency=low
 
   Fifteenths beta. New "setuserkey" command, minor usability fixes, and

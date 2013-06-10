@@ -71,7 +71,8 @@ different components), or just as safeguard
     def __getstate__(self):
         "Log object cannot be pickled."
         pstate = copy.copy(self.__dict__)
-        del pstate["msglog", "request"]
+        del pstate["msglog"]
+        del pstate["request"]
         return pstate
 
     def __unicode__(self):

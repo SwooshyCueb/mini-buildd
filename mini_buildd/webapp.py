@@ -60,6 +60,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             TEMPLATE_DEBUG=debug,
             MESSAGE_LEVEL=django.contrib.messages.constants.DEBUG if debug else django.contrib.messages.constants.INFO,
 
+            ALLOWED_HOSTS=["*"],
+
             EMAIL_HOST=smtp.host,
             EMAIL_PORT=smtp.port,
             EMAIL_USE_TLS=smtp.protocol == "ssmtp",

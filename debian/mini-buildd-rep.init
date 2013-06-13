@@ -78,7 +78,7 @@ stop()
 	echo "down."
 }
 
-reindex()
+_reindex()
 {
 	stop
 
@@ -93,9 +93,22 @@ reindex()
 	start
 }
 
+_touch()
+{
+	local repositories=""
+	if [ "${1}" = "all" ]; then
+		repositories=$(find "/home/mini-buildd/rep" -mindepth 2 -maxdepth 2 -type f -name "Packages" -printf "%h ")
+	else
+		repositories="/home/mini-buildd/rep/${1}"
+	fi
+	echo "Touching: ${repositories}"
+	touch ${repositories} || true
+}
+
 usage()
 {
-	echo "Usage: $0 {start|stop|restart|force-reload|reindex all|DIST}" >&2
+	echo "Usage: $0 start|stop|restart|force-reload" >&2
+	echo "Usage: $0 reindex|touch all|DIST" >&2
 	exit 1
 }
 
@@ -110,9 +123,9 @@ case "$1" in
 		stop
 		start
 		;;
-	reindex)
+	reindex|touch)
 		[ -n "${2}" ] || usage
-		reindex "${2}"
+		_${1} "${2}"
 		;;
 	*)
 		usage

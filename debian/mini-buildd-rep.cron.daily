@@ -34,3 +34,15 @@ if ! su - mini-buildd -c "/usr/share/mini-buildd/mbd-update-rep" >${MBD_TMP_LOG}
 		cat ${MBD_TMP_LOG}
 	) | mail -s "ERRORS in: ${0}" "${mbd_mail}"
 fi
+
+# Touch all indices daily. In practice, mini-dinstall is apt to
+# forget to trigger a new apt-ftparchive call update on changes,
+# leaving outdated package indices. This just triggers this
+# call for all repos.
+MBD_TMP_LOG2=$(mktemp /tmp/mini-buildd-rep.cron.daily.XXXXXX)
+trap "rm -f ${MBD_TMP_LOG2}" EXIT
+
+# Send mail on errors only
+if ! /etc/init.d/mini-buildd-rep touch all >${MBD_TMP_LOG2} 2>&1; then
+	cat ${MBD_TMP_LOG2} | mail -s "ERRORS in: ${0}" "${mbd_mail}"
+fi

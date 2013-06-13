@@ -1,3 +1,14 @@
+mini-buildd (0.8.21~ablgSID+1) sid-ablg-unstable; urgency=low
+
+  0.8.x 'last generation' compat/bugfix release (for ablg repo only).
+  * [29edc2e] debian/QUICKSTART: Add this from trunk -- this is for 0.8.x only.
+  * [a294b9b] lib/mbd-update-bld: Update to schroot namespaces as suggested by Marc Haber (see #678509).
+  * [dd33f61] init/cron: Add new "touch" action for init, and run it daily (workaround for outdated indices files).
+  * MINI_BUILDD: BACKPORT_MODE
+  * MINI_BUILDD: AUTO_BACKPORTS: wheezy-ablg-unstable, squeeze-ablg-unstable, lenny-ablg-unstable
+
+ -- Stephan Sürken <absurd@debian.org>  Thu, 13 Jun 2013 18:53:36 +0200
+
 mini-buildd (0.8.20) unstable; urgency=low
 
   * [8a55182] debian/mini-buildd-bld|common postinst/postrm: Use adduser

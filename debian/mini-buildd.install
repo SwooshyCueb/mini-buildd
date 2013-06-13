@@ -1,2 +1,3 @@
 usr/bin/mini-buildd usr/sbin/
 debian/mini-buildd-sudoers etc/sudoers.d
+build/mini-buildd.bash-completion etc/bash_completion.d/

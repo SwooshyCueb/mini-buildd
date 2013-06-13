@@ -11,6 +11,8 @@ import daemon
 import logging
 import logging.handlers
 
+import argcomplete
+
 import mini_buildd.misc
 import mini_buildd.setup
 import mini_buildd.httpd
@@ -64,6 +66,7 @@ Comma-separated list of special debugging options:
         group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
                               help="INTERNAL USE ONLY, use with care! Bulk-remove associated data of all objects that might have produced artifacts on the system.")
 
+        argcomplete.autocomplete(parser)
         args = parser.parse_args()
 
         # Arguments that imply foreground mode

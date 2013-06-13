@@ -12,6 +12,7 @@ Build-Depends: debhelper (>= 8.1.0~),
                python-pygraphviz,
                help2man,
                python-argparse,
+               python-argcomplete,
                python-daemon (>= 1.5.5),
                python-debian (>= 0.1.18~),
                python-cherrypy3,
@@ -29,6 +30,7 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          python-argparse,
+         python-argcomplete,
          python-debian (>= 0.1.18~)
 Description: Minimal Debian build daemon: python library and user tool
  mini-buildd is an easy-to-configure Debian autobuilder and

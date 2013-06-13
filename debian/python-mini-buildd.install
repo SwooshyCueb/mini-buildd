@@ -1,2 +1,3 @@
 usr/lib
 usr/bin/mini-buildd-tool usr/bin/
+build/mini-buildd-tool.bash-completion etc/bash_completion.d/

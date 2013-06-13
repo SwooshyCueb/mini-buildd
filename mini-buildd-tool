@@ -6,11 +6,12 @@ from __future__ import print_function
 import sys
 import os
 import locale
-import argparse
 import urllib
 import urllib2
+import argparse
 import logging
-import logging.handlers
+
+import argcomplete
 
 import mini_buildd.misc
 import mini_buildd.setup
@@ -97,6 +98,7 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
                             login=cmd_cls.LOGIN)
 
 # Parse and run
+argcomplete.autocomplete(PARSER)
 ARGS = PARSER.parse_args()
 LOG.setLevel(logging.WARNING - (10 * (min(2, ARGS.verbosity) - min(2, ARGS.terseness))))
 

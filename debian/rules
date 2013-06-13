@@ -9,6 +9,10 @@ override_dh_auto_build:
 	dh_auto_build
 	python setup.py build_sphinx --source-dir=build/sphinx
 
+	# Create bash completion scripts via python-argcomplete
+	register-python-argcomplete mini-buildd | sed 's/_python_argcomplete/_mini_buildd_argcomplete/g' >build/mini-buildd.bash-completion
+	register-python-argcomplete mini-buildd-tool | sed 's/_python_argcomplete/_mini_buildd_tool_argcomplete/g' >build/mini-buildd-tool.bash-completion
+
 	# Code to enable latex+pdf manual: Deps: texlive-latex-extra texlive-fonts-recommended
 	#sphinx-build -b latex ./build/sphinx ./build/sphinx/latex
 	#make --directory ./build/sphinx/latex

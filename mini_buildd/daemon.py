@@ -590,16 +590,28 @@ class Daemon():
                                                                                      "source"))
 
             # Generate Changes file
+            def _gen_changes(out):
+                subprocess.check_call(["dpkg-genchanges",
+                                       "-S",
+                                       "-sa",
+                                       "-v{v}".format(v=original_version),
+                                       "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
+                                      cwd=dst_path,
+                                      env=env,
+                                      stdout=out)
+
+            def _gen_changes_shell(out):
+                LOG.warn("check_call w/ shalle=True: Proposed workaround for random subprocess encoding exception")
+                subprocess.check_call("dpkg-genchanges -S -sa -v{v} -D'X-Mini-Buildd-Originally-Changed-By={a}'".format(v=original_version, a=original_author),
+                                      cwd=dst_path,
+                                      env=env,
+                                      stdout=out,
+                                      shell=True)
+
             with mini_buildd.misc.open_utf8(changes, "w") as c:
                 try:
-                    subprocess.check_call(["dpkg-genchanges",
-                                           "-S",
-                                           "-sa",
-                                           "-v{v}".format(v=original_version),
-                                           "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
-                                          cwd=dst_path,
-                                          env=env,
-                                          stdout=c)
+                    #_gen_changes(c)
+                    _gen_changes_shell(c)
                 except:
                     LOG.warn("TMP DEBUG0: {v}/{a}".format(v=original_version.__class__.__name__, a=original_author.__class__.__name__))
                     LOG.warn("TMP DEBUG1: {v}/{a}".format(v=original_version, a=original_author))

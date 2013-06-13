@@ -47,6 +47,19 @@ Repository maintenance
 Using the repository
 ********************
 
+.. todo:: **BUG**: *Occasional encoding error on ports with Uploader name with non-ascii chars*
+
+	 The log line looks something like::
+
+		 UnicodeEncodeError: 'ascii' codec can't encode character u'\xeb' in position 43: ordinal not in range(128)
+
+	 This 'usually occurs' when mini-buildd has run for some
+	 days. Just restarting mini-buildd fixes this phaenomena for
+	 some time. Triggered by 'subprocess.check_call' on
+	 'dpkg-genchanges' in daemon.py::port.
+
+	 [Help needed. Currently testing a proposed workaround using shell mode.]
+
 .. todo:: **BUG**: *lintian version from host is used for all distributions*
 
 	 We use sbuild's --run-lintian option, which is currently runs lintian

@@ -59,32 +59,6 @@
 			{% block content %}{% endblock %}
 		</div>
 
-		<!-- Show subscriptions menu for views giving a 'repositories' list -->
-		{% if repositories %}
-			<div id="mbd_subscription">
-				<div>
-					<form action="/mini_buildd/api" method="get">
-						<div>
-							<em>Subscriptions to <b>{% if api_cmd.args.package %}{{ api_cmd.args.package }}{% else %}any package{% endif %}</b> in:</em>
-							<input type="hidden" name="command" value="subscription" />
-							<select name="subscription" title="Limit to a distribution">
-								<option value="{{ api_cmd.args.package }}:">any distribution</option>
-								{% for r in repositories %}
-									{% for d in r.mbd_distributions %}
-										<option value="{{ api_cmd.args.package }}:{{ d }}">{{ d }}</option>
-									{% endfor %}
-								{% endfor %}
-							</select>
-							<input type="hidden" name="output" value="referer" />
-							<input type="submit" name="action" value="list" title="List package subscriptions" />
-							<input type="submit" name="action" value="add" title="Add a package subscription" />
-							<input type="submit" name="action" value="remove" title="Remove package subscriptions" />
-						</div>
-					</form>
-				</div>
-			</div>
-		{% endif %}
-
 		<!-- Footer -->
 		<div id="mbd_footer">
 			<p><a class="homelink" title="mini-buildd Home" href="/mini_buildd/">{% mbd_version %}</a><span class="page-footer">{% block mbd_page_footer %}{% endblock %}</span></p>

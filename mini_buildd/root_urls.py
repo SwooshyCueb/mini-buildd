@@ -17,7 +17,5 @@ urlpatterns = django.conf.urls.defaults.patterns(
     (r"^admin/doc/", django.conf.urls.defaults.include("django.contrib.admindocs.urls")),
     (r"^admin/", django.conf.urls.defaults.include(django.contrib.admin.site.urls)),
     # registration
-    (r'^accounts/', django.conf.urls.defaults.include("registration.backends.default.urls")),
-    (r"^accounts/mini_buildd/profile/$", django.views.generic.base.TemplateView.as_view(template_name="registration/mini_buildd_profile.html")),)
-
+    (r'^accounts/', django.conf.urls.defaults.include("registration.backends.default.urls")),)
 # pylint: enable=E1120

@@ -113,4 +113,8 @@
 			</div>
 		{% endfor %}
 	</div>
+
+	<!-- Manage package specific subscriptions -->
+	{% include "mini_buildd/snippet_manage_subscriptions.html" with repositories=repositories package=api_cmd.args.package %}
+
 {% endblock %}

@@ -7,14 +7,15 @@ import django.conf.urls.defaults
 import mini_buildd.views
 import mini_buildd.models.repository
 
+# pylint: disable=E1120
 urlpatterns = django.conf.urls.defaults.patterns(
     '',
     (r"^$", mini_buildd.views.home),
     (r"^log/(.+)/(.+)/(.+)/$", mini_buildd.views.log),
-    # pylint: disable=E1120
     (r"^repositories/(?P<pk>.+)/$", django.views.generic.detail.DetailView.as_view(model=mini_buildd.models.repository.Repository)),
-    # pylint: enable=E1120
-    (r"^api$", mini_buildd.views.api))
+    (r"^api$", mini_buildd.views.api),
+    (r"^accounts/profile/$", mini_buildd.views.AccountProfileView.as_view(template_name="mini_buildd/account_profile.html")),)
+# pylint: enable=E1120
 
 django.conf.urls.handler400 = mini_buildd.views.error400_bad_request
 django.conf.urls.handler401 = mini_buildd.views.error401_unauthorized

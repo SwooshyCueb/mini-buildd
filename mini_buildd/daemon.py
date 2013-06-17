@@ -7,7 +7,6 @@ import time
 import shutil
 import threading
 import subprocess
-import contextlib
 import Queue
 import collections
 import urllib2
@@ -243,29 +242,56 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                                                      v=self.version))
 
 
-@contextlib.contextmanager
-def gen_keyring():
-    "Generate all upload and remote keyrings."
-    keyring = {"uploader": {}, "remotes": mini_buildd.gnupg.TmpGnuPG()}
+class Keyrings(object):
+    """
+    Hold/manage all gnupg keyrings (for remotes and all repository uploaders).
+    """
+    def __init__(self):
+        self._remotes = self._gen_remotes()
+        self._uploaders = self._gen_uploaders()
+        self._needs_update = False
 
-    # keyring["uploader"]: All uploader keyrings for each repository.
-    for r in mini_buildd.models.repository.Repository.mbd_get_active():
-        keyring["uploader"][r.identity] = r.mbd_get_uploader_keyring()
-        # Always add our key too for internal builds
-        keyring["uploader"][r.identity].add_pub_key(get().model.mbd_get_pub_key())
+    def set_needs_update(self):
+        self._needs_update = True
 
-    # keyring["remotes"]: Remotes keyring to authorize buildrequests and buildresults
-    # Always add our own key
-    keyring["remotes"].add_pub_key(get().model.mbd_get_pub_key())
-    for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
-        keyring["remotes"].add_pub_key(r.key)
-        LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name))
+    def close(self):
+        self._remotes.close()
+        for u in self._uploaders.values():
+            u.close()
 
-    try:
-        yield keyring
-    finally:
-        for g in keyring["uploader"].values() + [keyring["remotes"]]:
-            g.close()
+    def _update(self):
+        if self._needs_update:
+            self.close()
+            self.__init__()
+
+    def get_remotes(self):
+        self._update()
+        return self._remotes
+
+    def get_uploaders(self):
+        self._update()
+        return self._uploaders
+
+    @classmethod
+    def _gen_remotes(cls):
+        remotes = mini_buildd.gnupg.TmpGnuPG()
+        # keyring["remotes"]: Remotes keyring to authorize buildrequests and buildresults
+        # Always add our own key
+        remotes.add_pub_key(get().model.mbd_get_pub_key())
+        for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
+            remotes.add_pub_key(r.key)
+            LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name))
+        return remotes
+
+    @classmethod
+    def _gen_uploaders(cls):
+        "All uploader keyrings for each repository."
+        uploaders = {}
+        for r in mini_buildd.models.repository.Repository.mbd_get_active():
+            uploaders[r.identity] = r.mbd_get_uploader_keyring()
+            # Always add our key too for internal builds
+            uploaders[r.identity].add_pub_key(get().model.mbd_get_pub_key())
+        return uploaders
 
 
 def run():
@@ -273,72 +299,68 @@ def run():
     mini-buildd 'daemon engine' run.
     """
 
-    with gen_keyring() as keyring:
-        ftpd_thread = mini_buildd.misc.run_as_thread(
-            mini_buildd.ftpd.run,
-            bind=get().model.ftpd_bind,
-            queue=get().incoming_queue)
+    ftpd_thread = mini_buildd.misc.run_as_thread(
+        mini_buildd.ftpd.run,
+        bind=get().model.ftpd_bind,
+        queue=get().incoming_queue)
 
-        builder_thread = mini_buildd.misc.run_as_thread(
-            mini_buildd.builder.run,
-            daemon_=get(),
-            remotes_keyring=keyring["remotes"])
+    builder_thread = mini_buildd.misc.run_as_thread(
+        mini_buildd.builder.run,
+        daemon_=get())
 
-        while True:
-            event = get().incoming_queue.get()
-            if event == "SHUTDOWN":
-                break
+    while True:
+        event = get().incoming_queue.get()
+        if event == "SHUTDOWN":
+            break
 
+        try:
+            LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
+                     format(len(get().packages), get().incoming_queue.qsize()))
+
+            changes = None
+            changes = mini_buildd.changes.Changes(event)
+
+            if changes.type == changes.TYPE_BREQ:
+                # Build request: builder
+
+                def queue_buildrequest(event):
+                    "Queue in extra thread so we don't block here in case builder is busy."
+                    get().build_queue.put(event)
+                mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
+
+            else:
+                # User upload or build result: packager
+                mini_buildd.packager.run(
+                    daemon=get(),
+                    changes=changes)
+
+        except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
+
+            # Try to notify
             try:
-                LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
-                         format(len(get().packages), get().incoming_queue.qsize()))
-
-                changes = None
-                changes = mini_buildd.changes.Changes(event)
-
-                if changes.type == changes.TYPE_BREQ:
-                    # Build request: builder
-
-                    def queue_buildrequest(event):
-                        "Queue in extra thread so we don't block here in case builder is busy."
-                        get().build_queue.put(event)
-                    mini_buildd.misc.run_as_thread(queue_buildrequest, daemon=True, event=event)
-
-                else:
-                    # User upload or build result: packager
-                    mini_buildd.packager.run(
-                        daemon=get(),
-                        changes=changes,
-                        remotes_keyring=keyring["remotes"],
-                        uploader_keyrings=keyring["uploader"])
-
+                subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
+                body = mini_buildd.misc.open_utf8(event, "r").read()
+                get().model.mbd_notify(subject, body)
             except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Invalid changes file", e)
+                mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
 
-                # Try to notify
-                try:
-                    subject = "INVALID CHANGES: {c}: {e}".format(c=event, e=e)
-                    body = mini_buildd.misc.open_utf8(event, "r").read()
-                    get().model.mbd_notify(subject, body)
-                except Exception as e:
-                    mini_buildd.setup.log_exception(LOG, "Invalid changes notify failed", e)
+            # Try to clean up
+            try:
+                if changes:
+                    changes.remove()
+                else:
+                    os.remove(event)
+            except Exception as e:
+                mini_buildd.setup.log_exception(LOG, "Invalid changes cleanup failed", e)
 
-                # Try to clean up
-                try:
-                    if changes:
-                        changes.remove()
-                    else:
-                        os.remove(event)
-                except Exception as e:
-                    mini_buildd.setup.log_exception(LOG, "Invalid changes cleanup failed", e)
+        finally:
+            get().incoming_queue.task_done()
 
-            finally:
-                get().incoming_queue.task_done()
-
-        get().build_queue.put("SHUTDOWN")
-        mini_buildd.ftpd.shutdown()
-        builder_thread.join()
-        ftpd_thread.join()
+    get().build_queue.put("SHUTDOWN")
+    mini_buildd.ftpd.shutdown()
+    builder_thread.join()
+    ftpd_thread.join()
 
 
 class Daemon():
@@ -354,6 +376,7 @@ class Daemon():
 
         # Vars that are (re)generated when the daemon model is updated
         self.model = None
+        self.keyrings = None
         self.incoming_queue = None
         self.build_queue = None
         self.packages = None
@@ -371,9 +394,14 @@ class Daemon():
             LOG.info("New default Daemon model instance created")
         return model
 
-    def _update_from_model(self):
+    def _update_from_model(self, stop=False):
         self.model = self._new_model_object()
 
+        if not self.keyrings:
+            self.keyrings = Keyrings()
+        elif stop:
+            self.keyrings.close()
+            self.keyrings = None
         self.incoming_queue = Queue.Queue()
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
         self.packages = {}
@@ -429,7 +457,7 @@ class Daemon():
                 self.incoming_queue.put("SHUTDOWN")
                 self.thread.join()
                 self.thread = None
-                self._update_from_model()
+                self._update_from_model(stop=True)
                 msglog.info("Daemon stopped.")
             else:
                 msglog.info("Daemon already stopped.")

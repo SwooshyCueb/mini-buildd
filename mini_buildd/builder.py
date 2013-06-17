@@ -253,7 +253,7 @@ def build_close(daemon, build):
             del daemon.builds[build.key]
 
 
-def build(daemon_, remotes_keyring, breq):
+def build(daemon_, breq):
     build = None
     try:
         # First, get build object. This will automagically set the status right.
@@ -261,7 +261,7 @@ def build(daemon_, remotes_keyring, breq):
         daemon_.builds[build.key] = build
 
         # Authorization
-        remotes_keyring.verify(breq.file_path)
+        daemon_.keyrings.get_remotes().verify(breq.file_path)
 
         # Build if needed (may be just an upload-pending build)
         if build.get_status() < build.BUILDING:
@@ -290,7 +290,7 @@ def build(daemon_, remotes_keyring, breq):
         daemon_.build_queue.task_done()
 
 
-def run(daemon_, remotes_keyring):
+def run(daemon_):
     while True:
         event = daemon_.build_queue.get()
         if event == "SHUTDOWN":
@@ -302,5 +302,4 @@ def run(daemon_, remotes_keyring):
             build,
             daemon=True,
             daemon_=daemon_,
-            remotes_keyring=remotes_keyring,
             breq=mini_buildd.changes.Changes(event))

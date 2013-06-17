@@ -60,7 +60,7 @@ class Package(mini_buildd.misc.Status):
     def took(self):
         return round(mini_buildd.misc.timedelta_total_seconds(self.finished - self.started), 1) if self.finished else "n/a"
 
-    def precheck(self, uploader_keyrings):
+    def precheck(self):
         # Get/check repository, distribution and suite for changes
         self.repository, self.distribution, self.suite, rollback = self.daemon.parse_distribution(self.changes["Distribution"])
         # Actual full distribution string; A shortcut for
@@ -80,7 +80,7 @@ class Package(mini_buildd.misc.Status):
         if self.repository.allow_unauthenticated_uploads:
             LOG.warn("Unauthenticated uploads allowed. Using '{c}' unchecked".format(c=self.changes.file_name))
         else:
-            uploader_keyrings[self.repository.identity].verify(self.changes.file_path)
+            self.daemon.keyrings.get_uploaders()[self.repository.identity].verify(self.changes.file_path)
 
         # Repository package prechecks
         self.repository.mbd_package_precheck(self.distribution, self.suite, self.changes["Source"], self.changes["Version"])
@@ -99,8 +99,8 @@ class Package(mini_buildd.misc.Status):
                 # Upload failure build result to ourselves
                 breq.upload_failed_buildresult(self.daemon.model.mbd_gnupg, self.daemon.model.mbd_get_ftp_hopo(), 100, "upload-failed", e)
 
-    def add_buildresult(self, bres, remotes_keyring):
-        remotes_keyring.verify(bres.file_path)
+    def add_buildresult(self, bres):
+        self.daemon.keyrings.get_remotes().verify(bres.file_path)
 
         arch = bres["Architecture"]
 
@@ -263,7 +263,7 @@ def package_close(daemon, package):
         del daemon.packages[package.pid]
 
 
-def run(daemon, changes, remotes_keyring, uploader_keyrings):
+def run(daemon, changes):
     pid = changes.get_pkg_id()
 
     if changes.type == changes.TYPE_BRES:
@@ -273,7 +273,7 @@ def run(daemon, changes, remotes_keyring, uploader_keyrings):
         package = daemon.packages[pid]
 
         try:
-            package.add_buildresult(changes, remotes_keyring)
+            package.add_buildresult(changes)
             if package.finished:
                 package.install()
                 package.set_status(package.INSTALLED)
@@ -290,7 +290,7 @@ def run(daemon, changes, remotes_keyring, uploader_keyrings):
         package = mini_buildd.packager.Package(daemon, changes)
         daemon.packages[pid] = package
         try:
-            package.precheck(uploader_keyrings)
+            package.precheck()
             package.set_status(package.BUILDING)
         except Exception as e:
             package.set_status(package.REJECTED, unicode(e))

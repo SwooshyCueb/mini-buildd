@@ -7,7 +7,6 @@ import logging
 
 import mini_buildd.misc
 
-from mini_buildd.models.msglog import MsgLog
 LOG = logging.getLogger(__name__)
 
 
@@ -61,11 +60,11 @@ different components), or just as safeguard
         dummy = {}
         return cls._filter_api_args({}, dummy, set_if_missing=True)
 
-    def __init__(self, args, request=None):
+    def __init__(self, args, request=None, msglog=LOG):
         self.args_help = {}
         self.args = self._filter_api_args(args, self.args_help)
         self.request = request
-        self.msglog = MsgLog(LOG, request)
+        self.msglog = msglog
         self._plain_result = ""
 
     def __getstate__(self):
@@ -96,8 +95,8 @@ class Status(Command):
     """
     COMMAND = "status"
 
-    def __init__(self, args, request=None):
-        super(Status, self).__init__(args, request)
+    def __init__(self, args, request=None, msglog=LOG):
+        super(Status, self).__init__(args, request, msglog)
 
         self.version = "-1"
         self.http = ""
@@ -289,8 +288,8 @@ class List(Command):
                             "default": "",
                             "help": "package type: dsc, deb or udeb (like reprepo --type)"})]
 
-    def __init__(self, args, request=None):
-        super(List, self).__init__(args, request)
+    def __init__(self, args, request=None, msglog=LOG):
+        super(List, self).__init__(args, request, msglog)
         self.repositories = {}
 
     def run(self, daemon):
@@ -344,8 +343,8 @@ class Show(Command):
                                "default": False,
                                "help": "verbose output"})]
 
-    def __init__(self, args, request=None):
-        super(Show, self).__init__(args, request)
+    def __init__(self, args, request=None, msglog=LOG):
+        super(Show, self).__init__(args, request, msglog)
         # List of tuples: (repository, result)
         self.repositories = []
 
@@ -567,7 +566,7 @@ class Subscription(Command):
         package, _sep, distribution = self.args["subscription"].partition(":")
 
         def _filter():
-            for s in daemon.get_subscription_objects().filter(subscriber=self.msglog.request.user):
+            for s in daemon.get_subscription_objects().filter(subscriber=self.request.user):
                 if (package == "" or s.package == package) and (distribution == "" or s.distribution == distribution):
                     yield s
 
@@ -580,7 +579,7 @@ class Subscription(Command):
             self._plain_result = "\n".join(["{s}.".format(s=subscription) for subscription in _filter()])
 
         elif self.args["action"] == "add":
-            subscription, created = daemon.get_subscription_objects().get_or_create(subscriber=self.msglog.request.user,
+            subscription, created = daemon.get_subscription_objects().get_or_create(subscriber=self.request.user,
                                                                                     package=package,
                                                                                     distribution=distribution)
             self._plain_result = "{a}: {s}.".format(a="Added" if created else "Exists", s=subscription)

@@ -169,7 +169,7 @@ def api(request):
             return error401_unauthorized(request, "API: '{c}': Needs superuser login".format(c=command))
 
         # Generate command object
-        api_cmd = api_cls(request.GET, request)
+        api_cmd = api_cls(request.GET, request, msglog=MsgLog(LOG, request))
 
         output = request.GET.get("output", "html")
 

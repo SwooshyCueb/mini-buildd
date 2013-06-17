@@ -5,6 +5,7 @@ import os
 import re
 import time
 import shutil
+import tempfile
 import threading
 import subprocess
 import Queue
@@ -618,32 +619,50 @@ class Daemon():
                                                                                      "source"))
 
             # Generate Changes file
-            def _gen_changes(out):
-                subprocess.check_call(["dpkg-genchanges",
-                                       "-S",
-                                       "-sa",
-                                       "-v{v}".format(v=original_version),
-                                       "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
-                                      cwd=dst_path,
-                                      env=env,
-                                      stdout=out)
+            def _gen_changes():
+                with mini_buildd.misc.open_utf8(changes, "w") as out:
+                    subprocess.check_call(["dpkg-genchanges",
+                                           "-S",
+                                           "-sa",
+                                           "-v{v}".format(v=original_version),
+                                           "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
+                                          cwd=dst_path,
+                                          env=env,
+                                          stdout=out,
+                                          stderr=err)
 
-            def _gen_changes_shell(out):
-                LOG.warn("check_call w/ shalle=True: Proposed workaround for random subprocess encoding exception")
-                subprocess.check_call("dpkg-genchanges -S -sa -v{v} -D'X-Mini-Buildd-Originally-Changed-By={a}'".format(v=original_version, a=original_author),
+            def _gen_changes_shell():
+                LOG.warn("check_call w/ shell=True: Proposed workaround for random subprocess encoding exception")
+                with mini_buildd.misc.open_utf8(changes, "w") as out:
+                    subprocess.check_call("dpkg-genchanges -S -sa -v{v} -D'X-Mini-Buildd-Originally-Changed-By={a}'".format(v=original_version, a=original_author),
+                                          cwd=dst_path,
+                                          env=env,
+                                          stdout=out,
+                                          stderr=err,
+                                          shell=True)
+
+            def _gen_changes_shell2():
+                LOG.warn("check_call2 w/ shell=True: Proposed workaround for random subprocess encoding exception")
+                subprocess.check_call("dpkg-genchanges -S -sa -v{v} -D'X-Mini-Buildd-Originally-Changed-By={a}' >{c}".format(v=original_version,
+                                                                                                                             a=original_author,
+                                                                                                                             c=changes),
                                       cwd=dst_path,
+                                      stderr=err,
                                       env=env,
-                                      stdout=out,
                                       shell=True)
 
-            with mini_buildd.misc.open_utf8(changes, "w") as c:
+            try:
+                err = tempfile.TemporaryFile()
+                _gen_changes()
+            except:
+                LOG.warn("TMP DEBUG0: {v}/{a}".format(v=original_version.__class__.__name__, a=original_author.__class__.__name__))
+                LOG.warn("TMP DEBUG1: {v}/{a}".format(v=original_version, a=original_author))
+                LOG.warn("TMP DEBUG2: {e}".format(e=err.read()))
                 try:
-                    #_gen_changes(c)
-                    _gen_changes_shell(c)
+                    shutil.copyfile(changes, "/tmp/mbd_encod_bug_changes")
                 except:
-                    LOG.warn("TMP DEBUG0: {v}/{a}".format(v=original_version.__class__.__name__, a=original_author.__class__.__name__))
-                    LOG.warn("TMP DEBUG1: {v}/{a}".format(v=original_version, a=original_author))
-                    raise
+                    pass
+                raise
 
             # Sign and add to incoming queue
             self.model.mbd_gnupg.sign(changes)

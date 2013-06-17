@@ -47,10 +47,8 @@ def cmd_call(args):
     base_url = "http://{h}".format(h=args.host)
 
     # Log in if required by this call
-    if mini_buildd.api.COMMANDS[args.command].LOGIN:
-        mini_buildd.misc.web_login(
-            base_url,
-            CREDS_CACHE)
+    if mini_buildd.api.COMMANDS[args.command].AUTH != mini_buildd.api.Command.NONE:
+        mini_buildd.misc.web_login(base_url, CREDS_CACHE)
 
     # Compute api call parameters
     http_args = {}
@@ -93,9 +91,7 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
         cmd_parser.add_argument("--confirm", action='store', default="", metavar="COMMAND",
                                 help="this command needs user confirmation; this option allows to force-bypass that, by explicitly repeating the command")
 
-    cmd_parser.set_defaults(func=cmd_call,
-                            command=cmd,
-                            login=cmd_cls.LOGIN)
+    cmd_parser.set_defaults(func=cmd_call, command=cmd)
 
 # Parse and run
 argcomplete.autocomplete(PARSER)

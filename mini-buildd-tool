@@ -29,46 +29,42 @@ PARSER.add_argument("-v", "--verbose", dest="verbosity", action='count', default
                     help="lower log level. Give twice for max logs")
 PARSER.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
                     help="tighten log level. Give twice for min logs")
-PARSER.add_argument("-H", "--host", action='store', default="localhost:8066",
-                    help="mini-buildd host (http port)")
+PARSER.add_argument("-U", "--url", action='store', default=None,
+                    help="mini-buildd URL. Defaults to the last URL used in credentials, fallback is 'http://localhost:8066'")
 PARSER.add_argument("-O", "--output", action='store', default="plain",
                     help="output type: 'html', 'plain' or 'python'")
-PARSER.add_argument("-C", "--clear-creds", action='store_true',
-                    help="clear credentials cache")
 
 def print_daemon_messages(headers, host):
     "Output daemon messages to stderr"
     msgs_header = "x-mini-buildd-message"
     for msg in [v for k, v in headers.items() if msgs_header == k[:len(msgs_header)]]:
         print("[{h}] {m}".format(h=host, m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
+    print("", file=sys.stderr)
 
 def cmd_call(args):
-    # Construct base URL form host argument
-    base_url = "http://{h}".format(h=args.host)
-
     # Log in if required by this call
-    if mini_buildd.api.COMMANDS[args.command].AUTH != mini_buildd.api.Command.NONE:
-        mini_buildd.misc.web_login(base_url, CREDS_CACHE)
+    if args.command_class.AUTH != mini_buildd.api.Command.NONE:
+        mini_buildd.misc.web_login(args.url, CREDS_CACHE)
 
     # Compute api call parameters
     http_args = {}
-    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "clear_creds", "login", "func"]]:
+    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "clear_creds", "command_class", "func"]]:
         http_args[k] = args.__dict__[k]
 
     # Confirm if required by this call
-    if mini_buildd.api.COMMANDS[args.command].CONFIRM:
+    if args.command_class.CONFIRM:
         if not http_args["confirm"]:
             http_args["confirm"] = raw_input("Repeat command name to confirm: ")
         if not http_args["confirm"]:
             raise Exception("{c}: Not confirmed, skipped.".format(c=args.command))
 
     # Do the api call
-    call_url = "{b}/mini_buildd/api?{a}".format(b=base_url, a=urllib.urlencode(http_args))
+    call_url = "{b}/mini_buildd/api?{a}".format(b=args.url, a=urllib.urlencode(http_args))
     LOG.info("API call URL: {u}".format(u=call_url))
     response = urllib2.urlopen(call_url)
 
     # Output daemon messages to stderr
-    print_daemon_messages(response.headers, args.host)
+    print_daemon_messages(response.headers, args.url)
 
     # Output result to stdout
     result = response.read()
@@ -78,6 +74,17 @@ def cmd_call(args):
         sys.stdout.write(unicode(result, encoding if encoding else "UTF-8").encode(locale.getpreferredencoding()))
     else:
         sys.stdout.write(result)
+
+
+def extra_cmd_credentials(args):
+    global CREDS_CACHE_SAVE
+    CREDS_CACHE_SAVE = False
+    if args.action == "list":
+        CREDS_CACHE.list()
+    elif args.action == "clear":
+        CREDS_CACHE.clear()
+    else:
+        raise Exception("Unknown action '{c}': Use one of 'list' or 'clear'.".format(c=args["action"]))
 
 
 SUBPARSERS = PARSER.add_subparsers()
@@ -91,7 +98,12 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
         cmd_parser.add_argument("--confirm", action='store', default="", metavar="COMMAND",
                                 help="this command needs user confirmation; this option allows to force-bypass that, by explicitly repeating the command")
 
-    cmd_parser.set_defaults(func=cmd_call, command=cmd)
+    cmd_parser.set_defaults(func=cmd_call, command=cmd, command_class=cmd_cls)
+
+# Add local "credentials" sub command
+CREDS_PARSER = SUBPARSERS.add_parser("credentials", help="Manage local user credentials")
+CREDS_PARSER.add_argument("action", action="store", nargs="?", default="list", help="'list' or 'clear' credentials.")
+CREDS_PARSER.set_defaults(func=extra_cmd_credentials)
 
 # Parse and run
 argcomplete.autocomplete(PARSER)
@@ -102,14 +114,25 @@ if LOG.getEffectiveLevel() <= logging.DEBUG:
     mini_buildd.setup.DEBUG = ["exception"]
 
 try:
+    # Generate global credentials object
     CREDS_CACHE = mini_buildd.misc.CredsCache(os.path.join(os.getenv("HOME"), ".mini-buildd-tool.credentials"))
-    if ARGS.clear_creds:
-        CREDS_CACHE.clear()
+    CREDS_CACHE_SAVE = True
+
+    # Set host to last used URL in creds (or fallback) if not given explicitly
+    if not ARGS.url:
+        ARGS.url = CREDS_CACHE.get_last_url("http://localhost:8066")
+
+    # Run the command
     ARGS.func(ARGS)
+
+    # After successful call, save possible changes (new creds, default url) in creds (may be interactive if there are new passwords to store).
+    if CREDS_CACHE_SAVE:
+        CREDS_CACHE.save(ARGS.url)
+
 except urllib2.HTTPError as e:
-    print_daemon_messages(e.headers, ARGS.host)
-    mini_buildd.setup.log_exception(LOG, ARGS.host, e)
+    print_daemon_messages(e.headers, ARGS.url)
+    mini_buildd.setup.log_exception(LOG, ARGS.url, e)
     sys.exit(1)
 except Exception as e:
-    mini_buildd.setup.log_exception(LOG, "{h}".format(h=ARGS.host), e)
+    mini_buildd.setup.log_exception(LOG, "{u}".format(u=ARGS.url), e)
     sys.exit(2)

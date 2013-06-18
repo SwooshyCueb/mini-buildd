@@ -578,6 +578,8 @@ def tail(file_object, lines, line_chars=160):
 
 
 class CredsCache(object):
+    LAST_URL = "__last_url__"
+
     def __init__(self, cache_file):
         self._file = cache_file
         self._creds = {}
@@ -588,16 +590,20 @@ class CredsCache(object):
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
         self._changed = []
 
-    def save(self):
+    def save(self, last_url=None):
         if self._changed:
-            LOG.info("Got new credentials for: {c}".format(c=",".join(self._changed)))
-            answer = raw_input("Cache (unencrypted) in '{f}' (y/n)? ".format(f=self._file))
-            if answer.upper() == "Y":
-                pickle.dump(self._creds,
-                            os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
-                            pickle.HIGHEST_PROTOCOL)
-        else:
-            LOG.debug("No changes in '{c}'".format(c=self._file))
+            answer = raw_input("""
+Got new credentials for: {c}
+Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed), f=self._file))
+            if answer.upper() != "Y":
+                return
+
+        if last_url:
+            self._creds[self.LAST_URL] = last_url
+
+        pickle.dump(self._creds,
+                    os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
+                    pickle.HIGHEST_PROTOCOL)
 
     def clear(self):
         self._creds = {}
@@ -607,14 +613,26 @@ class CredsCache(object):
         else:
             LOG.info("No credentials cache file: {c}".format(c=self._file))
 
+    def list(self):
+        last_url = self.get_last_url()
+        if last_url:
+            print("Last URL: {url}".format(url=last_url))
+        for url, usrpass in self._creds.items():
+            if url != self.LAST_URL:
+                user, _dummy = usrpass
+                print("{mark} {url} {user}".format(mark="*" if url == last_url else " ", url=url, user=user))
+
+    def get_last_url(self, default=None):
+        return self._creds.get(self.LAST_URL, default)
+
     def get(self, url):
         try:
             username, password = self._creds[url]
             LOG.debug("Using creds from cache '{f}': {url}, user {user}".format(f=self._file, url=url, user=username))
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Not in cache {u}".format(u=url), e, logging.DEBUG)
-            username = raw_input("Username: ")
-            password = getpass.getpass("Password: ")
+            username = raw_input("[{u}] Username: ".format(u=url))
+            password = getpass.getpass("[{u}] Password: ".format(u=url))
             self._changed.append(url)
             self._creds[url] = username, password
 
@@ -652,14 +670,13 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
                               "next": next_loc,
                               }))
 
-        # If successfull, next url of the response must match
+        # If successful, next url of the response must match
         if response.geturl() != next_url:
             raise Exception("Wrong creds: Please check username and password")
 
         # Logged in: Install opener, save credentials
         LOG.info("User '{u}' logged in to '{url}'".format(u=username, url=url))
         urllib2.install_opener(opener)
-        credentials.save()
     except Exception as e:
         raise Exception("Login as '{u}' failed: {e}".format(u=username, e=e))
 

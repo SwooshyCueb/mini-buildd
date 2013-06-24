@@ -12,25 +12,6 @@ import mini_buildd.setup
 LOG = logging.getLogger(__name__)
 
 
-def log_init():
-    """
-    Setup CherryPy to use mini-buildd's logging mechanisms.
-    """
-
-    # listener
-    def cherry_log(msg, level):
-        LOG.log(level, msg)
-
-    # subscribe to channel
-    cherrypy.engine.subscribe('log', cherry_log)
-
-    # turn off stderr/stdout logging
-    cherrypy.log.screen = False
-
-    # HTTP errors (status codes: 4xx-5xx)
-    cherrypy.HTTPError.set_response = lambda msg: LOG.log(logging.ERROR, msg)
-
-
 def shutdown():
     """
     Stop the CherryPy engine.
@@ -62,11 +43,31 @@ def run(bind, wsgi_app):
                                "changes": mime_text_plain}),
             path)
 
-    log_init()
+    cherrypy.config.update({"server.socket_host": mini_buildd.misc.HoPo(bind).host,
+                            "server.socket_port": mini_buildd.misc.HoPo(bind).port,
+                            "engine.autoreload_on": False,
+                            "checker.on": False,
+                            "tools.log_headers.on": False,
+                            "request.show_tracebacks": False,
+                            "request.show_mismatched_params": False,
+                            "log.error_file": None,
+                            "log.access_file": None,
+                            "log.screen": False})
 
-    cherrypy.config.update({'server.socket_host': mini_buildd.misc.HoPo(bind).host,
-                            'server.socket_port': mini_buildd.misc.HoPo(bind).port,
-                            'engine.autoreload_on': False})
+    # Redirect cherrypy's error log to mini-buildd's logging
+    cherrypy.engine.subscribe("log", lambda msg, level: LOG.log(level, "CHERRYPY: {m}".format(m=msg)))
+
+    # Set up a rotating file handler for cherrypy's access log
+    handler = logging.handlers.RotatingFileHandler(
+        mini_buildd.setup.ACCESS_LOG_FILE,
+        maxBytes=5000000,
+        backupCount=9,
+        encoding="UTF-8")
+    handler.setLevel(logging.DEBUG)
+# pylint: disable=W0212
+    handler.setFormatter(cherrypy._cplogging.logfmt)
+# pylint: enable=W0212
+    cherrypy.log.access_log.addHandler(handler)
 
     # Django: Add our own static directory
     add_static_handler(directory=".",

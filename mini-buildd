@@ -92,6 +92,7 @@ Comma-separated list of special debugging options:
         vardir = os.path.join(self._args.home, "var")
         mini_buildd.setup.LOG_DIR = os.path.join(vardir, "log")
         mini_buildd.setup.LOG_FILE = os.path.join(mini_buildd.setup.LOG_DIR, "daemon.log")
+        mini_buildd.setup.ACCESS_LOG_FILE = os.path.join(mini_buildd.setup.LOG_DIR, "access.log")
         mini_buildd.setup.CHROOTS_DIR = os.path.join(vardir, "chroots")
         mini_buildd.setup.CHROOT_LIBDIR = os.path.join("libdir")
         mini_buildd.setup.SPOOL_DIR = os.path.join(vardir, "spool")

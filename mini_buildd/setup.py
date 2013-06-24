@@ -17,6 +17,7 @@ SPOOL_DIR = None
 TMP_DIR = None
 LOG_DIR = None
 LOG_FILE = None
+ACCESS_LOG_FILE = None
 CHROOTS_DIR = None
 CHROOT_LIBDIR = None
 

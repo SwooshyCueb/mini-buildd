@@ -20,9 +20,9 @@ def mbd_version():
 
 @register.simple_tag(takes_context=True)
 def mbd_admin_check_daemon_running(context):
-    context['daemon_running'] = False
+    context["daemon_running"] = False
     if mini_buildd.daemon.get().is_running():
-        context['daemon_running'] = True
+        context["daemon_running"] = True
     return ""
 
 

@@ -150,7 +150,7 @@ class Changes(debian.deb822.Changes):
     @property
     def magic_auto_backports(self):
         mres = re.search(r"\*\s*MINI_BUILDD:\s*AUTO_BACKPORTS:\s*([^*.\[\]]+)", self._magic_get_changes())
-        return (re.sub(r'\s+', '', mres.group(1))).split(",") if mres else []
+        return (re.sub(r"\s+", "", mres.group(1))).split(",") if mres else []
 
     @property
     def magic_backport_mode(self):
@@ -322,15 +322,15 @@ class Changes(debian.deb822.Changes):
                     breq[v] = self[v]
 
                 # Generate sources.list et.al. to be used
-                mini_buildd.misc.open_utf8(os.path.join(path, "apt_sources.list"), 'w').write(dist.mbd_get_apt_sources_list(repository, suite_option))
-                mini_buildd.misc.open_utf8(os.path.join(path, "apt_preferences"), 'w').write(dist.mbd_get_apt_preferences(repository, suite_option))
-                mini_buildd.misc.open_utf8(os.path.join(path, "apt_keys"), 'w').write(repository.mbd_get_apt_keys(dist))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_sources.list"), "w").write(dist.mbd_get_apt_sources_list(repository, suite_option))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_preferences"), "w").write(dist.mbd_get_apt_preferences(repository, suite_option))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_keys"), "w").write(repository.mbd_get_apt_keys(dist))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
-                mini_buildd.misc.open_utf8(chroot_setup_script, 'w').write(mini_buildd.misc.fromdos(dist.chroot_setup_script))
+                mini_buildd.misc.open_utf8(chroot_setup_script, "w").write(mini_buildd.misc.fromdos(dist.chroot_setup_script))
 
                 os.chmod(chroot_setup_script, stat.S_IRWXU)
-                mini_buildd.misc.open_utf8(os.path.join(path, "sbuildrc_snippet"), 'w').write(dist.mbd_get_sbuildrc_snippet(ao.architecture.name))
+                mini_buildd.misc.open_utf8(os.path.join(path, "sbuildrc_snippet"), "w").write(dist.mbd_get_sbuildrc_snippet(ao.architecture.name))
 
                 # Generate tar from original changes
                 self.tar(tar_path=breq.file_path + ".tar",

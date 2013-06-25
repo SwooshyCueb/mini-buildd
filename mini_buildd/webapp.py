@@ -68,31 +68,31 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
             EMAIL_HOST_USER=smtp.user,
             EMAIL_HOST_PASSWORD=smtp.password,
 
-            TEMPLATE_DIRS=['/usr/share/pyshared/mini_buildd/templates'],
+            TEMPLATE_DIRS=["/usr/share/pyshared/mini_buildd/templates"],
             TEMPLATE_LOADERS=(
-                'django.template.loaders.filesystem.Loader',
-                'django.template.loaders.app_directories.Loader'),
+                "django.template.loaders.filesystem.Loader",
+                "django.template.loaders.app_directories.Loader"),
 
-            DATABASES={'default': {'ENGINE': 'django.db.backends.sqlite3',
-                                   'NAME': os.path.join(mini_buildd.setup.HOME_DIR, "config.sqlite")}},
+            DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3",
+                                   "NAME": os.path.join(mini_buildd.setup.HOME_DIR, "config.sqlite")}},
 
             TIME_ZONE=None,
             USE_L10N=True,
             SECRET_KEY=self.get_django_secret_key(mini_buildd.setup.HOME_DIR),
-            ROOT_URLCONF='mini_buildd.root_urls',
+            ROOT_URLCONF="mini_buildd.root_urls",
             STATIC_URL="/static/",
-            AUTH_PROFILE_MODULE='mini_buildd.Uploader',
+            AUTH_PROFILE_MODULE="mini_buildd.Uploader",
             ACCOUNT_ACTIVATION_DAYS=3,
             LOGIN_REDIRECT_URL="/mini_buildd/",
             INSTALLED_APPS=(
-                'django.contrib.auth',
-                'django.contrib.contenttypes',
-                'django.contrib.admin',
-                'django.contrib.sessions',
-                'django.contrib.admindocs',
-                'django_extensions',
-                'registration',
-                'mini_buildd'))
+                "django.contrib.auth",
+                "django.contrib.contenttypes",
+                "django.contrib.admin",
+                "django.contrib.sessions",
+                "django.contrib.admindocs",
+                "django_extensions",
+                "registration",
+                "mini_buildd"))
 
         mini_buildd.models.import_all()
         self._syncdb()
@@ -190,13 +190,13 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         """
 
         try:
-            user = django.contrib.auth.models.User.objects.get(username='admin')
+            user = django.contrib.auth.models.User.objects.get(username="admin")
             LOG.info("Updating 'admin' user password...")
             user.set_password(password)
             user.save()
         except django.contrib.auth.models.User.DoesNotExist:
             LOG.info("Creating initial 'admin' user...")
-            django.contrib.auth.models.User.objects.create_superuser('admin', 'root@localhost', password)
+            django.contrib.auth.models.User.objects.create_superuser("admin", "root@localhost", password)
 
     @classmethod
     def remove_system_artifacts(cls):
@@ -214,17 +214,17 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     @classmethod
     def _syncdb(cls):
         LOG.info("Syncing database...")
-        django.core.management.call_command('syncdb', interactive=False, verbosity=0)
-        django.core.management.call_command('cleanupregistration', interactive=False, verbosity=0)
+        django.core.management.call_command("syncdb", interactive=False, verbosity=0)
+        django.core.management.call_command("cleanupregistration", interactive=False, verbosity=0)
 
     @classmethod
     def loaddata(cls, file_name):
-        django.core.management.call_command('loaddata', file_name)
+        django.core.management.call_command("loaddata", file_name)
 
     @classmethod
     def dumpdata(cls, app_path):
         LOG.info("Dumping data for: {a}".format(a=app_path))
-        django.core.management.call_command('dumpdata', app_path, indent=2, format='json')
+        django.core.management.call_command("dumpdata", app_path, indent=2, format="json")
 
     @classmethod
     def get_django_secret_key(cls, home):
@@ -243,7 +243,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
 
         if not os.path.exists(secret_key_filename):
             # use same randomize-algorithm as in "django/core/management/commands/startproject.py"
-            secret_key = ''.join([random.choice('abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)') for _i in range(50)])
+            secret_key = "".join([random.choice("abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)") for _i in range(50)])
             secret_key_fd = os.open(secret_key_filename, os.O_CREAT | os.O_WRONLY, 0600)
             os.write(secret_key_fd, secret_key)
             os.close(secret_key_fd)

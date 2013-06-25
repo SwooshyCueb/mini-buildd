@@ -29,26 +29,26 @@ class Main():
                                          description="Minimal Debian build daemon.",
                                          formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-        parser.add_argument('--version', action='version', version=mini_buildd.__version__)
+        parser.add_argument("--version", action="version", version=mini_buildd.__version__)
 
         group_conf = parser.add_argument_group("daemon arguments")
-        group_conf.add_argument("-W", "--httpd-bind", action='store', default="0.0.0.0:8066",
+        group_conf.add_argument("-W", "--httpd-bind", action="store", default="0.0.0.0:8066",
                                 help="Web Server IP/Hostname and port to bind to.")
-        group_conf.add_argument("-S", "--smtp", action='store', default=":@smtp://localhost:25",
+        group_conf.add_argument("-S", "--smtp", action="store", default=":@smtp://localhost:25",
                                 help="SMTP credentials in format '[USER]:[PASSWORD]@smtp|ssmtp://HOST:PORT'.")
-        group_conf.add_argument("-H", "--home", action='store', default=os.getenv('HOME'),
+        group_conf.add_argument("-H", "--home", action="store", default=os.getenv("HOME"),
                                 help="Run with this home dir. The only use case to change this for debugging, really.")
-        group_conf.add_argument("-f", "--foreground", action='store_true',
+        group_conf.add_argument("-f", "--foreground", action="store_true",
                                 help="Don't daemonize, log to console.")
 
         group_log = parser.add_argument_group("logging and debugging arguments")
-        group_log.add_argument("-v", "--verbose", dest="verbosity", action='count', default=0,
+        group_log.add_argument("-v", "--verbose", dest="verbosity", action="count", default=0,
                                help="Lower log level. Give twice for max logs.")
-        group_log.add_argument("-q", "--quiet", dest="terseness", action='count', default=0,
+        group_log.add_argument("-q", "--quiet", dest="terseness", action="count", default=0,
                                help="Tighten log level. Give twice for min logs.")
-        group_log.add_argument("-l", "--loggers", action='store', default="file,syslog",
+        group_log.add_argument("-l", "--loggers", action="store", default="file,syslog",
                                help="Comma-separated list of loggers (file,syslog,console) to use.")
-        group_log.add_argument("-d", "--debug", action='store', default="", metavar="OPTION,..",
+        group_log.add_argument("-d", "--debug", action="store", default="", metavar="OPTION,..",
                                help="""\
 Comma-separated list of special debugging options:
 'exception' (log tracebacks in exception handlers),
@@ -57,13 +57,13 @@ Comma-separated list of special debugging options:
 'profile' (produce cProfile dump in log directory).""")
 
         group_db = parser.add_argument_group("database arguments")
-        group_db.add_argument("-P", "--set-admin-password", action='store', metavar="PASSWORD",
+        group_db.add_argument("-P", "--set-admin-password", action="store", metavar="PASSWORD",
                               help="Update password for django superuser named 'admin'; user is created if non-existent yet.")
-        group_db.add_argument("-D", "--dumpdata", action='store', metavar="APP[.MODEL]",
+        group_db.add_argument("-D", "--dumpdata", action="store", metavar="APP[.MODEL]",
                               help="Dump database contents for app[.MODEL] as JSON file (see 'django-admin dumpdata').")
-        group_db.add_argument("-L", "--loaddata", action='store', metavar="FILE",
+        group_db.add_argument("-L", "--loaddata", action="store", metavar="FILE",
                               help="INTERNAL USE ONLY, use with care! Load JSON file into database (see 'django-admin loaddata').")
-        group_db.add_argument("-R", "--remove-system-artifacts", action='store_true',
+        group_db.add_argument("-R", "--remove-system-artifacts", action="store_true",
                               help="INTERNAL USE ONLY, use with care! Bulk-remove associated data of all objects that might have produced artifacts on the system.")
 
         argcomplete.autocomplete(parser)

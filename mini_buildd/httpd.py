@@ -40,7 +40,8 @@ def run(bind, wsgi_app):
                 root=root,
                 content_types={"log": mime_text_plain,
                                "buildlog": mime_text_plain,
-                               "changes": mime_text_plain}),
+                               "changes": mime_text_plain,
+                               "dsc": mime_text_plain}),
             path)
 
     cherrypy.config.update({"server.socket_host": mini_buildd.misc.HoPo(bind).host,

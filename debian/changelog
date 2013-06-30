@@ -1,3 +1,23 @@
+mini-buildd (1.0.0~beta.17) experimental; urgency=low
+
+  Seventeenths beta. Adds bash completion support + the usual treat of
+  smaller fixes.
+  * [15e246d] Add bash completion for 'mini-buildd' and 'mini-buildd-tool' (via python-argcomplete).
+  * [5a7f118] debian/rules: Don't run in DH_VERBOSE mode hardcoded.
+  * [fda1b31] Document encoding bug, and try yet another proposed workaround.
+  * [a941c91] html: Renice user subscription handling.
+  * [305f831] keyrings: Use dedicated Keyring class to manage the "global" GnuPG keyrings.
+  * [be058be] daemon.py: _More_ temporary debug to catch encoding bug.
+  * [5be17c2] mini-buildd-tool: Fix 'login' detection for new API commands.
+  * [3c6d308] api.py: Make independent from any django includes (Fixes: mini-buildd-tool fails w/o python-django installed)
+  * [8ca5a13] misc.py: CredsCache/web_login: Add "last url" support && general pimp up.
+  * [4f84349] mini-buildd-tool: Improve user friendliness on creds handling.
+  * [b82ead0] cherrypy (log) setup: Add extra access.log, set production config values, fixes wrong 200 OKs on error.
+  * [e3299cd] [code] Mass fix a number of inconsistent single-quote "'" string quoting.
+  * [66949b9] cherrypy: Also deliver *.dsc as text/plain.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 30 Jun 2013 18:44:53 +0200
+
 mini-buildd (1.0.0~beta.16) experimental; urgency=low
 
   Sixteenths beta. Fix two blockers...

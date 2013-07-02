@@ -116,14 +116,23 @@ class Changes(debian.deb822.Changes):
         return "{s}_{v}_{a}.buildlog".format(s=self["Source"], v=self["Version"], a=self["Architecture"])
 
     def get_pkglog_dir(self, installed, relative=True):
-        " Package log path for this changes file: REPOID/[_failed]/PACKAGE/VERSION/ARCH "
-        return mini_buildd.misc.PkgLog.get_path(mini_buildd.misc.Distribution(self["Distribution"],
-                                                                              mini_buildd.models.repository.get_meta_distribution_map()).repository,
-                                                installed,
-                                                self["Source"],
-                                                self["Version"],
-                                                architecture=self["Architecture"],
-                                                relative=relative)
+        """
+        Package log path for this changes file: REPOID/[_failed]/PACKAGE/VERSION/ARCH
+
+        In case the changes is bogus (i.e, cannot produce a
+        valid path for us, like a wrong distribution), None is
+        returned.
+        """
+        try:
+            return mini_buildd.misc.PkgLog.get_path(mini_buildd.misc.Distribution(self["Distribution"],
+                                                                                  mini_buildd.models.repository.get_meta_distribution_map()).repository,
+                                                    installed,
+                                                    self["Source"],
+                                                    self["Version"],
+                                                    architecture=self["Architecture"],
+                                                    relative=relative)
+        except Exception as e:
+            mini_buildd.setup.log_exception(LOG, "No package log dir for bogus changes: {f}".format(f=self.file_name), e, logging.DEBUG)
 
     def is_new(self):
         return self._new
@@ -259,7 +268,7 @@ class Changes(debian.deb822.Changes):
 
     def move_to_pkglog(self, installed):
         logdir = self.get_pkglog_dir(installed, relative=False)
-        if not os.path.exists(logdir):
+        if logdir and not os.path.exists(logdir):
             os.makedirs(logdir)
 
         LOG.info("Moving changes to package log: '{f}'->'{l}'".format(f=self._file_path, l=logdir))
@@ -268,7 +277,7 @@ class Changes(debian.deb822.Changes):
             f_abs = os.path.join(os.path.dirname(self._file_path), f)
             # If not installed, just move all files to log dir.
             # If installed, only save buildlogs and changes.
-            if not installed or re.match(r"(.*\.buildlog$|.*changes$)", f):
+            if logdir and (not installed or re.match(r"(.*\.buildlog$|.*changes$)", f)):
                 LOG.info("Moving '{f}' to '{d}'". format(f=f, d=logdir))
                 os.rename(f_abs, os.path.join(logdir, f))
             else:

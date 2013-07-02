@@ -165,6 +165,7 @@ class Package(mini_buildd.misc.Status):
 
         # On installed, clean out the failed log dir, if any of the very same version
         if self.get_status() == self.INSTALLED:
+            # The pkglog_dir must be non-None on INSTALLED status
             failed_logdir = os.path.dirname(self.changes.get_pkglog_dir(installed=False, relative=False))
             LOG.debug("Purging failed log dir: {f}".format(f=failed_logdir))
             shutil.rmtree(failed_logdir, ignore_errors=True)
@@ -179,7 +180,7 @@ class Package(mini_buildd.misc.Status):
                 s=bres.bres_stat,
                 b=os.path.join(self.daemon.model.mbd_get_http_url(),
                                "log",
-                               bres.get_pkglog_dir(self.get_status() == self.INSTALLED),
+                               unicode(bres.get_pkglog_dir(self.get_status() == self.INSTALLED)),
                                bres.buildlog_name))
 
         results = header(self.__unicode__(), "=")
@@ -220,7 +221,7 @@ class LastPackage(mini_buildd.misc.API):
 
         self.started = package.started
         self.took = package.took
-        self.log = os.path.join("/mini_buildd/log", os.path.dirname(package.changes.get_pkglog_dir(installed=True)))
+        self.log = os.path.join("/mini_buildd/log", os.path.dirname(unicode(package.changes.get_pkglog_dir(installed=True))))
 
         self.changes = {}
         for k in ["source", "distribution", "version"]:
@@ -237,7 +238,7 @@ class LastPackage(mini_buildd.misc.API):
             for a, r in src.items():
                 dst[a] = {"remote_http_url": r.remote_http_url,
                           "bres_stat": r.bres_stat,
-                          "log": os.path.join("/log", r.get_pkglog_dir(package.get_status() == package.INSTALLED), r.buildlog_name)}
+                          "log": os.path.join("/log", unicode(r.get_pkglog_dir(package.get_status() == package.INSTALLED)), r.buildlog_name)}
 
         self.success = {}
         cp_bres(package.success, self.success)

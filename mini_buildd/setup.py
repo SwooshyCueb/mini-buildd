@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import logging
 
 DEBUG = []
+FOREGROUND = False
 
 HTTPD_BIND = None
 

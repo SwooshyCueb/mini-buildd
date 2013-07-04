@@ -54,7 +54,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         super(WebApp, self).__init__()
 
         smtp = SMTPCreds(smtp_string)
-        debug = "django" in mini_buildd.setup.DEBUG
+        debug = "webapp" in mini_buildd.setup.DEBUG
         django.conf.settings.configure(
             DEBUG=debug,
             TEMPLATE_DEBUG=debug,

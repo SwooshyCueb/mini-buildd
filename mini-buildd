@@ -52,7 +52,8 @@ class Main():
                                help="""\
 Comma-separated list of special debugging options:
 'exception' (log tracebacks in exception handlers),
-'django' (put django app in debug mode),
+'http' (put http server [cherrypy] in debug mode),
+'webapp' (put web application [django] in debug mode),
 'keep' (keep spool and temporary directories),
 'profile' (produce cProfile dump in log directory).""")
 
@@ -81,6 +82,7 @@ Comma-separated list of special debugging options:
         propagate through.
         """
         mini_buildd.setup.DEBUG = self._args.debug.split(",")
+        mini_buildd.setup.FOREGROUND = self._args.foreground
 
         mini_buildd.setup.HTTPD_BIND = self._args.httpd_bind
 

@@ -56,7 +56,7 @@ def run(bind, wsgi_app):
                             "log.screen": False})
 
     # Redirect cherrypy's error log to mini-buildd's logging
-    cherrypy.engine.subscribe("log", lambda msg, level: LOG.log(level, "CHERRYPY: {m}".format(m=msg)))
+    cherrypy.engine.subscribe("log", lambda msg, level: LOG.log(level, "CherryPy: {m}".format(m=msg)))
 
     # Set up a rotating file handler for cherrypy's access log
     handler = logging.handlers.RotatingFileHandler(

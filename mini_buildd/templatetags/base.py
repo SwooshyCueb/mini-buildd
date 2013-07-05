@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import os
+
 import django
 import mini_buildd
 
@@ -11,6 +13,11 @@ register = django.template.Library()
 @register.filter
 def mbd_dict_get(dict_, key):
     return dict_.get(key)
+
+
+@register.filter
+def mbd_dirname(path):
+    return os.path.dirname(path)
 
 
 @register.simple_tag

@@ -1,4 +1,5 @@
 {% extends "mini_buildd/api.html" %}
+{% load base %}
 
 {% block page_title %}{{ api_cmd.args.package }}{% endblock %}
 {% block page_sub_title %}Source package{% endblock %}
@@ -39,7 +40,7 @@
 								</td>
 								<td>
 									{% if values.sourceversion %}
-										[<a href="{{ values.dsc_url }}" title="Source package URL">dsc</a>]
+										[<a href="{{ values.dsc_url }}" title="Source package URL">dsc</a>|<a href="{{ values.dsc_url|mbd_dirname }}" title="Browse pool">pool</a>]
 									{% endif %}
 								</td>
 								<td>

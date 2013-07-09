@@ -266,9 +266,9 @@ Manage your account : {url}accounts/login/
         if m_msglog:
             m_msglog = "Daemon messages:\n{msgs}---\n".format(msgs=m_msglog)
 
-        def add_to(address, typ, automatic):
+        def add_to(address, typ, is_automatic):
             address_raw = email.utils.parseaddr(address)[1]
-            if not automatic or m_automatic_to_allow.search(address_raw):
+            if not is_automatic or m_automatic_to_allow.search(address_raw):
                 if address_raw in m_to_raw:
                     msglog.debug("Notify: Skipping {t} address: {a}: Duplicate".format(t=typ, a=address))
                 else:
@@ -287,26 +287,33 @@ Manage your account : {url}accounts/login/
                 real_distribution = mini_buildd.models.repository.get_meta_distribution_map().get(changes_dist, changes_dist)
             return self.mbd_get_daemon().get_subscription_objects().filter(package__in=[package, ""], distribution__in=[real_distribution, ""])
 
+        # Add hardcoded addresses from daemon
         for m in self.notify.all():
-            add_to(m.mbd_unicode(), "daemon", automatic=False)
+            add_to(m.mbd_unicode(), "daemon", is_automatic=False)
+
+        # Add hardcoded addresses from repository
         if repository:
             for m in repository.notify.all():
-                add_to(m.mbd_unicode(), "repository", automatic=False)
-            if changes:
-                maintainer = changes.get("Maintainer")
-                if repository.notify_maintainer and maintainer:
-                    add_to(maintainer, "maintainer", automatic=True)
+                add_to(m.mbd_unicode(), "repository", is_automatic=False)
 
-                changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
-                if repository.notify_changed_by and changed_by:
-                    add_to(changed_by, "changed-by", automatic=True)
+        if changes:
+            # Add package uploader (Changed-By): Add even if we do not have a repo, so uploader is informed on such error cases too.
+            changed_by = changes.get("X-Mini-Buildd-Originally-Changed-By", changes.get("Changed-By"))
+            if not repository or (repository.notify_changed_by and changed_by):
+                add_to(changed_by, "changed-by", is_automatic=True)
 
-                for s in get_subscriptions():
-                    address = "{n} <{a}>".format(n=s.subscriber.get_full_name(), a=s.subscriber.email)
-                    if s.subscriber.is_active:
-                        add_to(address, "subscriber", automatic=False)
-                    else:
-                        msglog.debug("Notify: Skipping subscription address: {a}: Account disabled".format(a=address, r=self.allow_emails_to))
+            # Add package maintainer: Add only when we have a repo, and it's configured to do so
+            maintainer = changes.get("Maintainer")
+            if repository and (repository.notify_maintainer and maintainer):
+                add_to(maintainer, "maintainer", is_automatic=True)
+
+            # Add user subscriptions
+            for s in get_subscriptions():
+                address = "{n} <{a}>".format(n=s.subscriber.get_full_name(), a=s.subscriber.email)
+                if s.subscriber.is_active:
+                    add_to(address, "subscriber", is_automatic=False)
+                else:
+                    msglog.debug("Notify: Skipping subscription address: {a}: Account disabled".format(a=address, r=self.allow_emails_to))
 
         try:
             django.core.mail.send_mass_mail(m_to)

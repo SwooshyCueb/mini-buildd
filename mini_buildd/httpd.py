@@ -162,7 +162,7 @@ def run(bind, wsgi_app):
             path)
 
     debug = "http" in mini_buildd.setup.DEBUG
-    cherrypy.config.update({"server.socket_host": mini_buildd.misc.HoPo(bind).host,
+    cherrypy.config.update({"server.socket_host": str(mini_buildd.misc.HoPo(bind).host),
                             "server.socket_port": mini_buildd.misc.HoPo(bind).port,
                             "engine.autoreload_on": False,
                             "checker.on": debug,

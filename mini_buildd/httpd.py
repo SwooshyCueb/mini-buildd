@@ -134,13 +134,6 @@ class StaticWithIndex(cherrypy._cptools.HandlerTool):
 # pylint: enable=W0212
 
 
-def shutdown():
-    """
-    Stop the CherryPy engine.
-    """
-    cherrypy.engine.exit()
-
-
 def run(bind, wsgi_app):
     """
     Run the CherryPy WSGI Web Server.

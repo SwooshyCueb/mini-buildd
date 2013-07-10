@@ -190,7 +190,7 @@ Comma-separated list of special debugging options:
             webapp.dumpdata(self._args.dumpdata)
         else:
             # Start httpd webapp
-            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=False, bind=self._args.httpd_bind, wsgi_app=webapp)
+            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
 
             # Get the daemon manager instance (due to django, import must be here)
             from mini_buildd.daemon import Daemon
@@ -206,8 +206,6 @@ Comma-separated list of special debugging options:
                     break
 
             daemon.stop()
-            mini_buildd.httpd.shutdown()
-
 
 try:
     MAIN = Main()

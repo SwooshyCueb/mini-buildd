@@ -248,6 +248,7 @@ class Keyrings(object):
     Hold/manage all gnupg keyrings (for remotes and all repository uploaders).
     """
     def __init__(self):
+        self._our_pub_key = get().model.mbd_get_pub_key()
         self._remotes = self._gen_remotes()
         self._uploaders = self._gen_uploaders()
         self._needs_update = False
@@ -273,25 +274,25 @@ class Keyrings(object):
         self._update()
         return self._uploaders
 
-    @classmethod
-    def _gen_remotes(cls):
+    def _gen_remotes(self):
         remotes = mini_buildd.gnupg.TmpGnuPG()
         # keyring["remotes"]: Remotes keyring to authorize buildrequests and buildresults
         # Always add our own key
-        remotes.add_pub_key(get().model.mbd_get_pub_key())
+        if self._our_pub_key:
+            remotes.add_pub_key(self._our_pub_key)
         for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
             remotes.add_pub_key(r.key)
             LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name))
         return remotes
 
-    @classmethod
-    def _gen_uploaders(cls):
+    def _gen_uploaders(self):
         "All uploader keyrings for each repository."
         uploaders = {}
         for r in mini_buildd.models.repository.Repository.mbd_get_active():
             uploaders[r.identity] = r.mbd_get_uploader_keyring()
             # Always add our key too for internal builds
-            uploaders[r.identity].add_pub_key(get().model.mbd_get_pub_key())
+            if self._our_pub_key:
+                uploaders[r.identity].add_pub_key(self._our_pub_key)
         return uploaders
 
 

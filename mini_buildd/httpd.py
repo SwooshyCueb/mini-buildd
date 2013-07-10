@@ -178,7 +178,7 @@ def run(bind, wsgi_app):
                             "request.show_mismatched_params": debug,
                             "log.error_file": None,
                             "log.access_file": None,
-                            "log.screen": mini_buildd.setup.FOREGROUND})
+                            "log.screen": debug and mini_buildd.setup.FOREGROUND})
 
     # Redirect cherrypy's error log to mini-buildd's logging
     cherrypy.engine.subscribe("log", lambda msg, level: LOG.log(level, "CherryPy: {m}".format(m=msg)))

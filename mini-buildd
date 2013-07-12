@@ -5,11 +5,16 @@ from __future__ import unicode_literals
 import signal
 import os
 import pwd
+import contextlib
 import argparse
 import sys
-import daemon
 import logging
 import logging.handlers
+
+# PEP 3143
+import daemon
+import daemon.pidlockfile
+import daemon.runner
 
 import argcomplete
 
@@ -20,6 +25,29 @@ import mini_buildd.webapp
 
 LOG = logging.getLogger("mini_buildd")
 LOG.addHandler(logging.StreamHandler())
+
+
+class PIDFile(object):
+    """
+    Pidfile with automtic stale fixup.
+
+    This uses code from the PEP 3143 reference
+    implementation.
+
+    .. note:: Stale recognition does not work when another unrelated process has reclaimed the pid from the stale pidfile.
+    """
+    def __init__(self, pidfile_path, acquire_timeout=5):
+        self.pidfile = daemon.runner.make_pidlockfile(pidfile_path, acquire_timeout)
+        if daemon.runner.is_pidfile_stale(self.pidfile):
+            LOG.warn("Fixing STALE PID file: {p}".format(p=self))
+            self.pidfile.break_lock()
+        self.pidfile.acquire(timeout=acquire_timeout)
+
+    def __unicode__(self):
+        return "{f} ({p})".format(f=self.pidfile.path, p=self.pidfile.read_pid())
+
+    def close(self):
+        self.pidfile.release()
 
 
 class Main():
@@ -38,6 +66,8 @@ class Main():
                                 help="SMTP credentials in format '[USER]:[PASSWORD]@smtp|ssmtp://HOST:PORT'.")
         group_conf.add_argument("-H", "--home", action="store", default=os.getenv("HOME"),
                                 help="Run with this home dir. The only use case to change this for debugging, really.")
+        group_conf.add_argument("-F", "--pidfile", action="store", default=os.path.join(os.getenv("HOME"), ".mini-buildd.pid"),
+                                help="Set pidfile path.")
         group_conf.add_argument("-f", "--foreground", action="store_true",
                                 help="Don't daemonize, log to console.")
 
@@ -175,6 +205,25 @@ Comma-separated list of special debugging options:
         elif signum == signal.SIGHUP:
             self._status = "RESTART"
 
+    def run_daemon(self, webapp):
+        # Start httpd webapp
+        mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
+
+        # Get the daemon manager instance (due to django, import must be here)
+        from mini_buildd.daemon import Daemon
+        daemon = Daemon()
+        daemon.start()
+
+        while True:
+            signal.pause()
+            if self._status == "RESTART":
+                daemon.stop()
+                daemon.start()
+            else:
+                break
+
+        daemon.stop()
+
     def run(self):
         # Get the django project instance
         webapp = mini_buildd.webapp.WebApp(self._args.smtp)
@@ -189,23 +238,10 @@ Comma-separated list of special debugging options:
         elif self._args.dumpdata:
             webapp.dumpdata(self._args.dumpdata)
         else:
-            # Start httpd webapp
-            mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
+            with contextlib.closing(PIDFile(self._args.pidfile)) as pidfile:
+                LOG.info("Starting daemon with pidfile: {p}".format(p=pidfile))
+                self.run_daemon(webapp)
 
-            # Get the daemon manager instance (due to django, import must be here)
-            from mini_buildd.daemon import Daemon
-            daemon = Daemon()
-            daemon.start()
-
-            while True:
-                signal.pause()
-                if self._status == "RESTART":
-                    daemon.stop()
-                    daemon.start()
-                else:
-                    break
-
-            daemon.stop()
 
 try:
     MAIN = Main()

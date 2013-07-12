@@ -17,16 +17,26 @@ DEFAULT_FILE="/etc/default/mini-buildd"
 
 # Defaults
 MINI_BUILDD_OPTIONS="--verbose"
+PIDFILE=~mini-buildd/.mini-buildd.pid
 if [ -e "${DEFAULT_FILE}" ]; then
 	. "${DEFAULT_FILE}"
 fi
 
 [ -x "${DAEMON}" ] || exit 0
 
+START_STOP_DAEMON="start-stop-daemon --quiet --pidfile ${PIDFILE}"
+STOP_DAEMON="${START_STOP_DAEMON} --stop --user mini-buildd"
+START_DAEMON="${START_STOP_DAEMON} --start --exec ${DAEMON} --chuid mini-buildd"
+
 . /lib/lsb/init-functions
 
-# run_with_log LOGTXT CMD_WITH_ARGS...
-run_with_log()
+_is_running()
+{
+	${STOP_DAEMON} --test
+}
+
+# Usage: run_with_log LOGTXT CMD_WITH_ARGS...
+_run_with_log()
 {
 	log_begin_msg "${1} ${DESC}: ${NAME}"
 	shift
@@ -36,26 +46,37 @@ run_with_log()
 	return ${retval}
 }
 
-case "$1" in
+case "${1}" in
 	start)
-		if $(start-stop-daemon --stop --test --quiet --name ${NAME} --user mini-buildd); then
-			run_with_log "Already running" true
+		if _is_running; then
+			_run_with_log "Already running" true
 		else
-			run_with_log "Starting" start-stop-daemon --start --quiet --exec ${DAEMON} --chuid mini-buildd -- ${MINI_BUILDD_OPTIONS}
+			_run_with_log "Starting" ${START_DAEMON} -- ${MINI_BUILDD_OPTIONS} --pidfile=${PIDFILE}
 		fi
 		;;
 	stop)
-		run_with_log "Stopping" start-stop-daemon --stop --oknodo --quiet --name ${NAME} --user mini-buildd --retry 30
+		if _is_running; then
+			_run_with_log "Stopping" ${STOP_DAEMON} --retry 30
+		else
+			_run_with_log "Already stopped" true
+		fi
 		;;
 	reload)
-		run_with_log "Reloading" start-stop-daemon --stop --signal HUP --oknodo --quiet --name ${NAME} --user mini-buildd
+		if _is_running; then
+			_run_with_log "Reloading" ${STOP_DAEMON} --signal HUP
+		else
+			_run_with_log "Not running" false
+		fi
 		;;
 	force-reload|restart)
-		$0 stop
-		$0 start
+		${0} stop
+		${0} start
+		;;
+	status)
+		status_of_proc -p "${PIDFILE}" "${DAEMON}" "${NAME}"
 		;;
 	*)
-		echo "Usage: /etc/init.d/mini-buildd {start|stop|restart|reload|force-reload}" >&2
+		echo "Usage: /etc/init.d/mini-buildd {start|stop|restart|reload|force-reload|status}" >&2
 		exit 1
 		;;
 esac

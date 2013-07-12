@@ -19,7 +19,7 @@ def sphinx_build_workaround(build_dir="./build/sphinx"):
 
     # Call apidoc (local script for sphinx < 1.1)
     apidoc = "/usr/bin/sphinx-apidoc" if os.path.exists("/usr/bin/sphinx-apidoc") else "./doc/apidoc.py"
-    apidoc_arguments = [apidoc, '--force', '--output-dir', build_dir, './mini_buildd/']
+    apidoc_arguments = [apidoc, "--force", "--output-dir", build_dir, "./mini_buildd/"]
     doc.apidoc.main(apidoc_arguments)
 
     # Generate man pages via help2man
@@ -42,7 +42,7 @@ with open("./mini_buildd/__init__.py", "wb") as version_py:
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-__version__ = '{version}'
+__version__ = "{version}"
 """.format(version=__version__))
 print "I: Got version from changelog: {v}".format(v=__version__)
 

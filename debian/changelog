@@ -1,3 +1,25 @@
+mini-buildd (1.0.0~beta.18) experimental; urgency=low
+
+  * [bd61cc5] packager: Fix error handling for bogus changes files.
+  * [8fa5ae9] httpd.py: Cosmetic fix for cherrypy logs.
+  * [2c97e7e] cleanup for debug modes: Add 'http' mode, rename 'django' mode to 'webapp', add global foreground flag.
+  * [2e37d38] httpd.py: Teach cherrypy to serve dir indexes; enable for log and repo browsing.
+  * [3c81856] api(show): html: Add "browse pool" link.
+  * [4d229f4] notify: Always mail uploader when no repo could be recognized (Fixes: No error mail on common "wrong dist" error).
+  * [5caefbb] daemon: Keyrings(): Make work even if daemon model is yet unconfigured (Fixes: not starting up).
+  * [6bd955c] cherrypy: Only log on_screen if foreground _and_ debug is set.
+  * [557031f] cherrypy: Use automatic engine stop on exit (Fixes: no shutdown on early daemon errors).
+  * [20abf8b] cherrypy: Avoid config check warning on unicode host string.
+  * [104984c] [code] setup.py: Fix some more inconsistent single-quote "'" string quoting.
+  * [5e47aca] mini-buildd: Add '--pidfile' support (will make start/stop more reliable).
+  * [ea75cda] init.d: Update to new '--pidfile' support, add 'status' target, cleanups.
+  * [fe1161c] logging: Improve error reporting for exceptions that appear while logging is set up.
+  * [242dbde] daemon.py: start(): Improve message when daemon is deactivated/unconfigured.
+  * [3205492] models/daemon.py: Fix leading newline at GnuPG template default.
+  * [03780ed] remotes, users: Allow changes on the fly (schedule keyring update on changes instead of stopping daemon).
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 14 Jul 2013 13:53:29 +0200
+
 mini-buildd (1.0.0~beta.17) experimental; urgency=low
 
   Seventeenths beta. Adds bash completion support + the usual treat of

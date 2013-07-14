@@ -56,7 +56,7 @@ automatically.
 """)
 
     # GnuPG options
-    gnupg_template = django.db.models.TextField(default="""
+    gnupg_template = django.db.models.TextField(default="""\
 Key-Type: RSA
 Key-Length: 4096
 Expire-Date: 0

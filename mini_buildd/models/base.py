@@ -113,6 +113,11 @@ are actually supported by the current model.
                 o.mbd_set_changed(request)
                 o.save()
 
+        @classmethod
+        def _mbd_on_activation(cls, request, obj):
+            "Global actions to take when an object becomes active."
+            cls._mbd_stop_daemon(request, obj)
+
         def save_model(self, request, obj, form, change):
             if change:
                 self._mbd_on_change(request, obj)
@@ -292,7 +297,7 @@ class StatusModel(Model):
                 cls._mbd_run_dependencies(request, obj, cls.mbd_activate)
                 obj.status = obj.STATUS_ACTIVE
                 obj.save()
-                cls._mbd_stop_daemon(request, obj)
+                cls._mbd_on_activation(request, obj)
                 MsgLog(LOG, request).info("{o}: Activate successful.".format(o=obj))
             elif obj.mbd_is_prepared() and (obj.last_checked == obj.CHECK_FAILED or obj.last_checked == obj.CHECK_NONE):
                 obj.last_checked = obj.CHECK_REACTIVATE

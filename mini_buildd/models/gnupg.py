@@ -84,13 +84,38 @@ class AptKey(GnuPGPublicKey):
     pass
 
 
-class Uploader(GnuPGPublicKey):
+class KeyringKey(GnuPGPublicKey):
+    """
+    Abtract class for GnuPG keys that influence the daemon's keyring.
+
+    This basically means changes to remotes and users may be
+    done on the fly (without stopping the daemon), to make this
+    maintenance practically usable.
+    """
+    class Meta(mini_buildd.models.base.StatusModel.Meta):
+        abstract = True
+        app_label = "mini_buildd"
+
+    class Admin(GnuPGPublicKey.Admin):
+        @classmethod
+        def _mbd_on_change(cls, request, obj):
+            "Notify the daemon keyring to update itself."
+            if obj.mbd_get_daemon().keyrings:
+                MsgLog(LOG, request).info("Scheduling keyrings update...")
+                obj.mbd_get_daemon().keyrings.set_needs_update()
+
+        @classmethod
+        def _mbd_on_activation(cls, request, obj):
+            cls._mbd_on_change(request, obj)
+
+
+class Uploader(KeyringKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)
     may_upload_to = django.db.models.ManyToManyField("Repository", blank=True)
 
-    class Admin(GnuPGPublicKey.Admin):
-        search_fields = GnuPGPublicKey.Admin.search_fields + ["user"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["user"]
+    class Admin(KeyringKey.Admin):
+        search_fields = KeyringKey.Admin.search_fields + ["user"]
+        readonly_fields = KeyringKey.Admin.readonly_fields + ["user"]
 
     def mbd_unicode(self):
         return "'{u}' may upload to '{r}' with key '{s}'".format(
@@ -106,7 +131,7 @@ def cb_create_user_profile(sender, instance, created, **kwargs):
 django.db.models.signals.post_save.connect(cb_create_user_profile, sender=django.contrib.auth.models.User)
 
 
-class Remote(GnuPGPublicKey):
+class Remote(KeyringKey):
     http = django.db.models.CharField(primary_key=True, max_length=255, default=":8066",
                                       help_text="""\
 'hostname:port' of the remote instance's http server.
@@ -114,9 +139,9 @@ class Remote(GnuPGPublicKey):
 
     wake_command = django.db.models.CharField(max_length=255, default="", blank=True, help_text="For future use.")
 
-    class Admin(GnuPGPublicKey.Admin):
-        search_fields = GnuPGPublicKey.Admin.search_fields + ["http"]
-        readonly_fields = GnuPGPublicKey.Admin.readonly_fields + ["key", "key_id", "pickled_data"]
+    class Admin(KeyringKey.Admin):
+        search_fields = KeyringKey.Admin.search_fields + ["http"]
+        readonly_fields = KeyringKey.Admin.readonly_fields + ["key", "key_id", "pickled_data"]
 
     def mbd_unicode(self):
         status = self.mbd_get_status()

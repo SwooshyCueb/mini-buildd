@@ -139,42 +139,59 @@ Comma-separated list of special debugging options:
         mini_buildd.misc.mkdirs(mini_buildd.setup.LOG_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.setup.TMP_DIR)
 
+    LOG_FORMAT = "%(name)-29s(%(lineno)03d): %(levelname)-8s: %(message)s"
+
+    def _log_handler_file(self):
+        handler = logging.handlers.RotatingFileHandler(
+            mini_buildd.setup.LOG_FILE,
+            maxBytes=5000000,
+            backupCount=9,
+            encoding="UTF-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s " + self.LOG_FORMAT))
+        return handler
+
+    def _log_handler_syslog(self):
+        handler = logging.handlers.SysLogHandler(
+            address="/dev/log".encode("UTF-8"),
+            facility=logging.handlers.SysLogHandler.LOG_USER)
+        handler.setFormatter(logging.Formatter(self.LOG_FORMAT))
+        return handler
+
+    def _log_handler_console(self):
+        handler = logging.StreamHandler()
+        handler.setFormatter(logging.Formatter("%(asctime)s " + self.LOG_FORMAT))
+        return handler
+
     def _setup_logging(self):
         loggers = self._args.loggers.split(",")
         if self._args.foreground:
             loggers.append("console")
 
-        log_format = "%(name)-29s(%(lineno)03d): %(levelname)-8s: %(message)s"
-
         # Clear all loggers now; this will remove the
         # preliminary console logger
         LOG.handlers = []
 
-        if "file" in loggers:
-            handler = logging.handlers.RotatingFileHandler(
-                mini_buildd.setup.LOG_FILE,
-                maxBytes=5000000,
-                backupCount=9,
-                encoding="UTF-8")
-            handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            LOG.addHandler(handler)
+        # Try to add all loggers; collect exceptions to be able
+        # to do error reporting later, when hopefully one valid
+        # handler is set up.
+        loggers_failed = {}
+        for typ in loggers:
+            try:
+                handler_func = getattr(self, "_log_handler_" + typ)
+                LOG.addHandler(handler_func())
+            except Exception as e:
+                loggers_failed[typ] = e
 
-        if "syslog" in loggers:
-            handler = logging.handlers.SysLogHandler(address="/dev/log".encode("UTF-8"), facility=logging.handlers.SysLogHandler.LOG_USER)
-            handler.setFormatter(logging.Formatter(log_format))
-            LOG.addHandler(handler)
-
-        if "console" in loggers:
-            handler = logging.StreamHandler()
-            handler.setFormatter(logging.Formatter("%(asctime)s " + log_format))
-            LOG.addHandler(handler)
-
-        # Finally, set log level
+        # Set log level
         loglevel = logging.WARNING - (10 * (min(2, self._args.verbosity) - min(2, self._args.terseness)))
         LOG.setLevel(loglevel)
 
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
+
+        # Finally, log all errors now that occured while setting up loggers
+        for typ, err in loggers_failed.items():
+            LOG.critical("Logger {t} failed: {e}".format(t=typ, e=err))
 
     def _setup_environment(self):
         os.environ.clear()

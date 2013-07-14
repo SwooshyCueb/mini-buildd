@@ -441,7 +441,7 @@ class Daemon():
                     self.thread = mini_buildd.misc.run_as_thread(run)
                     msglog.info("Daemon started.")
                 else:
-                    msglog.warn("Daemon is deactivated (won't start).")
+                    msglog.warn("Daemon is deactivated (won't start). Please (re)configure your instance as superuser.")
             else:
                 msglog.info("Daemon already running.")
 

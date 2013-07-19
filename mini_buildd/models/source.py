@@ -41,43 +41,38 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         exclude = ("extra_options",)
 
         @classmethod
-        def _add_or_create(cls, request, url):
+        def _add_or_create(cls, msglog, url):
             if url:
                 _obj, created = Archive.objects.get_or_create(url=url)
                 if created:
-                    MsgLog(LOG, request).info("Archive added: {a}".format(a=url))
+                    msglog.info("Archive added: {a}".format(a=url))
                 else:
-                    MsgLog(LOG, request).debug("Archive already exists: {a}".format(a=url))
+                    msglog.info("Archive already exists: {a}".format(a=url))
 
-        def action_add_from_sources_list(self, request, _queryset):
+        @classmethod
+        def mbd_meta_add_from_sources_list(cls, msglog):
+            "Scan local sources list and add all archives found there."
             try:
                 import aptsources.sourceslist
                 for src in aptsources.sourceslist.SourcesList():
                     # These URLs come from the user. 'normalize' the uri first to have exactly one trailing slash.
-                    self._add_or_create(request, src.uri.rstrip("/") + "/")
+                    cls._add_or_create(msglog, src.uri.rstrip("/") + "/")
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG,
                                                 "Failed to scan local sources.lists for default mirrors ('python-apt' not installed?)",
                                                 e,
                                                 level=logging.WARN)
 
-        action_add_from_sources_list.short_description = "Add from sources.list [call with dummy selection]"
-
-        def action_add_debian(self, request, _queryset):
-            """
-            Add internet Debian sources.
-            """
+        @classmethod
+        def mbd_meta_add_debian(cls, msglog):
+            "Add internet Debian archive sources."""
             for url in ["http://ftp.debian.org/debian/",                  # Debian releases
-                        "http://backports.debian.org/debian-backports/",  # Debian backports
+                        "http://backports.debian.org/debian-backports/",  # Debian backports, <= squeeze
                         "http://archive.debian.org/debian/",              # Archived Debian releases
                         "http://archive.debian.org/backports.org/",       # Archived (sarge, etch, lenny) backports
                         ]:
-                self._add_or_create(request, url)
-            MsgLog(LOG, request).info("Consider adapting these archives to you closest mirror(s); check netselect-apt.")
-
-        action_add_debian.short_description = "Add Debian archive mirrors [call with dummy selection]"
-
-        actions = [action_add_from_sources_list, action_add_debian]
+                cls._add_or_create(msglog, url)
+            msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
 
     def save(self, *args, **kwargs):
         """
@@ -213,33 +208,32 @@ manually run on a Debian system to be sure.
             return fields
 
         @classmethod
-        def _add_or_create(cls, request, origin, codename, keys):
+        def _add_or_create(cls, msglog, origin, codename, keys):
             obj, created = Source.objects.get_or_create(origin=origin, codename=codename)
             if created:
-                MsgLog(LOG, request).info("Source added: {s}".format(s=obj))
+                msglog.info("Source added: {s}".format(s=obj))
                 for key_id in keys:
                     apt_key, _created = mini_buildd.models.gnupg.AptKey.objects.get_or_create(key_id=key_id)
                     obj.apt_keys.add(apt_key)
-                    MsgLog(LOG, request).info("Apt key added: {k}".format(s=obj, k=apt_key))
+                    msglog.info("Apt key added: {k}".format(s=obj, k=apt_key))
                 obj.save()
             else:
-                MsgLog(LOG, request).debug("Source already exists: {s}".format(s=obj))
+                msglog.info("Source already exists: {s}".format(s=obj))
 
-        def action_add_debian(self, request, _queryset):
+        @classmethod
+        def mbd_meta_add_debian(cls, msglog):
+            "Add well-known Debian sources"
             for origin, codename, keys in [("Debian", "etch", ["55BE302B", "ADB11277"]),
                                            ("Debian", "lenny", ["473041FA", "F42584E6"]),
                                            ("Debian", "squeeze", ["473041FA", "B98321F9"]),
                                            ("Debian", "wheezy", ["473041FA"]),
-                                           ("Debian", "sid", ["473041FA"]),
+                                           ("Debian", "jessie", ["473041FA", "46925553"]),
+                                           ("Debian", "sid", ["473041FA", "46925553"]),
                                            ("Backports.org archive", "etch-backports", ["16BA136C"]),
                                            ("Debian Backports", "lenny-backports", ["473041FA"]),
-                                           ("Debian Backports", "squeeze-backports", ["473041FA"]),
+                                           ("Debian Backports", "squeeze-backports", ["473041FA", "46925553"]),
                                            ]:
-                self._add_or_create(request, origin, codename, keys)
-
-        action_add_debian.short_description = "Add well-known Debian sources [call with dummy selection]"
-
-        actions = [action_add_debian]
+                cls._add_or_create(msglog, origin, codename, keys)
 
     def mbd_unicode(self):
         """
@@ -361,6 +355,21 @@ class PrioritySource(mini_buildd.models.base.Model):
 
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
+
+        @classmethod
+        def _add_or_create(cls, msglog, source):
+            obj, created = PrioritySource.objects.get_or_create(source=source, priority=1)
+            if created:
+                msglog.info("Priority source added: {s}".format(s=obj))
+                obj.save()
+            else:
+                msglog.info("Priority source already exists: {s}".format(s=obj))
+
+        @classmethod
+        def mbd_meta_add_backports(cls, msglog):
+            "Add all backports as prio=1 prio sources"
+            for source in Source.objects.filter(codename__regex=r".*-backports"):
+                cls._add_or_create(msglog, source)
 
     def mbd_unicode(self):
         return "{i}: Priority={p}".format(i=self.source, p=self.priority)

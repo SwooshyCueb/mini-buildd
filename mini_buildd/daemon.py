@@ -478,6 +478,11 @@ class Daemon():
         return status
 
     @classmethod
+    def meta(cls, model, func, msglog):
+        model_class = eval("mini_buildd.models.{m}.Admin".format(m=model))
+        getattr(model_class, "mbd_meta_{f}".format(f=func))(msglog)
+
+    @classmethod
     def logcat(cls, lines):
         logfile = mini_buildd.misc.open_utf8(mini_buildd.setup.LOG_FILE, "r")
         return mini_buildd.misc.tail(logfile, lines)

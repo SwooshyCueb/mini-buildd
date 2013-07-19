@@ -214,6 +214,20 @@ class Stop(Command):
         self._plain_result = "{d}".format(d=daemon)
 
 
+class Meta(Command):
+    """
+    Call arbitrary meta functions for models; usually for internal use only.
+    """
+    COMMAND = "meta"
+    AUTH = Command.ADMIN
+    ARGUMENTS = [
+        (["model"], {"help": "Model path, for example 'source.Archive'"}),
+        (["function"], {"help": "Meta function to call, for example 'add_from_sources_list'"})]
+
+    def run(self, daemon):
+        daemon.meta(self.args["model"], self.args["function"], msglog=self.msglog)
+
+
 class GetKey(Command):
     """
     Get GnuPG public key.
@@ -598,6 +612,7 @@ class Subscription(Command):
 COMMANDS = {Status.COMMAND: Status,
             Start.COMMAND: Start,
             Stop.COMMAND: Stop,
+            Meta.COMMAND: Meta,
             GetKey.COMMAND: GetKey,
             GetDputConf.COMMAND: GetDputConf,
             LogCat.COMMAND: LogCat,

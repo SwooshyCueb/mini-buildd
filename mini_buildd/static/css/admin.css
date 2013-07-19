@@ -154,6 +154,16 @@
 	font-weight: bold;
 }
 
+a.wizard:link
+{
+	background: url("/static/images/mbd_wizard.png") no-repeat scroll 3px 50%;
+	margin: 0px 0px 0px 0px;
+	padding: 2px 6px 2px 30px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: normal;
+}
+
 /* MESSAGES & ERRORS */
 ul.messagelist
 {

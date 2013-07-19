@@ -15,7 +15,7 @@
 			{% for app in app_list %}
 				{% if app.name != "Mini_Buildd" %}
 					<div class="module">
-						<table summary="{% blocktrans with app.name as name %}Models available in the {{ name }} application.{% endblocktrans %}">
+						<table>
 							<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
 							{% for model in app.models %}
 								<tr>
@@ -54,10 +54,32 @@
 							<div class="inner-box">
 								<table>
 									<caption>Archives and Sources</caption>
-									{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" %}
 									{% include "admin/snippet_index_table_row.html" with model_name="Archives" %}
+									<tr>
+										<td></td>
+										<td colspan="2">
+											{% include "admin/snippet_wizard.html" with model="source.Archive" function="add_from_sources_list" name="Add local"  title="Scan your local system's apt setup and add all new archives found" %}
+											{% include "admin/snippet_wizard.html" with model="source.Archive" function="add_debian"            name="Add Debian" title="Add generic Debian archives" %}
+										</td>
+									</tr>
+
 									{% include "admin/snippet_index_table_row.html" with model_name="Sources" %}
+									<tr>
+										<td></td>
+										<td colspan="2">
+											{% include "admin/snippet_wizard.html" with model="source.Source" function="add_debian" name="Add Debian" title="Add well known Debian sources" %}
+										</td>
+									</tr>
+
 									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" %}
+									<tr>
+										<td></td>
+										<td colspan="2">
+											{% include "admin/snippet_wizard.html" with model="source.PrioritySource" function="add_backports" name="Add backports" title="Add all '*-backports' sources with default priority 1" %}
+										</td>
+									</tr>
+
+									{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" %}
 								</table>
 							</div>
 							<!-- SUITES AND LAYOUTS-->

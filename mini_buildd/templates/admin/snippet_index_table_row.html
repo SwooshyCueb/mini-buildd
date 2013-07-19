@@ -7,7 +7,7 @@
 				{% if model.perms.change %}<th class="overview" scope="row" colspan="3"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
 			{% else %}
 				{% if hide_add %}
-					{% if model.perms.change %}<th class="overview" scope="row" colspan="2"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
+					{% if model.perms.change %}<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th><th>&nbsp;</th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
 					{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
 				{% else %}
 					{% if hide_change %}

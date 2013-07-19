@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+# Helper script to develop/debug mini-buildd.
+#
+# Quickstart:
+#  Enter your dev chroot (preferably sid). sudo should configured.
+#  $ cd mini-buildd
+#  $ ./devel installdeps
+#  $ ./devel update
+
 MBD_HOME=~mini-buildd
 
 # Use first found mirror from sources as default
@@ -28,12 +36,31 @@ _check_prog()
 		fi
 	done
 	printf "E: '${1}' not found in path; please install.\n" >&2
+	printf "I: You may use './devel installdeps' to install all deps needed.\n" >&2
 	exit 1
 }
 
 PYPATH="$(readlink -f $(dirname $0))"
 DJSETTINGS="doc.django_settings"
 PYLINTRC="${PYPATH}/.pylintrc"
+
+mbd_installdeps()
+{
+	sudo apt-get update
+	sudo apt-get --no-install-recommends install devscripts equivs
+
+	# Debian package build dependencies; using target-release=*
+	# here to always allow highest versions of any sources
+	# configured (for example, for backports).
+	mk-build-deps --install --root-cmd=sudo --remove --tool="apt-get --no-install-recommends --target-release='*'" 
+
+	# Extra tools needed for checks
+	sudo apt-get install --no-install-recommends pep8 pylint pychecker pyflakes python-django-lint python-apt
+	# Extra tools needed vc and package building
+	sudo apt-get install --no-install-recommends git git-buildpackage
+	# binary package dependecies so we can just dpkg -i for testing
+	sudo apt-get install --no-install-recommends --target-release='*' sbuild schroot reprepro debootstrap lintian
+}
 
 mbd_pyenv()
 {

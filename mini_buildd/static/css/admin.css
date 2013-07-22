@@ -109,9 +109,26 @@
 	padding: 2px 0px 2px 5px;
 }
 
-#content-main a.changelink
+#content-main td.right
+{
+	text-align: right;
+}
+
+#content-main a.changelink, #content-main a.addlink
 {
 	padding-right: 1px;
+	display: inline;
+}
+
+#content-main a.wizard
+{
+	background: url("/static/images/mbd_wizard.png") no-repeat scroll 3px 50%;
+	margin: 0px 0px 0px 0px;
+	padding: 2px 6px 2px 30px;
+	text-decoration: none;
+	font-size: 11px;
+	font-weight: normal;
+	display: inline;
 }
 
 #content-main .module.mb
@@ -152,16 +169,6 @@
 	border-color: red;
 	border-width: 3px;
 	font-weight: bold;
-}
-
-a.wizard:link
-{
-	background: url("/static/images/mbd_wizard.png") no-repeat scroll 3px 50%;
-	margin: 0px 0px 0px 0px;
-	padding: 2px 6px 2px 30px;
-	text-decoration: none;
-	font-size: 11px;
-	font-weight: normal;
 }
 
 /* MESSAGES & ERRORS */

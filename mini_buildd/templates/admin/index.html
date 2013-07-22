@@ -13,32 +13,7 @@
 	<div id="content-main">
 		{% if app_list %}
 			{% for app in app_list %}
-				{% if app.name != "Mini_Buildd" %}
-					<div class="module">
-						<table>
-							<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
-							{% for model in app.models %}
-								<tr>
-									{% if model.perms.change %}
-										<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
-									{% else %}
-										<th class="overview" scope="row">{{ model.name }}</th>
-									{% endif %}
-									{% if model.perms.add %}
-										<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
-									{% else %}
-										<td>&nbsp;</td>
-									{% endif %}
-									{% if model.perms.change %}
-										<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
-									{% else %}
-										<td>&nbsp;</td>
-									{% endif %}
-								</tr>
-							{% endfor %}
-						</table>
-					</div>
-				{% else %}
+				{% if app.name = "Mini_Buildd" %}
 					<!-- MINI-BUILDD -->
 					<div class="module mb">
 						<div id="mbd_box">
@@ -54,30 +29,11 @@
 							<div class="inner-box">
 								<table>
 									<caption>Archives and Sources</caption>
-									{% include "admin/snippet_index_table_row.html" with model_name="Archives" %}
-									<tr>
-										<td></td>
-										<td colspan="2">
-											{% include "admin/snippet_wizard.html" with model="source.Archive" function="add_from_sources_list" name="Add local"  title="Scan your local system's apt setup and add all new archives found" %}
-											{% include "admin/snippet_wizard.html" with model="source.Archive" function="add_debian"            name="Add Debian" title="Add generic Debian archives" %}
-										</td>
-									</tr>
+										{% include "admin/snippet_index_table_row.html" with model_name="Archives" model_path="source.Archive" wiz0_function="add_from_sources_list" wiz0_name="Add local"  wiz0_title="Scan your local system's apt setup and add all new archives found" wiz1_function="add_debian" wiz1_name="Add Debian" wiz1_title="Add generic Debian archives" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Sources" %}
-									<tr>
-										<td></td>
-										<td colspan="2">
-											{% include "admin/snippet_wizard.html" with model="source.Source" function="add_debian" name="Add Debian" title="Add well known Debian sources" %}
-										</td>
-									</tr>
+									{% include "admin/snippet_index_table_row.html" with model_name="Sources" model_path="source.Source" wiz0_function="add_debian" wiz0_name="Add Debian" wiz0_title="Add well known Debian sources" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" %}
-									<tr>
-										<td></td>
-										<td colspan="2">
-											{% include "admin/snippet_wizard.html" with model="source.PrioritySource" function="add_backports" name="Add backports" title="Add all '*-backports' sources with default priority 1" %}
-										</td>
-									</tr>
+									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" model_path="source.PrioritySource" wiz0_function="add_backports" wiz0_name="Add backports" wiz0_title="Add all '*-backports' sources with default priority 1" %}
 
 									{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" %}
 								</table>
@@ -117,6 +73,35 @@
 								</table>
 							</div>
 						</div>
+					</div>
+				{% endif %}
+			{% endfor %}
+
+			{% for app in app_list %}
+				{% if app.name != "Mini_Buildd" %}
+					<div class="module">
+						<table>
+							<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
+							{% for model in app.models %}
+								<tr>
+									{% if model.perms.change %}
+										<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+									{% else %}
+										<th class="overview" scope="row">{{ model.name }}</th>
+									{% endif %}
+									{% if model.perms.add %}
+										<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>
+									{% else %}
+										<td>&nbsp;</td>
+									{% endif %}
+									{% if model.perms.change %}
+										<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>
+									{% else %}
+										<td>&nbsp;</td>
+									{% endif %}
+								</tr>
+							{% endfor %}
+						</table>
 					</div>
 				{% endif %}
 			{% endfor %}

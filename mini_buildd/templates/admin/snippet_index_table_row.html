@@ -3,23 +3,33 @@
 <tr>
 	{% for model in app.models %}
 		{% if model.name == model_name %}
-			{% if hide_add and hide_change %}
-				{% if model.perms.change %}<th class="overview" scope="row" colspan="3"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-			{% else %}
-				{% if hide_add %}
-					{% if model.perms.change %}<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th><th>&nbsp;</th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-					{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-				{% else %}
-					{% if hide_change %}
-						{% if model.perms.change %}<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td colspan="2"><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-					{% else %}
-						{% if model.perms.change %}<th class="overview" scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>{% else %}<th scope="row">{{ model.name }}</th>{% endif %}
-						{% if model.perms.add %}<td><a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-						{% if model.perms.change %}<td><a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a></td>{% else %}<td>&nbsp;</td>{% endif %}
-					{% endif %}
+			<th scope="row" {% if model.perms.change %}class="overview"><a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}>{{ model.name }}{% endif %}</th>
+			<td class="right">
+				<!-- Support up to two wizards -->
+				{% if wiz0_function %}
+					<a class="wizard"
+						 href="/mini_buildd/api?command=meta&amp;model={{ model_path }}&amp;function={{ wiz0_function }}&amp;output=referer"
+						 title="{{ wiz0_title }}">
+						{{ wiz0_name }}
+					</a>
 				{% endif %}
-			{% endif %}
+
+				{% if wiz1_function %}
+					<a class="wizard"
+						 href="/mini_buildd/api?command=meta&amp;model={{ model_path }}&amp;function={{ wiz1_function }}&amp;output=referer"
+						 title="{{ wiz1_title }}">
+						{{ wiz1_name }}
+					</a>
+				{% endif %}
+				&nbsp;&nbsp;
+				{% if not hide_add and model.perms.add %}
+					<a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a>
+				{% endif %}
+				{% if model.perms.change %}
+					<a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a>
+				{% endif %}
+
+			</td>
 		{% endif %}
 	{% endfor %}
 </tr>

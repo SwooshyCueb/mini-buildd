@@ -242,10 +242,13 @@ manually run on a Debian system to be sure.
             Since django 1.4.3, accessing 'self.archives.all()'
             does not work anymore: "maximum recursion depth
             exceeded" when trying to add a new source. Seems to
-            be a django bug (?). Just not using it for now.
+            be a django bug (?). Just don't use it here.
         """
-        #return "{i}: {d}: {m} archives".format(i=self.mbd_id(), d=self.description, m=len(self.archives.all()))
-        return "{o} '{c}': {d}".format(o=self.origin, c=self.codename, d=self.description)
+        try:
+            archive = self.mbd_get_archive().url
+        except:
+            archive = None
+        return "{o} '{c}' from {a}".format(o=self.origin, c=self.codename, a=archive)
 
     def mbd_get_archive(self):
         """

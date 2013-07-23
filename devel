@@ -100,7 +100,7 @@ mbd_pymisc()
 			printf "OK.\n"
 		done
 		printf "Checking '${f}' for wrong explicit unicode string literals..."
-		if ! grep 'u"' "${f}"; then
+		if ! grep '\bu"' "${f}"; then
 			printf "OK.\n"
 		else
 			return 1

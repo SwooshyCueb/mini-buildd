@@ -5,11 +5,11 @@
 		{% if model.name == model_name %}
 			<th scope="row" {% if model.perms.change %}class="overview"><a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}>{{ model.name }}{% endif %}</th>
 			<td class="right">
-				<!-- Support up to two wizards -->
+				<!-- Support up to three wizards (repeated three times, found no good way yet to do this more nicely) -->
 				{% if wiz0_function %}
 					<a class="wizard"
 						 href="/mini_buildd/api?command=meta&amp;model={{ model_path }}&amp;function={{ wiz0_function }}&amp;output=referer"
-						 title="{{ wiz0_title }}">
+						 title="Wizard: {{ wiz0_title }}">
 						{{ wiz0_name }}
 					</a>
 				{% endif %}
@@ -17,10 +17,19 @@
 				{% if wiz1_function %}
 					<a class="wizard"
 						 href="/mini_buildd/api?command=meta&amp;model={{ model_path }}&amp;function={{ wiz1_function }}&amp;output=referer"
-						 title="{{ wiz1_title }}">
+						 title="Wizard: {{ wiz1_title }}">
 						{{ wiz1_name }}
 					</a>
 				{% endif %}
+
+				{% if wiz2_function %}
+					<a class="wizard"
+						 href="/mini_buildd/api?command=meta&amp;model={{ model_path }}&amp;function={{ wiz2_function }}&amp;output=referer"
+						 title="Wizard: {{ wiz2_title }}">
+						{{ wiz2_name }}
+					</a>
+				{% endif %}
+
 				&nbsp;&nbsp;
 				{% if not hide_add and model.perms.add %}
 					<a href="{{ model.admin_url }}add/" class="addlink">{% trans 'Add' %}</a>

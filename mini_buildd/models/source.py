@@ -74,6 +74,14 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
                 cls._add_or_create(msglog, url)
             msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
 
+        @classmethod
+        def mbd_meta_add_ubuntu(cls, msglog):
+            "Add internet Ubuntu archive sources."""
+            for url in ["http://danava.canonical.com/ubuntu/",            # Ubuntu releases
+                        ]:
+                cls._add_or_create(msglog, url)
+            msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
+
     def save(self, *args, **kwargs):
         """
         Implicitely set the ping value on save.
@@ -232,6 +240,17 @@ manually run on a Debian system to be sure.
                                            ("Backports.org archive", "etch-backports", ["16BA136C"]),
                                            ("Debian Backports", "lenny-backports", ["473041FA"]),
                                            ("Debian Backports", "squeeze-backports", ["473041FA", "46925553"]),
+                                           ("Debian Backports", "wheezy-backports", ["473041FA", "46925553"]),
+                                           ]:
+                cls._add_or_create(msglog, origin, codename, keys)
+
+        @classmethod
+        def mbd_meta_add_ubuntu(cls, msglog):
+            "Add well-known Ubuntu sources"
+            for origin, codename, keys in [("Ubuntu", "precise", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "quantal", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "raring", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "saucy", ["437D05B5", "C0B21F32"]),
                                            ]:
                 cls._add_or_create(msglog, origin, codename, keys)
 

@@ -17,7 +17,7 @@
 					<!-- MINI-BUILDD -->
 					<div class="module mb">
 						<div id="mbd_box">
-							<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">mini-buildd</a></h1>
+							<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">{{ app.name }}</a></h1>
 							<!-- DAEMON -->
 							<div class="inner-box">
 								<table>
@@ -29,11 +29,11 @@
 							<div class="inner-box">
 								<table>
 									<caption>Archives and Sources</caption>
-										{% include "admin/snippet_index_table_row.html" with model_name="Archives" model_path="source.Archive" wiz0_function="add_from_sources_list" wiz0_name="Add local"  wiz0_title="Scan your local system's apt setup and add all new archives found" wiz1_function="add_debian" wiz1_name="Add Debian" wiz1_title="Add generic Debian archives" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Archives" model_path="source.Archive" wiz0_function="add_from_sources_list" wiz0_name="Local"  wiz0_title="Scan your local system's apt setup and add all new archives found" wiz1_function="add_debian" wiz1_name="Debian" wiz1_title="Add generic Debian archives" wiz2_function="add_ubuntu" wiz2_name="Ubuntu" wiz2_title="Add generic Ubuntu archives" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Sources" model_path="source.Source" wiz0_function="add_debian" wiz0_name="Add Debian" wiz0_title="Add well known Debian sources" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Sources" model_path="source.Source" wiz0_function="add_debian" wiz0_name="Debian" wiz0_title="Add well known Debian sources" wiz1_function="add_ubuntu" wiz1_name="Ubuntu" wiz1_title="Add well-known Ubuntu sources" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" model_path="source.PrioritySource" wiz0_function="add_backports" wiz0_name="Add backports" wiz0_title="Add all '*-backports' sources with default priority 1" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" model_path="source.PrioritySource" wiz0_function="add_backports" wiz0_name="Backports" wiz0_title="Add all '*-backports' sources with default priority 1" %}
 
 									{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" %}
 								</table>

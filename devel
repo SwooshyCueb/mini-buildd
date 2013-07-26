@@ -112,7 +112,9 @@ mbd_pydoctests()
 {
 	(
 		pyenv
-		python -m doctest -v mini-buildd mini-buildd-tool mini_buildd/*.py
+		for m in mini-buildd mini-buildd-tool mini_buildd/*.py mini_buildd/models/*.py; do
+			python -m doctest -v ${m}
+		done
 	)
 }
 

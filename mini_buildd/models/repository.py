@@ -174,9 +174,9 @@ class Layout(mini_buildd.models.base.Model):
     # Version magic
     default_version = django.db.models.CharField(
         max_length=100, default="~%IDENTITY%%CODEVERSION%+1",
-        help_text="""Version string to append to the original version for automated ports; you may use these placeholders:<br/>
+        help_text="""Version string to append to the original version for automated ports; you may use these placeholders:<br />
 
-%IDENTITY%: Repository identity (see 'Repository').<br/>
+%IDENTITY%: Repository identity (see 'Repository').<br />
 %CODEVERSION%: Numerical base distribution version (see 'Source').
 """)
     mandatory_version_regex = django.db.models.CharField(
@@ -324,7 +324,7 @@ should be prevent package installation (for non-experimental suites).
     chroot_setup_script = django.db.models.TextField(blank=True,
                                                      help_text="""\
 Script that will be run via sbuild's '--chroot-setup-command'.
-<br/>
+<br />
 Example:
 <pre>
 #!/bin/sh -e
@@ -350,10 +350,10 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-sel
 """)
     sbuildrc_snippet = django.db.models.TextField(blank=True,
                                                   help_text="""\
-Perl snippet to be added in the .sbuildrc for each build.; you may use these placeholders:<br/>
-<br/>
-%LIBDIR%: Per-chroot persistent dir; may be used for data that should persist beteeen builds (caches, ...).<br/>
-<br/>
+Perl snippet to be added in the .sbuildrc for each build.; you may use these placeholders:<br />
+<br />
+%LIBDIR%: Per-chroot persistent dir; may be used for data that should persist beteeen builds (caches, ...).<br />
+<br />
 Example:
 <pre>
 # Enable ccache
@@ -452,7 +452,7 @@ Debian backports.
     extra_uploader_keyrings = django.db.models.TextField(blank=True,
                                                          help_text="""\
 Extra keyrings, line by line, to be allowed as uploaders (in addition to configured django users).
-<br/>
+<br />
 Example:
 <pre>
 # Allow Debian maintainers (must install the 'debian-keyring' package)

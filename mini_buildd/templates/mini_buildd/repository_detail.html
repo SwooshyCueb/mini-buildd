@@ -50,7 +50,7 @@
 					</ul>
 					<hr />
 					{% for s in object.layout.suiteoption_set.all %}
-						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% mbd_repository_desc object d s %}</span></h2>
+						<h2>{{ d.base_source.mbd_codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% mbd_repository_desc object d s %}</span></h2>
 						<ul>
 							<li>Apt source line: <pre class="pre-inline">{% mbd_distribution_apt_line d object s %}</pre></li>
 							<li>Mandatory version part: <pre class="pre-inline">{% mbd_repository_mandatory_version object d s %}</pre></li>

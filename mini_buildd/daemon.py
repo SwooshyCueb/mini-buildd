@@ -513,7 +513,16 @@ class Daemon():
 
         # Get repository for identity; django exceptions will suite quite well as-is
         repository = mini_buildd.models.repository.Repository.objects.get(identity=dist_parsed.repository)
-        distribution = repository.distributions.all().get(base_source__codename__exact=dist_parsed.codename)
+
+        # Get distribution; as we need to check for mbd_codename (evaluated property), iterate over all dists manually ;(
+        distribution = None
+        for d in repository.distributions.all():
+            if d.base_source.mbd_codename == dist_parsed.codename:
+                distribution = d
+                break
+        if distribution is None:
+            raise Exception("No matching distribution for codename '{c}' in repository '{r}'".format(c=dist_parsed.codename, r=dist_parsed.repository))
+
         suite = repository.layout.suiteoption_set.all().get(suite__name=dist_parsed.suite)
 
         return repository, distribution, suite, dist_parsed.rollback_no

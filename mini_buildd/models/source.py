@@ -98,29 +98,33 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
     def mbd_download_release(self, source, gnupg):
-        url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
-        with tempfile.NamedTemporaryFile() as release:
-            LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release.name))
-            release.write(urllib2.urlopen(url).read())
-            release.flush()
-            release.seek(0)
-            result = debian.deb822.Release(release)
+        dist, codename = source.mbd_parse_codename()
 
-            # Check origin and codename
-            origin = result["Origin"]
-            codename = result["Codename"]
-            if not (source.origin == origin and source.codename == codename):
-                raise Exception("Not for source '{so}:{sc}': Found '{o}:{c}'".format(so=source.origin, sc=source.codename, o=origin, c=codename))
+        url = "{u}/dists/{d}/Release".format(u=self.url, d=dist)
+        with tempfile.NamedTemporaryFile() as release_file:
+            LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release_file.name))
+            release_file.write(urllib2.urlopen(url).read())
+            release_file.flush()
+            release_file.seek(0)
+            release = debian.deb822.Release(release_file)
+
+            # Check identity: origin, codename
+            if not (source.origin == release["Origin"] and codename == release["Codename"]):
+                raise Exception("Not for source '{so}:{sc}': Found '{o}:{d}/{c}:{s}'".format(so=source.origin,
+                                                                                             sc=source.codename,
+                                                                                             d=dist,
+                                                                                             o=release["Origin"],
+                                                                                             c=release["Codename"]))
 
             # Check signature
             with tempfile.NamedTemporaryFile() as signature:
                 LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
                 signature.write(urllib2.urlopen(url + ".gpg").read())
                 signature.flush()
-                gnupg.verify(signature.name, release.name)
+                gnupg.verify(signature.name, release_file.name)
 
             # Ok, this is for this source
-            return result
+            return release
 
     def mbd_ping(self, request):
         """
@@ -172,7 +176,14 @@ class Source(mini_buildd.models.base.StatusModel):
     origin = django.db.models.CharField(max_length=60, default="Debian",
                                         help_text="The exact string of the 'Origin' field of the resp. Release file.")
     codename = django.db.models.CharField(max_length=60, default="sid",
-                                          help_text="The exact string of the 'Codename' field of the resp. Release file.")
+                                          help_text="""\
+Source identifier in the form 'DIST[/CODENAME]'.<br />
+<br />
+<em>DIST</em>: The distribution name, i.e., the name of the directory below 'dist/' in Debian
+archives; usually this is identical with the codename in the Release file.
+<br />
+<em>CODENAME</em>: The codename as given in the Release file in case it differs from DIST.
+""")
 
     # Apt Secure
     apt_keys = django.db.models.ManyToManyField(mini_buildd.models.gnupg.AptKey, blank=True,
@@ -248,9 +259,13 @@ manually run on a Debian system to be sure.
         def mbd_meta_add_ubuntu(cls, msglog):
             "Add well-known Ubuntu sources"
             for origin, codename, keys in [("Ubuntu", "precise", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "precise-backports/precise", ["437D05B5", "C0B21F32"]),
                                            ("Ubuntu", "quantal", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "quantal-backports/quantal", ["437D05B5", "C0B21F32"]),
                                            ("Ubuntu", "raring", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "raring-backports/raring", ["437D05B5", "C0B21F32"]),
                                            ("Ubuntu", "saucy", ["437D05B5", "C0B21F32"]),
+                                           ("Ubuntu", "saucy-backports/saucy", ["437D05B5", "C0B21F32"]),
                                            ]:
                 cls._add_or_create(msglog, origin, codename, keys)
 
@@ -269,6 +284,26 @@ manually run on a Debian system to be sure.
             archive = None
         return "{o} '{c}' from {a}".format(o=self.origin, c=self.codename, a=archive)
 
+    def mbd_parse_codename(self):
+        """
+        Return a tuple 'dist, codename' from the codename.
+
+        >>> Source(origin="Debian", codename="squeeze").mbd_parse_codename()
+        (u'squeeze', u'squeeze')
+        >>> Source(origin="Debian", codename="quantal-backports/quantal").mbd_parse_codename()
+        (u'quantal-backports', u'quantal')
+        """
+        dist, _sep, codename = self.codename.partition("/")
+        return dist, codename if codename else dist
+
+    @property
+    def mbd_dist(self):
+        return self.mbd_parse_codename()[0]
+
+    @property
+    def mbd_codename(self):
+        return self.mbd_parse_codename()[1]
+
     def mbd_get_archive(self):
         """
         Returns the fastest archive.
@@ -284,11 +319,15 @@ manually run on a Debian system to be sure.
         components = sorted([c for c in self.components.all() if c.name in allowed_components], cmp=cmp_components)
         return "deb {u} {d} {c}".format(
             u=self.mbd_get_archive().url,
-            d=self.codename,
+            d=self.mbd_dist,
             c=" ".join([c.name for c in components]))
 
     def mbd_get_apt_pin(self):
-        return "release n={c}, o={o}".format(c=self.codename, o=self.origin)
+        """
+        'o=' Origin header
+        'n=' Codename header
+        """
+        return "release o={o}, n={c}".format(o=self.origin, c=self.mbd_codename)
 
     def mbd_prepare(self, request):
         self.archives = []
@@ -332,7 +371,7 @@ manually run on a Debian system to be sure.
                     MsgLog(LOG, request).info("{o}: Added archive: {m}".format(o=self, m=m))
 
                 except Exception as e:
-                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{m}: Not hosting us".format(m=m), e, level=logging.WARNING)
+                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{m}: Not hosting us".format(m=m), e, level=logging.INFO)
 
         self.mbd_check(request)
 

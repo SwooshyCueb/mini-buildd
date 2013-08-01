@@ -126,7 +126,7 @@ lintian) as non-lethal, and will install anyway.
 
     def mbd_get_distribution_string(self, repository, distribution, rollback=None):
         dist_string = "{c}-{i}-{s}".format(
-            c=distribution.base_source.codename,
+            c=distribution.base_source.mbd_codename,
             i=repository.identity,
             s=self.suite.name)
 
@@ -424,7 +424,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         return result
 
     def mbd_get_sbuildrc_snippet(self, arch):
-        libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, self.base_source.codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
+        libdir = os.path.join(mini_buildd.setup.CHROOTS_DIR, self.base_source.mbd_codename, arch, mini_buildd.setup.CHROOT_LIBDIR)
         # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.
         return mini_buildd.misc.fromdos(mini_buildd.misc.subst_placeholders(self.sbuildrc_snippet, {"LIBDIR": libdir}))
 
@@ -504,7 +504,7 @@ Example:
         actions = [action_generate_keyring_packages]
 
     def mbd_unicode(self):
-        return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]))
+        return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.mbd_codename for d in self.distributions.all()]))
 
     def clean(self, *args, **kwargs):
         self.mbd_validate_regex(r"^[a-z0-9]+$", self.identity, "Identity")
@@ -550,7 +550,7 @@ Example:
         return os.path.join(mini_buildd.setup.REPOSITORIES_DIR, self.identity)
 
     def mbd_get_description(self, distribution, suite_option):
-        return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.codename, i=self.identity)
+        return "{s} packages for {d}-{i}".format(s=suite_option.suite.name, d=distribution.base_source.mbd_codename, i=self.identity)
 
     def mbd_get_meta_distributions(self, distribution, suite_option):
         try:
@@ -586,7 +586,7 @@ Example:
 
         if distribution.repository == self.identity:
             for d in self.distributions.all():
-                if d.base_source.codename == distribution.codename:
+                if d.base_source.mbd_codename == distribution.codename:
                     for s in self.layout.suiteoption_set.all():
                         if s.suite.name == distribution.suite:
                             return d, s
@@ -996,9 +996,9 @@ DscIndices: Sources Release . .gz .bz2
         # Check that the codenames of the distribution are unique
         codenames = []
         for d in self.distributions.all():
-            if d.base_source.codename in codenames:
+            if d.base_source.mbd_codename in codenames:
                 raise django.core.exceptions.ValidationError("Multiple distribution codename in: {d}".format(d=d))
-            codenames.append(d.base_source.codename)
+            codenames.append(d.base_source.mbd_codename)
 
             # Check for mandatory component "main"
             if not d.components.all().filter(name="main"):

@@ -12,7 +12,7 @@ max-module-lines=1500
 
 [TYPECHECK]
 # see ./devel pylintgeneratedmembers
-generated-members=add,admin_site,all,architectureoption_set,chroot_set,codename,distribution_set,DoesNotExist,get_status_display,get_union_type_display,id,layout,looplvmchroot,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_mandatory_version_regex,mbd_remove,mbd_unicode,objects,repository_set,splitlines,suite,suiteoption_set,uploadable,apt_keys,mbd_get_extra_option
+generated-members=add,admin_site,all,architectureoption_set,chroot_set,codename,distribution_set,DoesNotExist,get_status_display,get_union_type_display,id,layout,looplvmchroot,mbd_get_apt_line,mbd_get_apt_pin,mbd_get_archive,mbd_get_mandatory_version_regex,mbd_remove,mbd_unicode,objects,repository_set,splitlines,suite,suiteoption_set,uploadable,apt_keys,mbd_get_extra_option,mbd_codename,partition
 
 [BASIC]
 

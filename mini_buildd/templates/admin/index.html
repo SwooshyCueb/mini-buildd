@@ -43,7 +43,7 @@
 								<table>
 									<caption>Suites and Layouts</caption>
 									{% include "admin/snippet_index_table_row.html" with model_name="Suites" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Layouts" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Layouts" model_path="repository.Layout" wiz0_function="create_defaults" wiz0_name="Defaults" wiz0_title="Create default layout and suites" %}
 								</table>
 							</div>
 							<!-- DISTRIBUTIONS AND REPOSITORIES -->

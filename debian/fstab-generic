@@ -1,0 +1,14 @@
+# Generic fstab for mini-buildd schroots.
+#
+# Usually, this is just the same as the generic mounts in
+# '/etc/schroot/buildd/fstab', and there should hardly be a need
+# to change.
+#
+# In case you do changes here anyway, run dpkg-reconfigure
+# afterwards to regenerate fstab.
+#
+# <file system> <mount point>   <type>  <options>       <dump>  <pass>
+/proc           /proc           none    rw,bind         0       0
+/sys            /sys            none    rw,bind         0       0
+/dev/pts        /dev/pts        none    rw,bind         0       0
+tmpfs           /dev/shm        tmpfs   defaults        0       0

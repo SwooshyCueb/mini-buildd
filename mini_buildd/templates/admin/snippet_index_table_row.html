@@ -1,9 +1,12 @@
 {% load i18n %}
+{% load base %}
 
 <tr>
 	{% for model in app.models %}
 		{% if model.name == model_name %}
-			<th scope="row" {% if model.perms.change %}class="overview"><a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}>{{ model.name }}{% endif %}</th>
+			<th scope="row" {% if model.perms.change %}class="overview">
+				<a href="{{ model.admin_url }}">{{ model.name }}</a>{% else %}>{{ model.name }}{% endif %}
+			</th>
 			<td class="right">
 				<!-- Support up to three wizards (repeated three times, found no good way yet to do this more nicely) -->
 				{% if wiz0_function %}
@@ -38,6 +41,9 @@
 					<a href="{{ model.admin_url }}" class="changelink">{% trans 'Change' %}</a>
 				{% endif %}
 
+			</td>
+			<td>
+				{% mbd_model_count model_path %}
 			</td>
 		{% endif %}
 	{% endfor %}

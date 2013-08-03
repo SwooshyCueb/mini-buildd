@@ -31,6 +31,32 @@ def mbd_daemon_is_running(dummy):
 
 
 @register.simple_tag
+def mbd_model_count(model):
+    def count_str(count):
+        if count:
+            return "&nbsp;{d}&nbsp;".format(d=count)
+        return ""
+
+    try:
+        model_class = eval("mini_buildd.models.{m}".format(m=model))
+        is_status_model = getattr(model_class, "mbd_is_prepared", None)
+        total = model_class.objects.all().count()
+        if is_status_model:
+            active = model_class.mbd_get_active().count()
+            prepared = model_class.objects.filter(status__exact=model_class.STATUS_PREPARED).count()
+
+            return """\
+<span title="Active instances"   style="background-color: green; color: white;">{active}</span>\
+<span title="Prepared instances" style="background-color: yellow; color: black;">{prepared}</span>\
+""".format(active=count_str(active),
+           prepared=count_str(prepared))
+        else:
+            return """<span title="Total instances" style="color: black;">{total}</span>""".format(total=count_str(total))
+    except:
+        return "no model count"
+
+
+@register.simple_tag
 def mbd_distribution_apt_line(distribution, repository, suite_option):
     return distribution.mbd_get_apt_line(repository, suite_option)
 

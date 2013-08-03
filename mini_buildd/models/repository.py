@@ -7,7 +7,6 @@ import contextlib
 import shutil
 import glob
 import re
-import socket
 import logging
 
 import debian.debian_support
@@ -526,7 +525,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
 
 
 class Repository(mini_buildd.models.base.StatusModel):
-    identity = django.db.models.CharField(primary_key=True, max_length=50, default=socket.gethostname(),
+    identity = django.db.models.CharField(primary_key=True, max_length=50, default="test",
                                           help_text="""\
 The id of the reprepro repository, placed in
 'repositories/ID'. It can also be used in 'version enforcement

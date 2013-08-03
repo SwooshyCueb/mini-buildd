@@ -17,8 +17,11 @@ override_dh_auto_build:
 	#sphinx-build -b latex ./build/sphinx ./build/sphinx/latex
 	#make --directory ./build/sphinx/latex
 
+ifeq (,$(filter nocheck,$(DEB_BUILD_OPTIONS)))
 override_dh_auto_test:
+	dh_auto_test
 	./devel pydoctests
+endif
 
 override_dh_auto_clean:
 	dh_auto_clean

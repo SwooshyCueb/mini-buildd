@@ -15,12 +15,10 @@
 		<h1>{% trans 'Configuration of mini-buildd' %}</h1>
 	</div>
 
-	{% mbd_admin_check_daemon_running %}
-
 	<div id="mbd_django_admin_daemon_status">
 		<p>
 			<span class="warning">Warning:</span>
-			{% if daemon_running %}
+			{% if "dummy"|mbd_daemon_is_running %}
 				The daemon is <span style="font-weight: bold">running</span>!&nbsp; Will be automatically stopped on first change.
 			{% else %}
 				The daemon is <span style="font-weight: bold">stopped</span>!&nbsp;

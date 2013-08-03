@@ -25,12 +25,9 @@ def mbd_version():
     return mini_buildd.__version__
 
 
-@register.simple_tag(takes_context=True)
-def mbd_admin_check_daemon_running(context):
-    context["daemon_running"] = False
-    if mini_buildd.daemon.get().is_running():
-        context["daemon_running"] = True
-    return ""
+@register.filter
+def mbd_daemon_is_running(dummy):
+    return mini_buildd.daemon.get().is_running()
 
 
 @register.simple_tag

@@ -42,14 +42,17 @@ def mbd_model_count(model):
         is_status_model = getattr(model_class, "mbd_is_prepared", None)
         total = model_class.objects.all().count()
         if is_status_model:
-            active = model_class.mbd_get_active().count()
+            active = model_class.objects.filter(status__exact=model_class.STATUS_ACTIVE).count()
             prepared = model_class.objects.filter(status__exact=model_class.STATUS_PREPARED).count()
+            removed = model_class.objects.filter(status__exact=model_class.STATUS_REMOVED).count()
 
             return """\
 <span title="Active instances"   style="background-color: green; color: white;">{active}</span>\
 <span title="Prepared instances" style="background-color: yellow; color: black;">{prepared}</span>\
+<span title="Removed instances" style="background-color: red; color: black;">{removed}</span>\
 """.format(active=count_str(active),
-           prepared=count_str(prepared))
+           prepared=count_str(prepared),
+           removed=count_str(removed))
         else:
             return """<span title="Total instances" style="color: black;">{total}</span>""".format(total=count_str(total))
     except:

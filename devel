@@ -201,11 +201,8 @@ mbd_doc()
 
 mbd_purge()
 {
-	_head "Purging ${MBD_HOME}"
-	sudo dpkg --purge mini-buildd
-
-	# @todo: Workaround only as long as mini-buildd doesn't yet do it
-	sudo rm -v -f /etc/schroot/chroot.d/mini-buildd-*
+	_head "Purging all mini-buildd packages"
+	sudo dpkg --purge mini-buildd python-mini-buildd mini-buildd-common
 
 	# Also test mini-buildd's internal sbuild key workaround
 	sudo rm -v -f /var/lib/sbuild/apt-keys/*
@@ -245,13 +242,6 @@ EOF
 	git checkout debian/changelog
 }
 
-mbd_default()
-{
-	# copy to avoid perm problems
-	cp ./mini_buildd/fixtures/${1}.json /tmp/fix.json
-	sudo su - mini-buildd -c "mini-buildd --loaddata=/tmp/fix.json"
-}
-
 mbd_test()
 {
 	read -p "About to upload test packages. All configured? [ http://$(hostname -f):8066 ]" dummy
@@ -263,9 +253,8 @@ mbd_test()
 
 mbd_all()
 {
-	mbd_build
 	mbd_purge
-	mbd_install
+	mbd_update
 	mbd_test
 }
 

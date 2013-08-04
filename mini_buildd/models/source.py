@@ -41,13 +41,9 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         exclude = ("extra_options",)
 
         @classmethod
-        def _add_or_create(cls, msglog, url):
+        def _mbd_get_or_create(cls, msglog, url):
             if url:
-                _obj, created = Archive.objects.get_or_create(url=url)
-                if created:
-                    msglog.info("Archive added: {a}".format(a=url))
-                else:
-                    msglog.info("Archive already exists: {a}".format(a=url))
+                Archive.mbd_get_or_create(msglog, url=url)
 
         @classmethod
         def mbd_meta_add_from_sources_list(cls, msglog):
@@ -56,7 +52,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
                 import aptsources.sourceslist
                 for src in aptsources.sourceslist.SourcesList():
                     # These URLs come from the user. 'normalize' the uri first to have exactly one trailing slash.
-                    cls._add_or_create(msglog, src.uri.rstrip("/") + "/")
+                    cls._mbd_get_or_create(msglog, src.uri.rstrip("/") + "/")
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG,
                                                 "Failed to scan local sources.lists for default mirrors ('python-apt' not installed?)",
@@ -71,15 +67,15 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
                         "http://archive.debian.org/debian/",              # Archived Debian releases
                         "http://archive.debian.org/backports.org/",       # Archived (sarge, etch, lenny) backports
                         ]:
-                cls._add_or_create(msglog, url)
-            msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
+                cls._mbd_get_or_create(msglog, url)
+            msglog.info("Consider adding archives with your local or closest mirrors; check 'netselect-apt'.")
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):
             "Add internet Ubuntu archive sources."""
             for url in ["http://danava.canonical.com/ubuntu/",            # Ubuntu releases
                         ]:
-                cls._add_or_create(msglog, url)
+                cls._mbd_get_or_create(msglog, url)
             msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
 
     def save(self, *args, **kwargs):
@@ -227,17 +223,13 @@ manually run on a Debian system to be sure.
             return fields
 
         @classmethod
-        def _add_or_create(cls, msglog, origin, codename, keys):
-            obj, created = Source.objects.get_or_create(origin=origin, codename=codename)
+        def _mbd_get_or_create(cls, msglog, origin, codename, keys):
+            obj, created = Source.mbd_get_or_create(msglog, origin=origin, codename=codename)
             if created:
-                msglog.info("Source added: {s}".format(s=obj))
                 for key_id in keys:
-                    apt_key, _created = mini_buildd.models.gnupg.AptKey.objects.get_or_create(key_id=key_id)
+                    apt_key, _created = mini_buildd.models.gnupg.AptKey.mbd_get_or_create(msglog, key_id=key_id)
                     obj.apt_keys.add(apt_key)
-                    msglog.info("Apt key added: {k}".format(s=obj, k=apt_key))
                 obj.save()
-            else:
-                msglog.info("Source already exists: {s}".format(s=obj))
 
         @classmethod
         def mbd_meta_add_debian(cls, msglog):
@@ -253,7 +245,7 @@ manually run on a Debian system to be sure.
                                            ("Debian Backports", "squeeze-backports", ["473041FA", "46925553"]),
                                            ("Debian Backports", "wheezy-backports", ["473041FA", "46925553"]),
                                            ]:
-                cls._add_or_create(msglog, origin, codename, keys)
+                cls._mbd_get_or_create(msglog, origin, codename, keys)
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):
@@ -267,7 +259,7 @@ manually run on a Debian system to be sure.
                                            ("Ubuntu", "saucy", ["437D05B5", "C0B21F32"]),
                                            ("Ubuntu", "saucy-backports/saucy", ["437D05B5", "C0B21F32"]),
                                            ]:
-                cls._add_or_create(msglog, origin, codename, keys)
+                cls._mbd_get_or_create(msglog, origin, codename, keys)
 
     def mbd_unicode(self):
         """
@@ -330,6 +322,8 @@ manually run on a Debian system to be sure.
         return "release o={o}, n={c}".format(o=self.origin, c=self.mbd_codename)
 
     def mbd_prepare(self, request):
+        msglog = MsgLog(LOG, request)
+
         self.archives = []
         if not self.apt_keys.all():
             raise Exception("Please add apt keys to this source.")
@@ -352,26 +346,22 @@ manually run on a Debian system to be sure.
                     self.codeversion = ""
                     if self.codeversion_override:
                         self.codeversion = self.codeversion_override
-                        MsgLog(LOG, request).warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
+                        msglog.warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
                     else:
                         self.codeversion = mini_buildd.misc.guess_codeversion(release)
-                        MsgLog(LOG, request).info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
+                        msglog.info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
                     # Set architectures and components (may be auto-added)
                     for a in release["Architectures"].split(" "):
-                        new_arch, created = Architecture.objects.get_or_create(name=a)
-                        if created:
-                            MsgLog(LOG, request).info("Auto-adding new architecture: {a}".format(a=a))
+                        new_arch, _created = Architecture.mbd_get_or_create(msglog, name=a)
                         self.architectures.add(new_arch)
                     for c in release["Components"].split(" "):
-                        new_component, created = Component.objects.get_or_create(name=c)
-                        if created:
-                            MsgLog(LOG, request).info("Auto-adding new component: {c}".format(c=c))
+                        new_component, _created = Component.mbd_get_or_create(msglog, name=c)
                         self.components.add(new_component)
-                    MsgLog(LOG, request).info("{o}: Added archive: {m}".format(o=self, m=m))
+                    msglog.info("{o}: Added archive: {m}".format(o=self, m=m))
 
                 except Exception as e:
-                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{m}: Not hosting us".format(m=m), e, level=logging.INFO)
+                    mini_buildd.setup.log_exception(msglog, "{m}: Not hosting us".format(m=m), e, level=logging.INFO)
 
         self.mbd_check(request)
 
@@ -418,19 +408,10 @@ class PrioritySource(mini_buildd.models.base.Model):
         exclude = ("extra_options",)
 
         @classmethod
-        def _add_or_create(cls, msglog, source):
-            obj, created = PrioritySource.objects.get_or_create(source=source, priority=1)
-            if created:
-                msglog.info("Priority source added: {s}".format(s=obj))
-                obj.save()
-            else:
-                msglog.info("Priority source already exists: {s}".format(s=obj))
-
-        @classmethod
         def mbd_meta_add_backports(cls, msglog):
             "Add all backports as prio=1 prio sources"
             for source in Source.objects.filter(codename__regex=r".*-backports"):
-                cls._add_or_create(msglog, source)
+                PrioritySource.mbd_get_or_create(msglog, source=source, priority=1)
 
     def mbd_unicode(self):
         return "{i}: Priority={p}".format(i=self.source, p=self.priority)

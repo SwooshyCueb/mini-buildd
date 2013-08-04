@@ -182,6 +182,13 @@ are actually supported by the current model.
         LOG.debug("No reverse dependencies for {s}".format(s=self))
         return []
 
+    @classmethod
+    def mbd_get_or_create(cls, msglog, **kwargs):
+        "Like get_or_create, but adds a info message."
+        obj, created = cls.objects.get_or_create(**kwargs)
+        msglog.info("{msg}: {obj}".format(msg="Added" if created else "Already exists", obj=obj))
+        return obj, created
+
 
 class StatusModel(Model):
     """

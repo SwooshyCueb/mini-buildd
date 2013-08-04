@@ -219,19 +219,11 @@ packages (to unstable,experimental,..) aimed for Debian.
         @classmethod
         def mbd_meta_create_defaults(cls, msglog):
             "Create default layouts and suites."
-            def create_suite(name):
-                suite, created = Suite.objects.get_or_create(name=name)
-                if created:
-                    msglog.info("Default suite added: {n}".format(n=name))
-                else:
-                    msglog.info("Default suite exists: {n}".format(n=name))
-                return suite
-
-            stable = create_suite("stable")
-            testing = create_suite("testing")
-            unstable = create_suite("unstable")
-            snapshot = create_suite("snapshot")
-            experimental = create_suite("experimental")
+            stable, created = Suite.mbd_get_or_create(msglog, name="stable")
+            testing, created = Suite.mbd_get_or_create(msglog, name="testing")
+            unstable, created = Suite.mbd_get_or_create(msglog, name="unstable")
+            snapshot, created = Suite.mbd_get_or_create(msglog, name="snapshot")
+            experimental, created = Suite.mbd_get_or_create(msglog, name="experimental")
 
             for name, extra_options in {"Default": {"stable": "Rollback: 6\n",
                                                     "testing": "Rollback: 3\n",
@@ -240,7 +232,7 @@ packages (to unstable,experimental,..) aimed for Debian.
                                                     "experimental": "Rollback: 6\n"},
                                         "Default (no rollbacks)": {}}.items():
 
-                default_layout, created = Layout.objects.get_or_create(name=name)
+                default_layout, created = Layout.mbd_get_or_create(msglog, name=name)
                 if created:
                     so_stable = SuiteOption(
                         layout=default_layout,
@@ -279,12 +271,10 @@ packages (to unstable,experimental,..) aimed for Debian.
                         but_automatic_upgrades=False,
                         extra_options=extra_options.get("experimental", ""))
                     so_experimental.save()
-                    msglog.info("Default layout added: {n}".format(n=name))
-                else:
-                    msglog.info("Default layout exists: {n}".format(n=name))
 
             # Debian Developer layout
-            debdev_layout, created = Layout.objects.get_or_create(
+            debdev_layout, created = Layout.mbd_get_or_create(
+                msglog,
                 name="Debian Developer",
                 defaults={"mandatory_version_regex": ".*",
                           "experimental_mandatory_version_regex": ".*",
@@ -304,9 +294,6 @@ packages (to unstable,experimental,..) aimed for Debian.
                     experimental=True,
                     but_automatic_upgrades=False)
                 debdev_experimental.save()
-                msglog.info("Default layout added: {n}".format(n=debdev_layout.name))
-            else:
-                msglog.info("Default layout exists: {n}".format(n=debdev_layout.name))
 
     def mbd_unicode(self):
         return self.name

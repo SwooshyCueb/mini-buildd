@@ -396,14 +396,13 @@ class Daemon():
             LOG.info("New default Daemon model instance created")
         return model
 
-    def _update_from_model(self, stop=False):
+    def _update_from_model(self):
         self.model = self._new_model_object()
 
-        if not self.keyrings:
+        if self.keyrings is None:
             self.keyrings = Keyrings()
-        elif stop:
-            self.keyrings.close()
-            self.keyrings = None
+        else:
+            self.keyrings.set_needs_update()
         self.incoming_queue = Queue.Queue()
         self.build_queue = mini_buildd.misc.BlockQueue(maxsize=self.model.build_queue_size)
         self.packages = {}
@@ -459,7 +458,7 @@ class Daemon():
                 self.incoming_queue.put("SHUTDOWN")
                 self.thread.join()
                 self.thread = None
-                self._update_from_model(stop=True)
+                self._update_from_model()
                 msglog.info("Daemon stopped.")
             else:
                 msglog.info("Daemon already stopped.")

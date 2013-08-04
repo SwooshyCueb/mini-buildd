@@ -81,6 +81,30 @@ chroots (with <tt>qemu-user-static</tt> installed).
                 fields.append("architecture")
             return fields
 
+        @classmethod
+        def mbd_host_architecture(cls):
+            return mini_buildd.misc.sose_call(["dpkg", "--print-architecture"]).strip()
+
+        @classmethod
+        def _mbd_get_supported_archs(cls, arch):
+            "Some archs also natively support other archs."
+            arch_map = {"amd64": ["i386"]}
+            return [arch] + arch_map.get(arch, [])
+
+        @classmethod
+        def _mbd_meta_add_base_sources(cls, chroot_model, msglog):
+            "Add chroot objects for all base sources found."
+            arch = cls.mbd_host_architecture()
+            archs = cls._mbd_get_supported_archs(arch)
+            msglog.info("Host architecture {arch} supports {archs}".format(arch=arch, archs=" ".join(archs)))
+
+            for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
+                for a in mini_buildd.models.source.Architecture.objects.filter(name__regex=r"^({archs})$".format(archs="|".join(archs))):
+                    try:
+                        chroot_model.mbd_get_or_create(msglog, source=s, architecture=a)
+                    except:
+                        msglog.info("Another backend already provides {s}/{a}".format(s=s.codename, a=a.name))
+
     def mbd_unicode(self):
         return "{c}/{a} ({f})".format(c=self.source.codename,
                                       a=self.architecture.name,
@@ -273,6 +297,10 @@ See 'man 5 schroot.conf'
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("Dir options", {"fields": ("union_type",)})]
 
+        @classmethod
+        def mbd_meta_add_base_sources(cls, msglog):
+            cls._mbd_meta_add_base_sources(DirChroot, msglog)
+
     def mbd_backend_flavor(self):
         return self.get_union_type_display()
 
@@ -327,6 +355,10 @@ class FileChroot(Chroot):
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("File options", {"fields": ("compression",)})]
 
+        @classmethod
+        def mbd_meta_add_base_sources(cls, msglog):
+            cls._mbd_meta_add_base_sources(FileChroot, msglog)
+
     def mbd_backend_flavor(self):
         return self.TAR_SUFFIX[self.compression]
 
@@ -365,6 +397,10 @@ class LVMChroot(Chroot):
 
     class Admin(Chroot.Admin):
         fieldsets = Chroot.Admin.fieldsets + [("LVM options", {"fields": ("volume_group", "filesystem", "snapshot_size")})]
+
+        @classmethod
+        def mbd_meta_add_base_sources(cls, msglog):
+            cls._mbd_meta_add_base_sources(LVMChroot, msglog)
 
     def mbd_backend_flavor(self):
         return "lvm={grp}/{fs}/{size}G".format(grp=self.volume_group, fs=self.filesystem, size=self.snapshot_size)
@@ -416,6 +452,10 @@ class LoopLVMChroot(LVMChroot):
 
     class Admin(LVMChroot.Admin):
         fieldsets = LVMChroot.Admin.fieldsets + [("Loop options", {"fields": ("loop_size",)})]
+
+        @classmethod
+        def mbd_meta_add_base_sources(cls, msglog):
+            cls._mbd_meta_add_base_sources(LoopLVMChroot, msglog)
 
     def mbd_backend_flavor(self):
         return "{size}G loop: {l}".format(size=self.loop_size,

@@ -41,10 +41,10 @@
 
 									<!-- CHROOTS -->
 									<tr><td colspan="3"><h2 class="mini-buildd">Chroots</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
 									{% include "admin/snippet_index_table_row.html" with model_name="Lvm chroots" model_path="chroot.LVMChroot" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" %}
+									{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
 
 									<!-- UPLOADERS AND REMOTES -->
 									<tr><td colspan="3"><h2 class="mini-buildd">Uploaders and Remotes</h2></td></tr>

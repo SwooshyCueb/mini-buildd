@@ -24,7 +24,7 @@ function-rgx=[a-z_][a-z0-9_]{1,40}$
 [DESIGN]
 
 # Django adds many public methods to classes, FTPDHandler is the winner though
-max-public-methods=105
+max-public-methods=110
 min-public-methods=0
 
 # We need to pimp some default values a little

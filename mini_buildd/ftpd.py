@@ -18,6 +18,15 @@ import mini_buildd.misc
 
 LOG = logging.getLogger(__name__)
 
+# Alas, we need this to be compatible with 0.7 and >= 1.0 versions (see serve_forever below)
+# pylint: disable=E1101
+try:
+    PYFTPDLIB_MAIN_VERSION = pyftpdlib.__ver__.split(".")[0]
+except:
+    # 0.7 had no __ver__
+    PYFTPDLIB_MAIN_VERSION = 0
+# pylint: enable=E1101
+
 
 def log_init():
     """
@@ -119,9 +128,16 @@ def run(bind, queue):
 
     global _RUN
     _RUN = True
+
+# pylint: disable=E1123
     while _RUN:
-        ftpd.serve_forever(count=1)
-    ftpd.close()
+        if PYFTPDLIB_MAIN_VERSION < 1:
+            ftpd.serve_forever(count=1)
+        else:
+            ftpd.serve_forever(timeout=5.0, blocking=False, handle_exit=False)
+# pylint: enable=E1123
+
+    ftpd.close_all()
 
 _RUN = None
 

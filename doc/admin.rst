@@ -180,8 +180,8 @@ Deactivate  Deactivate the item, or remove the auto-activate flag.
 Remove      Remove associated data from system.
 =========== ============================================================================
 
-Daemon Status Model
-===================
+Daemon
+======
 
 The Daemon model represents a configured mini-buildd
 instance. It is limited to have exactly one instance; when
@@ -205,8 +205,8 @@ and can be enabled/disabled inside mini-buildd.
 		 # apt-get install haveged
 
 
-Archives and Sources
-====================
+Sources
+=======
 
 This groups all models that determine what APT sources are
 available, and where to get them.
@@ -226,8 +226,8 @@ when dealing with chroots and distributions.
 	 is actually signed with.
 
 
-Suites and Layouts
-==================
+Repositories
+============
 
 It's **highly recommended** to just stick with one of the
 default Layouts, and **don't change/add anything** here.
@@ -235,10 +235,6 @@ default Layouts, and **don't change/add anything** here.
 You will interface with Layouts in Repositories, determining what
 suites (and rollback distributions) are available, which suites
 are uploadable, and which suites migrate, etc...
-
-
-Distributions and Repositories
-==============================
 
 Distributions determines how and for what architectures a base
 distribution is to be build.
@@ -256,6 +252,7 @@ A repository represent one apt repository managed via reprepro.
 	 as distribution in changes files to identify the repository from
 	 incoming. A global (i.e., not per repository) additional mapping
 	 would be needed, like 'unstable' -> sid-myrepo-sid.
+
 
 Chroots
 =======
@@ -357,8 +354,10 @@ your system, **LVM chroots** are good alternative, too.
 	 testing.
 	 fs checks would only really make sense for LVM chroots.
 
-Uploaders and Remotes
-=====================
+
+Remotes
+=======
+
 
 Provide keyring packages
 ========================

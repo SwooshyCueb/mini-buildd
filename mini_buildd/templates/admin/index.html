@@ -14,45 +14,41 @@
 		{% if app_list %}
 			{% for app in app_list %}
 				{% if app.name = "Mini_Buildd" %}
-					<!-- MINI-BUILDD -->
-					<div class="module mb">
-						<div id="mbd_box">
-							<h1 class="mini-buildd"><a href="{{ app.app_url }}" class="section">{{ app.name }}</a></h1>
-							<div class="inner-box">
-								<table>
-									<!-- DAEMON -->
-									<tr><td colspan="3"><h2 class="mini-buildd">Daemon</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Daemon" model_path="daemon.Daemon" hide_add="True" %}
+					<div class="module">
+						<table>
+							<caption class="mb"><a href="{{ app.app_url }}" class="section">{% blocktrans with app.name as name %}{{ name }}{% endblocktrans %}</a></caption>
 
-									<!-- SOURCES -->
-									<tr><td colspan="3"><h2 class="mini-buildd">Sources</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Archives" model_path="source.Archive" wiz0_function="add_from_sources_list" wiz0_name="Local"  wiz0_title="Scan your local system's apt setup and add all new archives found" wiz1_function="add_debian" wiz1_name="Debian" wiz1_title="Add generic internet Debian archives" wiz2_function="add_ubuntu" wiz2_name="Ubuntu" wiz2_title="Add generic internet Ubuntu archives" %}
+							<!-- DAEMON -->
+							{% include "admin/snippet_index_table_header.html" with title="Daemon" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Daemon" model_path="daemon.Daemon" hide_add="True" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Sources" model_path="source.Source" wiz0_function="add_debian" wiz0_name="Debian" wiz0_title="Add well-known Debian sources" wiz1_function="add_ubuntu" wiz1_name="Ubuntu" wiz1_title="Add well-known Ubuntu sources" %}
+							<!-- SOURCES -->
+							{% include "admin/snippet_index_table_header.html" with title="Sources" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Archives" model_path="source.Archive" wiz0_function="add_from_sources_list" wiz0_name="Local"  wiz0_title="Scan your local system's apt setup and add all new archives found" wiz1_function="add_debian" wiz1_name="Debian" wiz1_title="Add generic internet Debian archives" wiz2_function="add_ubuntu" wiz2_name="Ubuntu" wiz2_title="Add generic internet Ubuntu archives" %}
 
-									{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" model_path="source.PrioritySource" wiz0_function="add_backports" wiz0_name="Backports" wiz0_title="Add all '*-backports' sources with default priority 1" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" model_path="gnupg.AptKey" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Sources" model_path="source.Source" wiz0_function="add_debian" wiz0_name="Debian" wiz0_title="Add well-known Debian sources" wiz1_function="add_ubuntu" wiz1_name="Ubuntu" wiz1_title="Add well-known Ubuntu sources" %}
 
-									<!-- REPOSITORIES -->
-									<tr><td colspan="3"><h2 class="mini-buildd">Repositories</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Layouts" model_path="repository.Layout" wiz0_function="create_defaults" wiz0_name="Defaults" wiz0_title="Create default layout and suites" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Repositories" model_path="repository.Repository" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Priority sources" model_path="source.PrioritySource" wiz0_function="add_backports" wiz0_name="Backports" wiz0_title="Add all '*-backports' sources with default priority 1" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Apt keys" model_path="gnupg.AptKey" %}
 
-									<!-- CHROOTS -->
-									<tr><td colspan="3"><h2 class="mini-buildd">Chroots</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Lvm chroots" model_path="chroot.LVMChroot" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+							<!-- REPOSITORIES -->
+							{% include "admin/snippet_index_table_header.html" with title="Repositories" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Layouts" model_path="repository.Layout" wiz0_function="create_defaults" wiz0_name="Defaults" wiz0_title="Create default layout and suites" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Repositories" model_path="repository.Repository" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Uploaders" hide_add="True" model_path="gnupg.Uploader" %}
 
-									<!-- UPLOADERS AND REMOTES -->
-									<tr><td colspan="3"><h2 class="mini-buildd">Uploaders and Remotes</h2></td></tr>
-									{% include "admin/snippet_index_table_row.html" with model_name="Uploaders" hide_add="True" model_path="gnupg.Uploader" %}
-									{% include "admin/snippet_index_table_row.html" with model_name="Remotes" model_path="gnupg.Remote" %}
-								</table>
-							</div>
-						</div>
+							<!-- CHROOTS -->
+							{% include "admin/snippet_index_table_header.html" with title="Chroots" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Lvm chroots" model_path="chroot.LVMChroot" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+
+							<!-- REMOTES -->
+							{% include "admin/snippet_index_table_header.html" with title="Remotes" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Remotes" model_path="gnupg.Remote" %}
+						</table>
 					</div>
 				{% endif %}
 			{% endfor %}

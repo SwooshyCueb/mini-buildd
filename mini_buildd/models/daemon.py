@@ -213,7 +213,7 @@ prepare/remove actions will generate/remove the GnuPG key.
     def mbd_check(self, request):
         "Just warn in case there are no repos and no chroots."
         if not self.mbd_get_daemon().get_active_repositories() and not self.mbd_get_daemon().get_active_chroots():
-            MsgLog(LOG, request).warn("No active chroot or repository (starting anyway).")
+            MsgLog(LOG, request).warn("No active chroot or repository.")
 
     def mbd_get_ftp_hopo(self):
         return mini_buildd.misc.HoPo("{h}:{p}".format(h=self.hostname, p=mini_buildd.misc.HoPo(self.ftpd_bind).port))

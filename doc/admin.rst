@@ -316,7 +316,6 @@ your system, **LVM chroots** are good alternative, too.
 	 .. rubric:: References:
 	 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 
-
 .. todo:: **BUG**: *Fails to build "all" packages with "build archall" flag set to arch "x" in case DSP has >= 1 arch "all" and >=1 arch "y" binary package*
 
 	 This is due to sbuild and in in more detail explained here [#debbug706086]_.
@@ -326,6 +325,15 @@ your system, **LVM chroots** are good alternative, too.
 	 .. rubric:: References:
 	 .. [#debbug706086] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=706086
 
+.. todo:: **BUG**: *Lvm chroots fail running lvcreate with 'not found: device not cleared'*
+
+	 Unclear (?). See [#debbug705238]_ or http://lists.debian.org/debian-user/2012/12/msg00407.html .
+
+	 "--noudevsync" workaround makes lvcreate work again, but the
+	 chroot will not work later anyway later.
+
+	 .. rubric:: References:
+	 .. [#debbug705238] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=705238
 
 .. todo:: **FAQ**: *Chroot creating fails due to missing arch in archive (partial mirror).*
 

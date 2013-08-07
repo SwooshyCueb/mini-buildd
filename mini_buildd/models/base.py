@@ -186,7 +186,10 @@ are actually supported by the current model.
     def mbd_get_or_create(cls, msglog, **kwargs):
         "Like get_or_create, but adds a info message."
         obj, created = cls.objects.get_or_create(**kwargs)
-        msglog.info("{msg}: {obj}".format(msg="Added" if created else "Already exists", obj=obj))
+        if created:
+            msglog.info("Created: {o}".format(o=obj))
+        else:
+            msglog.debug("Already exists: {o}".format(o=obj))
         return obj, created
 
 
@@ -247,16 +250,16 @@ class StatusModel(Model):
                 obj.mbd_prepare(request)
                 obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_NONE
                 obj.save()
-                MsgLog(LOG, request).info("{o}: Prepare successful.".format(o=obj))
+                MsgLog(LOG, request).info("Prepared: {o}".format(o=obj))
             elif obj.mbd_is_changed():
                 # Update data on change
                 cls._mbd_run_dependencies(request, obj, cls.mbd_prepare)
                 obj.mbd_sync(request)
                 obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_NONE
                 obj.save()
-                MsgLog(LOG, request).info("{o}: Prepared data updated.".format(o=obj))
+                MsgLog(LOG, request).info("Synced: {o}".format(o=obj))
             else:
-                MsgLog(LOG, request).info("{o}: Already prepared.".format(o=obj))
+                MsgLog(LOG, request).info("Already prepared: {o}".format(o=obj))
 
         @classmethod
         def mbd_check(cls, request, obj, force=False, needs_activation=False):
@@ -268,35 +271,36 @@ class StatusModel(Model):
                                               needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_REACTIVATE)
 
                     if force or obj.mbd_needs_check():
-                        MsgLog(LOG, request).info("{o}: Triggering check (forced={f}). Last checked {c}.".format(o=obj, f=force, c=obj.last_checked))
+                        last_checked = obj.last_checked
 
                         obj.mbd_check(request)
 
                         # Handle special flags
                         if obj.last_checked == obj.CHECK_REACTIVATE:
                             obj.status = StatusModel.STATUS_ACTIVE
-                            MsgLog(LOG, request).info("{o}: Auto-reactivated.".format(o=obj))
+                            MsgLog(LOG, request).info("Auto-reactivated: {o}".format(o=obj))
 
                         # Finish up
                         obj.last_checked = datetime.datetime.now()
                         obj.save()
-                        MsgLog(LOG, request).info("{o}: Check successful.".format(o=obj))
+
+                        MsgLog(LOG, request).info("Checked ({f}, last={c}): {o}".format(f="forced" if force else "scheduled", c=last_checked, o=obj))
                     else:
-                        MsgLog(LOG, request).info("{o}: Needs no check.".format(o=obj))
+                        MsgLog(LOG, request).info("Needs no check: {o}".format(o=obj))
 
                     if needs_activation and not obj.mbd_is_active():
-                        raise Exception("{o}: Not active, but a (tobe-)active item depends on it. Activate this first.".format(o=obj))
+                        raise Exception("Not active, but a (tobe-)active item depends on it. Activate this first: {o}".format(o=obj))
                 except:
                     # Check failed, auto-deactivate and re-raise exception
                     obj.last_checked = max(obj.last_checked, obj.CHECK_FAILED)
                     if obj.mbd_is_active():
                         obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_REACTIVATE
-                        MsgLog(LOG, request).error("{o}: Automatically deactivated.".format(o=obj))
+                        MsgLog(LOG, request).error("Automatically deactivated: {o}".format(o=obj))
                         cls._mbd_stop_daemon(request, obj)
                     obj.save()
                     raise
             else:
-                raise Exception("{o}: Can't check removed or changed object (run 'prepare' first).".format(o=obj))
+                raise Exception("Can't check removed or changed object (run 'prepare' first): {o}".format(o=obj))
 
         @classmethod
         def mbd_activate(cls, request, obj):
@@ -305,13 +309,13 @@ class StatusModel(Model):
                 obj.status = obj.STATUS_ACTIVE
                 obj.save()
                 cls._mbd_on_activation(request, obj)
-                MsgLog(LOG, request).info("{o}: Activate successful.".format(o=obj))
+                MsgLog(LOG, request).info("Activated: {o}".format(o=obj))
             elif obj.mbd_is_prepared() and (obj.last_checked == obj.CHECK_FAILED or obj.last_checked == obj.CHECK_NONE):
                 obj.last_checked = obj.CHECK_REACTIVATE
                 obj.save()
-                MsgLog(LOG, request).info("{o}: Set to auto-activate when check succeeds.".format(o=obj))
+                MsgLog(LOG, request).info("Will auto-activate when check succeeds: {o}".format(o=obj))
             elif obj.mbd_is_active():
-                MsgLog(LOG, request).info("{o}: Already active.".format(o=obj))
+                MsgLog(LOG, request).info("Already active: {o}".format(o=obj))
 
         @classmethod
         def mbd_deactivate(cls, request, obj):
@@ -320,7 +324,7 @@ class StatusModel(Model):
                 obj.last_checked = obj.CHECK_FAILED
             cls._mbd_stop_daemon(request, obj)
             obj.save()
-            MsgLog(LOG, request).info("{o}: Deactivate successful.".format(o=obj))
+            MsgLog(LOG, request).info("Deactivated: {o}".format(o=obj))
 
         @classmethod
         def mbd_remove(cls, request, obj):
@@ -328,9 +332,9 @@ class StatusModel(Model):
                 obj.mbd_remove(request)
                 obj.status, obj.last_checked = obj.STATUS_REMOVED, obj.CHECK_NONE
                 obj.save()
-                MsgLog(LOG, request).info("{o}: Remove successful.".format(o=obj))
+                MsgLog(LOG, request).info("Removed: {o}".format(o=obj))
             else:
-                MsgLog(LOG, request).info("{o}: Already removed.".format(o=obj))
+                MsgLog(LOG, request).info("Already removed: {o}".format(o=obj))
 
         @classmethod
         def mbd_action(cls, request, queryset, action, **kwargs):
@@ -342,7 +346,7 @@ class StatusModel(Model):
                 try:
                     getattr(cls, "mbd_" + action)(request, o, **kwargs)
                 except Exception as e:
-                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{o}: {a} failed".format(o=o, a=action), e)
+                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "{a} failed: {o}".format(a=action, o=o), e)
 
         def mbd_action_prepare(self, request, queryset):
             self.mbd_action(request, queryset, "prepare")
@@ -406,9 +410,9 @@ this would mean losing all packages!
     def mbd_set_changed(self, request):
         if self.mbd_is_active():
             self.status = self.STATUS_PREPARED
-            MsgLog(LOG, request).warn("{o}: Deactivated due to changes. Prepare data again.".format(o=self))
+            MsgLog(LOG, request).warn("Deactivated due to changes: {o}".format(o=self))
         self.last_checked = self.CHECK_CHANGED
-        MsgLog(LOG, request).warn("{o}: Marked as changed.".format(o=self))
+        MsgLog(LOG, request).warn("Marked as changed: {o}".format(o=self))
 
     #
     # Action hooks helpers

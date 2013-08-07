@@ -41,7 +41,7 @@ class MsgLog(object):
         self.plain = ""
 
     @classmethod
-    def _level2django(cls, level):
+    def level2django(cls, level):
         "Map standard python log levels to django's."
         return {logging.DEBUG: django.contrib.messages.DEBUG,
                 logging.INFO: django.contrib.messages.INFO,
@@ -60,7 +60,7 @@ class MsgLog(object):
 
     def log(self, level, msg):
         if self.request:
-            django.contrib.messages.add_message(self.request, self._level2django(level), msg)
+            django.contrib.messages.add_message(self.request, self.level2django(level), msg)
 
         # Ouch: Try to get the actual log call's meta flags
         # Ideally, we should be patching the actual line and mod used for standard formatting (seems non-trivial...)

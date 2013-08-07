@@ -13,6 +13,7 @@ import django.contrib.messages.constants
 
 import mini_buildd.setup
 import mini_buildd.models
+import mini_buildd.models.msglog
 
 LOG = logging.getLogger(__name__)
 
@@ -49,7 +50,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
     This class represents mini-buildd's web application.
     """
 
-    def __init__(self, smtp_string):
+    def __init__(self, smtp_string, loglevel):
         LOG.info("Configuring && generating django app...")
         super(WebApp, self).__init__()
 
@@ -58,7 +59,7 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         django.conf.settings.configure(
             DEBUG=debug,
             TEMPLATE_DEBUG=debug,
-            MESSAGE_LEVEL=django.contrib.messages.constants.DEBUG if debug else django.contrib.messages.constants.INFO,
+            MESSAGE_LEVEL=mini_buildd.models.msglog.MsgLog.level2django(loglevel),
 
             ALLOWED_HOSTS=["*"],
 

@@ -193,6 +193,8 @@ Comma-separated list of special debugging options:
         for typ, err in loggers_failed.items():
             LOG.critical("Logger {t} failed: {e}".format(t=typ, e=err))
 
+        return loglevel
+
     def _setup_environment(self):
         os.environ.clear()
         os.environ["HOME"] = self._args.home
@@ -206,7 +208,7 @@ Comma-separated list of special debugging options:
         if not self._args.foreground:
             daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()
         self._setup()
-        self._setup_logging()
+        self._loglevel = self._setup_logging()
         self._setup_environment()
 
         # Shutdown on SIGTERM or SIGINT
@@ -243,7 +245,7 @@ Comma-separated list of special debugging options:
 
     def run(self):
         # Get the django project instance
-        webapp = mini_buildd.webapp.WebApp(self._args.smtp)
+        webapp = mini_buildd.webapp.WebApp(self._args.smtp, self._loglevel)
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:

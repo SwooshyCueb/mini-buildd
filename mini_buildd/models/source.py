@@ -61,7 +61,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 
         @classmethod
         def mbd_meta_add_debian(cls, msglog):
-            "Add internet Debian archive sources."""
+            "Add internet Debian archive sources."
             for url in ["http://ftp.debian.org/debian/",                  # Debian releases
                         "http://backports.debian.org/debian-backports/",  # Debian backports, <= squeeze
                         "http://archive.debian.org/debian/",              # Archived Debian releases
@@ -72,16 +72,14 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):
-            "Add internet Ubuntu archive sources."""
+            "Add internet Ubuntu archive sources."
             for url in ["http://danava.canonical.com/ubuntu/",            # Ubuntu releases
                         ]:
                 cls._mbd_get_or_create(msglog, url)
             msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
 
     def save(self, *args, **kwargs):
-        """
-        Implicitely set the ping value on save.
-        """
+        "Implicitely set the ping value on save."
         self.mbd_ping(None)
         super(Archive, self).save(*args, **kwargs)
 
@@ -123,9 +121,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             return release
 
     def mbd_ping(self, request):
-        """
-        Ping and set the ping value.
-        """
+        "Ping and set the ping value."
         try:
             t0 = datetime.datetime.now()
             urllib2.urlopen(self.url)
@@ -297,9 +293,7 @@ manually run on a Debian system to be sure.
         return self.mbd_parse_codename()[1]
 
     def mbd_get_archive(self):
-        """
-        Returns the fastest archive.
-        """
+        "Returns the fastest archive."
         oa_list = self.archives.all().filter(ping__gte=0.0).order_by("ping")
         if oa_list:
             return oa_list[0]
@@ -316,6 +310,8 @@ manually run on a Debian system to be sure.
 
     def mbd_get_apt_pin(self):
         """
+        Apt 'pin line' (for use in a apt 'preference' file).
+
         'o=' Origin header
         'n=' Codename header
         """
@@ -375,9 +371,7 @@ manually run on a Debian system to be sure.
         self.description = ""
 
     def mbd_check(self, _request):
-        """
-        Check that this source has at least one working archive left.
-        """
+        "Check that this source has at least one working archive left."
         # Update all ping values
         for a in self.archives.all():
             a.save()

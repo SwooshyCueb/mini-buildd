@@ -298,7 +298,7 @@ manually run on a Debian system to be sure.
         if oa_list:
             return oa_list[0]
         else:
-            raise Exception("No (pinging) archive found. Please add appr. archive, or check network setup.")
+            raise Exception("No archive found. Please add appropriate archive and/or check network setup.")
 
     def mbd_get_apt_line(self, distribution):
         allowed_components = [c.name for c in distribution.components.all()]
@@ -317,25 +317,36 @@ manually run on a Debian system to be sure.
         """
         return "release o={o}, n={c}".format(o=self.origin, c=self.mbd_codename)
 
-    def mbd_prepare(self, request):
-        msglog = MsgLog(LOG, request)
-
-        self.archives = []
+    def mbd_prepare(self, _request):
         if not self.apt_keys.all():
             raise Exception("Please add apt keys to this source.")
 
+    def mbd_sync(self, request):
+        self._mbd_remove_and_prepare(request)
+
+    def mbd_remove(self, _request):
+        self.archives = []
+        self.components = []
+        self.architectures = []
+        self.description = ""
+
+    def mbd_check(self, request):
+        "Rescan all archives, and check that there is at least one working."
+        msglog = MsgLog(LOG, request)
+
+        self.archives = []
         with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
             for k in self.apt_keys.all():
                 gpg.add_pub_key(k.key)
 
-            for m in Archive.objects.all():
+            for archive in Archive.objects.all():
                 try:
                     # Get release if this archive serves us, else exception
-                    release = m.mbd_download_release(self, gpg)
+                    release = archive.mbd_download_release(self, gpg)
 
                     # Implicitely save ping value for this archive
-                    m.save()
-                    self.archives.add(m)
+                    archive.save()
+                    self.archives.add(archive)
                     self.description = release["Description"]
 
                     # Set codeversion
@@ -354,27 +365,12 @@ manually run on a Debian system to be sure.
                     for c in release["Components"].split(" "):
                         new_component, _created = Component.mbd_get_or_create(msglog, name=c)
                         self.components.add(new_component)
-                    msglog.info("{o}: Added archive: {m}".format(o=self, m=m))
+                    msglog.info("{o}: Added archive: {a}".format(o=self, a=archive))
 
                 except Exception as e:
-                    mini_buildd.setup.log_exception(msglog, "{m}: Not hosting us".format(m=m), e, level=logging.INFO)
+                    mini_buildd.setup.log_exception(msglog, "{a}: Not hosting us".format(a=archive), e, level=logging.DEBUG)
 
-        self.mbd_check(request)
-
-    def mbd_sync(self, request):
-        self._mbd_remove_and_prepare(request)
-
-    def mbd_remove(self, _request):
-        self.archives = []
-        self.components = []
-        self.architectures = []
-        self.description = ""
-
-    def mbd_check(self, _request):
-        "Check that this source has at least one working archive left."
-        # Update all ping values
-        for a in self.archives.all():
-            a.save()
+        # Check that at least one archive can be found
         self.mbd_get_archive()
 
     def mbd_get_dependencies(self):

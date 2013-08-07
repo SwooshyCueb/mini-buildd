@@ -447,6 +447,25 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
         inlines = (ArchitectureOptionInline,)
 
+        @classmethod
+        def mbd_meta_add_base_sources(cls, msglog):
+            "Add default distribution objects for all base sources found."
+            for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
+                new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
+                if created:
+                    for c in ["main", "contrib", "non-free"]:
+                        component = mini_buildd.models.source.Component.objects.get(name__exact=c)
+                        new_dist.components.add(component)
+
+                    archall = True
+                    for arch in mini_buildd.models.source.Architecture.mbd_supported_architectures():
+                        architecture = mini_buildd.models.source.Architecture.objects.get(name__exact=arch)
+                        architecture_option = ArchitectureOption(architecture=architecture,
+                                                                 distribution=new_dist,
+                                                                 build_architecture_all=archall)
+                        architecture_option.save()
+                        archall = False
+
     def mbd_unicode(self):
         return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source,
                                                 c=" ".join(self.mbd_get_components()),

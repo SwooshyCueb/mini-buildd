@@ -34,7 +34,7 @@
 							<!-- REPOSITORIES -->
 							{% include "admin/snippet_index_table_header.html" with title="Repositories" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Layouts" model_path="repository.Layout" wiz0_function="create_defaults" wiz0_name="Defaults" wiz0_title="Create default layout and suites" %}
-							{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Create default distributions for all base sources with the host architecture" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Repositories" model_path="repository.Repository" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Uploaders" hide_add="True" model_path="gnupg.Uploader" %}
 

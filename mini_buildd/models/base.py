@@ -413,7 +413,7 @@ this would mean losing all packages!
     #
     # Action hooks helpers
     #
-    def _mbd_sync_by_purge_and_create(self, request):
+    def _mbd_remove_and_prepare(self, request):
         mini_buildd.models.base.StatusModel.Admin.mbd_remove(request, self)
         mini_buildd.models.base.StatusModel.Admin.mbd_prepare(request, self)
 

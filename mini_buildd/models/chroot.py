@@ -229,7 +229,7 @@ personality={p}
         MsgLog(LOG, request).info("{c}: Removed from system.".format(c=self))
 
     def mbd_sync(self, request):
-        self._mbd_sync_by_purge_and_create(request)
+        self._mbd_remove_and_prepare(request)
 
     def _mbd_schroot_run(self, args, namespace="chroot", user="root"):
         return mini_buildd.misc.sose_call(["/usr/bin/schroot",

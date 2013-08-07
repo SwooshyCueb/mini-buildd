@@ -94,9 +94,8 @@ chroots (with <tt>qemu-user-static</tt> installed).
         @classmethod
         def _mbd_meta_add_base_sources(cls, chroot_model, msglog):
             "Add chroot objects for all base sources found."
-            arch = cls.mbd_host_architecture()
-            archs = cls._mbd_get_supported_archs(arch)
-            msglog.info("Host architecture {arch} supports {archs}".format(arch=arch, archs=" ".join(archs)))
+            archs = mini_buildd.models.source.Architecture.mbd_supported_architectures()
+            msglog.info("Host supports {archs}".format(archs=" ".join(archs)))
 
             for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
                 for a in mini_buildd.models.source.Architecture.objects.filter(name__regex=r"^({archs})$".format(archs="|".join(archs))):

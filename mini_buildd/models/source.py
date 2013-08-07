@@ -141,6 +141,17 @@ class Architecture(mini_buildd.models.base.Model):
     def mbd_unicode(self):
         return self.name
 
+    @classmethod
+    def mbd_host_architecture(cls):
+        return mini_buildd.misc.sose_call(["dpkg", "--print-architecture"]).strip()
+
+    @classmethod
+    def mbd_supported_architectures(cls, arch=None):
+        "Some archs also natively support other archs."
+        arch = arch or cls.mbd_host_architecture()
+        arch_map = {"amd64": ["i386"]}
+        return [arch] + arch_map.get(arch, [])
+
 
 class Component(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)

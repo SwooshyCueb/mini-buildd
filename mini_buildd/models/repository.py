@@ -600,6 +600,28 @@ Example:
 
         actions = [action_generate_keyring_packages]
 
+        @classmethod
+        def mbd_meta_add_sandbox(cls, msglog):
+            "Add sandbox repository 'test'."
+            sandbox_repo, created = Repository.mbd_get_or_create(
+                msglog,
+                identity="test",
+                layout=Layout.objects.get(name__exact="Default"))
+            if created:
+                for d in Distribution.objects.all():
+                    sandbox_repo.distributions.add(d)
+
+        @classmethod
+        def mbd_meta_add_debdev(cls, msglog):
+            "Add developer repository 'debdev'."
+            debdev_repo, created = Repository.mbd_get_or_create(
+                msglog,
+                identity="debdev",
+                layout=Layout.objects.get(name__exact="Debian Developer"))
+            if created:
+                for d in Distribution.objects.all():
+                    debdev_repo.distributions.add(d)
+
     def mbd_unicode(self):
         return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.mbd_codename for d in self.distributions.all()]))
 

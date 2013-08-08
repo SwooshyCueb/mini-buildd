@@ -316,6 +316,17 @@ your system, **LVM chroots** are good alternative, too.
 	 .. rubric:: References:
 	 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 
+.. todo:: **BUG**: *Fails to create <= lenny chroots with certain host kernel (uname).*
+
+	 This is due to older libc packages preinstall doing shell magic with `uname` [#debbug642031]_.
+
+	 Use a standard Debian kernel, or try to locally implement one
+	 of the workarounds and configure it via the
+	 Debootstrap-Commmand extra option.
+
+	 .. rubric:: References:
+	 .. [#debbug642031] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031
+
 .. todo:: **BUG**: *Fails to build "all" packages with "build archall" flag set to arch "x" in case DSP has >= 1 arch "all" and >=1 arch "y" binary package*
 
 	 This is due to sbuild and in in more detail explained here [#debbug706086]_.

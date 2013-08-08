@@ -450,10 +450,13 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         @classmethod
         def mbd_meta_add_base_sources(cls, msglog):
             "Add default distribution objects for all base sources found."
+            def default_components(origin):
+                return {"Ubuntu": ["main", "universe", "restricted", "multiverse"]}.get(origin, ["main", "contrib", "non-free"])
+
             for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
                 new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
                 if created:
-                    for c in ["main", "contrib", "non-free"]:
+                    for c in default_components(s.origin):
                         component = mini_buildd.models.source.Component.objects.get(name__exact=c)
                         new_dist.components.add(component)
 

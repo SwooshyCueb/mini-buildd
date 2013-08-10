@@ -92,9 +92,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
     def mbd_download_release(self, source, gnupg):
-        dist, codename = source.mbd_parse_codename()
-
-        url = "{u}/dists/{d}/Release".format(u=self.url, d=dist)
+        url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
         with tempfile.NamedTemporaryFile() as release_file:
             LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release_file.name))
             release_file.write(urllib2.urlopen(url).read())
@@ -102,13 +100,8 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             release_file.seek(0)
             release = debian.deb822.Release(release_file)
 
-            # Check identity: origin, codename
-            if not (source.origin == release["Origin"] and codename == release["Codename"]):
-                raise Exception("Not for source '{so}:{sc}': Found '{o}:{d}/{c}:{s}'".format(so=source.origin,
-                                                                                             sc=source.codename,
-                                                                                             d=dist,
-                                                                                             o=release["Origin"],
-                                                                                             c=release["Codename"]))
+            # Check release file fields
+            source.mbd_check_release_file(release)
 
             # Check signature
             with tempfile.NamedTemporaryFile() as signature:
@@ -180,12 +173,14 @@ class Source(mini_buildd.models.base.StatusModel):
                                         help_text="The exact string of the 'Origin' field of the resp. Release file.")
     codename = django.db.models.CharField(max_length=60, default="sid",
                                           help_text="""\
-Source identifier in the form 'DIST[/CODENAME]'.<br />
+The name of the directory below 'dist/' in archives this source refers to; this is also used
+as-is to check the 'Codename' field in the Release file (unless you overwrite it in
+extra options, see below).
 <br />
-<em>DIST</em>: The distribution name, i.e., the name of the directory below 'dist/' in Debian
-archives; usually this is identical with the codename in the Release file.
-<br />
-<em>CODENAME</em>: The codename as given in the Release file in case it differs from DIST.
+The <b>extra options</b> below may be used to
+<em>overwrite the Codename</em> to check in the Release file in case it differs or
+<em>put more fields to check</em> with the Release file to anonymously identify the source and/or to get
+the source's pinning right.
 """)
 
     # Apt Secure
@@ -218,7 +213,7 @@ manually run on a Debian system to be sure.
 
         readonly_fields = ["codeversion", "archives", "components", "architectures", "description"]
         fieldsets = (
-            ("Identity", {"fields": ("origin", "codename", "apt_keys")}),
+            ("Identity", {"fields": ("origin", "codename", "extra_options", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
 
         def get_readonly_fields(self, _request, obj=None):
@@ -230,43 +225,42 @@ manually run on a Debian system to be sure.
             return fields
 
         @classmethod
-        def _mbd_get_or_create(cls, msglog, origin, codename, keys):
-            obj, created = Source.mbd_get_or_create(msglog, origin=origin, codename=codename)
-            if created:
-                for key_id in keys:
-                    apt_key, _created = mini_buildd.models.gnupg.AptKey.mbd_get_or_create(msglog, key_id=key_id)
-                    obj.apt_keys.add(apt_key)
-                obj.save()
+        def _mbd_get_or_create(cls, msglog, origin, codename, keys, extra_options=""):
+            try:
+                obj, created = Source.mbd_get_or_create(msglog, origin=origin, codename=codename, extra_options=extra_options)
+                if created:
+                    for key_id in keys:
+                        apt_key, _created = mini_buildd.models.gnupg.AptKey.mbd_get_or_create(msglog, key_id=key_id)
+                        obj.apt_keys.add(apt_key)
+                    obj.save()
+            except Exception as e:
+                msglog.debug("Can't add {c} (most likely a non-default instance already exists): {e}".format(c=codename, e=e))
 
         @classmethod
         def mbd_meta_add_debian(cls, msglog):
             "Add well-known Debian sources"
-            for origin, codename, keys in [("Debian", "etch", ["55BE302B", "ADB11277"]),
-                                           ("Debian", "lenny", ["473041FA", "F42584E6"]),
-                                           ("Debian", "squeeze", ["473041FA", "B98321F9"]),
-                                           ("Debian", "wheezy", ["473041FA"]),
-                                           ("Debian", "jessie", ["473041FA", "46925553"]),
-                                           ("Debian", "sid", ["473041FA", "46925553"]),
-                                           ("Backports.org archive", "etch-backports", ["16BA136C"]),
-                                           ("Debian Backports", "lenny-backports", ["473041FA"]),
-                                           ("Debian Backports", "squeeze-backports", ["473041FA", "46925553"]),
-                                           ("Debian Backports", "wheezy-backports", ["473041FA", "46925553"]),
-                                           ]:
-                cls._mbd_get_or_create(msglog, origin, codename, keys)
+            cls._mbd_get_or_create(msglog, "Debian", "etch", ["55BE302B", "ADB11277"])
+            cls._mbd_get_or_create(msglog, "Debian", "lenny", ["473041FA", "F42584E6"])
+            cls._mbd_get_or_create(msglog, "Debian", "squeeze", ["473041FA", "B98321F9"])
+            cls._mbd_get_or_create(msglog, "Debian", "wheezy", ["473041FA"])
+            cls._mbd_get_or_create(msglog, "Debian", "jessie", ["473041FA", "46925553"])
+            cls._mbd_get_or_create(msglog, "Debian", "sid", ["473041FA", "46925553"])
+            cls._mbd_get_or_create(msglog, "Backports.org archive", "etch-backports", ["16BA136C"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "lenny-backports", ["473041FA"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "squeeze-backports", ["473041FA", "46925553"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "wheezy-backports", ["473041FA", "46925553"])
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):
             "Add well-known Ubuntu sources"
-            for origin, codename, keys in [("Ubuntu", "precise", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "precise-backports/precise", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "quantal", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "quantal-backports/quantal", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "raring", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "raring-backports/raring", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "saucy", ["437D05B5", "C0B21F32"]),
-                                           ("Ubuntu", "saucy-backports/saucy", ["437D05B5", "C0B21F32"]),
-                                           ]:
-                cls._mbd_get_or_create(msglog, origin, codename, keys)
+            cls._mbd_get_or_create(msglog, "Ubuntu", "precise", ["437D05B5", "C0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "precise-backports", ["437D05B5", "C0B21F32"], "Codename: precise\nSuite: precise-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal", ["437D05B5", "C0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal-backports", ["437D05B5", "C0B21F32"], "Codename: quantal\nSuite: quantal-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "raring", ["437D05B5", "C0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "raring-backports", ["437D05B5", "C0B21F32"], "Codename: raring\nSuite: raring-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy", ["437D05B5", "C0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy-backports", ["437D05B5", "C0B21F32"], "Codename: saucy\nSuite: saucy-backports")
 
     def mbd_unicode(self):
         """
@@ -283,25 +277,22 @@ manually run on a Debian system to be sure.
             archive = None
         return "{o} '{c}' from {a}".format(o=self.origin, c=self.codename, a=archive)
 
-    def mbd_parse_codename(self):
-        """
-        Return a tuple 'dist, codename' from the codename.
+    def mbd_release_file_values(self):
+        values = self.mbd_get_extra_options()
 
-        >>> Source(origin="Debian", codename="squeeze").mbd_parse_codename()
-        (u'squeeze', u'squeeze')
-        >>> Source(origin="Debian", codename="quantal-backports/quantal").mbd_parse_codename()
-        (u'quantal-backports', u'quantal')
-        """
-        dist, _sep, codename = self.codename.partition("/")
-        return dist, codename if codename else dist
+        # Set Origin and Codename (may be overwritten) from fields
+        values["Origin"] = self.origin
+        if not values.get("Codename"):
+            values["Codename"] = self.codename
 
-    @property
-    def mbd_dist(self):
-        return self.mbd_parse_codename()[0]
+        return values
 
-    @property
-    def mbd_codename(self):
-        return self.mbd_parse_codename()[1]
+    def mbd_check_release_file(self, release):
+        for key, value in self.mbd_release_file_values().items():
+            # Check identity: origin, codename
+            LOG.debug("Checking '{k}: {v}'".format(k=key, v=value))
+            if value != release[key]:
+                raise Exception("Release[{k}] field mismatch: '{rv}', expected '{v}'.".format(k=key, rv=release[key], v=value))
 
     def mbd_get_archive(self):
         "Returns the fastest archive."
@@ -316,21 +307,26 @@ manually run on a Debian system to be sure.
         components = sorted([c for c in self.components.all() if c.name in allowed_components], cmp=cmp_components)
         return "deb {u} {d} {c}".format(
             u=self.mbd_get_archive().url,
-            d=self.mbd_dist,
+            d=self.codename,
             c=" ".join([c.name for c in components]))
 
     def mbd_get_apt_pin(self):
-        """
-        Apt 'pin line' (for use in a apt 'preference' file).
+        "Apt 'pin line' (for use in a apt 'preference' file)."
+        # See man apt_preferences for the field/pin mapping
+        supported_fields = {"Origin": "o", "Codename": "n", "Suite": "a", "Archive": "a", "Version": "v", "Label": "l"}
+        pins = []
+        for key, value in self.mbd_release_file_values().items():
+            k = supported_fields.get(key)
+            if k:
+                pins.append("{k}={v}".format(k=k, v=value))
+        return "release " + ", ".join(pins)
 
-        'o=' Origin header
-        'n=' Codename header
-        """
-        return "release o={o}, n={c}".format(o=self.origin, c=self.mbd_codename)
-
-    def mbd_prepare(self, _request):
+    def mbd_prepare(self, request):
         if not self.apt_keys.all():
             raise Exception("Please add apt keys to this source.")
+        if self.mbd_get_extra_option("Origin"):
+            raise Exception("You may not override 'Origin', just use the origin field.")
+        MsgLog(LOG, request).info("{s} with pin: {p}".format(s=self, p=self.mbd_get_apt_pin()))
 
     def mbd_sync(self, request):
         self._mbd_remove_and_prepare(request)

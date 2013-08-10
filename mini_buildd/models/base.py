@@ -144,12 +144,16 @@ are actually supported by the current model.
         import mini_buildd.daemon
         return mini_buildd.daemon.get()
 
-    def mbd_get_extra_option(self, key, default=None):
+    def mbd_get_extra_options(self):
+        result = {}
         for line in self.extra_options.splitlines():
             lkey, _lsep, lvalue = line.partition(":")
-            if lkey == key:
-                return lvalue.lstrip()
-        return default
+            if lkey:
+                result[lkey] = lvalue.lstrip()
+        return result
+
+    def mbd_get_extra_option(self, key, default=None):
+        return self.mbd_get_extra_options().get(key, default)
 
     def mbd_get_pickled_data(self, default=None):
         try:

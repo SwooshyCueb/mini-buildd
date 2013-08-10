@@ -127,12 +127,12 @@ class Status(Command):
 
         # chroots: {"squeeze": ["i386", "amd64"], "wheezy": ["amd64"]}
         for c in daemon.get_active_chroots():
-            self.chroots.setdefault(c.source.mbd_codename, [])
-            self.chroots[c.source.mbd_codename].append(c.architecture.name)
+            self.chroots.setdefault(c.source.codename, [])
+            self.chroots[c.source.codename].append(c.architecture.name)
 
         # repositories: {"repo1": ["sid", "wheezy"], "repo2": ["squeeze"]}
         for r in daemon.get_active_repositories():
-            self.repositories[r.identity] = [d.base_source.mbd_codename for d in r.distributions.all()]
+            self.repositories[r.identity] = [d.base_source.codename for d in r.distributions.all()]
 
         # remotes: ["host1.xyz.org:8066", "host2.xyz.org:8066"]
         self.remotes = [r.http for r in daemon.get_active_remotes()]

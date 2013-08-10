@@ -351,7 +351,7 @@ class Changes(debian.deb822.Changes):
                 breq.add_file(breq.file_path + ".tar")
 
                 breq["Upload-Result-To"] = daemon.mbd_get_ftp_hopo().string
-                breq["Base-Distribution"] = dist.base_source.mbd_codename
+                breq["Base-Distribution"] = dist.base_source.codename
                 breq["Architecture"] = ao.architecture.name
                 if ao.build_architecture_all:
                     breq["Arch-All"] = "Yes"

@@ -155,6 +155,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                       "--chroot-setup-command=sudo apt-get --option=Acquire::Languages=none update",
                       "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=self._build_dir),
                       "--chroot-setup-command=sudo rm -v -f /etc/sudoers",
+                      "--chroot-setup-command=apt-cache policy",
                       "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
                       "--keyid={k}".format(k=self._gnupg.get_first_sec_key_long_id()),
                       "--nolog", "--log-external-command-output", "--log-external-command-error"]

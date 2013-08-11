@@ -215,6 +215,7 @@ manually run on a Debian system to be sure.
         fieldsets = (
             ("Identity", {"fields": ("origin", "codename", "extra_options", "apt_keys")}),
             ("Extra", {"classes": ("collapse",), "fields": ("description", "codeversion", "codeversion_override", "archives", "components", "architectures")}),)
+        filter_horizontal = ("apt_keys",)
 
         def get_readonly_fields(self, _request, obj=None):
             "Forbid to change identity on existing source (usually a bad idea; repos/chroots that refer to us may break)."

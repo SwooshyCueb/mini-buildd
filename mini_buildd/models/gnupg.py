@@ -116,6 +116,7 @@ class Uploader(KeyringKey):
     class Admin(KeyringKey.Admin):
         search_fields = KeyringKey.Admin.search_fields + ["user"]
         readonly_fields = KeyringKey.Admin.readonly_fields + ["user"]
+        filter_horizontal = ("may_upload_to",)
 
     def mbd_unicode(self):
         return "'{u}' may upload to '{r}' with key '{s}'".format(

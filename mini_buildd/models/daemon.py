@@ -142,6 +142,8 @@ prepare/remove actions will generate/remove the GnuPG key.
             ("E-Mail Options", {"fields": ("smtp_server", "notify", "allow_emails_to")}),
             ("Other Options", {"fields": ("gnupg_keyserver", "custom_hooks_directory", "show_last_packages", "show_last_builds")}))
 
+        filter_horizontal = ("notify",)
+
         # These are depcrecated or not used yet
         readonly_fields = ["smtp_server", "ftpd_options", "custom_hooks_directory"]
 

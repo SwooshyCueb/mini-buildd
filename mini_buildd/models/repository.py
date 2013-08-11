@@ -446,6 +446,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             ("Build options", {"fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")}),
             ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
         inlines = (ArchitectureOptionInline,)
+        filter_horizontal = ("extra_sources", "components",)
 
         @classmethod
         def mbd_meta_add_base_sources(cls, msglog):
@@ -583,6 +584,7 @@ Example:
             ("Basics", {"fields": ("identity", "layout", "distributions", "allow_unauthenticated_uploads", "extra_uploader_keyrings")}),
             ("Notify and extra options", {"fields": ("notify", "notify_changed_by", "notify_maintainer", "reprepro_morguedir", "external_home_url")}),)
         readonly_fields = []
+        filter_horizontal = ("distributions", "notify",)
 
         def get_readonly_fields(self, _request, obj=None):
             "Forbid change identity on existing repository."

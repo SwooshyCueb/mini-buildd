@@ -456,10 +456,16 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
                 new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
                 if created:
+                    # Auto-add known default components or Origin
                     for c in default_components(s.origin):
                         component = mini_buildd.models.source.Component.objects.get(name__exact=c)
                         new_dist.components.add(component)
 
+                    # Auto-add extra sources that start with our base_source's codename
+                    for prio_source in mini_buildd.models.source.PrioritySource.objects.filter(source__codename__regex=r"^{c}-".format(c=s.codename)):
+                        new_dist.extra_sources.add(prio_source)
+
+                    # Auto-add all locally supported archs
                     archall = True
                     for arch in mini_buildd.models.source.Architecture.mbd_supported_architectures():
                         architecture = mini_buildd.models.source.Architecture.objects.get(name__exact=arch)

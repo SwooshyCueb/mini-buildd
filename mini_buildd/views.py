@@ -171,7 +171,12 @@ def api(request):
         # Generate command object
         api_cmd = api_cls(request.GET, request, msglog=MsgLog(LOG, request))
 
+        # HTML output by default
         output = request.GET.get("output", "html")
+
+        # Check if we need a running daemon
+        if api_cls.NEEDS_RUNNING_DAEMON and not mini_buildd.daemon.get().is_running():
+            return error405_method_not_allowed(request, "API: '{c}': Needs running daemon".format(c=command))
 
         # Check confirmable calls
         if api_cls.CONFIRM and request.GET.get("confirm", None) != command:

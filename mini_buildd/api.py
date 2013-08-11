@@ -21,6 +21,7 @@ class Command(object):
     AUTH = NONE
 
     CONFIRM = False
+    NEEDS_RUNNING_DAEMON = False
     ARGUMENTS = []
 
     COMMON_ARG_VERSION = (["--version", "-V"], {"action": "store", "metavar": "VERSION",
@@ -465,6 +466,7 @@ class Port(Command):
     """
     COMMAND = "port"
     AUTH = Command.STAFF
+    NEEDS_RUNNING_DAEMON = True
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
@@ -494,6 +496,7 @@ class PortExt(Command):
     """
     COMMAND = "portext"
     AUTH = Command.STAFF
+    NEEDS_RUNNING_DAEMON = True
     CONFIRM = True
     ARGUMENTS = [
         (["dsc"], {"help": "URL of any Debian source package (dsc) to port"}),
@@ -515,6 +518,7 @@ class Retry(Command):
     """
     COMMAND = "retry"
     AUTH = Command.STAFF
+    NEEDS_RUNNING_DAEMON = True
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),

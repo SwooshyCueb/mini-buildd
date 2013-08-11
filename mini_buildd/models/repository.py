@@ -470,10 +470,10 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                         archall = False
 
     def __unicode__(self):
-        return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source,
-                                                c=" ".join(self.mbd_get_components()),
-                                                a=" ".join(self.mbd_get_architectures()),
-                                                x=",".join(["{e}".format(e=e) for e in self.extra_sources.all()]))
+        return "{b}: {c} ({a}) + {x}".format(b=self.base_source.codename,
+                                             c=" ".join(self.mbd_get_components()),
+                                             a=" ".join(self.mbd_get_architectures()),
+                                             x=",".join(["{c}:{p}".format(c=e.source.codename, p=e.priority) for e in self.extra_sources.all()]))
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]

@@ -276,7 +276,7 @@ manually run on a Debian system to be sure.
             archive = self.mbd_get_archive().url
         except:
             archive = None
-        return "{o} '{c}' from {a}".format(o=self.origin, c=self.codename, a=archive)
+        return "{o} '{c}' from '{a}'".format(o=self.origin, c=self.codename, a=archive)
 
     def mbd_release_file_values(self):
         values = self.mbd_get_extra_options()
@@ -412,7 +412,7 @@ class PrioritySource(mini_buildd.models.base.Model):
                 PrioritySource.mbd_get_or_create(msglog, source=source, priority=1)
 
     def __unicode__(self):
-        return "{i}: Priority={p}".format(i=self.source, p=self.priority)
+        return "{i} with prio={p}".format(i=self.source, p=self.priority)
 
     def mbd_get_apt_preferences(self):
         return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(pin=self.source.mbd_get_apt_pin(), prio=self.priority)

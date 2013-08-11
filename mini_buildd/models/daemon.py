@@ -153,7 +153,7 @@ prepare/remove actions will generate/remove the GnuPG key.
             super(Daemon.Admin, self).save_model(request, obj, form, change)
 
     def __unicode__(self):
-        return "{i}: Serving {r} repositories, {c} chroots, {R} remotes".format(
+        return "{i}: Serving {r} repositories, {c} chroots, using {R} remotes".format(
             i=self.identity,
             r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
             c=len(mini_buildd.models.chroot.Chroot.mbd_get_active()),

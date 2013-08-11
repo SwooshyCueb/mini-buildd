@@ -197,7 +197,10 @@ manually run on a Debian system to be sure.
     codeversion = django.db.models.CharField(max_length=50, editable=False, blank=True, default="")
     codeversion_override = django.db.models.CharField(
         max_length=50, blank=True, default="",
-        help_text="Leave empty unless the automated way (via the Release file's 'Version' field) is broken. The codeversion is only used for base sources.")
+        help_text="""
+Save this as empty string to have the codeversion re-guessed on check, or
+put your own override value here if the guessed string is broken. The
+codeversion is only used for base sources.""")
     archives = django.db.models.ManyToManyField(Archive, blank=True)
     components = django.db.models.ManyToManyField(Component, blank=True)
     architectures = django.db.models.ManyToManyField(Architecture, blank=True)
@@ -364,6 +367,7 @@ manually run on a Debian system to be sure.
                         msglog.warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
                     else:
                         self.codeversion = mini_buildd.misc.guess_codeversion(release)
+                        self.codeversion_override = self.codeversion
                         msglog.info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
                     # Set architectures and components (may be auto-added)

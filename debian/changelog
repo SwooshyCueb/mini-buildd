@@ -1,3 +1,67 @@
+mini-buildd (1.0.0~beta.19) experimental; urgency=low
+
+  Nineteenth beta. Setup look, feel and usability improvements, fix for new
+  pyftpdlib 1.2 in sid, and more.
+  [ Stephan Sürken ]
+  * [9e786a6] [code] Consistent naming for admin html 'snippet_*.html'.
+  * [c41bc0b] Add some wizards (setup helpers) on the admin index page.
+  * [9081886] devel: Add convenience 'installdeps' target, plus a little Quickstart doc.
+
+  [ Gerhard A. Dittes ]
+  * [42cc081] mbd_wizard.png: Improved.
+  * [10a21f2] mbd_wizard.png: Improved once again.
+
+  [ Stephan Sürken ]
+  * [b3d9661] html: Improve admin configuration index page design yet more.
+  * [fd539b0] source display text: Show used archive, skip description.
+  * [f90cd59] devel: Improve the unicode string test (fixes false-pos. for s.th. like "xyzu")
+  * [a67ecdb] configure: Add Ubuntu archives and sources "wizards".
+  * [5acb39e] html: Some '<br/>' to '<br />' fixes...
+  * [3eeae7d] devel: doctest check: Also run for all models/*.py.
+  * [fec456f] source model: Pimp 'codename' field so you can also express a different release file codename (Fixes Ubuntu backport sources).
+  * [3741070] configure: Implement layout/suite defaults as "wizards".
+  * [45a1704] schroot fstab: Add configurable file fstab-generic, and sync defaults with sbuild's (adds pts+shm mounts, fixes builds that need that).
+  * [8a3b839] rules: dh_test: Honor DEB_BUILD_OPTIONS 'nocheck' flag.
+  * [d14300c] devel: Support 'update_nocheck' target.
+  * [f780edf] repository: Change 'identity' default to 'test' (was `hostname`).
+  * [c1a52f3] templatetags/base.py: Simplify the daemon_is_running tag as filter.
+  * [487aecb] [code] Add generic mbd_get_or_create Model class method, cleanup code.
+  * [3de3bc1] Daemon: Keyrings: Properly use set_needs_update with start/stop (Fixes: Keyring not updated on start() after initial configuration).
+  * [dc34e2d] examples/packages.testbuild: Add jessie.
+  * [97e4f39] devel: Remove/fix some no longer needed/outated code.
+  * [4ab1dda] configure: Add instance/status counts in overview; page cleanup.
+  * [dc4429f] configure: Also show number of status=Removed instances in overview.
+  * [b712856] configure: Add chroot creation wizards.
+  * [b152cad] models/daemon.py: Fix warning text.
+  * [2cb9d5d] pyftpdlib: Support new version 1.2.0 (Fixes FTBFS/breakage on sid).
+  * [81cacdb] configure: Add 'Help' jumpers to admin manual.
+  * [0eb6a19] doc/admin.rst: Add strange lvcreate "can't clear device" bug.
+  * [ce25ded] devel: Fix debconf settings.
+  * [4f2c5ae] [source.py: Fixup some docstrings.]
+  * [bd15195] [models: Better name for sync_by_purge_and_create: remove_and_prepare.]
+  * [ed1f2a5] webapp: Set django loglevel from mini-buildd loglevel.
+  * [c6f4a56] models/base.py: Some cosmetic finetuning on the action messages.
+  * [9052900] Sources: Move the archive check code from prepare to check (Fixes: Won't find new archives without remove).
+  * [1b2eb9f] [code: Move architecture help functions to model Architecture.]
+  * [4b1183c] configure: Add Distribution wizard.
+  * [0fd1516] configure: Add repository wizards for sandbox ("test") and developer ("debdev") repos.
+  * [acdb9be] doc/admin.rst: Add note about the deboostrap/uname 'bug'.
+  * [0a82a36] configure: Distribution wizard: Use predefined default components for different Origins (currently only Debian and Ubuntu).
+  * [c09346a] Add weekly cron to restart mini-buildd (trigger maintenance)
+  * [8cd13bf] Source: Use extra_options to be able to add arbitrary release fields where needed (and support these fields for source pinning).
+  * [0bc12e2] release view: Make django/web not fail in case our custom templatetags raise exceptions.
+  * [b209e03] builder.py: Show APT policy in build logs (apt-cache policy).
+  * [c6ed41d] configure: Use 'filter_horizontal' for all editable ManyToMany fields (much more usable).
+  * [949d96b] models: Skip extra mbd_unicode() setup (with model name, status always added): Code is non-intuituve, and the display actually more confusing than helping.
+  * [0b2e0c3] models: Beautify display texts for Daemon, Distribution and Source.
+  * [92071a4] api: Add new flag NEEDS_RUNNING_DAEMON (avoids confusion with retry, port, portext when daemon is down).
+  * [983cec7] Move keyring package generator from Django admin action to mini-buildd home.
+  * [425ab93] configure: Distribution wizard: Also auto-guess prio sources.
+  * [6299b9b] misc.py: Fix guess_codeversion heuristic for new point release versions since wheezy.
+  * [e548411] source: Set coderversion_override afte codeversion guess.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 11 Aug 2013 21:55:24 +0200
+
 mini-buildd (1.0.0~beta.18) experimental; urgency=low
 
   * [bd61cc5] packager: Fix error handling for bogus changes files.

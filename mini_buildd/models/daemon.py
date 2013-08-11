@@ -152,7 +152,7 @@ prepare/remove actions will generate/remove the GnuPG key.
             obj.mbd_get_daemon().update_to_model(obj)
             super(Daemon.Admin, self).save_model(request, obj, form, change)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{i}: Serving {r} repositories, {c} chroots, {R} remotes".format(
             i=self.identity,
             r=len(mini_buildd.models.repository.Repository.mbd_get_active()),
@@ -291,12 +291,12 @@ Manage your account : {url}accounts/login/
 
         # Add hardcoded addresses from daemon
         for m in self.notify.all():
-            add_to(m.mbd_unicode(), "daemon", is_automatic=False)
+            add_to(m.__unicode__(), "daemon", is_automatic=False)
 
         # Add hardcoded addresses from repository
         if repository:
             for m in repository.notify.all():
-                add_to(m.mbd_unicode(), "repository", is_automatic=False)
+                add_to(m.__unicode__(), "repository", is_automatic=False)
 
         if changes:
             # Add package uploader (Changed-By): Add even if we do not have a repo, so uploader is informed on such error cases too.

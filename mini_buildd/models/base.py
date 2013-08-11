@@ -133,12 +133,6 @@ are actually supported by the current model.
 
             obj.delete()
 
-    def __unicode__(self):
-        return "{C}: {u}".format(C=self.__class__.__name__, u=self.mbd_unicode())
-
-    def mbd_unicode(self):
-        return "ERR: mbd_unicode() not impl. in {C}".format(C=self.__class__.__name__)
-
     @classmethod
     def mbd_get_daemon(cls):
         import mini_buildd.daemon
@@ -402,9 +396,6 @@ this would mean losing all packages!
         actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_remove]
         list_display = ["colored_status", "__unicode__"]
         list_display_links = ["__unicode__"]
-
-    def __unicode__(self):
-        return "{u} ({s})".format(u=super(StatusModel, self).__unicode__(), s=self.mbd_get_status_display())
 
     @property
     def days_until_recheck(self):

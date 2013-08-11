@@ -104,7 +104,7 @@ chroots (with <tt>qemu-user-static</tt> installed).
                     except:
                         msglog.info("Another backend already provides {s}/{a}".format(s=s.codename, a=a.name))
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{c}/{a} ({f})".format(c=self.source.codename,
                                       a=self.architecture.name,
                                       f=self.mbd_get_backend().mbd_backend_flavor())

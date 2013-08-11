@@ -78,6 +78,9 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
                 cls._mbd_get_or_create(msglog, url)
             msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")
 
+    def __unicode__(self):
+        return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
+
     def save(self, *args, **kwargs):
         "Implicitely set the ping value on save."
         self.mbd_ping(None)
@@ -87,9 +90,6 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         if self.url[-1] != "/" or self.url[-2] == "/":
             raise django.core.exceptions.ValidationError("The URL must have exactly one trailing slash (like 'http://example.org/path/').")
         super(Archive, self).clean(*args, **kwargs)
-
-    def mbd_unicode(self):
-        return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
     def mbd_download_release(self, source, gnupg):
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
@@ -131,7 +131,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return self.name
 
     @classmethod
@@ -149,7 +149,7 @@ class Architecture(mini_buildd.models.base.Model):
 class Component(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return self.name
 
 
@@ -263,7 +263,7 @@ manually run on a Debian system to be sure.
             cls._mbd_get_or_create(msglog, "Ubuntu", "saucy", ["437D05B5", "C0B21F32"])
             cls._mbd_get_or_create(msglog, "Ubuntu", "saucy-backports", ["437D05B5", "C0B21F32"], "Codename: saucy\nSuite: saucy-backports")
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         """
         .. note:: Workaround for django 1.4.3 bug/new behaviour.
 
@@ -411,7 +411,7 @@ class PrioritySource(mini_buildd.models.base.Model):
             for source in Source.objects.filter(codename__regex=r".*-backports"):
                 PrioritySource.mbd_get_or_create(msglog, source=source, priority=1)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{i}: Priority={p}".format(i=self.source, p=self.priority)
 
     def mbd_get_apt_preferences(self):

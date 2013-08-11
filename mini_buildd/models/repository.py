@@ -37,7 +37,7 @@ class EmailAddress(mini_buildd.models.base.Model):
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{n} <{a}>".format(n=self.name, a=self.address)
 
 
@@ -49,7 +49,7 @@ class Suite(mini_buildd.models.base.Model):
     class Admin(mini_buildd.models.base.Model.Admin):
         exclude = ("extra_options",)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return self.name
 
     def clean(self, *args, **kwargs):
@@ -96,7 +96,7 @@ lintian) as non-lethal, and will install anyway.
     class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ("suite", "layout")
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{l}: {e}{n}{e} [{u}]{m}".format(
             l=self.layout.name,
             n=self.suite.name,
@@ -295,7 +295,7 @@ packages (to unstable,experimental,..) aimed for Debian.
                     but_automatic_upgrades=False)
                 debdev_experimental.save()
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return self.name
 
     @classmethod
@@ -335,14 +335,13 @@ class ArchitectureOption(mini_buildd.models.base.Model):
     class Meta(mini_buildd.models.base.Model.Meta):
         unique_together = ("architecture", "distribution")
 
+    def __unicode__(self):
+        return "{a} for {d}".format(a=self.architecture, d=self.distribution)
+
     def clean(self, *args, **kwargs):
         if self.build_architecture_all and self.optional:
             raise django.core.exceptions.ValidationError("Optional architectures must not be architecture all!")
         super(ArchitectureOption, self).clean(*args, **kwargs)
-
-    def mbd_unicode(self):
-        return "{a} for {d}".format(a=self.architecture.mbd_unicode(),
-                                    d=self.distribution)
 
 
 class ArchitectureOptionInline(django.contrib.admin.TabularInline):
@@ -470,7 +469,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                         architecture_option.save()
                         archall = False
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{b} [{c}] [{a}] + ({x})".format(b=self.base_source,
                                                 c=" ".join(self.mbd_get_components()),
                                                 a=" ".join(self.mbd_get_architectures()),
@@ -627,7 +626,7 @@ Example:
                 for d in Distribution.objects.all():
                     debdev_repo.distributions.add(d)
 
-    def mbd_unicode(self):
+    def __unicode__(self):
         return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]))
 
     def clean(self, *args, **kwargs):

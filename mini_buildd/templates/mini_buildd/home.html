@@ -66,10 +66,17 @@ $(document).ready(
 					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages id="mbd_last_packages" %}
 				{% endif %}
 
-				<h2 title="Active and prepared repositories">Repositories:</h2>
+				<h2 title="Active and prepared repositories">Repositories:
+				<a class="button"
+					 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=generate_keyring_packages&amp;output=referer"
+					 title="(Re-)Generate keyring packages for all active repositories">
+					Build keyring packages
+				</a>
+				</h2>
+
 				<ul>
 					{% for r in repositories %}
-						<li><a class="status {{ r.get_status_display }}" href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+						<li><a class="status {{ r.get_status_display }}" title="Go to this repository's overview page" href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
 					{% empty %}
 						<li>No repositories.</li>
 					{% endfor %}

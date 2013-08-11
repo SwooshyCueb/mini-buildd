@@ -592,17 +592,13 @@ Example:
                 fields.append("identity")
             return fields
 
-# pylint: disable=R0201
-        def action_generate_keyring_packages(self, request, queryset):
-            for s in queryset:
-                if s.mbd_is_active():
-                    s.mbd_generate_keyring_packages(request)
+        @classmethod
+        def mbd_meta_generate_keyring_packages(cls, msglog):
+            for s in Repository.mbd_get_active():
+                if s.mbd_get_daemon().is_running():
+                    s.mbd_generate_keyring_packages(msglog.request)
                 else:
-                    MsgLog(LOG, request).warn("Repository not activated: {r}".format(r=s))
-        action_generate_keyring_packages.short_description = "Generate keyring packages"
-# pylint: enable=R0201
-
-        actions = [action_generate_keyring_packages]
+                    msglog.info("Daemon is not running, skipping repository: {r}".format(r=s))
 
         @classmethod
         def mbd_meta_add_sandbox(cls, msglog):

@@ -282,28 +282,39 @@ def guess_codeversion(release):
     release version; for releases without version, this falls
     back to the uppercase codename.
 
-    Point release prior lenny had the 'M.PrN' syntax:
+    In Debian,
+      - point release <= sarge had the 'M.PrN' syntax (with 3.1 being a major release).
+      - point release in squeeze used 'M.0.N' syntax.
+      - point releases for >= wheezy have the 'M.N' syntax (with 7.1 being a point release).
+      - testing and unstable do not gave a version in Release and fall back to uppercase codename
 
-    >>> guess_codeversion({"Version": "3.1r8", "Codename": "sarge"})
+    Ubuntu just uses YY.MM which we can use as-is.
+
+    >>> guess_codeversion({"Origin": "Debian", "Version": "3.1r8", "Codename": "sarge"})
     u'31'
-    >>> guess_codeversion({"Version": "4.0r9", "Codename": "etch"})
+    >>> guess_codeversion({"Origin": "Debian", "Version": "4.0r9", "Codename": "etch"})
     u'40'
-    >>> guess_codeversion({"Version": "6.0.6", "Codename": "squeeze"})
+    >>> guess_codeversion({"Origin": "Debian", "Version": "6.0.6", "Codename": "squeeze"})
     u'60'
-
-    Testing and unstable do not gave a version in Release and
-    fall back to uppercase codename:
-
-    >>> guess_codeversion({"Codename": "wheezy"})
-    u'WHEEZY'
-    >>> guess_codeversion({"Codename": "sid"})
+    >>> guess_codeversion({"Origin": "Debian", "Version": "7.0", "Codename": "wheezy"})
+    u'70'
+    >>> guess_codeversion({"Origin": "Debian", "Version": "7.1", "Codename": "wheezy"})
+    u'70'
+    >>> guess_codeversion({"Origin": "Debian", "Codename": "jessie"})
+    u'JESSIE'
+    >>> guess_codeversion({"Origin": "Debian", "Codename": "sid"})
     u'SID'
+    >>> guess_codeversion({"Origin": "Ubuntu", "Version": "12.10", "Codename": "quantal"})
+    u'1210'
     """
     try:
         ver_split = release["Version"].split(".")
         digit0 = ver_split[0]
         digit1 = ver_split[1].partition("r")[0]
-        return digit0 + digit1
+        if release.get("Origin", None) == "Debian" and int(digit0) >= 7:
+            return digit0 + "0"
+        else:
+            return digit0 + digit1
     except:
         return release["Codename"].upper()
 

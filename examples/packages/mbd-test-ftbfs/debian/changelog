@@ -1,5 +1,7 @@
 mbd-test-ftbfs (0.1.0) UNRELEASED; urgency=low
 
-  * Test package for mini-buildd.
+  * Test package for mini-buildd, ignore.
+  * Builds one 'Architecure: any' package with C++ compilation.
+  * Upstream is broken, so this always FTBFS.
 
- -- Stephan Sürken <absurd@debian.org>  Wed, 06 Jul 2011 18:14:03 +0200
+ -- Stephan Sürken <absurd@debian.org>  Mon, 12 Aug 2013 18:12:42 +0200

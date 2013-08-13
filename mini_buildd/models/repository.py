@@ -599,12 +599,11 @@ Example:
             return fields
 
         @classmethod
-        def mbd_meta_generate_keyring_packages(cls, msglog):
+        def mbd_meta_build_keyring_packages(cls, msglog):
+            if not Repository.mbd_get_daemon().is_running():
+                raise Exception("Daemon needs to be running to build keyring packages")
             for s in Repository.mbd_get_active():
-                if s.mbd_get_daemon().is_running():
-                    s.mbd_generate_keyring_packages(msglog.request)
-                else:
-                    msglog.info("Daemon is not running, skipping repository: {r}".format(r=s))
+                s.mbd_build_keyring_packages(msglog.request)
 
         @classmethod
         def mbd_meta_add_sandbox(cls, msglog):
@@ -635,7 +634,7 @@ Example:
         self.mbd_validate_regex(r"^[a-z0-9]+$", self.identity, "Identity")
         super(Repository, self).clean(*args, **kwargs)
 
-    def mbd_generate_keyring_packages(self, request):
+    def mbd_build_keyring_packages(self, request):
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
             for d in self.distributions.all():
                 for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
@@ -643,7 +642,7 @@ Example:
                     info = "Keyring port for {d}".format(d=dist)
                     try:
                         self.mbd_get_daemon().portext("file://" + package.dsc, dist)
-                        MsgLog(LOG, request).info("Requested: {i}.".format(i=info))
+                        MsgLog(LOG, request).info("Requested: {i}".format(i=info))
                     except Exception as e:
                         mini_buildd.setup.log_exception(MsgLog(LOG, request), "FAILED: {i}".format(i=info), e)
 

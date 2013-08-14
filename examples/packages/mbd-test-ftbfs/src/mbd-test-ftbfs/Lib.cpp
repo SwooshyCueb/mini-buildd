@@ -7,9 +7,9 @@
 // STDC++
 #include <iostream>
 
-namespace MBD_TEST_CPP
+namespace MBD_TEST_FTBFS
 {
-	void mbd_test_cpp()
+	void mbd_test_ftbfs()
 	{
 		std::cout << "Test project mbd-test-ftbfs." << std::endl;
 	}

@@ -180,7 +180,8 @@ a:hover
 
 #mbd_content .status.Prepared
 {
-	color: blue;
+	color: black;
+	background-color: yellow;
 }
 
 #mbd_content .status.Active

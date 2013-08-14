@@ -606,6 +606,13 @@ Example:
                 s.mbd_build_keyring_packages(msglog.request)
 
         @classmethod
+        def mbd_meta_build_test_packages(cls, msglog):
+            if not Repository.mbd_get_daemon().is_running():
+                raise Exception("Daemon needs to be running to build test packages")
+            for s in Repository.mbd_get_active():
+                s.mbd_build_test_packages(msglog.request)
+
+        @classmethod
         def mbd_meta_add_sandbox(cls, msglog):
             "Add sandbox repository 'test'."
             sandbox_repo, created = Repository.mbd_get_or_create(
@@ -634,17 +641,25 @@ Example:
         self.mbd_validate_regex(r"^[a-z0-9]+$", self.identity, "Identity")
         super(Repository, self).clean(*args, **kwargs)
 
+    def _mbd_portext2keyring_suites(self, request, dsc_url):
+        for d in self.distributions.all():
+            for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
+                dist = s.mbd_get_distribution_string(self, d)
+                info = "Port for {d}: {p}".format(d=dist, p=os.path.basename(dsc_url))
+                try:
+                    self.mbd_get_daemon().portext(dsc_url, dist)
+                    MsgLog(LOG, request).info("Requested: {i}".format(i=info))
+                except Exception as e:
+                    mini_buildd.setup.log_exception(MsgLog(LOG, request), "FAILED: {i}".format(i=info), e)
+
     def mbd_build_keyring_packages(self, request):
         with contextlib.closing(self.mbd_get_daemon().get_keyring_package()) as package:
-            for d in self.distributions.all():
-                for s in self.layout.suiteoption_set.all().filter(build_keyring_package=True):
-                    dist = s.mbd_get_distribution_string(self, d)
-                    info = "Keyring port for {d}".format(d=dist)
-                    try:
-                        self.mbd_get_daemon().portext("file://" + package.dsc, dist)
-                        MsgLog(LOG, request).info("Requested: {i}".format(i=info))
-                    except Exception as e:
-                        mini_buildd.setup.log_exception(MsgLog(LOG, request), "FAILED: {i}".format(i=info), e)
+            self._mbd_portext2keyring_suites(request, "file://" + package.dsc)
+
+    def mbd_build_test_packages(self, request):
+        for t in ["archall", "cpp", "ftbfs"]:
+            with contextlib.closing(self.mbd_get_daemon().get_test_package(t)) as package:
+                self._mbd_portext2keyring_suites(request, "file://" + package.dsc)
 
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()

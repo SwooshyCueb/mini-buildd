@@ -5,6 +5,7 @@ import os
 import re
 import time
 import shutil
+import glob
 import tempfile
 import threading
 import subprocess
@@ -241,6 +242,21 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
         self.dsc = os.path.join(self.tmpdir,
                                 "{p}_{v}.dsc".format(p=self.package_name,
                                                      v=self.version))
+
+
+class DSTPackage(mini_buildd.misc.TmpDir):
+    def __init__(self, tpl_dir, version=None):
+        super(DSTPackage, self).__init__()
+
+        dst_dir = os.path.join(self.tmpdir, "package")
+        shutil.copytree(tpl_dir, dst_dir)
+        if version:
+            mini_buildd.misc.call(["debchange",
+                                   "--newversion={v}".format(v=version),
+                                   "Version update '{v}'.".format(v=version)],
+                                  cwd=dst_dir)
+        mini_buildd.misc.call(["dpkg-source", "-b", "package"], cwd=self.tmpdir)
+        self.dsc = glob.glob(os.path.join(self.tmpdir, "*.dsc"))[0]
 
 
 class Keyrings(object):
@@ -681,6 +697,12 @@ class Daemon():
                               self.model.mbd_gnupg,
                               self.model.mbd_fullname,
                               self.model.email_address)
+
+    @classmethod
+    def get_test_package(cls, id_):
+        return DSTPackage("/usr/share/doc/mini-buildd/examples/packages/mbd-test-{i}".format(i=id_),
+                          version=DebianVersion.stamp())
+
 
 _INSTANCE = None
 

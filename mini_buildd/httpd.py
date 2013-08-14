@@ -109,13 +109,18 @@ class StaticWithIndex(cherrypy._cptools.HandlerTool):
             return False
 
         if stat.S_ISDIR(path_stat.st_mode):
+            cherrypy.request.is_index = True
+
             # Set last modified, and call validate_since
             # This may return a "304 Not Modified" in case the client did a condition GET
             cherrypy.response.headers["Last-Modified"] = cherrypy.lib.http.HTTPDate(path_stat.st_mtime)
             cherrypy.lib.cptools.validate_since()
 
+            # Check for trailing "/" (without, browser will use wrong URLs for entries)
+            # This may return a "301 Moved Permanently" with Location dir + "/"
+            cherrypy.lib.cptools.trailing_slash()
+
             # Produce and deliver a new index
-            cherrypy.request.is_index = True
             cherrypy.response.body = cls._mbd_html_index(path)
             cherrypy.response.headers["Content-Type"] = "text/html"
             return True

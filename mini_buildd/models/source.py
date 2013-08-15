@@ -91,10 +91,10 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             raise django.core.exceptions.ValidationError("The URL must have exactly one trailing slash (like 'http://example.org/path/').")
         super(Archive, self).clean(*args, **kwargs)
 
-    def mbd_download_release(self, source, gnupg):
+    def mbd_download_release(self, request, source, gnupg):
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
         with tempfile.NamedTemporaryFile() as release_file:
-            LOG.info("Downloading '{u}' to '{t}'".format(u=url, t=release_file.name))
+            MsgLog(LOG, request).debug("Downloading '{u}' to '{t}'".format(u=url, t=release_file.name))
             release_file.write(urllib2.urlopen(url).read())
             release_file.flush()
             release_file.seek(0)
@@ -105,7 +105,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
 
             # Check signature
             with tempfile.NamedTemporaryFile() as signature:
-                LOG.info("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
+                MsgLog(LOG, request).debug("Downloading '{u}.gpg' to '{t}'".format(u=url, t=signature.name))
                 signature.write(urllib2.urlopen(url + ".gpg").read())
                 signature.flush()
                 gnupg.verify(signature.name, release_file.name)
@@ -282,6 +282,7 @@ codeversion is only used for base sources.""")
         return "{o} '{c}' from '{a}'".format(o=self.origin, c=self.codename, a=archive)
 
     def mbd_release_file_values(self):
+        "Compute a dict of values a matching release file must have."
         values = self.mbd_get_extra_options()
 
         # Set Origin and Codename (may be overwritten) from fields
@@ -292,6 +293,7 @@ codeversion is only used for base sources.""")
         return values
 
     def mbd_check_release_file(self, release):
+        "Check that this release file matches us."
         for key, value in self.mbd_release_file_values().items():
             # Check identity: origin, codename
             LOG.debug("Checking '{k}: {v}'".format(k=key, v=value))
@@ -353,7 +355,7 @@ codeversion is only used for base sources.""")
             for archive in Archive.objects.all():
                 try:
                     # Get release if this archive serves us, else exception
-                    release = archive.mbd_download_release(self, gpg)
+                    release = archive.mbd_download_release(request, self, gpg)
 
                     # Implicitely save ping value for this archive
                     archive.save()

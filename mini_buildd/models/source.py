@@ -236,8 +236,13 @@ codeversion is only used for base sources.""")
             try:
                 obj, created = Source.mbd_get_or_create(msglog, origin=origin, codename=codename, extra_options=extra_options)
                 if created:
-                    for key_id in keys:
-                        apt_key, _created = mini_buildd.models.gnupg.AptKey.mbd_get_or_create(msglog, key_id=key_id)
+                    for long_key_id in keys:
+                        matching_keys = mini_buildd.models.gnupg.AptKey.mbd_filter_key(long_key_id)
+                        if matching_keys:
+                            apt_key = matching_keys[0]
+                            msglog.debug("Already exists: {k}".format(k=apt_key))
+                        else:
+                            apt_key, _created = mini_buildd.models.gnupg.AptKey.mbd_get_or_create(msglog, key_id=long_key_id)
                         obj.apt_keys.add(apt_key)
                     obj.save()
             except Exception as e:

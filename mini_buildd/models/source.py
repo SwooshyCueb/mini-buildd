@@ -246,28 +246,50 @@ codeversion is only used for base sources.""")
         @classmethod
         def mbd_meta_add_debian(cls, msglog):
             "Add well-known Debian sources"
-            cls._mbd_get_or_create(msglog, "Debian", "etch", ["55BE302B", "ADB11277"])
-            cls._mbd_get_or_create(msglog, "Debian", "lenny", ["473041FA", "F42584E6"])
-            cls._mbd_get_or_create(msglog, "Debian", "squeeze", ["473041FA", "B98321F9"])
-            cls._mbd_get_or_create(msglog, "Debian", "wheezy", ["473041FA"])
-            cls._mbd_get_or_create(msglog, "Debian", "jessie", ["473041FA", "46925553"])
-            cls._mbd_get_or_create(msglog, "Debian", "sid", ["473041FA", "46925553"])
-            cls._mbd_get_or_create(msglog, "Backports.org archive", "etch-backports", ["16BA136C"])
-            cls._mbd_get_or_create(msglog, "Debian Backports", "lenny-backports", ["473041FA"])
-            cls._mbd_get_or_create(msglog, "Debian Backports", "squeeze-backports", ["473041FA", "46925553"])
-            cls._mbd_get_or_create(msglog, "Debian Backports", "wheezy-backports", ["473041FA", "46925553"])
+            cls._mbd_get_or_create(msglog, "Debian", "etch",
+                                   ["9AA38DCD55BE302B", "B5D0C804ADB11277"])
+            cls._mbd_get_or_create(msglog, "Debian", "lenny",
+                                   ["AED4B06F473041FA", "4D270D06F42584E6"])
+            cls._mbd_get_or_create(msglog, "Debian", "squeeze",
+                                   ["AED4B06F473041FA", "64481591B98321F9"])
+            cls._mbd_get_or_create(msglog, "Debian", "wheezy",
+                                   ["AED4B06F473041FA"])
+            cls._mbd_get_or_create(msglog, "Debian", "jessie",
+                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+            cls._mbd_get_or_create(msglog, "Debian", "sid",
+                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+            cls._mbd_get_or_create(msglog, "Backports.org archive", "etch-backports",
+                                   ["EA8E8B2116BA136C"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "lenny-backports",
+                                   ["AED4B06F473041FA"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "squeeze-backports",
+                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+            cls._mbd_get_or_create(msglog, "Debian Backports", "wheezy-backports",
+                                   ["AED4B06F473041FA", "8B48AD6246925553"])
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):
             "Add well-known Ubuntu sources"
-            cls._mbd_get_or_create(msglog, "Ubuntu", "precise", ["437D05B5", "C0B21F32"])
-            cls._mbd_get_or_create(msglog, "Ubuntu", "precise-backports", ["437D05B5", "C0B21F32"], "Codename: precise\nSuite: precise-backports")
-            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal", ["437D05B5", "C0B21F32"])
-            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal-backports", ["437D05B5", "C0B21F32"], "Codename: quantal\nSuite: quantal-backports")
-            cls._mbd_get_or_create(msglog, "Ubuntu", "raring", ["437D05B5", "C0B21F32"])
-            cls._mbd_get_or_create(msglog, "Ubuntu", "raring-backports", ["437D05B5", "C0B21F32"], "Codename: raring\nSuite: raring-backports")
-            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy", ["437D05B5", "C0B21F32"])
-            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy-backports", ["437D05B5", "C0B21F32"], "Codename: saucy\nSuite: saucy-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "precise",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "precise-backports",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"],
+                                   "Codename: precise\nSuite: precise-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "quantal-backports",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"],
+                                   "Codename: quantal\nSuite: quantal-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "raring",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "raring-backports",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"],
+                                   "Codename: raring\nSuite: raring-backports")
+            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"])
+            cls._mbd_get_or_create(msglog, "Ubuntu", "saucy-backports",
+                                   ["40976EAF437D05B5", "3B4FE6ACC0B21F32"],
+                                   "Codename: saucy\nSuite: saucy-backports")
 
     def __unicode__(self):
         """

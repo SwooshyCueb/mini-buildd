@@ -81,27 +81,30 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
     def __unicode__(self):
         return "{u} (ping {p} ms)".format(u=self.url, p=self.ping)
 
-    def save(self, *args, **kwargs):
-        "Implicitely set the ping value on save."
-        self.mbd_ping(None)
-        super(Archive, self).save(*args, **kwargs)
-
     def clean(self, *args, **kwargs):
         if self.url[-1] != "/" or self.url[-2] == "/":
             raise django.core.exceptions.ValidationError("The URL must have exactly one trailing slash (like 'http://example.org/path/').")
         super(Archive, self).clean(*args, **kwargs)
 
-    def mbd_download_release(self, request, source, gnupg):
+    def mbd_get_matching_release(self, request, source, gnupg):
         url = "{u}/dists/{d}/Release".format(u=self.url, d=source.codename)
         with tempfile.NamedTemporaryFile() as release_file:
             MsgLog(LOG, request).debug("Downloading '{u}' to '{t}'".format(u=url, t=release_file.name))
-            release_file.write(urllib2.urlopen(url).read())
+            try:
+                release_file.write(urllib2.urlopen(url).read())
+            except urllib2.HTTPError as e:
+                if e.code == 404:
+                    MsgLog(LOG, request).debug("{a}: '404 Not Found' on '{u}'".format(a=self, u=url))
+                    # Not for us
+                    return None
+                raise
             release_file.flush()
             release_file.seek(0)
             release = debian.deb822.Release(release_file)
 
             # Check release file fields
-            source.mbd_check_release_file(release)
+            if not source.mbd_is_matching_release(request, release):
+                return None
 
             # Check signature
             with tempfile.NamedTemporaryFile() as signature:
@@ -114,18 +117,18 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             return release
 
     def mbd_ping(self, request):
-        "Ping and set the ping value."
+        "Ping and update the ping value."
         try:
             t0 = datetime.datetime.now()
             urllib2.urlopen(self.url)
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
-            MsgLog(LOG, request).info("{s}: Ping!".format(s=self))
+            self.save()
+            MsgLog(LOG, request).debug("{s}: Ping!".format(s=self))
         except:
             self.ping = -1.0
-            MsgLog(LOG, request).error("{s}: Does not ping.".format(s=self))
-
-        return self.ping
+            self.save()
+            raise Exception("{s}: Does not ping.".format(s=self))
 
 
 class Architecture(mini_buildd.models.base.Model):
@@ -292,13 +295,15 @@ codeversion is only used for base sources.""")
 
         return values
 
-    def mbd_check_release_file(self, release):
+    def mbd_is_matching_release(self, request, release):
         "Check that this release file matches us."
         for key, value in self.mbd_release_file_values().items():
             # Check identity: origin, codename
-            LOG.debug("Checking '{k}: {v}'".format(k=key, v=value))
+            MsgLog(LOG, request).debug("Checking '{k}: {v}'".format(k=key, v=value))
             if value != release[key]:
-                raise Exception("Release[{k}] field mismatch: '{rv}', expected '{v}'.".format(k=key, rv=release[key], v=value))
+                MsgLog(LOG, request).debug("Release[{k}] field mismatch: '{rv}', expected '{v}'.".format(k=key, rv=release[key], v=value))
+                return False
+        return True
 
     def mbd_get_archive(self):
         "Returns the fastest archive."
@@ -354,35 +359,38 @@ codeversion is only used for base sources.""")
 
             for archive in Archive.objects.all():
                 try:
+                    # Check and update the ping value
+                    archive.mbd_ping(request)
+
                     # Get release if this archive serves us, else exception
-                    release = archive.mbd_download_release(request, self, gpg)
+                    release = archive.mbd_get_matching_release(request, self, gpg)
+                    if release:
+                        # Implicitely save ping value for this archive
+                        self.archives.add(archive)
+                        self.description = release["Description"]
 
-                    # Implicitely save ping value for this archive
-                    archive.save()
-                    self.archives.add(archive)
-                    self.description = release["Description"]
+                        # Set codeversion
+                        self.codeversion = ""
+                        if self.codeversion_override:
+                            self.codeversion = self.codeversion_override
+                            msglog.warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
+                        else:
+                            self.codeversion = mini_buildd.misc.guess_codeversion(release)
+                            self.codeversion_override = self.codeversion
+                            msglog.info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
-                    # Set codeversion
-                    self.codeversion = ""
-                    if self.codeversion_override:
-                        self.codeversion = self.codeversion_override
-                        msglog.warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
+                        # Set architectures and components (may be auto-added)
+                        for a in release["Architectures"].split(" "):
+                            new_arch, _created = Architecture.mbd_get_or_create(msglog, name=a)
+                            self.architectures.add(new_arch)
+                        for c in release["Components"].split(" "):
+                            new_component, _created = Component.mbd_get_or_create(msglog, name=c)
+                            self.components.add(new_component)
+                        msglog.info("{o}: Added archive: {a}".format(o=self, a=archive))
                     else:
-                        self.codeversion = mini_buildd.misc.guess_codeversion(release)
-                        self.codeversion_override = self.codeversion
-                        msglog.info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
-
-                    # Set architectures and components (may be auto-added)
-                    for a in release["Architectures"].split(" "):
-                        new_arch, _created = Architecture.mbd_get_or_create(msglog, name=a)
-                        self.architectures.add(new_arch)
-                    for c in release["Components"].split(" "):
-                        new_component, _created = Component.mbd_get_or_create(msglog, name=c)
-                        self.components.add(new_component)
-                    msglog.info("{o}: Added archive: {a}".format(o=self, a=archive))
-
+                        msglog.debug("{a}: Not hosting {s}".format(a=archive, s=self))
                 except Exception as e:
-                    mini_buildd.setup.log_exception(msglog, "{a}: Not hosting us".format(a=archive), e, level=logging.DEBUG)
+                    mini_buildd.setup.log_exception(msglog, "Error checking {a} for {s} (check Archive or Source)".format(a=archive, s=self), e)
 
         # Check that at least one archive can be found
         self.mbd_get_archive()

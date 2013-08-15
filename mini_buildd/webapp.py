@@ -8,7 +8,6 @@ import random
 import django.conf
 import django.core.handlers.wsgi
 import django.core.management
-import django.contrib.auth
 import django.contrib.messages.constants
 
 import mini_buildd.setup
@@ -106,6 +105,8 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         :param password: The password to use.
         :type password: string
         """
+        # This import needs the django app to be already configured (since django 1.5.2)
+        import django.contrib.auth
 
         try:
             user = django.contrib.auth.models.User.objects.get(username="admin")
@@ -123,7 +124,9 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         produced cruft on the system (i.e., outside
         mini-buildd's home).
         """
+        # This import needs the django app to be already configured
         import mini_buildd.models.chroot
+
         mini_buildd.models.chroot.Chroot.Admin.mbd_action(
             None,
             mini_buildd.models.chroot.Chroot.mbd_get_prepared(),

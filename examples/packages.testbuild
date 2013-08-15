@@ -59,7 +59,6 @@ for P in ${PACKAGES}; do
 			version="$(date --utc +%Y%m%d%H%M%S)~${id}${DEB_RELEASE_VERSION[${dist}]}+"
 			if cp -a "${PKG_DIR}/${P}" "${P}"; then
 				cd "${P}"
-				autoreconf --force --install
 			else
 				apt-get source "${P}"
 				DIR=$(find . -maxdepth 1 -mindepth 1 -type d -name "${P}*")

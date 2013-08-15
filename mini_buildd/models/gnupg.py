@@ -42,6 +42,19 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
     def __unicode__(self):
         return "{i}: {n}".format(i=self.key_long_id if self.key_long_id else self.key_id, n=self.key_name)
 
+    def clean(self, *args, **kwargs):
+        super(GnuPGPublicKey, self).clean(*args, **kwargs)
+        if self.key_id and len(self.key_id) < 8:
+            raise django.core.exceptions.ValidationError("The key id, if given, must be at least 8 bytes  long")
+        if not self.key_id and not self.key:
+            raise django.core.exceptions.ValidationError("Please give at least one: key id, or explicit full key")
+
+    @classmethod
+    def mbd_filter_key(cls, key_id):
+        regex = r"{k}$".format(k=key_id[-8:])
+        return cls.objects.filter(django.db.models.Q(key_long_id__iregex=regex) |
+                                  django.db.models.Q(key_id__iregex=regex))
+
     def mbd_prepare(self, _request):
         with contextlib.closing(mini_buildd.gnupg.TmpGnuPG()) as gpg:
             if self.key_id:
@@ -59,6 +72,8 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
                     self.key_name = key[9]
                 if key[0] == "fpr":
                     self.key_fingerprint = key[9]
+            # Update the user-given key id by it's long version
+            self.key_id = self.key_long_id
 
     def mbd_remove(self, _request):
         self.key_long_id = ""
@@ -81,7 +96,13 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
 
 
 class AptKey(GnuPGPublicKey):
-    pass
+    def clean(self, *args, **kwargs):
+        super(AptKey, self).clean(*args, **kwargs)
+
+        matching_key = self.mbd_filter_key(self.key_id)
+
+        if matching_key.count() > 0:
+            raise django.core.exceptions.ValidationError("Another such key id already exists: {k}".format(k=matching_key[0]))
 
 
 class KeyringKey(GnuPGPublicKey):

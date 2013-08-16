@@ -26,6 +26,7 @@ Special pages
 	 :maxdepth: 1
 
 	 todo
+	 glossary
 	 Python package mini_buildd <modules>
 
 * :ref:`modindex`

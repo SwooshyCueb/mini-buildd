@@ -65,9 +65,6 @@ Using the repository
 	 We use sbuild's --run-lintian option, which is currently runs lintian
 	 from the host, see [#debbug626361]_.
 
-	 .. rubric:: References:
-	 .. [#debbug626361] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626361
-
 .. todo:: **FAQ**: *aptitude gui does not show distribution or origin of packages*
 
 	 To show the distribution of packages, just add ``%t`` to the
@@ -90,10 +87,6 @@ Using the repository
 	 installed package _versions_ which are not currently in any
 	 repository (check "Installed Packages/now").
 
-	 .. rubric:: References:
-	 .. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011
-	 .. [#debbug248561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=248561
-
 .. todo:: **BUG**: *apt secure problems after initial (unauthorized) install of the archive-key package*
 
 	 - aptitude always shows <NULL> archive
@@ -112,9 +105,6 @@ Using the repository
 		 # apt-get update
 
 	 fixes it.
-
-	 .. rubric:: References:
-	 .. [#debbug657561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=657561
 
 .. todo:: **FAQ**: *Multiple versions of a packages in one distribution*
 
@@ -142,3 +132,13 @@ Using the repository
 
 	 In the automated rollback handling, all versions of a source
 	 package are shifted.
+
+**********
+References
+**********
+
+.. rubric:: References:
+.. [#debbug626361] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626361
+.. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011
+.. [#debbug248561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=248561
+.. [#debbug657561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=657561

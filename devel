@@ -226,6 +226,7 @@ mbd_update()
 
 	_head "Checking changelog (must be unchanged)..."
 	git diff-index --exit-code HEAD debian/changelog
+	trap "git checkout debian/changelog" EXIT
 
 	_head "Building snapshot..."
 	git dch --snapshot --auto --ignore-branch
@@ -239,7 +240,6 @@ EOF
 	sudo debi
 
 	_head "Checking out orig changelog again..."
-	git checkout debian/changelog
 }
 
 mbd_test()

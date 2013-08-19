@@ -1,3 +1,26 @@
+mini-buildd (1.0.0~beta.20) experimental; urgency=low
+
+  20th 'longest beta ever' release. Fix for django 1.5.2 and more.
+  * [ecf9580] test packages: Update changelogs.
+  * [da080c0] keyring builder function: Minor improvements.
+  * [ded3321] api_show.html: Fix the pool dir link to always end with "/".
+  * [0634295] examples/packages/mbd-test-ftbfs: Fix autotool setup.
+  * [905f79d] examples/packages: Add strapped autotools files so the DSTs can be used as-is.
+  * [aa444ee] Add support to directly build our internal test packages on the home page.
+  * [d73ddb9] mini-buildd.css: Sync colors for 'Prepared' with the configure pages.
+  * [78b1e13] httpd: Directory index: Use '301 Moved Permanently' for requests without trailing "/" to make them work as expected, too.
+  * [25e06c2] webapp: Import django.contrib.auth in method: Fix breakage with django 1.5.2 (sigh).
+  * [1f94b37] source.py: Add msglog support for release file check.
+  * [66909fe] source.py: Improve error diagnostics for check().
+  * [2c47f07] examples/packages.testbuild: No need to run autoreconf any more.
+  * [9418650] sources wizard: Update all predefined apt keys to long key ids.
+  * [b55420e] gnupg.py: Harden/sanitize gnupg key model's user input.
+  * [6b50080] configure: Sources wizards: Some magic to avoid creation of duplicate apt key instances.
+  * [e833d08] [devel: Trap changelog cleaning, so it's done on errors too.]
+  * [c033973] doc: Cumulated manual updates.
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 19 Aug 2013 14:38:52 +0200
+
 mini-buildd (1.0.0~beta.19) experimental; urgency=low
 
   Nineteenth beta. Setup look, feel and usability improvements, fix for new

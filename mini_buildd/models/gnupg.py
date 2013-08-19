@@ -99,10 +99,10 @@ class AptKey(GnuPGPublicKey):
     def clean(self, *args, **kwargs):
         super(AptKey, self).clean(*args, **kwargs)
 
-        matching_key = self.mbd_filter_key(self.key_id)
-
-        if matching_key.count() > 0:
-            raise django.core.exceptions.ValidationError("Another such key id already exists: {k}".format(k=matching_key[0]))
+        if self.key_id:
+            matching_key = self.mbd_filter_key(self.key_id)
+            if matching_key.count() > 0:
+                raise django.core.exceptions.ValidationError("Another such key id already exists: {k}".format(k=matching_key[0]))
 
 
 class KeyringKey(GnuPGPublicKey):

@@ -7,7 +7,7 @@ distributions with *all batteries included*: I.e., it covers
 **incoming**, **(distributed) building**, **installing**,
 **repository maintenance** and **repository delivery**.
 
-.. _features:
+.. _introduction_features:
 
 ********
 Features
@@ -30,6 +30,8 @@ Features
 
 The :doc:`todo` section may also help you to figure out what
 mini-buildd is not, or not yet.
+
+.. _introduction_overview:
 
 ********
 Overview
@@ -117,6 +119,8 @@ mini-buildd instances *ernie*, *grover* and *bert*:
 * *ernie* has repositories and chroots, and uses himself and *grover* as remote for building.
 * *grover* only has chroots, and is used by *ernie* and *bert* for building.
 * *bert* only has repositories, and uses *ernie* and *grover* as remotes for building.
+
+.. _introduction_components:
 
 *******************
 Software components

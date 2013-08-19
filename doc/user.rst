@@ -2,9 +2,13 @@
 User's Manual
 #############
 
+.. _user_introduction:
+
 ************
 Introduction
 ************
+
+.. _user_setup:
 
 *****************
 Setup your system
@@ -13,17 +17,25 @@ Setup your system
 - Install 'python-mini-buildd'
 - dput
 
+.. _user_upload:
+
 ****************
 Upload a package
 ****************
+
+.. _user_default_layouts:
 
 *******************************
 Semantics of the Default layout
 *******************************
 
+.. _user_api:
+
 *************
 Using the API
 *************
+
+.. _user_ports:
 
 ***************
 Automatic ports
@@ -35,6 +47,8 @@ Internal ports
 External ports
 ==============
 
+.. _user_maintenance:
+
 **********************
 Repository maintenance
 **********************
@@ -42,6 +56,8 @@ Repository maintenance
 .. todo:: **IDEA**: *Dependency check on package migration.*
 
 .. todo:: **IDEA**: *Custom hooks (prebuild.d source.changes, preinstall.d/arch.changes, postinstall.d/arch.changes).*
+
+.. _user_repository:
 
 ********************
 Using the repository

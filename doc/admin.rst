@@ -5,6 +5,8 @@ Administrator's Manual
 The administrator's manual covers the package installation,
 maintenance and configuration of a mini-buildd instance.
 
+.. _admin_installation:
+
 ************
 Installation
 ************
@@ -180,8 +182,11 @@ Deactivate  Deactivate the item, or remove the auto-activate flag.
 Remove      Remove associated data from system.
 =========== ============================================================================
 
+.. _admin_daemon:
+
+******
 Daemon
-======
+******
 
 The Daemon model represents a configured mini-buildd
 instance. It is limited to have exactly one instance; when
@@ -205,8 +210,11 @@ and can be enabled/disabled inside mini-buildd.
 		 # apt-get install haveged
 
 
+.. _admin_sources:
+
+*******
 Sources
-=======
+*******
 
 This groups all models that determine what APT sources are
 available, and where to get them.
@@ -228,8 +236,11 @@ A ``Source`` is usually identified sufficiently by :term:`Origin` and :term:`Cod
 	 is actually signed with.
 
 
+.. _admin_repositories:
+
+************
 Repositories
-============
+************
 
 It's **highly recommended** to just stick with one of the
 default Layouts, and **don't change/add anything** here.
@@ -256,8 +267,11 @@ A repository represent one apt repository managed via reprepro.
 	 would be needed, like 'unstable' -> sid-myrepo-sid.
 
 
+.. _admin_chroots:
+
+*******
 Chroots
-=======
+*******
 
 Adding (active) chroots to your mini-buildd instance implicitly
 makes it a **builder**.
@@ -364,16 +378,24 @@ your system, **LVM chroots** are good alternative, too.
 	 fs checks would only really make sense for LVM chroots.
 
 
-Remotes
-=======
+.. _admin_remotes:
 
+*******
+Remotes
+*******
+
+
+.. _admin_misc:
+
+*************
+Odds and Ends
+*************
 
 Provide keyring packages
 ========================
 
-******************
-Migrate from 0.8.x
-******************
+Migrate packages from 0.8.x
+===========================
 
 1. Upgrade the Debian packages from 0.8.x to 1.0.
 
@@ -418,6 +440,7 @@ Migrate from 0.8.x
 
 Eventually, when everything is updated, you may of course
 (re)move the old 0.8.x directory ``~/rep/``.
+
 
 **********
 References

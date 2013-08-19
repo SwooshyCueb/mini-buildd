@@ -4,7 +4,7 @@ mini-buildd
 
 Documentation for **mini-buildd**, a custom build daemon for
 *Debian*-based distributions with :ref:`all batteries included
-<features>`.
+<introduction_features>`.
 
 **************************
 Parts of the documentation

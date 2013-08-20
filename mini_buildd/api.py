@@ -523,7 +523,7 @@ class Retry(Command):
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
         (["version"], {"help": "source package's version"}),
-        (["--repository", "-R"], {"action": "store", "metavar": "DIST",
+        (["--repository", "-R"], {"action": "store", "metavar": "REPO",
                                   "default": "*",
                                   "help": "Repository name -- use only in case of multiple matches."})]
 

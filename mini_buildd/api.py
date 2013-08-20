@@ -251,6 +251,36 @@ class GetDputConf(Command):
         self._plain_result = daemon.model.mbd_get_dput_conf()
 
 
+class GetSourcesList(Command):
+    """
+    Get sources.list (apt lines).
+
+    Usually, this output is put to a file like '/etc/sources.list.d/mini-buildd-xyz.list'.
+    """
+    COMMAND = "getsourceslist"
+    ARGUMENTS = [
+        (["codename"], {"help": "codename (base distribution) to get apt lines for"}),
+        (["--repository", "-R"], {"action": "store", "metavar": "REPO",
+                                  "default": ".*",
+                                  "help": "repository name regex."}),
+        (["--suite", "-S"], {"action": "store", "metavar": "SUITE",
+                             "default": ".*",
+                             "help": "suite name regex."}),
+        (["--with-deb-src", "-s"], {"action": "store_true",
+                                    "default": False,
+                                    "help": "also list deb-src apt lines."}),
+        (["--with-extra-sources", "-x"], {"action": "store_true",
+                                          "default": False,
+                                          "help": "also list extra sources needed."})]
+
+    def run(self, daemon):
+        self._plain_result = daemon.mbd_get_sources_list(self.args["codename"],
+                                                         self.args["repository"],
+                                                         self.args["suite"],
+                                                         self.has_flag("with_deb_src"),
+                                                         self.has_flag("with_extra_sources"))
+
+
 class LogCat(Command):
     """
     Cat last n lines of the mini-buildd's log.
@@ -619,6 +649,7 @@ COMMANDS = {Status.COMMAND: Status,
             Meta.COMMAND: Meta,
             GetKey.COMMAND: GetKey,
             GetDputConf.COMMAND: GetDputConf,
+            GetSourcesList.COMMAND: GetSourcesList,
             LogCat.COMMAND: LogCat,
             List.COMMAND: List,
             Show.COMMAND: Show,

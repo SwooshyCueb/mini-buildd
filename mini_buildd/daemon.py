@@ -703,6 +703,28 @@ class Daemon():
         return DSTPackage("/usr/share/doc/mini-buildd/examples/packages/mbd-test-{i}".format(i=id_),
                           version=DebianVersion.stamp())
 
+    def mbd_get_sources_list(self, codename, repo_regex, suite_regex, with_deb_src, with_extra_sources):
+        apt_lines = []
+
+        def _add(line):
+            apt_lines.append(line)
+            if with_deb_src:
+                apt_lines.append("deb-src {l}".format(l=line[4:]))
+
+        for r in mini_buildd.models.repository.Repository.objects.filter(identity__regex=r"^{r}$".format(r=repo_regex)):
+            repo_info = "mini-buildd '{i}': Repository '{r}'".format(i=self.model.identity, r=r.identity)
+            for d in r.distributions.all().filter(base_source__codename__exact=codename):
+                if with_extra_sources:
+                    apt_lines.append("# {i}: Extra sources".format(i=repo_info))
+                    for e in d.extra_sources.all():
+                        _add(e.source.mbd_get_apt_line(d))
+                    apt_lines.append("")
+
+                apt_lines.append("# {i}: Sources".format(i=repo_info))
+                for s in r.layout.suiteoption_set.filter(suite__name__regex=r"^{r}$".format(r=suite_regex)):
+                    _add(d.mbd_get_apt_line(r, s))
+        return "\n".join(apt_lines)
+
 
 _INSTANCE = None
 

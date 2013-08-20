@@ -258,6 +258,11 @@ mbd_all()
 	mbd_test
 }
 
+mbd_doc()
+{
+	python setup.py build_sphinx --source-dir=build/sphinx
+}
+
 sep=" "
 for c in $(compgen -A function | grep '^mbd_'); do
 	ACTIONS+="${sep}${c:4}"

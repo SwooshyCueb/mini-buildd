@@ -2,8 +2,15 @@
 Quickstart
 ##########
 
-*Note*: It's recommended to read this Quickstart on the
-mini-buildd instance itself so you can use the direct links.
+.. note:: It's recommended to read this Quickstart on the mini-buildd instance in question itself, else some of the links here will not work as-is.
+
+As a convention, we write code you should run as ``root`` like::
+
+	# apt-get install xyz
+
+and code you should run as ``user`` like::
+
+	? mini-buildd-tool status
 
 **************************
 Administrator's Quickstart
@@ -36,13 +43,13 @@ Configure
 						 some **entropy** (install ``haveged`` maybe) on the system if this stalls.
 
 #. Setup **Sources** (-> :ref:`Manual <admin_sources>`).
-	 #. Call at least one wizard for each: ``Archives``, ``Sources``, ``PrioritySources``.
+	 #. Call at least one wizard for each: *Archives*, *Sources*, *PrioritySources*.
 	 #. ``Setup`` all the Sources you want to use.
 
 	 All wanted sources green? Go on.
 
 	 .. note:: ``Setup`` of Sources will implicitly pull in
-						 architectures and components, and also implicitely
+						 architectures and components, and also implicitly
 						 sets up the apt keys associated to them. Purists
 						 may want to re-check them manually.
 
@@ -53,50 +60,108 @@ Configure
 	 ``test`` repo green? Go on.
 
 #. Setup **Chroots** (-> :ref:`Manual <admin_chroots>`).
-	 #. Call the DirChroot::Defaults wizard.
+	 #. Call the *DirChroot:Defaults* wizard.
 	 #. ``Setup`` all the Chroots you want to use.
 
 	 All wanted chroots green? Done!
 
-	 .. note:: Preparing chroots may take a while; if you cancel the http request in your browser, preparation will continue anyway.
+	 .. note:: Preparing chroots may take a while; if you cancel the HTTP request in your browser, preparation will continue anyway.
 
 Start and test
 ==============
 
 #. Enter `web application's home </mini_buildd/>`_ (stay logged-in as ``admin``).
 #. **Start** the daemon.
-#. **Build** keyring packages.
+#. **Build keyring packages**.
 	 .. note:: Just reload the home page to update the packager and builder status.
-#. **Migrate** the keyring packages up all staged suites (i.e. ->testing->stable).
-	 .. note:: Just show "Last packages", and klick on the keyring's source package name to get to the package's overview where you can migrate.
+#. **Migrate** the **keyring packages** up all staged suites (i.e. ->testing->stable).
+	 .. note:: Just show "Last packages", and click on the
+             keyring's source package name to get to the
+             package's overview where you can migrate (also see
+             the User's Quickstart).
 #. Optionally **build** the internal test packages.
 
 
 *****************
 User's Quickstart
 *****************
+**Goal**: Walk through the most important use cases.
 
-This shows how to quickly set up a working "test" repository on
-a **freshly installed** mini-buildd package, using local chroots
-only, plus a very rough roundtrip on the basic usage.
+Install the command line tool
+=============================
+Access API calls from the command line via ``mini-buildd-tool``::
 
-10. **Control status** on `mini-buildd's home </mini_buildd/>`_.
-11. **Search** packages using "*" as pattern to see all.
-12. **Propagate** the new keyring package to \*-testing and \*-stable.
+	# apt-get install python-mini-buildd
 
+Call ``API::status`` once as user to set your default mini-buildd host::
 
-User uploads
-============
+	? mini-buildd-tool --url=http://my.mini-buildd.intra:8066 status
 
-* Use mini-buildd's `Dput config </mini_buildd/download/dput.cf>`_ to upload packages.
-* Upload authorization works via GnuPG signing. To enable user uploads:
+The remaining Quickstart will just use ``mini-buildd-tool`` as
+example, however the API could also just be accessed via the web
+interface.
 
-   * You may disable auth completely for for the repository.
-   * You may add a django user, and configure an Uploader object for him.
-   * You may add predefined GnuPG keyrings to the repository.
+Install from mini-buildd repos
+==============================
+Setup the apt sources on your system somewhat like that::
 
-Using the repository
-====================
+	# mini-buildd-tool getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
+	# apt-get update
+	# apt-get --allow-unauthenticated install DAEMON_ID-archive-keyring
 
-- Go to the `test repository overview </mini_buildd/repositories/test>`_, and grab the needed apt lines.
-- Install the keyring package on your system.
+Setup your user account
+=======================
+A user account may be needed to, for example, create package subscriptions, access restricted API calls, or upload your GnuPG public key.
+
+#. `Register a user account </accounts/register/>`_.
+#. `Setup your profile <mini_buildd/accounts/profile/>`_ (package subscriptions, GnuPG key upload).
+
+Authorize yourself to do package uploads
+========================================
+Upload authorization works via a GnuPG ``allowed`` keyring.
+
+As this depends on the setup of the mini-buildd instance and/or
+repository your are using, this cannot be answered generically.
+
+You will be able to upload to a repository when
+
+* the repository you upload for has auth disabled completely (like in the sandbox repository ``test``).
+* your user account profile has your GnuPG key uploaded, and your account was approved and enabled for the repository.
+* your key is included in the per-repository predefined GnuPG keyrings.
+
+Upload packages to mini-buildd
+==============================
+::
+
+	# apt-get install dput
+	? mini-buildd-tool getdputconf >>~/.dput.cf
+	...
+	? dput mini-buildd-DAEMON_ID *.changes
+
+Control your package build results
+==================================
+
+* Per notify (read Email). A notification mail is sent to
+	* *the uploader* (unless the repo is not configured to do so, or the mail address does not match the allowed list),
+	* *any subscriber* or
+	* your Email is configured by the administrator to always be notified for that repository.
+* Per web on `mini-buildd's home </mini_buildd/>`_
+	You will always find the packages currently being build displayed here, plus a list of the last N packages build, and of course
+	appropriate links to build logs, changes, etc.
+
+Manage packages
+===============
+You can **search** for (binary and source) package names via `API:list </mini_buildd/api?command=list&pattern=*-archive-keyring>`_::
+
+	? mini-buildd-tool list '*-archive-keyring'
+
+You can **view a source package** overview via the `API:show </mini_buildd/api?command=show&package=DAEMON_ID-archive-keyring>`_ call (put in your actual daemon identity)::
+
+	? mini-buildd-tool show DAEMON_ID-archive-keyring
+
+There are also find appropriate links to ``API::migrate``, ``API::remove``,
+``API::port`` in this web page overview.
+
+You will also find a convenience **external port** link on a
+`repository overview </mini_buildd/repositories/test/>`_ web page
+to do and external port via ``API::portext``.

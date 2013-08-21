@@ -345,7 +345,7 @@ codeversion is only used for base sources.""")
         components = sorted([c for c in self.components.all() if c.name in allowed_components], cmp=cmp_components)
         return "deb {u} {d} {c}".format(
             u=self.mbd_get_archive().url,
-            d=self.codename,
+            d=self.codename + ("" if components else "/"),
             c=" ".join([c.name for c in components]))
 
     def mbd_get_apt_pin(self):
@@ -407,12 +407,14 @@ codeversion is only used for base sources.""")
                             msglog.info("{o}: Codeversion guessed as: {r}".format(o=self, r=self.codeversion))
 
                         # Set architectures and components (may be auto-added)
-                        for a in release["Architectures"].split(" "):
-                            new_arch, _created = Architecture.mbd_get_or_create(msglog, name=a)
-                            self.architectures.add(new_arch)
-                        for c in release["Components"].split(" "):
-                            new_component, _created = Component.mbd_get_or_create(msglog, name=c)
-                            self.components.add(new_component)
+                        if release.get("Architectures"):
+                            for a in release["Architectures"].split(" "):
+                                new_arch, _created = Architecture.mbd_get_or_create(msglog, name=a)
+                                self.architectures.add(new_arch)
+                        if release.get("Components"):
+                            for c in release["Components"].split(" "):
+                                new_component, _created = Component.mbd_get_or_create(msglog, name=c)
+                                self.components.add(new_component)
                         msglog.info("{o}: Added archive: {a}".format(o=self, a=archive))
                     else:
                         msglog.debug("{a}: Not hosting {s}".format(a=archive, s=self))

@@ -479,7 +479,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         return "{b}: {c} ({a}) + {x}".format(b=self.base_source.codename,
                                              c=" ".join(self.mbd_get_components()),
                                              a=" ".join(self.mbd_get_architectures()),
-                                             x=",".join(["{c}:{p}".format(c=e.source.codename, p=e.priority) for e in self.extra_sources.all()]))
+                                             x=", ".join(["{c}:{p}".format(c=e.source.codename, p=e.priority) for e in self.extra_sources.all()]))
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]

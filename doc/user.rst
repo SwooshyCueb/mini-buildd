@@ -14,9 +14,6 @@ Introduction
 Setup your system
 *****************
 
-- Install 'python-mini-buildd'
-- dput
-
 .. _user_upload:
 
 ****************
@@ -28,6 +25,16 @@ Upload a package
 *******************************
 Semantics of the Default layout
 *******************************
+
+==================== ========= ========================= ============================
+Suite                Flags     Semantic                  Consumer
+==================== ========= ========================= ============================
+*experimental*       U E R6    Use at will               Developer.
+snapshot             U E R12   Continuous integration    Developer, beta tester.
+``unstable``         U M R9    Proposed for live         Developer, beta tester.
+``testing``          M R3      QA testing                Quality Assurance.
+``stable``           R6        Live                      End customer.
+==================== ========= ========================= ============================
 
 .. _user_api:
 

@@ -114,7 +114,7 @@ Setup your user account
 A user account may be needed to, for example, create package subscriptions, access restricted API calls, or upload your GnuPG public key.
 
 #. `Register a user account </accounts/register/>`_.
-#. `Setup your profile <mini_buildd/accounts/profile/>`_ (package subscriptions, GnuPG key upload).
+#. `Setup your profile </mini_buildd/accounts/profile/>`_ (package subscriptions, GnuPG key upload).
 
 Authorize yourself to do package uploads
 ========================================

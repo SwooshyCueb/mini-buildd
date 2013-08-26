@@ -618,6 +618,7 @@ Example:
             sandbox_repo, created = Repository.mbd_get_or_create(
                 msglog,
                 identity="test",
+                allow_unauthenticated_uploads=True,
                 layout=Layout.objects.get(name__exact="Default"))
             if created:
                 for d in Distribution.objects.all():

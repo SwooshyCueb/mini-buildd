@@ -34,16 +34,16 @@
 							<!-- REPOSITORIES -->
 							{% include "admin/snippet_index_table_header.html" with title="Repositories" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Layouts" model_path="repository.Layout" wiz0_function="create_defaults" wiz0_name="Defaults" wiz0_title="Create default layout and suites" %}
-							{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Create default distributions for all base sources with the host architecture" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Distributions" model_path="repository.Distribution" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Create default distributions for all active base sources with the host architectures" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Repositories" model_path="repository.Repository" wiz0_function="add_sandbox" wiz0_name="Sandbox" wiz0_title="Add sandbox repository 'test'"  wiz1_function="add_debdev" wiz1_name="Debdev" wiz1_title="Add Debian Developer sandbox repository 'debdev'" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Uploaders" hide_add="True" model_path="gnupg.Uploader" %}
 
 							<!-- CHROOTS -->
 							{% include "admin/snippet_index_table_header.html" with title="Chroots" %}
-							{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
-							{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Dir chroots" model_path="chroot.DirChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all active base sources and host architectures" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="File chroots" model_path="chroot.FileChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all active base sources and host architectures" %}
 							{% include "admin/snippet_index_table_row.html" with model_name="Lvm chroots" model_path="chroot.LVMChroot" %}
-							{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all base sources and host architectures" %}
+							{% include "admin/snippet_index_table_row.html" with model_name="Loop lvm chroots" model_path="chroot.LoopLVMChroot" wiz0_function="add_base_sources" wiz0_name="Defaults" wiz0_title="Add default chroots for all active base sources and host architectures" %}
 
 							<!-- REMOTES -->
 							{% include "admin/snippet_index_table_header.html" with title="Remotes" %}

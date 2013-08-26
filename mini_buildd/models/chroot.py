@@ -97,7 +97,7 @@ chroots (with <tt>qemu-user-static</tt> installed).
             archs = mini_buildd.models.source.Architecture.mbd_supported_architectures()
             msglog.info("Host supports {archs}".format(archs=" ".join(archs)))
 
-            for s in mini_buildd.models.source.Source.objects.filter(codename__regex=r"^[a-z]+$"):
+            for s in mini_buildd.models.source.Source.objects.filter(status__gte=mini_buildd.models.source.Source.STATUS_ACTIVE, codename__regex=r"^[a-z]+$"):
                 for a in mini_buildd.models.source.Architecture.objects.filter(name__regex=r"^({archs})$".format(archs="|".join(archs))):
                     try:
                         chroot_model.mbd_get_or_create(msglog, source=s, architecture=a)

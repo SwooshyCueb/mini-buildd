@@ -400,7 +400,7 @@ codeversion is only used for base sources.""")
                         self.codeversion = ""
                         if self.codeversion_override:
                             self.codeversion = self.codeversion_override
-                            msglog.warn("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
+                            msglog.info("{o}: Codeversion override active: {r}".format(o=self, r=self.codeversion_override))
                         else:
                             self.codeversion = mini_buildd.misc.guess_codeversion(release)
                             self.codeversion_override = self.codeversion

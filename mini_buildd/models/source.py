@@ -449,9 +449,9 @@ class PrioritySource(mini_buildd.models.base.Model):
         exclude = ("extra_options",)
 
         @classmethod
-        def mbd_meta_add_backports(cls, msglog):
+        def mbd_meta_add_extras(cls, msglog):
             "Add all backports as prio=1 prio sources"
-            for source in Source.objects.filter(codename__regex=r".*-backports"):
+            for source in Source.objects.exclude(codename__regex=r"^[a-z]+$"):
                 PrioritySource.mbd_get_or_create(msglog, source=source, priority=1)
 
     def __unicode__(self):

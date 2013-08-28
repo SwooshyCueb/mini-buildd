@@ -91,9 +91,8 @@ different components), or just as safeguard
 
 
 class Status(Command):
-    """
-    Show the status of the mini-buildd instance.
-    """
+    """Show the status of the mini-buildd instance."""
+
     COMMAND = "status"
 
     def __init__(self, args, request=None, msglog=LOG):
@@ -185,9 +184,7 @@ Builder: {b_len} building
 
 
 class Start(Command):
-    """
-    Start the Daemon (engine).
-    """
+    """Start the Daemon (engine)."""
     COMMAND = "start"
     AUTH = Command.ADMIN
     ARGUMENTS = [
@@ -202,9 +199,7 @@ class Start(Command):
 
 
 class Stop(Command):
-    """
-    Stop the Daemon (engine).
-    """
+    """Stop the Daemon (engine)."""
     COMMAND = "stop"
     AUTH = Command.ADMIN
     ARGUMENTS = []
@@ -216,9 +211,7 @@ class Stop(Command):
 
 
 class Meta(Command):
-    """
-    Call arbitrary meta functions for models; usually for internal use only.
-    """
+    """Call arbitrary meta functions for models; usually for internal use only."""
     COMMAND = "meta"
     AUTH = Command.ADMIN
     ARGUMENTS = [
@@ -230,9 +223,7 @@ class Meta(Command):
 
 
 class GetKey(Command):
-    """
-    Get GnuPG public key.
-    """
+    """Get GnuPG public key."""
     COMMAND = "getkey"
 
     def run(self, daemon):
@@ -240,8 +231,7 @@ class GetKey(Command):
 
 
 class GetDputConf(Command):
-    """
-    Get recommended dput config snippet.
+    """Get recommended dput config snippet.
 
     Usually, this is for integration in your personal ~/.dput.cf.
     """
@@ -252,8 +242,7 @@ class GetDputConf(Command):
 
 
 class GetSourcesList(Command):
-    """
-    Get sources.list (apt lines).
+    """Get sources.list (apt lines).
 
     Usually, this output is put to a file like '/etc/sources.list.d/mini-buildd-xyz.list'.
     """
@@ -282,9 +271,8 @@ class GetSourcesList(Command):
 
 
 class LogCat(Command):
-    """
-    Cat last n lines of the mini-buildd's log.
-    """
+    """Cat last n lines of the mini-buildd's log."""
+
     COMMAND = "logcat"
     AUTH = Command.STAFF
     ARGUMENTS = [
@@ -316,9 +304,8 @@ def _get_table_format(dct, cols):
 
 
 class List(Command):
-    """
-    List packages matching a shell-like glob pattern; matches both source and binary package names.
-    """
+    """List packages matching a shell-like glob pattern; matches both source and binary package names."""
+
     COMMAND = "list"
     AUTH = Command.LOGIN
     ARGUMENTS = [
@@ -378,9 +365,8 @@ class List(Command):
 
 
 class Show(Command):
-    """
-    Show a source package.
-    """
+    """Show a source package."""
+
     COMMAND = "show"
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),
@@ -443,9 +429,8 @@ class Show(Command):
 
 
 class Migrate(Command):
-    """
-    Migrate a source package (along with all binary packages).
-    """
+    """Migrate a source package (along with all binary packages)."""
+
     COMMAND = "migrate"
     AUTH = Command.STAFF
     CONFIRM = True
@@ -465,9 +450,8 @@ class Migrate(Command):
 
 
 class Remove(Command):
-    """
-    Remove a source package (along with all binary packages).
-    """
+    """Remove a source package (along with all binary packages)."""
+
     COMMAND = "remove"
     AUTH = Command.STAFF
     CONFIRM = True
@@ -487,8 +471,7 @@ class Remove(Command):
 
 
 class Port(Command):
-    """
-    Port an internal package.
+    """Port an internal package.
 
     An internal 'port' is a no-changes (i.e., only the changelog
     will be adapted) rebuild of the given locally-installed
@@ -518,8 +501,7 @@ class Port(Command):
 
 
 class PortExt(Command):
-    """
-    Port an external package.
+    """Port an external package.
 
     An external 'port' is a no-changes (i.e., only the changelog
     will be adapted) rebuild of any given source package.
@@ -543,9 +525,8 @@ class PortExt(Command):
 
 
 class Retry(Command):
-    """
-    Retry a previously failed package.
-    """
+    """Retry a previously failed package."""
+
     COMMAND = "retry"
     AUTH = Command.STAFF
     NEEDS_RUNNING_DAEMON = True
@@ -568,9 +549,8 @@ class Retry(Command):
 
 
 class SetUserKey(Command):
-    """
-    Set a user's GnuPG public key.
-    """
+    """Set a user's GnuPG public key."""
+
     COMMAND = "setuserkey"
     AUTH = Command.LOGIN
     CONFIRM = True
@@ -642,26 +622,33 @@ class Subscription(Command):
         if not self._plain_result:
             self._plain_result = "No matching subscriptions ({s}).".format(s=self.args["subscription"])
 
+COMMAND_GROUP = "__GROUP__"
+COMMANDS = [(COMMAND_GROUP, "Daemon commands"),
+            (Status.COMMAND, Status),
+            (Start.COMMAND, Start),
+            (Stop.COMMAND, Stop),
+            (Meta.COMMAND, Meta),
+            (COMMAND_GROUP, "Configuration convenience commands"),
+            (GetKey.COMMAND, GetKey),
+            (GetDputConf.COMMAND, GetDputConf),
+            (GetSourcesList.COMMAND, GetSourcesList),
+            (LogCat.COMMAND, LogCat),
+            (COMMAND_GROUP, "Package management commands"),
+            (List.COMMAND, List),
+            (Show.COMMAND, Show),
+            (Migrate.COMMAND, Migrate),
+            (Remove.COMMAND, Remove),
+            (Port.COMMAND, Port),
+            (PortExt.COMMAND, PortExt),
+            (Retry.COMMAND, Retry),
+            (COMMAND_GROUP, "User management commands"),
+            (SetUserKey.COMMAND, SetUserKey),
+            (Subscription.COMMAND, Subscription),
+            ]
 
-COMMANDS = {Status.COMMAND: Status,
-            Start.COMMAND: Start,
-            Stop.COMMAND: Stop,
-            Meta.COMMAND: Meta,
-            GetKey.COMMAND: GetKey,
-            GetDputConf.COMMAND: GetDputConf,
-            GetSourcesList.COMMAND: GetSourcesList,
-            LogCat.COMMAND: LogCat,
-            List.COMMAND: List,
-            Show.COMMAND: Show,
-            Migrate.COMMAND: Migrate,
-            Remove.COMMAND: Remove,
-            Port.COMMAND: Port,
-            PortExt.COMMAND: PortExt,
-            Retry.COMMAND: Retry,
-            SetUserKey.COMMAND: SetUserKey,
-            Subscription.COMMAND: Subscription,
-            }
+COMMANDS_DICT = dict(COMMANDS)
 
+COMMANDS_DEFAULTS = [(cmd, cls(cls.get_default_args()) if cmd != COMMAND_GROUP else cls) for cmd, cls in COMMANDS]
 
 if __name__ == "__main__":
     mini_buildd.misc.setup_console_logging()

@@ -142,18 +142,16 @@ def api(request):
 
         # Call API index if called with no argument
         if not request.GET:
-            cmd_objs = {}
-            for cmd, cls in mini_buildd.api.COMMANDS.items():
-                cmd_objs[cmd] = cls(cls.get_default_args())
             return django.shortcuts.render_to_response("mini_buildd/api_index.html",
-                                                       {"COMMANDS": cmd_objs},
+                                                       {"COMMANDS": mini_buildd.api.COMMANDS_DEFAULTS,
+                                                        "COMMAND_GROUP": mini_buildd.api.COMMAND_GROUP},
                                                        django.template.RequestContext(request))
 
         # Get API class from 'command' parameter
         command = request.GET.get("command", None)
-        if not command in mini_buildd.api.COMMANDS:
+        if not command in mini_buildd.api.COMMANDS_DICT:
             return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
-        api_cls = mini_buildd.api.COMMANDS[command]
+        api_cls = mini_buildd.api.COMMANDS_DICT[command]
 
         # Authentication
         def chk_login():

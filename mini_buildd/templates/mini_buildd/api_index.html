@@ -8,13 +8,14 @@
 {% block content %}
 	<div id="mbd_api">
 		<p>
-			Note: <tt><b>mini-buildd-tool</b></tt> is the
-			corresponding command line tool.
+			See also <tt><b>? mini-buildd-tool --help</b></tt> on the command line.
 		</p>
-		{% for name, cmd in COMMANDS.items %}
-			<div class="box">
-				<h1 class="box-caption">{{ name }}</h1>
-
+		{% for name, cmd in COMMANDS %}
+			{% if name == COMMAND_GROUP %}
+				<hr />
+				<h1>{{ cmd }}</h1>
+				<hr />
+			{% else %}
 				<form action="/mini_buildd/api" method="get">
 					<div>
 						<input type="hidden" name="command" value="{{ name }}" />
@@ -28,7 +29,7 @@
 					</div>
 				</form>
 				<pre>{{ cmd.docstring }}</pre>
-			</div>
+			{% endif %}
 		{% endfor %}
 	</div>
 {% endblock %}

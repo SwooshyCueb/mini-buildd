@@ -21,7 +21,7 @@ LOG = logging.getLogger("mini_buildd")
 mini_buildd.misc.setup_console_logging(logging.DEBUG)
 
 PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
-                                 description="mini-buildd user tool.",
+                                 description="command line tool to run API calls.",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 PARSER.add_argument("--version", action="version", version=mini_buildd.__version__)
@@ -87,18 +87,19 @@ def extra_cmd_credentials(args):
         raise Exception("Unknown action '{c}': Use one of 'list' or 'clear'.".format(c=args["action"]))
 
 
-SUBPARSERS = PARSER.add_subparsers()
+# Unfortunaetely, we cannot group the commands (yet), see http://bugs.python.org/issue14037
+SUBPARSERS = PARSER.add_subparsers(title="API commands")
+for cmd, cmd_cls in mini_buildd.api.COMMANDS:
+    if cmd != mini_buildd.api.COMMAND_GROUP:
+        cmd_parser = SUBPARSERS.add_parser(cmd, help=cmd_cls.__doc__)
+        for cmd_args, cmd_kvargs in cmd_cls.ARGUMENTS:
+            cmd_parser.add_argument(*cmd_args, **cmd_kvargs)
 
-for cmd, cmd_cls in mini_buildd.api.COMMANDS.items():
-    cmd_parser = SUBPARSERS.add_parser(cmd, help=cmd_cls.__doc__)
-    for cmd_args, cmd_kvargs in cmd_cls.ARGUMENTS:
-        cmd_parser.add_argument(*cmd_args, **cmd_kvargs)
+        if cmd_cls.CONFIRM:
+            cmd_parser.add_argument("--confirm", action="store", default="", metavar="COMMAND",
+                                    help="this command needs user confirmation; this option allows to force-bypass that, by explicitly repeating the command")
 
-    if cmd_cls.CONFIRM:
-        cmd_parser.add_argument("--confirm", action="store", default="", metavar="COMMAND",
-                                help="this command needs user confirmation; this option allows to force-bypass that, by explicitly repeating the command")
-
-    cmd_parser.set_defaults(func=cmd_call, command=cmd, command_class=cmd_cls)
+        cmd_parser.set_defaults(func=cmd_call, command=cmd, command_class=cmd_cls)
 
 # Add local "credentials" sub command
 CREDS_PARSER = SUBPARSERS.add_parser("credentials", help="Manage local user credentials")

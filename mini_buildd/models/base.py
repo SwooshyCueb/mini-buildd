@@ -314,6 +314,8 @@ class StatusModel(Model):
                 MsgLog(LOG, request).info("Will auto-activate when check succeeds: {o}".format(o=obj))
             elif obj.mbd_is_active():
                 MsgLog(LOG, request).info("Already active: {o}".format(o=obj))
+            else:
+                raise Exception("Prepare and check first: {o}".format(o=obj))
 
         @classmethod
         def mbd_deactivate(cls, request, obj):

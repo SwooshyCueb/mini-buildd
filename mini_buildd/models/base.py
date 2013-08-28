@@ -223,6 +223,8 @@ class StatusModel(Model):
         CHECK_REACTIVATE: {"char": "A", "string": "Failed in active state (will auto-activate when check succeeds again)"}}
     last_checked = django.db.models.DateTimeField(default=CHECK_NONE, editable=False)
 
+    FAIL_ON_DEPENDENCIES_CHECK = True
+
     # Obsoleted by CHECK_REACTIVATE prepared data state (but we need to keep it to not change the db scheme)
     auto_reactivate = django.db.models.BooleanField(default=False, editable=False)
 
@@ -239,6 +241,22 @@ class StatusModel(Model):
         def _mbd_run_dependencies(cls, request, obj, func, **kwargs):
             for o in obj.mbd_get_dependencies():
                 func(request, o, **kwargs)
+
+        @classmethod
+        def _mbd_check_dependencies(cls, request, obj, **kwargs):
+            """
+            Like _mbd_run_dependencies, but don't fail and run all checks for models with
+            FAIL_ON_DEPENDENCIES_CHECK set to False. Practical use case is the Daemon model
+            only, where we want to run all checks on all dependencies, but not fail ourselves.
+            """
+            for o in obj.mbd_get_dependencies():
+                try:
+                    cls.mbd_check(request, o, **kwargs)
+                except Exception as e:
+                    if obj.FAIL_ON_DEPENDENCIES_CHECK:
+                        raise
+                    else:
+                        MsgLog(LOG, request).warn("Check on '{o}' failed: {e}".format(o=o, e=e))
 
         @classmethod
         def mbd_prepare(cls, request, obj):
@@ -264,9 +282,9 @@ class StatusModel(Model):
             if obj.mbd_is_prepared() and not obj.mbd_is_changed():
                 try:
                     # Also run for all status dependencies
-                    cls._mbd_run_dependencies(request, obj, cls.mbd_check,
-                                              force=force,
-                                              needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_REACTIVATE)
+                    cls._mbd_check_dependencies(request, obj,
+                                                force=force,
+                                                needs_activation=obj.mbd_is_active() or obj.last_checked == obj.CHECK_REACTIVATE)
 
                     if force or obj.mbd_needs_check():
                         last_checked = obj.last_checked

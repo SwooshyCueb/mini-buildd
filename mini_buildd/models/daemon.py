@@ -126,6 +126,8 @@ maintainers to be accidentially spammed.
         default=5,
         help_text="Future use: How many days to keep build results that cannot be uploaded.")
 
+    FAIL_ON_DEPENDENCIES_CHECK = False
+
     class Meta(mini_buildd.models.base.StatusModel.Meta):
         verbose_name_plural = "Daemon"
 

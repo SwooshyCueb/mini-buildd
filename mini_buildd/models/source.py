@@ -338,7 +338,7 @@ codeversion is only used for base sources.""")
         if oa_list:
             return oa_list[0]
         else:
-            raise Exception("No archive found. Please add appropriate archive and/or check network setup.")
+            raise Exception("{s}: No archive found. Please add appropriate archive and/or check network setup.".format(s=self))
 
     def mbd_get_apt_line(self, distribution):
         allowed_components = [c.name for c in distribution.components.all()]
@@ -361,9 +361,9 @@ codeversion is only used for base sources.""")
 
     def mbd_prepare(self, request):
         if not self.apt_keys.all():
-            raise Exception("Please add apt keys to this source.")
+            raise Exception("{s}: Please add apt keys to this source.".format(s=self))
         if self.mbd_get_extra_option("Origin"):
-            raise Exception("You may not override 'Origin', just use the origin field.")
+            raise Exception("{s}: You may not override 'Origin', just use the origin field.".format(s=self))
         MsgLog(LOG, request).info("{s} with pin: {p}".format(s=self, p=self.mbd_get_apt_pin()))
 
     def mbd_sync(self, request):

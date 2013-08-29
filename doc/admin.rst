@@ -10,7 +10,6 @@ maintenance and configuration of a mini-buildd instance.
 ************
 Installation
 ************
-
 To install a mini-buildd instance, just install the Debian
 package::
 
@@ -35,7 +34,6 @@ path) using::
 
 The mini-buildd user
 ====================
-
 mini-buildd relies on having a user called ``mini-buildd``; the
 Unix home of this user is the home of your mini-buildd instance,
 and the Unix daemon runs with its user id.
@@ -65,7 +63,6 @@ removed from the system, including your repositories.
 
 Logging and Debugging
 =====================
-
 Per default, mini-buildd **logs**
 
 * to mini-buildd's log file ``~/var/log/daemon.log``.
@@ -93,7 +90,6 @@ You can `view mini-buildd's log
 *************
 Configuration
 *************
-
 When mini-buildd runs, it's basically acts as a web server, with
 a django web application running on it.
 
@@ -120,7 +116,6 @@ overview<_static/mini_buildd_models.png>`.
 
 Model statuses
 ==============
-
 Some of the models have a status attached to it.
 
 This usually refers to a model's associated data on the system
@@ -150,7 +145,6 @@ Model                       Associated prepared data
 
 Status semantics
 ----------------
-
 ============ ========================== ===============================================================================
 Status       Check status               Semantic
 ============ ========================== ===============================================================================
@@ -168,7 +162,6 @@ Status       Check status               Semantic
 
 Status actions
 --------------
-
 Status actions can be called from a model's list view in
 django's admin configurator.
 
@@ -187,7 +180,6 @@ Remove      Remove associated data from system.
 ******
 Daemon
 ******
-
 The Daemon model represents a configured mini-buildd
 instance. It is limited to have exactly one instance; when
 activated, it means the internal FTP server is started acting on
@@ -202,6 +194,10 @@ The Daemon instance inside of mini-buildd provides the packager
 and builder engine (triggered by incoming via the FTP server),
 and can be enabled/disabled inside mini-buildd.
 
+
+FAQ
+===
+
 .. todo:: **FAQ**: *Daemon prepare does not finish.*
 
 	 Increase entropy on the system, either using the physical
@@ -215,7 +211,6 @@ and can be enabled/disabled inside mini-buildd.
 *******
 Sources
 *******
-
 This groups all models that determine what APT sources are
 available, and where to get them.
 
@@ -224,6 +219,8 @@ when dealing with chroots and distributions.
 
 A ``Source`` is usually identified sufficiently by :term:`Origin` and :term:`Codename`.
 
+FAQ
+===
 .. todo:: **FAQ**: *Can't prepare a source as key verification always fails.*
 
 	 You must add **all** keys the Release file is signed with.
@@ -241,7 +238,6 @@ A ``Source`` is usually identified sufficiently by :term:`Origin` and :term:`Cod
 ************
 Repositories
 ************
-
 It's **highly recommended** to just stick with one of the
 default Layouts, and **don't change/add anything** here.
 
@@ -254,6 +250,8 @@ distribution is to be build.
 
 A repository represent one apt repository managed via reprepro.
 
+FAQ
+===
 .. todo:: **IDEA**: *Allow pseudo distributions "unstable" in changes (aka 'Debian Developer mode').*
 
 	 This would practically mean you could use a dedicated,
@@ -272,7 +270,6 @@ A repository represent one apt repository managed via reprepro.
 *******
 Chroots
 *******
-
 Adding (active) chroots to your mini-buildd instance implicitly
 makes it a **builder**.
 
@@ -313,6 +310,9 @@ your system, **LVM chroots** are good alternative, too.
        ``ccache`` to be used) speed. See ``Distributions and
        Repositories``.
 
+
+FAQ
+===
 .. todo:: **FAQ**: *How to use foreign-architecture chroots with qemu.*
 
 	 Tested with 'armel' (other architectures might work as well, but not tested).
@@ -442,10 +442,9 @@ Eventually, when everything is updated, you may of course
 (re)move the old 0.8.x directory ``~/rep/``.
 
 
-**********
+##########
 References
-**********
-
+##########
 .. rubric:: References:
 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 .. [#debbug642031] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031

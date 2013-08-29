@@ -23,9 +23,8 @@ Upload a package
 .. _user_default_layouts:
 
 *******************************
-Semantics of the Default layout
+Semantics of the Default Layout
 *******************************
-
 ==================== ========= ========================= ============================
 Suite                Flags     Semantic                  Consumer
 ==================== ========= ========================= ============================
@@ -59,7 +58,6 @@ External ports
 **********************
 Repository maintenance
 **********************
-
 .. todo:: **IDEA**: *Dependency check on package migration.*
 
 .. todo:: **IDEA**: *Custom hooks (prebuild.d source.changes, preinstall.d/arch.changes, postinstall.d/arch.changes).*
@@ -70,6 +68,8 @@ Repository maintenance
 Using the repository
 ********************
 
+FAQ
+===
 .. todo:: **BUG**: *Occasional encoding error on ports with Uploader name with non-ascii chars*
 
 	 The log line looks something like::
@@ -156,10 +156,9 @@ Using the repository
 	 In the automated rollback handling, all versions of a source
 	 package are shifted.
 
-**********
+##########
 References
-**********
-
+##########
 .. rubric:: References:
 .. [#debbug626361] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626361
 .. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011

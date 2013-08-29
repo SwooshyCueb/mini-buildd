@@ -2,10 +2,21 @@
 Administrator's Manual
 ######################
 
-The administrator's manual covers the package installation,
-maintenance and configuration of a mini-buildd instance.
+The administrator's manual covers the package *installation*,
+*maintenance* and *configuration* of a mini-buildd instance.
 
 .. _admin_installation:
+
+***************
+Where to get it
+***************
+
+``mini-buildd 1.0`` will be available natively in Debian from
+``jessie`` upwards.
+
+You may also check `mini-buildd's home
+<http://mini-buildd.installiert.net/>`_ for apt-lines for other
+(Debian or Ubuntu) base distributions and snapshot versions.
 
 ************
 Installation
@@ -22,15 +33,19 @@ the mini-buildd user, the **administrator's password** and
 Usually, you set the admin password on the initial install, and
 just leave the rest on default values.
 
-Be sure you have **enough space on mini-buildd's home path** to
-hold all the repositories and/or chroots you plan to run on
-it.
-
 Of course, you can change your settings anytime (including
 (re-)setting the admin password and changing mini-buildd's home
 path) using::
 
   # dpkg-reconfigure mini-buildd
+
+.. note:: Be sure you have **enough space on mini-buildd's home
+					path** (per default ``/var/lib/mini-buildd``) to hold all the
+					repositories (open end, the more the better) and/or chroots. For the latter, as a rule of thumb, you will need about::
+
+						(BASE_DISTS * ARCHS * 0.3G) + (CORES * 4G)
+
+					disk space free for building.
 
 The mini-buildd user
 ====================
@@ -48,7 +63,8 @@ course)::
   var/                Variable data: chroots, logs, temp directories, build directories spool.
   repositories/       Your valuable repositories.
   .gnupg/             The instance's GnuPG key ring.
-  .django_secret_key  Some django shit we need (cite me).
+  .mini-buildd.pid    Unix daemon PID file.
+  .django_secret_key  Some django shit we need.
 
 When you **remove** the mini-buildd package **without purging**,
 it will remove system artifacts (see
@@ -85,15 +101,20 @@ You can `view mini-buildd's log
 
   $ mini-buildd-tool --host=my.ho.st:8066 logcat
 
+HTTP access log
+---------------
+Mini-buildd also keeps a standard HTTP access log in ``~/var/log/access.log``.
+
+
 .. _admin_configuration:
 
 *************
 Configuration
 *************
-When mini-buildd runs, it's basically acts as a web server, with
+When mini-buildd runs, it's basically acts as a *web server*, with
 a django web application running on it.
 
-mini-buildd's configuration consists of related django model
+mini-buildd's *configuration* consists of related django model
 instances, and their configuration is done via Django's 'admin'
 application. On the mini-buildd home page, just hit on
 `Configuration </admin/mini_buildd/>`_ (left top) to enter.

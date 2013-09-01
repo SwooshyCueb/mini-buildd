@@ -46,8 +46,6 @@ class GnuPGPublicKey(mini_buildd.models.base.StatusModel):
         super(GnuPGPublicKey, self).clean(*args, **kwargs)
         if self.key_id and len(self.key_id) < 8:
             raise django.core.exceptions.ValidationError("The key id, if given, must be at least 8 bytes  long")
-        if not self.key_id and not self.key:
-            raise django.core.exceptions.ValidationError("Please give at least one: key id, or explicit full key")
 
     @classmethod
     def mbd_filter_key(cls, key_id):

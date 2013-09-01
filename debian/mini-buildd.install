@@ -2,3 +2,4 @@ usr/bin/mini-buildd usr/sbin/
 debian/mini-buildd-sudoers etc/sudoers.d/
 debian/fstab-generic etc/schroot/mini-buildd/
 build/mini-buildd.bash-completion etc/bash_completion.d/
+debian/mbd-debootstrap-uname-2.6 /usr/sbin/

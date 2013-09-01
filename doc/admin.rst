@@ -350,13 +350,25 @@ FAQ
 
 	 to the extra options. That's it. Now just prepare && activate as usual.
 
-.. todo:: **BUG**: *Fails to create <= lenny chroots with certain host kernel (uname).*
+.. todo:: **BUG**: *debootstrap fails for <=lenny chroots on >=jessie host kernel (uname).*
 
-	 This is due to older libc packages preinstall doing shell magic with `uname` [#debbug642031]_.
+	 See [#debbug642031]_. This should ideally be worked around in debootstrap itself eventually.
 
-	 Use a standard Debian kernel, or try to locally implement one
-	 of the workarounds and configure it via the
-	 Debootstrap-Commmand extra option.
+	 mini-buildd comes with a workaround wrapper ``/usr/sbin/mbd-debootstrap-uname-2.6``. Just add::
+
+		 Debootstrap-Command: /usr/sbin/mbd-debootstrap-uname-2.6
+
+	 to the chroot's extra options to work around it (the default
+	 chroots created with the chroot wizard already include this
+	 workaround for lenny and etch chroots, btw).
+
+	 Fwiw, this is due to older libc6 packaging's preinst, which will
+	 meekly fail if ``uname -r`` starts with a two-digit version;
+	 i.e.::
+
+		 FINE : 3.2.0-4-amd64      Standard wheezy kernel
+		 FAILS: 3.10-2-amd64       Standard jessie/sid kernel
+		 FAILS: 3.9-0.bpo.1-amd64  Wheezy backport of the jessie/sid kernel
 
 .. todo:: **BUG**: *Fails to build "all" packages with "build archall" flag set to arch "x" in case DSP has >= 1 arch "all" and >=1 arch "y" binary package*
 

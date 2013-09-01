@@ -1,0 +1,4 @@
+#!/bin/sh -e
+# Workaround for: http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031
+# See also the FAQ in mini-buildd's "Administrators Manual"
+exec setarch $(uname -m) --uname-2.6 debootstrap "${@}"

@@ -100,7 +100,10 @@ chroots (with <tt>qemu-user-static</tt> installed).
             for s in mini_buildd.models.source.Source.objects.filter(status__gte=mini_buildd.models.source.Source.STATUS_ACTIVE, codename__regex=r"^[a-z]+$"):
                 for a in mini_buildd.models.source.Architecture.objects.filter(name__regex=r"^({archs})$".format(archs="|".join(archs))):
                     try:
-                        chroot_model.mbd_get_or_create(msglog, source=s, architecture=a)
+                        extra_options = ""
+                        if s.codename in ["lenny", "etch"]:
+                            extra_options = "Debootstrap-Command: /usr/sbin/mbd-debootstrap-uname-2.6\n"
+                        chroot_model.mbd_get_or_create(msglog, source=s, architecture=a, extra_options=extra_options)
                     except:
                         msglog.info("Another backend already provides {s}/{a}".format(s=s.codename, a=a.name))
 

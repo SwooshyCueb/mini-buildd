@@ -189,9 +189,15 @@ class Remote(KeyringKey):
         self.mbd_set_pickled_data(mini_buildd.api.Status({}))
         MsgLog(LOG, request).info("Remote key and state removed.")
 
-    def mbd_check(self, _request):
+    def mbd_check(self, request):
         """
-        Check whether the remote mini-buildd is running.
+        Check whether the remote mini-buildd is up, running and serving for us.
         """
-        super(Remote, self).mbd_check(_request)
-        self.mbd_get_status(update=True)
+        super(Remote, self).mbd_check(request)
+        status = self.mbd_get_status(update=True)
+
+        if not self.mbd_get_daemon().model.mbd_get_http_hopo().string in status.remotes:
+            raise Exception("Remote '{r}': does not know us.".format(r=self.http))
+
+        if not status.running:
+            raise Exception("Remote '{r}': is down.".format(r=self.http))

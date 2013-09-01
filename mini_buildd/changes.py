@@ -220,19 +220,24 @@ class Changes(debian.deb822.Changes):
 
         remotes = {}
 
+        def add_remote(remote, update):
+            status = remote.mbd_get_status(update)
+            if status.running and status.has_chroot(codename, arch):
+                remotes[status.load] = status
+                LOG.debug("Remote[{l}]={r}".format(l=status.load, r=remote))
+
         def check_remote(remote):
             try:
-                status = remote.mbd_get_status(update=True)
-                if status.running and status.has_chroot(codename, arch):
-                    remotes[status.load] = status
+                mini_buildd.models.gnupg.Remote.Admin.mbd_check(None, remote, force=True)
+                add_remote(remote, False)
             except Exception as e:
                 mini_buildd.setup.log_exception(LOG, "Builder check failed", e, logging.WARNING)
 
-        # Always check our own instance as pseudo remote first
-        check_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string))
+        # Always add our own instance as pseudo remote first
+        add_remote(mini_buildd.models.gnupg.Remote(http=local_hopo.string), True)
 
-        # Check all active remotes
-        for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
+        # Check all active or auto-deactivated remotes
+        for r in mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate():
             check_remote(r)
 
         if not remotes:

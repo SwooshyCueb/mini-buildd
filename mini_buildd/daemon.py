@@ -515,6 +515,10 @@ class Daemon():
         return mini_buildd.models.gnupg.Remote.mbd_get_active()
 
     @classmethod
+    def get_active_or_auto_reactivate_remotes(cls):
+        return mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate()
+
+    @classmethod
     def get_subscription_objects(cls):
         return mini_buildd.models.subscription.Subscription.objects
 

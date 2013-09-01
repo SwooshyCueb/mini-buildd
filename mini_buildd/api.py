@@ -135,7 +135,7 @@ class Status(Command):
             self.repositories[r.identity] = [d.base_source.codename for d in r.distributions.all()]
 
         # remotes: ["host1.xyz.org:8066", "host2.xyz.org:8066"]
-        self.remotes = [r.http for r in daemon.get_active_remotes()]
+        self.remotes = [r.http for r in daemon.get_active_or_auto_reactivate_remotes()]
 
         # packaging/building: string/unicode
         self.packaging = ["{0}".format(p) for p in daemon.packages.values()]

@@ -111,9 +111,9 @@ def error500_internal(request, description="Sorry, something went wrong", api_cm
 def home(request):
     return django.shortcuts.render_to_response("mini_buildd/home.html",
                                                {"daemon": mini_buildd.daemon.get(),
-                                                "repositories": mini_buildd.models.repository.Repository.mbd_get_prepared(),
-                                                "chroots": mini_buildd.models.chroot.Chroot.mbd_get_prepared(),
-                                                "remotes": mini_buildd.models.gnupg.Remote.mbd_get_prepared()},
+                                                "repositories": mini_buildd.models.repository.Repository.mbd_get_active_or_auto_reactivate(),
+                                                "chroots": mini_buildd.models.chroot.Chroot.mbd_get_active_or_auto_reactivate(),
+                                                "remotes": mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate()},
                                                django.template.RequestContext(request))
 
 

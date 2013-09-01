@@ -284,13 +284,19 @@ class StatusModel(Model):
                         obj.mbd_check(request)
 
                         # Handle special flags
+                        reactivated = False
                         if obj.last_checked == obj.CHECK_REACTIVATE:
                             obj.status = StatusModel.STATUS_ACTIVE
+                            reactivated = True
                             MsgLog(LOG, request).info("Auto-reactivated: {o}".format(o=obj))
 
                         # Finish up
                         obj.last_checked = datetime.datetime.now()
                         obj.save()
+
+                        # Run activation hook if reactivated
+                        if reactivated:
+                            cls._mbd_on_activation(request, obj)
 
                         MsgLog(LOG, request).info("Checked ({f}, last={c}): {o}".format(f="forced" if force else "scheduled", c=last_checked, o=obj))
                     else:
@@ -347,8 +353,8 @@ class StatusModel(Model):
         @classmethod
         def mbd_action(cls, request, queryset, action, **kwargs):
             """
-            Try to run action on each object in queryset, and
-            emit error message on failure.
+            Try to run action on each object in queryset, emit
+            error message on failure, but don't fail ourself.
             """
             for o in queryset:
                 try:

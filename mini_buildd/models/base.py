@@ -99,16 +99,8 @@ are actually supported by the current model.
 
     class Admin(django.contrib.admin.ModelAdmin):
         @classmethod
-        def _mbd_stop_daemon(cls, request, obj):
-            "Stop daemon if running."
-            if obj.mbd_get_daemon().is_running():
-                obj.mbd_get_daemon().stop(msglog=MsgLog(LOG, request))
-
-        @classmethod
         def _mbd_on_change(cls, request, obj):
             "Global actions to take when an object changes."
-            cls._mbd_stop_daemon(request, obj)
-
             for o in obj.mbd_get_reverse_dependencies():
                 o.mbd_set_changed(request)
                 o.save()
@@ -116,7 +108,7 @@ are actually supported by the current model.
         @classmethod
         def _mbd_on_activation(cls, request, obj):
             "Global actions to take when an object becomes active."
-            cls._mbd_stop_daemon(request, obj)
+            pass
 
         def save_model(self, request, obj, form, change):
             if change:
@@ -312,7 +304,6 @@ class StatusModel(Model):
                     if obj.mbd_is_active():
                         obj.status, obj.last_checked = obj.STATUS_PREPARED, obj.CHECK_REACTIVATE
                         MsgLog(LOG, request).error("Automatically deactivated: {o}".format(o=obj))
-                        cls._mbd_stop_daemon(request, obj)
                     obj.save()
                     raise
             else:
@@ -340,7 +331,6 @@ class StatusModel(Model):
             obj.status = min(obj.STATUS_PREPARED, obj.status)
             if obj.last_checked == obj.CHECK_REACTIVATE:
                 obj.last_checked = obj.CHECK_FAILED
-            cls._mbd_stop_daemon(request, obj)
             obj.save()
             MsgLog(LOG, request).info("Deactivated: {o}".format(o=obj))
 

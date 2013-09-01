@@ -1,3 +1,35 @@
+mini-buildd (1.0.0~beta.21) experimental; urgency=low
+
+  21st century 'docs and fixes' release.
+  * [dc1c1c2] AptKey: Skip "existing key" validity check when key_id is empty (regr: re-enables AptKey creation without keyserver).
+  * [75514d7] doc updates
+  * [20b86c9] [devel: Add convenience 'doc' target]
+  * [d22c76d] api:retry: Fix typo in usage.
+  * [e7dc2af] API: Add command "getsourceslist".
+  * [a10c8de] doc: Updates for Quickstart.
+  * [33838a3] [Cosmetic for distribution display]
+  * [aae178d] source.py: Handle "absolut" sources (w/o components or architectures) gracefully.
+  * [061f796] doc/user.rst: Add default layout semantics.
+  * [2057733] doc/quickstart.rst: fix profile link.
+  * [6a23bd8] source.py: Don't warn (just info) when codeversion override is set (as we now set it ourselves when guessed).
+  * [e11e3ce] mini-buildd: Add note about the extra HOST-MainThread-PID files from pidlockfile.
+  * [7da6af2] configure: repo+dists wizards: Only ass for active base sources.
+  * [6e717a2] configure: repo wizard 'sandbox': Allow unauthenticated uploads per default.
+  * [bf786bb] configure: PrioSource wizard: Add all non-base sources (not only *-backports).
+  * [6c2d401] API: Order and group API commands for convenience.
+  * [8fc6bc2] configure: Proper error message for activate() when not prepared.
+  * [ce6c9e4] daemon check(): Never fail, and run all dependency checks.
+  * [09563c0] debian/control: Add Homepage URL.
+  * [14b8b28] doc: Add extra FAQ section for todo/faq/bugs in ech section.
+  * [d85d4ba] doc/admin.rst: Some updates...
+  * [a100ba4] chroots: Add workaround debootstrap wrapper for <=lenny chroots under new sid/jessie-like versioned kernels.
+  * [2cf89d5] configure: Don't implicitly auto-stop daemon on instance changes or activation.
+  * [0c83849] gnupg: Revert one previously added validity check (broke remotes).
+  * [94e72e9] remotes: Pimp up check and failover handling.
+  * [283ffaf] status models: Fix: Run 'on_activation' hook also on re-activate.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 01 Sep 2013 18:08:14 +0200
+
 mini-buildd (1.0.0~beta.20) experimental; urgency=low
 
   20th 'longest beta ever' release. Fix for django 1.5.2 and more.

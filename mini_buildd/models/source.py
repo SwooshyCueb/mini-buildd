@@ -130,6 +130,13 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             self.save()
             raise Exception("{s}: Does not ping.".format(s=self))
 
+    def mbd_get_reverse_dependencies(self):
+        "Return all sources (and their deps) that use us."
+        result = [s for s in self.source_set.all()]
+        for s in self.source_set.all():
+            result += s.mbd_get_reverse_dependencies()
+        return result
+
 
 class Architecture(mini_buildd.models.base.Model):
     name = django.db.models.CharField(primary_key=True, max_length=50)
@@ -431,8 +438,7 @@ codeversion is only used for base sources.""")
         "Return all chroots and repositories that use us."
         result = [c for c in self.chroot_set.all()]
         for d in self.distribution_set.all():
-            for r in d.mbd_get_reverse_dependencies():
-                result.append(r)
+            result += d.mbd_get_reverse_dependencies()
         return result
 
 

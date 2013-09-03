@@ -399,6 +399,17 @@ should be prevent package installation (for non-experimental suites).
     piuparts_root_arg = django.db.models.CharField(max_length=200, default="sudo")
 
     chroot_setup_script = django.db.models.TextField(blank=True,
+                                                     default="""\
+#!/bin/sh -e
+
+# Install and use 'eatmydata' in builds where available
+if apt-get --yes --no-install-recommends install eatmydata; then
+   printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+fi
+
+# Have 'ccache' ready in builds
+apt-get --yes --no-install-recommends install ccache || true
+""",
                                                      help_text="""\
 Script that will be run via sbuild's '--chroot-setup-command'.
 <br />
@@ -406,12 +417,13 @@ Example:
 <pre>
 #!/bin/sh -e
 
-# Use 'eatmydata' in builds; depending on the chroot type, this can speed up builds significantly
-apt-get --yes --no-install-recommends install eatmydata
-printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+# Install and use 'eatmydata' in builds where available
+if apt-get --yes --no-install-recommends install eatmydata; then
+   printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+fi
 
 # Have 'ccache' ready in builds
-apt-get --yes --no-install-recommends install ccache
+apt-get --yes --no-install-recommends install ccache || true
 
 # Accept sun-java6 licence so we can build-depend on it
 echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose
@@ -426,6 +438,11 @@ echo "sun-java6-jre shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-sel
 </pre>
 """)
     sbuildrc_snippet = django.db.models.TextField(blank=True,
+                                                  default="""\
+# Enable ccache
+$path = '/usr/lib/ccache:/usr/sbin:/usr/bin:/sbin:/bin:/usr/X11R6/bin:/usr/games';
+$build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
+""",
                                                   help_text="""\
 Perl snippet to be added in the .sbuildrc for each build.; you may use these placeholders:<br />
 <br />

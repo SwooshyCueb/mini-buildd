@@ -393,6 +393,12 @@ this would mean losing all packages!
                     current_app=self.admin_site.name)
         mbd_action_remove.short_description = "Remove"
 
+        def mbd_action_pca(self, request, queryset):
+            self.mbd_action(request, queryset, "prepare")
+            self.mbd_action(request, queryset, "check")
+            self.mbd_action(request, queryset, "activate")
+        mbd_action_pca.short_description = "PCA"
+
 # pylint: disable=R0201
         def colored_status(self, obj):
             return '<div style="font-weight:bold;background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="Last check: {t}">{o}</div>'.format(
@@ -404,7 +410,7 @@ this would mean losing all packages!
         colored_status.allow_tags = True
 # pylint: enable=R0201
 
-        actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_deactivate, mbd_action_remove]
+        actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_pca, mbd_action_deactivate, mbd_action_remove]
         list_display = ["colored_status", "__unicode__"]
         list_display_links = ["__unicode__"]
 

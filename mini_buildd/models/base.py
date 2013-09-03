@@ -399,6 +399,13 @@ this would mean losing all packages!
             self.mbd_action(request, queryset, "activate")
         mbd_action_pca.short_description = "PCA"
 
+        @classmethod
+        def mbd_meta_pca_all(cls, msglog):
+            "Run prepare, check, and activate for all objects of this model"
+            cls.mbd_action(msglog.request, cls.mbd_model.objects.all(), "prepare")
+            cls.mbd_action(msglog.request, cls.mbd_model.objects.all(), "check")
+            cls.mbd_action(msglog.request, cls.mbd_model.objects.all(), "activate")
+
 # pylint: disable=R0201
         def colored_status(self, obj):
             return '<div style="font-weight:bold;background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="Last check: {t}">{o}</div>'.format(

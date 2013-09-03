@@ -44,4 +44,6 @@ def import_all():
 
     for m in models:
         m_admin = getattr(m, "Admin")
+        # We need the model class in ModelAdmin classmethods (i.e., in mbd_meta_pca_all)
+        m_admin.mbd_model = m
         django.contrib.admin.site.register(m, m_admin)

@@ -209,10 +209,10 @@ class StatusModel(Model):
     CHECK_REACTIVATE = datetime.datetime(datetime.MINYEAR, 1, 4, tzinfo=None)
     _CHECK_MAX = CHECK_REACTIVATE
     CHECK_STRINGS = {
-        CHECK_NONE: {"char": "-", "string": "Unchecked (please run check)"},
-        CHECK_CHANGED: {"char": "*", "string": "Changed (please prepare again)"},
-        CHECK_FAILED: {"char": "x", "string": "Failed (please fix and check again)"},
-        CHECK_REACTIVATE: {"char": "A", "string": "Failed in active state (will auto-activate when check succeeds again)"}}
+        CHECK_NONE: {"char": "-", "string": "Unchecked -- please run check"},
+        CHECK_CHANGED: {"char": "*", "string": "Changed -- please prepare again"},
+        CHECK_FAILED: {"char": "x", "string": "Failed -- please fix and check again"},
+        CHECK_REACTIVATE: {"char": "A", "string": "Failed in active state -- will auto-activate when check succeeds again"}}
     last_checked = django.db.models.DateTimeField(default=CHECK_NONE, editable=False)
 
     LETHAL_DEPENDENCIES = True
@@ -408,11 +408,11 @@ this would mean losing all packages!
 
 # pylint: disable=R0201
         def colored_status(self, obj):
-            return '<div style="font-weight:bold;background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="Last check: {t}">{o}</div>'.format(
+            return '<div style="font-weight:bold;background-color:{bc};color:{fc};padding:2px 0px 2px 5px" title="{t}">{o}</div>'.format(
                 bc=obj.STATUS_COLORS[obj.status].get("bg"),
                 fc=obj.STATUS_COLORS[obj.status].get("fg"),
-                t=obj.CHECK_STRINGS.get(obj.last_checked, {}).get("string", obj.last_checked),
-                o=obj.mbd_get_status_display())
+                t=obj.mbd_get_status_display(typ="string"),
+                o=obj.mbd_get_status_display(typ="char"))
 
         colored_status.allow_tags = True
 # pylint: enable=R0201
@@ -471,8 +471,13 @@ this would mean losing all packages!
     def mbd_get_prepared(cls):
         return cls.objects.filter(status__gte=cls.STATUS_PREPARED)
 
-    def mbd_get_status_display(self):
-        p = ""
-        if self.status == self.STATUS_PREPARED and self.last_checked <= self._CHECK_MAX:
-            p = " [{p}]".format(p=self.CHECK_STRINGS.get(self.last_checked, {}).get("char", self.last_checked))
-        return "{s}{p}".format(s=self.get_status_display(), p=p)
+    def mbd_get_check_display(self, typ="string"):
+        if self.mbd_is_checked():
+            return {"string": self.last_checked.strftime("Checked on %Y-%m-%d %H:%M"),
+                    "char": "C"}[typ]
+        else:
+            return self.CHECK_STRINGS[self.last_checked][typ]
+
+    def mbd_get_status_display(self, typ="string"):
+        return "{s} ({p})".format(s=self.get_status_display(),
+                                  p=self.mbd_get_check_display(typ))

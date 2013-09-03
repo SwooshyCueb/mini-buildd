@@ -66,7 +66,7 @@ $(document).ready(
 					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages id="mbd_last_packages" %}
 				{% endif %}
 
-				<h2 title="Active and prepared repositories">Repositories:
+				<h2 title="Repositories in use">Repositories:
 					<span style="float: right">
 						<a class="button"
 							 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_keyring_packages&amp;output=referer"
@@ -83,7 +83,10 @@ $(document).ready(
 
 				<ul>
 					{% for r in repositories %}
-						<li><a class="status {{ r.get_status_display }}" title="Go to this repository's overview page" href="/mini_buildd/repositories/{{ r.identity }}">{{ r }}</a></li>
+						<li>
+							<span class="status {{ r.get_status_display }}" title="{{ r.mbd_get_status_display }}">{{ r }}</span>
+							(<a title="Go to repository overview page" href="/mini_buildd/repositories/{{ r.identity }}/">Overview</a>)
+						</li>
 					{% empty %}
 						<li>No repositories.</li>
 					{% endfor %}
@@ -104,10 +107,10 @@ $(document).ready(
 					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.last_builds id="mbd_last_builds" %}
 				{% endif %}
 
-				<h2 title="Active and prepared chroots">Chroots:</h2>
+				<h2 title="Chroots in use">Chroots:</h2>
 				<ul>
 					{% for c in chroots %}
-						<li><span class="status {{ c.get_status_display }}">{{ c }}</span></li>
+						<li><span class="status {{ c.get_status_display }}" title="{{ c.mbd_get_status_display }}">{{ c }}</span></li>
 					{% empty %}
 						<li>No chroots.</li>
 					{% endfor %}
@@ -118,10 +121,13 @@ $(document).ready(
 		<div id="mbd_index_remotes">
 			<div class="box">
 				<h1 class="box-caption">Network: {{ remotes|length }} remotes</h1>
-				<h2 title="Active and prepared remotes">Remotes:</h2>
+				<h2 title="Remotes in use">Remotes:</h2>
 				<ul>
 					{% for r in remotes %}
-						<li><a class="status {{ r.get_status_display }}" href="http://{{ r.http }}">{{ r }}</a></li>
+						<li>
+							<span class="status {{ r.get_status_display }}" title="{{ r.mbd_get_status_display }}">{{ r }}</span>
+							(<a title="Visit remote" href="http://{{ r.http }}/">Visit</a>)
+						</li>
 					{% empty %}
 						<li>No remotes.</li>
 					{% endfor %}

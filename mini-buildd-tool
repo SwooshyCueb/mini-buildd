@@ -59,7 +59,11 @@ def cmd_call(args):
             raise Exception("{c}: Not confirmed, skipped.".format(c=args.command))
 
     # Do the api call
-    call_url = "{b}/mini_buildd/api?{a}".format(b=args.url, a=urllib.urlencode(http_args))
+    try:
+        url = mini_buildd.misc.UserURL(args.url).plain
+    except:
+        url = args.url
+    call_url = "{b}/mini_buildd/api?{a}".format(b=url, a=urllib.urlencode(http_args))
     LOG.info("API call URL: {u}".format(u=call_url))
     response = urllib2.urlopen(call_url)
 
@@ -128,7 +132,7 @@ try:
 
     # After successful call, save possible changes (new creds, default url) in creds (may be interactive if there are new passwords to store).
     if CREDS_CACHE_SAVE:
-        CREDS_CACHE.save(ARGS.url)
+        CREDS_CACHE.save()
 
 except urllib2.HTTPError as e:
     print_daemon_messages(e.headers, ARGS.url)

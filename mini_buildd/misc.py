@@ -662,8 +662,9 @@ class CredsCache(object):
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
         self._changed = []
+        self._last_url = None
 
-    def save(self, last_url=None):
+    def save(self):
         if self._changed:
             answer = raw_input("""
 Got new credentials for: {c}
@@ -671,8 +672,8 @@ Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed),
             if answer.upper() != "Y":
                 return
 
-        if last_url:
-            self._creds[self.LAST_URL] = last_url
+        if self._last_url:
+            self._creds[self.LAST_URL] = self._last_url
 
         pickle.dump(self._creds,
                     os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
@@ -688,37 +689,39 @@ Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed),
 
     def list(self):
         last_url = self.get_last_url()
-        if last_url:
-            print("Last URL: {url}".format(url=last_url))
-        for url, usrpass in self._creds.items():
+        print("Saved credentials:")
+        for url in self._creds.keys():
             if url != self.LAST_URL:
-                user, _dummy = usrpass
-                print("{mark} {url} {user}".format(mark="*" if url == last_url else " ", url=url, user=user))
+                print("{mark} {url}".format(mark="*" if url == last_url else " ", url=url))
 
     def get_last_url(self, default=None):
         return self._creds.get(self.LAST_URL, default)
 
     def get(self, url):
+        user_url = None
+        password = None
         try:
-            username, password = self._creds[url]
-            LOG.debug("Using creds from cache '{f}': {url}, user {user}".format(f=self._file, url=url, user=username))
+            user_url = UserURL(url)
+            password = self._creds[user_url.full]
+            LOG.debug("Using creds from cache '{f}': {url}".format(f=self._file, url=user_url))
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Not in cache {u}".format(u=url), e, logging.DEBUG)
-            username = raw_input("[{u}] Username: ".format(u=url))
+            if not user_url:
+                user_url = UserURL(url, raw_input("[{u}] Username: ".format(u=url)))
             password = getpass.getpass("[{u}] Password: ".format(u=url))
-            self._changed.append(url)
-            self._creds[url] = username, password
+            self._changed.append(user_url.full)
+            self._creds[user_url.full] = password
 
-        return username, password
+        self._last_url = user_url.full
+        return user_url, password
 
 
 def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_buildd/"):
-    username = None
+    user_url = None
     try:
-        login_url = url + login_loc
-        next_url = url + next_loc
-
-        username, password = credentials.get(url)
+        user_url, password = credentials.get(url)
+        login_url = user_url.plain + login_loc
+        next_url = user_url.plain + next_loc
 
         # Create cookie-enabled opener
         cookie_handler = urllib2.HTTPCookieProcessor()
@@ -736,7 +739,7 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
         # Login via POST request
         response = opener.open(
             login_url,
-            urllib.urlencode({"username": username,
+            urllib.urlencode({"username": user_url.username,
                               "password": password,
                               "csrfmiddlewaretoken": csrf_cookies[0].value,
                               "this_is_the_login_form": "1",
@@ -748,10 +751,10 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
             raise Exception("Wrong creds: Please check username and password")
 
         # Logged in: Install opener, save credentials
-        LOG.info("User '{u}' logged in to '{url}'".format(u=username, url=url))
+        LOG.info("User logged in: {url}".format(url=user_url))
         urllib2.install_opener(opener)
     except Exception as e:
-        raise Exception("Login as '{u}' failed: {e}".format(u=username, e=e))
+        raise Exception("Login failed: {url}: {e}".format(url=user_url, e=e))
 
 
 SBUILD_KEYS_WORKAROUND_LOCK = threading.Lock()

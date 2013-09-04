@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import copy
 import datetime
 import shutil
 import codecs
@@ -17,6 +18,7 @@ import base64
 import re
 import urllib
 import urllib2
+import urlparse
 import getpass
 import pickle
 import logging
@@ -586,6 +588,66 @@ def tail(file_object, lines, line_chars=160):
 
     # Return tail
     return file_object.read()
+
+
+class UserURL(object):
+    """
+    URL with a username attached.
+
+    >>> U = UserURL("http://admin@localhost:8066")
+    >>> (U.username, U.plain, U.full)
+    (u'admin', u'http://localhost:8066', u'http://admin@localhost:8066')
+
+    >>> U = UserURL("http://example.org:8066", "admin")
+    >>> (U.username, U.plain, U.full)
+    (u'admin', u'http://example.org:8066', u'http://admin@example.org:8066')
+
+    >>> UserURL("http://localhost:8066")
+    Traceback (most recent call last):
+      ...
+    Exception: UserURL: No username given
+
+    >>> UserURL("http://admin@localhost:8066", "root")
+    Traceback (most recent call last):
+      ...
+    Exception: UserURL: Username given in twice, in URL and parameter
+    """
+    def __init__(self, url, username=None):
+        parsed = urlparse.urlparse(url)
+        if parsed.password:
+            raise Exception("UserURL: We don't allow to give pasword in URL")
+        if parsed.username and username:
+            raise Exception("UserURL: Username given in twice, in URL and parameter")
+        if not parsed.username and not username:
+            raise Exception("UserURL: No username given")
+        if username:
+            self._username = username
+        else:
+            self._username = parsed.username
+        self._plain = list(parsed)
+        self._plain[1] = parsed[1].rpartition("@")[2]
+
+    def __unicode__(self):
+        return self.full
+
+    @property
+    def username(self):
+        return self._username
+
+    @property
+    def plain(self):
+        "URL string without username."
+        return urlparse.urlunparse(self._plain)
+
+    @property
+    def full(self):
+        "URL string with username."
+        if self._username:
+            full = copy.copy(self._plain)
+            full[1] = "{u}@{l}".format(u=self._username, l=self._plain[1])
+            return urlparse.urlunparse(full)
+        else:
+            return self.plain
 
 
 class CredsCache(object):

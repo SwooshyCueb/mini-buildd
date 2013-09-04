@@ -653,6 +653,14 @@ class UserURL(object):
 class CredsCache(object):
     LAST_URL = "__last_url__"
 
+    def _sanitize(self):
+        for url in self._filter(".*"):
+            try:
+                UserURL(url)
+            except:
+                del self._creds[url]
+                print("Cleared incompatible entry: {url}".format(url=url))
+
     def __init__(self, cache_file):
         self._file = cache_file
         self._creds = {}
@@ -663,6 +671,7 @@ class CredsCache(object):
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
         self._changed = []
         self._last_url = None
+        dont_care_run(self._sanitize)
 
     def save(self):
         if self._changed:
@@ -679,20 +688,19 @@ Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed),
                     os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
                     pickle.HIGHEST_PROTOCOL)
 
-    def clear(self):
-        self._creds = {}
-        if os.path.exists(self._file):
-            os.remove(self._file)
-            LOG.info("Credentials cache removed: {c}".format(c=self._file))
-        else:
-            LOG.info("No credentials cache file: {c}".format(c=self._file))
+    def _filter(self, regex):
+        return [url for url in self._creds.keys() if url != self.LAST_URL and re.search(regex, url)]
 
-    def list(self):
+    def clear(self, regex):
+        for url in self._filter(regex):
+            del self._creds[url]
+            print("Cleared: {url}".format(url=url))
+
+    def list(self, regex):
         last_url = self.get_last_url()
-        print("Saved credentials:")
-        for url in self._creds.keys():
-            if url != self.LAST_URL:
-                print("{mark} {url}".format(mark="*" if url == last_url else " ", url=url))
+        print("Default URL: {url}:".format(url=last_url))
+        for url in self._filter(regex):
+            print("{mark} {url}".format(mark="*" if url == last_url else " ", url=url))
 
     def get_last_url(self, default=None):
         return self._creds.get(self.LAST_URL, default)
@@ -748,7 +756,9 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
 
         # If successful, next url of the response must match
         if response.geturl() != next_url:
-            raise Exception("Wrong creds: Please check username and password")
+            # Creds seem to be wrong; clear, so we will ask again next time
+            credentials.clear(user_url.full)
+            raise Exception("Wrong credentials: Please try again")
 
         # Logged in: Install opener, save credentials
         LOG.info("User logged in: {url}".format(url=user_url))

@@ -48,7 +48,7 @@ def cmd_call(args):
 
     # Compute api call parameters
     http_args = {}
-    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "clear_creds", "command_class", "func"]]:
+    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "command_class", "func"]]:
         http_args[k] = args.__dict__[k]
 
     # Confirm if required by this call
@@ -81,14 +81,10 @@ def cmd_call(args):
 
 
 def extra_cmd_credentials(args):
-    global CREDS_CACHE_SAVE
-    CREDS_CACHE_SAVE = False
-    if args.action == "list":
-        CREDS_CACHE.list()
-    elif args.action == "clear":
-        CREDS_CACHE.clear()
+    if args.clear:
+        CREDS_CACHE.clear(args.clear)
     else:
-        raise Exception("Unknown action '{c}': Use one of 'list' or 'clear'.".format(c=args["action"]))
+        CREDS_CACHE.list(args.list)
 
 
 # Unfortunaetely, we cannot group the commands (yet), see http://bugs.python.org/issue14037
@@ -107,7 +103,8 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS:
 
 # Add local "credentials" sub command
 CREDS_PARSER = SUBPARSERS.add_parser("credentials", help="Manage local user credentials")
-CREDS_PARSER.add_argument("action", action="store", nargs="?", default="list", help="'list' or 'clear' credentials.")
+CREDS_PARSER.add_argument("--list", "-l", action="store", metavar="REGEX", default=".*", help="list credentials.")
+CREDS_PARSER.add_argument("--clear", "-c", action="store", metavar="REGEX", default=None, help="clear credentials.")
 CREDS_PARSER.set_defaults(func=extra_cmd_credentials)
 
 # Parse and run
@@ -121,7 +118,6 @@ if LOG.getEffectiveLevel() <= logging.DEBUG:
 try:
     # Generate global credentials object
     CREDS_CACHE = mini_buildd.misc.CredsCache(os.path.join(os.getenv("HOME"), ".mini-buildd-tool.credentials"))
-    CREDS_CACHE_SAVE = True
 
     # Set host to last used URL in creds (or fallback) if not given explicitly
     if not ARGS.url:
@@ -130,9 +126,8 @@ try:
     # Run the command
     ARGS.func(ARGS)
 
-    # After successful call, save possible changes (new creds, default url) in creds (may be interactive if there are new passwords to store).
-    if CREDS_CACHE_SAVE:
-        CREDS_CACHE.save()
+    # After successful call, save possible changes (new creds, default url) in creds (may be interactive if there are new passwords to store in plain).
+    CREDS_CACHE.save()
 
 except urllib2.HTTPError as e:
     print_daemon_messages(e.headers, ARGS.url)

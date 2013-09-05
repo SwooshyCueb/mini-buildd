@@ -126,9 +126,6 @@ try:
     # Run the command
     ARGS.func(ARGS)
 
-    # After successful call, save possible changes (new creds, default url) in creds (may be interactive if there are new passwords to store in plain).
-    CREDS_CACHE.save()
-
 except urllib2.HTTPError as e:
     print_daemon_messages(e.headers, ARGS.url)
     mini_buildd.setup.log_exception(LOG, ARGS.url, e)

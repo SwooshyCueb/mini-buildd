@@ -763,6 +763,7 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
         # Logged in: Install opener, save credentials
         LOG.info("User logged in: {url}".format(url=user_url))
         urllib2.install_opener(opener)
+        credentials.save()
     except Exception as e:
         raise Exception("Login failed: {url}: {e}".format(url=user_url, e=e))
 

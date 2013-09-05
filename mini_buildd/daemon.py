@@ -727,7 +727,7 @@ class Daemon():
                 apt_lines.append("# {i}: Sources".format(i=repo_info))
                 for s in r.layout.suiteoption_set.filter(suite__name__regex=r"^{r}$".format(r=suite_regex)):
                     _add(d.mbd_get_apt_line(r, s))
-        return "\n".join(apt_lines)
+        return "\n".join(apt_lines) + "\n"
 
 
 _INSTANCE = None

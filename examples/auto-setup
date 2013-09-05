@@ -1,0 +1,60 @@
+#!/bin/bash -e
+
+if [ -n "${1}" ]; then
+	URL="${1}"
+else
+	URL="http://admin@$(hostname -f):8066"
+fi
+
+cat <<EOF
+Automatically run the whole 'Admin Quickstart', all defaults,
+Debian wizards, completely non-interactive.
+
+Just give the admin password once when asked.
+
+This is for quick bootstrapping to test-drive it, debugging and
+very hasty lads.
+
+Don't use if for, or on an existing production setup!
+This will run for quite some time!
+This will automatically download (most likely from internet) tons of data!
+
+EOF
+read -p"Ctr-C to abort, RETURN to continue" dummy
+
+MBDT="mini-buildd-tool --url=${URL}"
+
+${MBDT} status
+${MBDT} stop
+
+# Daemon
+${MBDT} meta daemon.Daemon pca_all
+
+# Sources
+${MBDT} meta source.Archive add_from_sources_list
+${MBDT} meta source.Archive add_debian
+${MBDT} meta source.Source add_debian
+${MBDT} meta source.PrioritySource add_extras
+${MBDT} meta source.Source pca_all
+
+# Repositories
+${MBDT} meta repository.Layout create_defaults
+${MBDT} meta repository.Distribution add_base_sources
+${MBDT} meta repository.Repository add_sandbox
+${MBDT} meta repository.Repository pca_all
+
+# Chroots
+${MBDT} meta chroot.DirChroot add_base_sources
+${MBDT} meta chroot.DirChroot pca_all
+
+# Show status
+${MBDT} status
+
+# Start the daemon enginge
+${MBDT} start
+
+# Build keyring packages
+${MBDT} meta repository.Repository build_keyring_packages
+
+# Build test packages
+${MBDT} meta repository.Repository build_test_packages

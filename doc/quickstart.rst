@@ -26,10 +26,17 @@ just stick to the defaults::
 
 Configure
 =========
+.. note:: In case you are both, **extraordinary hasty and adventurous**, you may just run this::
+
+						? /usr/share/doc/mini-buildd/examples/auto-setup
+
+					This will basically try to run this whole section
+					non-interactively, with all defaults. If you really
+					just want a quick test-drive, this might be for
+					you. **All others should just read on**.
+
 .. note:: Read ``Setup`` below: Run the full ``prepare``, ``check`` and ``activate`` treat (ugh!) from model's *list view* to make them green.
 .. note:: Using the wizards is mostly harmless; calling them is idempotent, and they will never touch any existing setup.
-
-.. role:: green
 
 #. Enter the `web application's configuration section </admin/mini_buildd/>`_ and login as superuser ``admin``.
 

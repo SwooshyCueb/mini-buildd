@@ -242,20 +242,11 @@ EOF
 	_head "Checking out orig changelog again..."
 }
 
-mbd_test()
-{
-	read -p "About to upload test packages. All configured? [ http://$(hostname -f):8066 ]" dummy
-	(
-		cd ./examples
-		./packages.testbuild ${1}
-	)
-}
-
 mbd_all()
 {
 	mbd_purge
 	mbd_update
-	mbd_test
+	time /usr/share/doc/mini-buildd/examples/auto-setup
 }
 
 mbd_doc()

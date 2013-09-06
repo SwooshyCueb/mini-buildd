@@ -102,7 +102,7 @@ Access API calls from the command line via ``mini-buildd-tool``::
 
 Call ``API::status`` once as user to set your default mini-buildd host::
 
-	? mini-buildd-tool --url=http://my.mini-buildd.intra:8066 status
+	? mini-buildd-tool --url=http://my.mini-buildd.intra:8066 credentials --login
 
 The remaining Quickstart will just use ``mini-buildd-tool`` as
 example, however the API could also just be accessed via the web

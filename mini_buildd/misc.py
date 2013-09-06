@@ -651,7 +651,10 @@ class UserURL(object):
 
 
 class CredsCache(object):
-    LAST_URL = "__last_url__"
+    OPTIONS = "__options__"
+
+    def _filter(self, regex):
+        return [url for url in self._creds.keys() if url != self.OPTIONS and re.search(regex, url)]
 
     def _sanitize(self):
         for url in self._filter(".*"):
@@ -669,27 +672,35 @@ class CredsCache(object):
             LOG.debug("Creds cache pickled from '{c}'. {l} entries.".format(c=cache_file, l=len(self._creds)))
         except Exception as e:
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
+        self._creds.setdefault(self.OPTIONS, {})
         self._changed = []
-        self._last_url = None
         dont_care_run(self._sanitize)
 
     def save(self):
-        if self._changed:
-            answer = raw_input("""
+        for changed in self._changed:
+            save = False
+            policy = self.get_option("policy")
+            if policy:
+                save = policy == "A"
+            else:
+                while True:
+                    answer = raw_input("""
 Got new credentials for: {c}
-Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed), f=self._file))
-            if answer.upper() != "Y":
-                return
-
-        if self._last_url:
-            self._creds[self.LAST_URL] = self._last_url
+Save plain password in '{f}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=",".join(self._changed), f=self._file)).upper()[:1]
+                    if answer in ["Y", "N", "A", "V"]:
+                        break
+                if answer in ["A", "V"]:
+                    self.set_option("policy", answer)
+                save = answer in ["Y", "A"]
+            if not save:
+                del self._creds[changed]
 
         pickle.dump(self._creds,
                     os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
                     pickle.HIGHEST_PROTOCOL)
 
-    def _filter(self, regex):
-        return [url for url in self._creds.keys() if url != self.LAST_URL and re.search(regex, url)]
+    def reset(self):
+        self._creds[self.OPTIONS] = {}
 
     def clear(self, regex):
         for url in self._filter(regex):
@@ -697,30 +708,32 @@ Save plain password in '{f}': (Y)es, (N)o? """.format(c=",".join(self._changed),
             print("Cleared: {url}".format(url=url))
 
     def list(self, regex):
-        last_url = self.get_last_url()
-        print("Default URL: {url}:".format(url=last_url))
+        last_url = self.get_option("last_url")
+        print("Default URL: {url}".format(url=last_url))
+        print("Save policy: {p}".format(p={"V": "Never", "A": "Always"}.get(self.get_option("policy"), "Ask")))
         for url in self._filter(regex):
             print("{mark} {url}".format(mark="*" if url == last_url else " ", url=url))
 
-    def get_last_url(self, default=None):
-        return self._creds.get(self.LAST_URL, default)
+    def get_option(self, key, default=None):
+        return self._creds[self.OPTIONS].get(key, default)
+
+    def set_option(self, key, value):
+        self._creds[self.OPTIONS][key] = value
 
     def get(self, url):
-        user_url = None
-        password = None
         try:
             user_url = UserURL(url)
+        except:
+            user_url = UserURL(url, raw_input("[{u}] Username: ".format(u=url)))
+
+        try:
             password = self._creds[user_url.full]
-            LOG.debug("Using creds from cache '{f}': {url}".format(f=self._file, url=user_url))
-        except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Not in cache {u}".format(u=url), e, logging.DEBUG)
-            if not user_url:
-                user_url = UserURL(url, raw_input("[{u}] Username: ".format(u=url)))
+        except:
             password = getpass.getpass("[{u}] Password: ".format(u=url))
             self._changed.append(user_url.full)
             self._creds[user_url.full] = password
 
-        self._last_url = user_url.full
+        self.set_option("last_url", user_url.full)
         return user_url, password
 
 

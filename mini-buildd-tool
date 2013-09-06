@@ -83,8 +83,13 @@ def cmd_call(args):
 def extra_cmd_credentials(args):
     if args.clear:
         CREDS_CACHE.clear(args.clear)
+    elif args.reset:
+        CREDS_CACHE.reset()
+    elif args.login:
+        mini_buildd.misc.web_login(args.url, CREDS_CACHE)
     else:
         CREDS_CACHE.list(args.list)
+    CREDS_CACHE.save()
 
 
 # Unfortunaetely, we cannot group the commands (yet), see http://bugs.python.org/issue14037
@@ -105,6 +110,8 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS:
 CREDS_PARSER = SUBPARSERS.add_parser("credentials", help="Manage local user credentials")
 CREDS_PARSER.add_argument("--list", "-l", action="store", metavar="REGEX", default=".*", help="list credentials.")
 CREDS_PARSER.add_argument("--clear", "-c", action="store", metavar="REGEX", default=None, help="clear credentials.")
+CREDS_PARSER.add_argument("--reset", "-r", action="store_true", default=False, help="reset cache options.")
+CREDS_PARSER.add_argument("--login", "-L", action="store_true", default=False, help="only login on host.")
 CREDS_PARSER.set_defaults(func=extra_cmd_credentials)
 
 # Parse and run
@@ -121,7 +128,7 @@ try:
 
     # Set host to last used URL in creds (or fallback) if not given explicitly
     if not ARGS.url:
-        ARGS.url = CREDS_CACHE.get_last_url("http://localhost:8066")
+        ARGS.url = CREDS_CACHE.get_option("last_url", "http://localhost:8066")
 
     # Run the command
     ARGS.func(ARGS)

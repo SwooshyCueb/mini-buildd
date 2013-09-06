@@ -153,6 +153,12 @@
 	font-weight: bold;
 }
 
+.PC {
+	border-color: darkblue;
+	border-width: 3px;
+	font-weight: bold;
+}
+
 .Activate {
 	border-color: green;
 	border-width: 3px;

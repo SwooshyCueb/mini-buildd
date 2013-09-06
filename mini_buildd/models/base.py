@@ -393,9 +393,13 @@ this would mean losing all packages!
                     current_app=self.admin_site.name)
         mbd_action_remove.short_description = "Remove"
 
-        def mbd_action_pca(self, request, queryset):
+        def mbd_action_pc(self, request, queryset):
             self.mbd_action(request, queryset, "prepare")
             self.mbd_action(request, queryset, "check")
+        mbd_action_pc.short_description = "PC"
+
+        def mbd_action_pca(self, request, queryset):
+            self.mbd_action_pc(request, queryset)
             self.mbd_action(request, queryset, "activate")
         mbd_action_pca.short_description = "PCA"
 
@@ -417,7 +421,7 @@ this would mean losing all packages!
         colored_status.allow_tags = True
 # pylint: enable=R0201
 
-        actions = [mbd_action_prepare, mbd_action_check, mbd_action_activate, mbd_action_pca, mbd_action_deactivate, mbd_action_remove]
+        actions = [mbd_action_prepare, mbd_action_check, mbd_action_pc, mbd_action_activate, mbd_action_pca, mbd_action_deactivate, mbd_action_remove]
         list_display = ["colored_status", "__unicode__"]
         list_display_links = ["__unicode__"]
 

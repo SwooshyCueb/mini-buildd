@@ -21,29 +21,50 @@ import mini_buildd.api
 LOG = logging.getLogger("mini_buildd")
 mini_buildd.misc.setup_console_logging(logging.DEBUG)
 
+
 # pylint: disable=W0613
 def host_completer(prefix, **kwargs):
     hosts = []
     dput_cf = ConfigParser.RawConfigParser()
     dput_cf.read(os.path.expanduser("~/.dput.cf"))
-    for s in dput_cf.sections():
+    for section in dput_cf.sections():
+        def _join(host, user):
+            if user:
+                return "{u}@{h}".format(u=user, h=host)
+            else:
+                return host
+
+        def _add(host, user=None):
+            if section.startswith("mini-buildd-"):
+                hosts.append(_join(section[12:], user))
+            else:
+                hosts.append(_join(section, user))
+
         try:
-            host = dput_cf.get(s, "x_mini_buildd_host")
-            hosts.append(host)
-            tpl = "{u}@{h}"
-            hosts.append(tpl.format(u="admin", h=host))
+            host = dput_cf.get(section, "x_mini_buildd_host")
+            _add(host)
+            _add(host, "admin")
             try:
-                users = dput_cf.get(s, "x_mini_buildd_users")
+                users = dput_cf.get(section, "x_mini_buildd_users")
                 if not users:
                     raise Exception()
             except:
                 users = os.getenv("USER")
             for u in users.split(" "):
-                hosts.append(tpl.format(u=u, h=host))
+                _add(host, u)
         except:
             pass
     return hosts
 # pylint: enable=W0613
+
+
+def host_from_dput(section):
+    dput_cf = ConfigParser.RawConfigParser()
+    dput_cf.read(os.path.expanduser("~/.dput.cf"))
+    try:
+        return dput_cf.get("mini-buildd-" + section, "x_mini_buildd_host")
+    except:
+        return dput_cf.get(section, "x_mini_buildd_host")
 
 PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
                                  description="command line tool to run API calls.",
@@ -59,7 +80,8 @@ PARSER.add_argument("-O", "--output", action="store",
                     help="output type")
 PARSER.add_argument("host", action="store",
                     metavar="HOST",
-                    help="target host").completer = host_completer
+                    help="target host, either '[user@]host:port', or '[user@]DPUT_TARGET'").completer = host_completer
+
 
 def print_daemon_messages(headers, host):
     "Output daemon messages to stderr"
@@ -68,8 +90,15 @@ def print_daemon_messages(headers, host):
         print("[{h}] {m}".format(h=host, m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
     print("", file=sys.stderr)
 
+
 def cmd_call(args):
+    # Compute actual user and host to use: '[user@]host:port' or '[user@]DPUT_TARGET'
     user, dummy, host = args.host.rpartition("@")
+    try:
+        host = host_from_dput(host)
+    except:
+        pass
+    LOG.debug("Actual target URL: {u}@{h}".format(u=user, h=host))
 
     # Log in if user given explicitely, or required by the command
     if user or args.command_class.AUTH != mini_buildd.api.Command.NONE:

@@ -195,7 +195,7 @@ class Start(Command):
     def run(self, daemon):
         if not daemon.start(force_check=self.has_flag("force_check"), msglog=self.msglog):
             raise Exception("Could not start Daemon (check logs and messages).")
-        self._plain_result = "{d}".format(d=daemon)
+        self._plain_result = "{d}\n".format(d=daemon)
 
 
 class Stop(Command):
@@ -207,7 +207,7 @@ class Stop(Command):
     def run(self, daemon):
         if not daemon.stop(msglog=self.msglog):
             raise Exception("Could not stop Daemon (check logs and messages).")
-        self._plain_result = "{d}".format(d=daemon)
+        self._plain_result = "{d}\n".format(d=daemon)
 
 
 class Meta(Command):

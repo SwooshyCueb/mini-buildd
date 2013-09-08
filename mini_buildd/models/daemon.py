@@ -244,7 +244,10 @@ method   = ftp
 fqdn     = {h}
 login    = anonymous
 incoming = /incoming
-""".format(i=self.identity, h=self.mbd_get_ftp_hopo().string)
+# These currently only help for mini-buildd-tool bash autocompletion
+x_mini_buildd_host = {H}
+x_mini_buildd_users =
+""".format(i=self.identity, h=self.mbd_get_ftp_hopo().string, H=self.mbd_get_http_hopo().string)
 
     def _mbd_notify_signature(self, typ):
         reason = {"daemon": "Your address is configured to get any notifications (contact administrators if you don't want this).",

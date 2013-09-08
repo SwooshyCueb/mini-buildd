@@ -656,14 +656,6 @@ class CredsCache(object):
     def _filter(self, regex):
         return [url for url in self._creds.keys() if url != self.OPTIONS and re.search(regex, url)]
 
-    def _sanitize(self):
-        for url in self._filter(".*"):
-            try:
-                UserURL(url)
-            except:
-                del self._creds[url]
-                print("Cleared incompatible entry: {url}".format(url=url))
-
     def __init__(self, cache_file):
         self._file = cache_file
         self._creds = {}
@@ -674,7 +666,6 @@ class CredsCache(object):
             mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
         self._creds.setdefault(self.OPTIONS, {})
         self._changed = []
-        dont_care_run(self._sanitize)
 
     def save(self):
         for changed in self._changed:
@@ -708,11 +699,9 @@ Save plain password in '{f}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=",".j
             print("Cleared: {url}".format(url=url))
 
     def list(self, regex):
-        last_url = self.get_option("last_url")
-        print("Default URL: {url}".format(url=last_url))
         print("Save policy: {p}".format(p={"V": "Never", "A": "Always"}.get(self.get_option("policy"), "Ask")))
         for url in self._filter(regex):
-            print("{mark} {url}".format(mark="*" if url == last_url else " ", url=url))
+            print(url)
 
     def get_option(self, key, default=None):
         return self._creds[self.OPTIONS].get(key, default)
@@ -720,29 +709,30 @@ Save plain password in '{f}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=",".j
     def set_option(self, key, value):
         self._creds[self.OPTIONS][key] = value
 
-    def get(self, url):
-        try:
-            user_url = UserURL(url)
-        except:
-            user_url = UserURL(url, raw_input("[{u}] Username: ".format(u=url)))
+    def get(self, host, user=""):
+        if not user:
+            user = raw_input("[{h}] Username: ".format(h=host))
+        key = "{u}@{h}".format(u=user, h=host)
 
         try:
-            password = self._creds[user_url.full]
+            password = self._creds[key]
         except:
-            password = getpass.getpass("[{u}] Password: ".format(u=url))
-            self._changed.append(user_url.full)
-            self._creds[user_url.full] = password
+            password = getpass.getpass("[{k}] Password: ".format(k=key))
+            self._changed.append(key)
+            self._creds[key] = password
 
-        self.set_option("last_url", user_url.full)
-        return user_url, password
+        return key, user, password
 
 
-def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_buildd/"):
-    user_url = None
+def web_login(host, user, credentials,
+              proto="http",
+              login_loc="/accounts/login/",
+              next_loc="/mini_buildd/"):
+    plain_url = "{p}://{h}".format(p=proto, h=host)
     try:
-        user_url, password = credentials.get(url)
-        login_url = user_url.plain + login_loc
-        next_url = user_url.plain + next_loc
+        key, user, password = credentials.get(host, user)
+        login_url = plain_url + login_loc
+        next_url = plain_url + next_loc
 
         # Create cookie-enabled opener
         cookie_handler = urllib2.HTTPCookieProcessor()
@@ -760,7 +750,7 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
         # Login via POST request
         response = opener.open(
             login_url,
-            urllib.urlencode({"username": user_url.username,
+            urllib.urlencode({"username": user,
                               "password": password,
                               "csrfmiddlewaretoken": csrf_cookies[0].value,
                               "this_is_the_login_form": "1",
@@ -770,15 +760,15 @@ def web_login(url, credentials, login_loc="/accounts/login/", next_loc="/mini_bu
         # If successful, next url of the response must match
         if response.geturl() != next_url:
             # Creds seem to be wrong; clear, so we will ask again next time
-            credentials.clear(user_url.full)
+            credentials.clear(key)
             raise Exception("Wrong credentials: Please try again")
 
         # Logged in: Install opener, save credentials
-        LOG.info("User logged in: {url}".format(url=user_url))
+        LOG.info("User logged in: {key}".format(key=key))
         urllib2.install_opener(opener)
         credentials.save()
     except Exception as e:
-        raise Exception("Login failed: {url}: {e}".format(url=user_url, e=e))
+        raise Exception("Login failed: {u}@{h}: {e}".format(u=user, h=host, e=e))
 
 
 SBUILD_KEYS_WORKAROUND_LOCK = threading.Lock()

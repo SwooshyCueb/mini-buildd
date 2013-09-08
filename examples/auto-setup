@@ -1,9 +1,9 @@
 #!/bin/bash -e
 
 if [ -n "${1}" ]; then
-	URL="${1}"
+	HOST="${1}"
 else
-	URL="http://admin@$(hostname -f):8066"
+	HOST="admin@$(hostname -f):8066"
 fi
 
 cat <<EOF
@@ -22,7 +22,7 @@ This will automatically download (most likely from internet) tons of data!
 EOF
 read -p"Ctr-C to abort, RETURN to continue" dummy
 
-MBDT="mini-buildd-tool --url=${URL}"
+MBDT="mini-buildd-tool ${HOST}"
 
 ${MBDT} status
 ${MBDT} stop

@@ -10,7 +10,7 @@ As a convention, we write code you should run as ``root`` like::
 
 and code you should run as ``user`` like::
 
-	? mini-buildd-tool status
+	? mini-buildd-tool HOST status
 
 **************************
 Administrator's Quickstart
@@ -48,6 +48,7 @@ Configure
 
 	 .. note:: Daemon ``prepare`` will generate your instance ID (read: GnuPG key); you may need to generate
 						 some **entropy** (install ``haveged`` maybe) on the system if this stalls.
+	 .. note:: The Daemon ``identity`` will herafter be referred to as ``ARCHIVE``.
 
 #. Setup **Sources** (-> :ref:`Manual <admin_sources>`).
 	 #. Call at least one wizard for each: *Archives*, *Sources*, *PrioritySources*.
@@ -100,10 +101,6 @@ Access API calls from the command line via ``mini-buildd-tool``::
 
 	# apt-get install python-mini-buildd
 
-Call ``API::status`` once as user to set your default mini-buildd host::
-
-	? mini-buildd-tool --url=http://my.mini-buildd.intra:8066 credentials --login
-
 The remaining Quickstart will just use ``mini-buildd-tool`` as
 example, however the API could also just be accessed via the web
 interface.
@@ -112,9 +109,9 @@ Install from mini-buildd repos
 ==============================
 Setup the apt sources on your system somewhat like that::
 
-	# mini-buildd-tool getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
+	# mini-buildd-tool HOST getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
 	# apt-get update
-	# apt-get --allow-unauthenticated install DAEMON_ID-archive-keyring
+	# apt-get --allow-unauthenticated install ARCHIVE-archive-keyring
 
 Setup your user account
 =======================
@@ -122,6 +119,14 @@ A user account may be needed to, for example, create package subscriptions, acce
 
 #. `Register a user account </accounts/register/>`_.
 #. `Setup your profile </mini_buildd/accounts/profile/>`_ (package subscriptions, GnuPG key upload).
+
+Setup dput
+==========
+Install ``dput``, and setup your ``~/.dput.cf``:
+
+	# apt-get install dput
+	? mini-buildd-tool HOST getdputconf >>~/.dput.cf
+
 
 Authorize yourself to do package uploads
 ========================================
@@ -140,10 +145,7 @@ Upload packages to mini-buildd
 ==============================
 ::
 
-	# apt-get install dput
-	? mini-buildd-tool getdputconf >>~/.dput.cf
-	...
-	? dput mini-buildd-DAEMON_ID *.changes
+	? dput mini-buildd-ARCHIVE *.changes
 
 Control your package build results
 ==================================
@@ -160,11 +162,11 @@ Manage packages
 ===============
 You can **search** for (binary and source) package names via `API:list </mini_buildd/api?command=list&pattern=*-archive-keyring>`_::
 
-	? mini-buildd-tool list '*-archive-keyring'
+	? mini-buildd-tool HOST list '*-archive-keyring'
 
-You can **view a source package** overview via the `API:show </mini_buildd/api?command=show&package=DAEMON_ID-archive-keyring>`_ call (put in your actual daemon identity)::
+You can **view a source package** overview via the `API:show </mini_buildd/api?command=show&package=ARCHIVE-archive-keyring>`_ call (put in your actual daemon identity)::
 
-	? mini-buildd-tool show DAEMON_ID-archive-keyring
+	? mini-buildd-tool HOST show ARCHIVE-archive-keyring
 
 There are also find appropriate links to ``API::migrate``, ``API::remove``,
 ``API::port`` in this web page overview.

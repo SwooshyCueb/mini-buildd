@@ -643,14 +643,17 @@ Example:
 
         @classmethod
         def mbd_meta_add_debdev(cls, msglog):
-            "Add developer repository 'debdev'."
+            "Add developer repository 'debdev', only for sid."
+            try:
+                sid = Distribution.objects.get(base_source__codename="sid")
+            except:
+                raise Exception("No 'sid' distribution found")
             debdev_repo, created = Repository.mbd_get_or_create(
                 msglog,
                 identity="debdev",
                 layout=Layout.objects.get(name__exact="Debian Developer"))
             if created:
-                for d in Distribution.objects.all():
-                    debdev_repo.distributions.add(d)
+                debdev_repo.distributions.add(sid)
 
     def __unicode__(self):
         return "{i}: {d}".format(i=self.identity, d=" ".join([d.base_source.codename for d in self.distributions.all()]))

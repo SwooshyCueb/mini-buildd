@@ -1,0 +1,29 @@
+#!/bin/bash -e
+# dput wrapper: Waits until package has been successfully build
+
+# Get values from dput args
+_cv()
+{
+	grep --max-count=1 "^${1}:" "${2}" | cut -d" " -f2-
+}
+DIST=$(_cv "Distribution" "${@: -1}")
+PACKAGE=$(_cv "Source" "${@: -1}")
+VERSION=$(_cv "Version" "${@: -1}")
+HOST="$(printf ${@: -2} | cut -d" " -f1)"
+
+# Run dput
+dput "$@"
+
+# Poll for version in repo
+MBDT="mini-buildd-tool ${HOST}"
+SLEEP=30
+printf "\nWaiting for ${PACKAGE}-${VERSION} to appear in ${DIST}@${HOST}:\n"
+while true; do
+	sleep ${SLEEP}
+	if ${MBDT} show ${PACKAGE} 2>/dev/null | grep "${DIST}.*${VERSION}"; then
+		printf "\nOK, build\n"
+		break
+	else
+		printf "*"
+	fi
+done

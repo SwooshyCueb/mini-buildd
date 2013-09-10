@@ -78,6 +78,8 @@ PARSER.add_argument("-q", "--quiet", dest="terseness", action="count", default=0
 PARSER.add_argument("-O", "--output", action="store",
                     default="plain", choices=["plain", "html", "python"],
                     help="output type")
+PARSER.add_argument("-R", "--reset-save-policy", action="store_true",
+                    help="reset save policy of used keyring (to 'ask')")
 PARSER.add_argument("host", action="store",
                     metavar="HOST",
                     help="target host, either '[user@]host:port', or '[user@]DPUT_TARGET'").completer = host_completer
@@ -98,11 +100,10 @@ def cmd_call(args):
         host = host_from_dput(host)
     except:
         pass
-    LOG.debug("Actual target URL: {u}@{h}".format(u=user, h=host))
 
     # Log in if user given explicitely, or required by the command
     if user or args.command_class.AUTH != mini_buildd.api.Command.NONE:
-        mini_buildd.misc.web_login(host, user, CREDS_CACHE)
+        mini_buildd.misc.web_login(host, user, KEYRING)
 
     # Compute api call parameters
     http_args = {}
@@ -134,13 +135,6 @@ def cmd_call(args):
         sys.stdout.write(result)
 
 
-def extra_cmd_credentials(args):
-    {"list": lambda: CREDS_CACHE.list(args.host),
-     "clear": lambda: CREDS_CACHE.clear(args.host),
-     "reset": CREDS_CACHE.reset}[args.command]()
-    CREDS_CACHE.save()
-
-
 # Unfortunaetely, we cannot group the commands (yet), see http://bugs.python.org/issue14037
 SUBPARSERS = PARSER.add_subparsers(title="API commands")
 for cmd, cmd_cls in mini_buildd.api.COMMANDS:
@@ -155,11 +149,6 @@ for cmd, cmd_cls in mini_buildd.api.COMMANDS:
 
         cmd_parser.set_defaults(func=cmd_call, command=cmd, command_class=cmd_cls)
 
-# Add local "credentials" sub command
-CREDS_PARSER = SUBPARSERS.add_parser("credentials", help="Manage local user credentials")
-CREDS_PARSER.add_argument("command", action="store", metavar="COMMAND", default="list", choices=["list", "clear", "reset"], help="credentials command")
-CREDS_PARSER.set_defaults(func=extra_cmd_credentials)
-
 
 # Parse and run
 argcomplete.autocomplete(PARSER)
@@ -170,8 +159,16 @@ if LOG.getEffectiveLevel() <= logging.DEBUG:
     mini_buildd.setup.DEBUG = ["exception"]
 
 try:
-    # Generate global credentials object
-    CREDS_CACHE = mini_buildd.misc.CredsCache(os.path.join(os.getenv("HOME"), ".mini-buildd-tool.credentials"))
+    # Convenience: If the old creds file is around, remove it
+    OLD_CREDS_FILE = os.path.join(os.getenv("HOME"), ".mini-buildd-tool.credentials")
+    if os.path.exists(OLD_CREDS_FILE):
+        os.remove(OLD_CREDS_FILE)
+        LOG.warn("Obsoleted creds file removed: {f}".format(f=OLD_CREDS_FILE))
+
+    # Generate global keyring object
+    KEYRING = mini_buildd.misc.Keyring("mini-buildd")
+    if ARGS.reset_save_policy:
+        KEYRING.reset_save_policy()
 
     # Run the command
     ARGS.func(ARGS)

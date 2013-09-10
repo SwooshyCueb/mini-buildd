@@ -20,9 +20,11 @@ import urllib
 import urllib2
 import urlparse
 import getpass
-import pickle
 import logging
 import logging.handlers
+
+import keyring
+import keyring.util.platform
 
 import mini_buildd.setup
 
@@ -650,78 +652,61 @@ class UserURL(object):
             return self.plain
 
 
-class CredsCache(object):
-    OPTIONS = "__options__"
+class Keyring(object):
+    _SAVE_POLICY_KEY = "save_policy"
 
-    def _filter(self, regex):
-        return [url for url in self._creds.keys() if url != self.OPTIONS and re.search(regex, url)]
+    def __init__(self, service):
+        self._service = service
+        self._keyring = keyring.get_keyring()
+        self._save_policy = self._keyring.get_password(service, self._SAVE_POLICY_KEY)
+        LOG.debug("{c}".format(c=self))
 
-    def __init__(self, cache_file):
-        self._file = cache_file
-        self._creds = {}
-        try:
-            self._creds = pickle.load(open(self._file, "rb"))
-            LOG.debug("Creds cache pickled from '{c}'. {l} entries.".format(c=cache_file, l=len(self._creds)))
-        except Exception as e:
-            mini_buildd.setup.log_exception(LOG, "Can't read credentials cache {c}".format(c=cache_file), e, logging.DEBUG)
-        self._creds.setdefault(self.OPTIONS, {})
-        self._changed = []
+    def __unicode__(self):
+        return "Saving '{s}' passwords to '{k}' with policy '{p}' (config in '{path}')".format(
+            s=self._service,
+            k=self._keyring.__class__.__name__,
+            p={"A": "Always", "V": "Never"}.get(self._save_policy, "Ask"),
+            path=keyring.util.platform.data_root())
 
-    def save(self):
-        for changed in self._changed:
-            save = False
-            policy = self.get_option("policy")
-            if policy:
-                save = policy == "A"
-            else:
-                while True:
-                    answer = raw_input("""
-Got new credentials for: {c}
-Save plain password in '{f}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=",".join(self._changed), f=self._file)).upper()[:1]
-                    if answer in ["Y", "N", "A", "V"]:
-                        break
-                if answer in ["A", "V"]:
-                    self.set_option("policy", answer)
-                save = answer in ["Y", "A"]
-            if not save:
-                del self._creds[changed]
+    def reset_save_policy(self):
+        if self._save_policy:
+            self._keyring.delete_password(self._service, self._SAVE_POLICY_KEY)
+            self._save_policy = None
+            LOG.info("Save policy reset in '{k}'".format(k=self._keyring.__class__.__name__))
 
-        pickle.dump(self._creds,
-                    os.fdopen(os.open(self._file, os.O_CREAT | os.O_WRONLY, 0600), "wb"),
-                    pickle.HIGHEST_PROTOCOL)
+    def set(self, key, password):
+        if self._save_policy:
+            answer = self._save_policy
+        else:
+            while True:
+                answer = raw_input("""
+{c}:
 
-    def reset(self):
-        self._creds[self.OPTIONS] = {}
+Save password for '{k}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=self, k=key)).upper()[:1]
+                if answer in ["Y", "N", "A", "V"]:
+                    break
 
-    def clear(self, regex):
-        for url in self._filter(regex):
-            del self._creds[url]
-            print("Cleared: {url}".format(url=url))
+        if answer in ["A", "V"]:
+            self._keyring.set_password(self._service, self._SAVE_POLICY_KEY, answer)
+            LOG.info("Password saved to '{k}'".format(k=self._keyring.__class__.__name__))
 
-    def list(self, regex):
-        print("Save policy: {p}".format(p={"V": "Never", "A": "Always"}.get(self.get_option("policy"), "Ask")))
-        for url in self._filter(regex):
-            print(url)
-
-    def get_option(self, key, default=None):
-        return self._creds[self.OPTIONS].get(key, default)
-
-    def set_option(self, key, value):
-        self._creds[self.OPTIONS][key] = value
+        if answer in ["Y", "A"]:
+            self._keyring.set_password(self._service, key, password)
 
     def get(self, host, user=""):
         if not user:
             user = raw_input("[{h}] Username: ".format(h=host))
         key = "{u}@{h}".format(u=user, h=host)
 
-        try:
-            password = self._creds[key]
-        except:
+        password = self._keyring.get_password(self._service, key)
+        if password:
+            LOG.info("Password retrieved from '{k}'".format(k=self._keyring.__class__.__name__))
+            new = False
+        else:
             password = getpass.getpass("[{k}] Password: ".format(k=key))
-            self._changed.append(key)
-            self._creds[key] = password
+            new = True
 
-        return key, user, password
+        return key, user, password, new
 
 
 def web_login(host, user, credentials,
@@ -730,7 +715,7 @@ def web_login(host, user, credentials,
               next_loc="/mini_buildd/"):
     plain_url = "{p}://{h}".format(p=proto, h=host)
     try:
-        key, user, password = credentials.get(host, user)
+        key, user, password, new = credentials.get(host, user)
         login_url = plain_url + login_loc
         next_url = plain_url + next_loc
 
@@ -759,14 +744,13 @@ def web_login(host, user, credentials,
 
         # If successful, next url of the response must match
         if response.geturl() != next_url:
-            # Creds seem to be wrong; clear, so we will ask again next time
-            credentials.clear(key)
             raise Exception("Wrong credentials: Please try again")
 
         # Logged in: Install opener, save credentials
         LOG.info("User logged in: {key}".format(key=key))
         urllib2.install_opener(opener)
-        credentials.save()
+        if new:
+            credentials.set(key, password)
     except Exception as e:
         raise Exception("Login failed: {u}@{h}: {e}".format(u=user, h=host, e=e))
 

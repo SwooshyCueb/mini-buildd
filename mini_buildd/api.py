@@ -34,13 +34,22 @@ different components), or just as safeguard
 
     @classmethod
     def _filter_api_args(cls, args, args_help, set_if_missing=False):
+        def _get(key):
+            try:
+                # django request.GET args
+                return ",".join(args.getlist(key))
+            except:
+                # dict arg (like from get_default_args)
+                return args[key]
+
         result = {}
         for sargs, kvsargs in cls.ARGUMENTS:
             # Sanitize args
             # '--with-xyz' -> 'with_xyz'
             arg = sargs[0].replace("--", "", 1).replace("-", "_")
             if arg in args:
-                result[arg] = args[arg]
+                result[arg] = _get(arg)
+
             elif "default" in kvsargs:
                 result[arg] = kvsargs["default"]
             elif set_if_missing:
@@ -52,7 +61,7 @@ different components), or just as safeguard
             # Check required
             if sargs[0][:2] != "--" or ("required" in kvsargs and kvsargs["required"]):
                 if not arg in result or not result[arg]:
-                    raise Exception("Missing required argument {a}".format(a=arg))
+                    raise Exception("Missing required argument '{a}'".format(a=arg))
 
         return result
 

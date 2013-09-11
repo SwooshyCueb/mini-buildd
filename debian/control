@@ -12,7 +12,7 @@ Build-Depends: debhelper (>= 8.1.0~),
                python-pygraphviz,
                help2man,
                python-argparse,
-               python-argcomplete,
+               python-argcomplete (>= 0.5.4),
                python-keyring (>= 1.6),
                python-daemon (>= 1.5.5),
                python-debian (>= 0.1.18~),
@@ -32,8 +32,8 @@ Architecture: all
 Depends: ${misc:Depends},
          ${python:Depends},
          python-argparse,
-         python-argcomplete,
-				 python-keyring (>= 1.6),
+         python-argcomplete (>= 0.5.4),
+         python-keyring (>= 1.6),
          python-debian (>= 0.1.18~)
 Description: Minimal Debian build daemon: python library and user tool
  mini-buildd is an easy-to-configure Debian autobuilder and

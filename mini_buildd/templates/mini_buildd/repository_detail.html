@@ -2,75 +2,52 @@
 {% load base %}
 
 {% block page_title %}Repository {{ object.identity }}{% endblock %}
-{% block page_sub_title %}Setup details{% endblock %}
+{% block page_sub_title %}Overview{% endblock %}
 {% block mbd_page_footer %} &raquo; {{ object.identity }}{% endblock %}
 
 {% block content %}
 
 	<div id="mbd_repository">
-		<div class="box">
-			<h1 class="box-caption">Repository: {{ object.identity }}</h1>
+		{% for d in object.distributions.all %}
+			<div class="inner-box">
+				<h1 class="inner-box-caption">
+					<a href="javascript:mbdToggleElement('mbd_dist_{{ d.base_source.codename }}','mbd_dist_{{ d.base_source.codename }}_header','(hide)','(show)')"
+						 style="color: white">
+						{{ d }}
+						<span id="mbd_dist_{{ d.base_source.codename }}_header" style="float: right">(show)</span>
+					</a>
+				</h1>
 
-			<h2>Port external dsc</h2>
-			<div id="mbd_repository_portext">
-				<form action="/mini_buildd/api" method="get">
-					<div>
-						<input type="hidden" name="command" value="portext" />
-						<input type="hidden" name="output" value="referer" />
-						<input name="dsc" type="text" size="80" title="URL of any Debian source package (dsc)" value="" />
-						<br />
-						<select name="distributions" multiple="multiple" title="Distribution(s) to port to">
-							{% for d in object.mbd_uploadable_distributions %}
-								<option>{{ d }}</option>
-							{% endfor %}
-						</select>
-						<br />
-						<input type="submit" value="Port" title="Port this external Debian Source package" />
-					</div>
-				</form>
-			</div>
-
-			{% if object.external_home_url %}
-				<div id="mbd_repository_misc">
-					<ul>
-						<li>External documentation: <a href="{{ object.external_home_url }}">{{ object.external_home_url }}</a></li>
-					</ul>
-				</div>
-			{% endif %}
-
-			{% for d in object.distributions.all %}
-				<div class="inner-box">
-					<h1 class="inner-box-caption">Distribution: {{ d }}</h1>
-					<h2>Architectures</h2>
-					<ul>
-						{% for a in d.architectureoption_set.all  %}
-							<li>{{ a.architecture.name }}
-								{% if a.optional %}
-									(o)
-								{% endif %}
-							</li>
-						{% endfor %}
-					</ul>
-					<hr />
+				<div id="mbd_dist_{{ d.base_source.codename }}" style="display: none">
 					{% for s in object.layout.suiteoption_set.all %}
-						<h2>{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}: <span class="emphasize-headline">{% mbd_repository_desc object d s %}</span></h2>
-						<ul>
-							<li>Apt source line: <pre class="pre-inline">{% mbd_distribution_apt_line d object s %}</pre></li>
-							<li>Mandatory version part: <pre class="pre-inline">{% mbd_repository_mandatory_version object d s %}</pre></li>
-							{% if s.suite.migrates_to %}
-								<li>Migrates to: <span class="emphasize-migrates-from">{{ s.suite.migrates_to.name }}</span></li>
-							{% endif %}
+						<h2>
+							<a href="javascript:mbdToggleElement('mbd_dist_{{ d.base_source.codename }}_{{ s.suite.name }}','mbd_dist_{{ d.base_source.codename }}_{{ s.suite.name }}_header','(hide)','(show)')">
+								<span style="color: black">{{ d.base_source.codename }}-{{ object.identity }}-{{ s.suite.name }}</span>:
+								<span class="emphasize-headline">{% mbd_repository_desc object d s %}</span>
+								{% if s.uploadable %}
+									<tt style="font-size: 0.8em; color: purple">(U='{% mbd_repository_mandatory_version object d s %}')</tt>
+								{% endif %}
+								{% if s.experimental %}
+									<tt style="font-size: 0.8em; color: red">(E)</tt>
+								{% endif %}
+								<span id="mbd_dist_{{ d.base_source.codename }}_{{ s.suite.name }}_header" style="float: right">(show)</span>
+								{% if s.migrates_to %}
+									<tt style="font-size: 0.8em; color: green"> =&gt; {{ s.migrates_to.suite.name }}</tt>
+								{% endif %}
+							</a>
+						</h2>
+						<ul id="mbd_dist_{{ d.base_source.codename }}_{{ s.suite.name }}" style="display: none">
+							<li>APT line: <pre class="pre-block">{% mbd_distribution_apt_line d object s %}</pre></li>
 							{% if s.uploadable %}
-								<li>Uploadable.</li>
-								<li>Apt sources.list:<div class="pre-block"><pre>{% mbd_distribution_apt_sources_list d object s %}</pre></div></li>
-								<li>Apt preferences:<div class="pre-block"><pre>{% mbd_distribution_apt_preferences d object s %}</pre></div></li>
+								<li>Building with APT sources.list:<div class="pre-block"><pre>{% mbd_distribution_apt_sources_list d object s %}</pre></div></li>
+								<li>Building with APT preferences:<div class="pre-block"><pre>{% mbd_distribution_apt_preferences d object s %}</pre></div></li>
 							{% endif %}
 						</ul>
 					{% endfor %}
 				</div>
-			{% endfor %}
+			</div>
+		{% endfor %}
 
-		</div>
 	</div>
 
 {% endblock %}

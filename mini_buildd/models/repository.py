@@ -493,16 +493,16 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                         archall = False
 
     def __unicode__(self):
-        return "{b}: {c} ({a}) + {x}".format(b=self.base_source.codename,
-                                             c=" ".join(self.mbd_get_components()),
-                                             a=" ".join(self.mbd_get_architectures()),
-                                             x=", ".join(["{c}:{p}".format(c=e.source.codename, p=e.priority) for e in self.extra_sources.all()]))
+        return "{b}: {c} ({a}) + ({x})".format(b=self.base_source.codename,
+                                               c=" ".join(self.mbd_get_components()),
+                                               a=" ".join(self.mbd_get_architectures(show_opt_flag=True)),
+                                               x=", ".join(["{c}:{p}".format(c=e.source.codename, p=e.priority) for e in self.extra_sources.all()]))
 
     def mbd_get_components(self):
         return [c.name for c in sorted(self.components.all(), cmp=mini_buildd.models.source.cmp_components)]
 
-    def mbd_get_architectures(self):
-        return [a.architecture.name for a in self.architectureoption_set.all()]
+    def mbd_get_architectures(self, show_opt_flag=False):
+        return ["{a}{o}".format(a=a.architecture.name, o="*" if (show_opt_flag and a.optional) else "") for a in self.architectureoption_set.all()]
 
     def mbd_get_archall_architectures(self):
         return [a.architecture.name for a in self.architectureoption_set.all() if a.build_architecture_all]

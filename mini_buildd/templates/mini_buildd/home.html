@@ -30,7 +30,7 @@
 				{% endif %}
 
 				<h2>Last packages: {{ daemon.last_packages|length }}
-					(<a id="mbd_last_packages_header" href="javascript:mbdToggleElement('mbd_last_packages', 'mbd_last_packages_header', 'hide', 'show')" >show</a>)
+					(<a id="mbd_last_packages_header" href="javascript:mbdToggleElement('mbd_last_packages','mbd_last_packages_header','hide','show')" >show</a>)
 				</h2>
 				<div id="mbd_last_packages">
 					{% if daemon.last_packages %}
@@ -38,19 +38,12 @@
 					{% endif %}
 				</div>
 
-				<h2 title="Repositories in use">Repositories:
-					<span style="float: right">
-						<a class="button"
-							 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_keyring_packages&amp;output=referer"
-							 title="(Re-)Build keyring packages for all active repositories">
-							Build keyring packages
-						</a>
-						<a class="button"
-							 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_test_packages&amp;output=referer"
-							 title="(Re-)Build internal test packages for all active repositories">
-							Build test packages
-						</a>
-					</span>
+				<h2 title="Repositories in use">Repositories
+					<span style="font-weight: normal; font-size: 0.8em">
+						(<a href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_keyring_packages&amp;output=referer"
+							 title="(Re-)Build keyring packages for all active repositories">Keyring packages</a>)
+						(<a href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_test_packages&amp;output=referer"
+							 title="(Re-)Build internal test packages for all active repositories">Test packages</a>)</span>:
 				</h2>
 
 				<ul>
@@ -58,6 +51,28 @@
 						<li>
 							<span class="status {{ r.get_status_display }}" title="{{ r.mbd_get_status_display }}">{{ r }}</span>
 							(<a title="Go to repository overview page" href="/mini_buildd/repositories/{{ r.identity }}/">Overview</a>)
+							{% if r.external_home_url %}
+								(<a href="{{ r.external_home_url }}" title="Link to the repository's external documentation">ExtHome</a>)
+							{% endif %}
+							(<a id="mbd_repository_{{ r.identity }}_portext_header" href="javascript:mbdToggleElement('mbd_repository_{{ r.identity }}_portext','mbd_repository_{{ r.identity }}_portext_header','Portext','Portext')" >Portext</a>)
+							<div id="mbd_repository_{{ r.identity }}_portext" style="display: none">
+								<form action="/mini_buildd/api" method="get">
+									<div>
+										<input type="hidden" name="command" value="portext" />
+										<input type="hidden" name="output" value="referer" />
+										<input name="dsc" type="text" size="80" title="URL of any Debian source package (dsc)" value="" />
+										<br />
+										<select name="distributions" multiple="multiple" title="Distribution(s) to port to">
+											{% for d in r.mbd_uploadable_distributions %}
+												<option>{{ d }}</option>
+											{% endfor %}
+										</select>
+										<br />
+										<input type="submit" value="Port" title="Port this external Debian Source package" />
+									</div>
+								</form>
+							</div>
+
 						</li>
 					{% empty %}
 						<li>No repositories.</li>
@@ -77,7 +92,7 @@
 				{% endif %}
 
 				<h2>Last builds: {{ daemon.last_builds|length }}
-					(<a id="mbd_last_builds_header" href="javascript:mbdToggleElement('mbd_last_builds', 'mbd_last_builds_header', 'hide', 'show')" >show</a>)
+					(<a id="mbd_last_builds_header" href="javascript:mbdToggleElement('mbd_last_builds','mbd_last_builds_header','hide','show')" >show</a>)
 				</h2>
 				<div id="mbd_last_builds">
 					{% if daemon.last_builds %}

@@ -65,6 +65,7 @@ distutils.core.setup(
                                   "templates/registration/*.txt",
                                   "templatetags/*.py",
                                   "static/css/*.css",
+                                  "static/js/*.js",
                                   "static/images/*.png",
                                   "static/images/*.gif",
                                   "static/*.*"]})

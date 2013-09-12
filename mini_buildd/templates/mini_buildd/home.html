@@ -18,39 +18,6 @@
 	<a href="/mini_buildd/api?command=getkey">Archive Key</a>: <tt>{{ daemon.model.mbd_gnupg_long_id }}: {{ daemon.model.mbd_gnupg_fingerprint }}</tt>
 {% endblock %}
 
-{% block localscript %}
-function toggleLastBuilds()
-{
-	$('#mbd_lb_click_me').click(
-		function()
-		{
-			$('#mbd_last_builds').toggle();
-			$('#mbd_last_builds').is(":visible") ? $('#mbd_lb_anchor').html("hide") : $('#mbd_lb_anchor').html("show");
-		}
-	);
-}
-
-function toggleLastPackages()
-{
-	$('#mbd_lp_click_me').click(
-		function()
-		{
-			$('#mbd_last_packages').toggle();
-			$('#mbd_last_packages').is(":visible") ?  $('#mbd_lp_anchor').html("hide") : $('#mbd_lp_anchor').html("show");
-		}
-	);
-}
-
-$(document).ready(
-	function()
-	{
-		toggleLastBuilds();
-		toggleLastPackages();
-	}
-);
-{% endblock %}
-
-
 {% block content %}
 	<div id="mbd_index_status">
 		<div id="mbd_index_repositories">
@@ -59,14 +26,17 @@ $(document).ready(
 					{% if daemon.packages.items %}<img src="/static/images/progress_blue.gif" alt="Packaging..." title="Packaging..." style="margin: -5px 0 -5px 0; padding: 0" />{% endif %}
 					Packager: {{ daemon.packages|length }} packaging</h1>
 				{% if daemon.packages.items %}
-					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.packages.values id="mbd_active_packages" %}
+					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.packages.values %}
 				{% endif %}
 
-				<h2>Last packages: {{ daemon.last_packages|length }} (<span id="mbd_lp_click_me"><a id="mbd_lp_anchor" href="#">show</a></span>)</h2>
-
-				{% if daemon.last_packages %}
-					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages id="mbd_last_packages" %}
-				{% endif %}
+				<h2>Last packages: {{ daemon.last_packages|length }}
+					(<a id="mbd_last_packages_header" href="javascript:mbdToggleElement('mbd_last_packages', 'mbd_last_packages_header', 'hide', 'show')" >show</a>)
+				</h2>
+				<div id="mbd_last_packages">
+					{% if daemon.last_packages %}
+						{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.last_packages %}
+					{% endif %}
+				</div>
 
 				<h2 title="Repositories in use">Repositories:
 					<span style="float: right">
@@ -103,14 +73,17 @@ $(document).ready(
 					Builder: {{ daemon.build_queue }} building
 				</h1>
 				{% if daemon.builds.items %}
-					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.builds.values id="mbd_active_builds" %}
+					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.builds.values %}
 				{% endif %}
 
-				<h2>Last builds: {{ daemon.last_builds|length }} (<span id="mbd_lb_click_me"><a id="mbd_lb_anchor" href="#">show</a></span>)</h2>
-
-				{% if daemon.last_builds %}
-					{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.last_builds id="mbd_last_builds" %}
-				{% endif %}
+				<h2>Last builds: {{ daemon.last_builds|length }}
+					(<a id="mbd_last_builds_header" href="javascript:mbdToggleElement('mbd_last_builds', 'mbd_last_builds_header', 'hide', 'show')" >show</a>)
+				</h2>
+				<div id="mbd_last_builds">
+					{% if daemon.last_builds %}
+						{% include "mini_buildd/snippet_builder_status.html" with builds=daemon.last_builds %}
+					{% endif %}
+				</div>
 
 				<h2 title="Chroots in use">Chroots:</h2>
 				<ul>

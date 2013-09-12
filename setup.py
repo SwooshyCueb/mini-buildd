@@ -66,6 +66,6 @@ distutils.core.setup(
                                   "templatetags/*.py",
                                   "static/css/*.css",
                                   "static/js/*.js",
-                                  "static/images/*.png",
-                                  "static/images/*.gif",
+                                  "static/img/*.png",
+                                  "static/img/*.gif",
                                   "static/*.*"]})

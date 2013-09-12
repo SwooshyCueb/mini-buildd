@@ -23,7 +23,7 @@
 		<div id="mbd_index_repositories">
 			<div class="box">
 				<h1 class="box-caption">
-					{% if daemon.packages.items %}<img src="/static/images/progress_blue.gif" alt="Packaging..." title="Packaging..." style="margin: -5px 0 -5px 0; padding: 0" />{% endif %}
+					{% if daemon.packages.items %}<img src="/static/img/progress_blue.gif" alt="Packaging..." title="Packaging..." style="margin: -5px 0 -5px 0; padding: 0" />{% endif %}
 					Packager: {{ daemon.packages|length }} packaging</h1>
 				{% if daemon.packages.items %}
 					{% include "mini_buildd/snippet_packager_status.html" with packages=daemon.packages.values %}
@@ -69,7 +69,7 @@
 		<div id="mbd_index_chroots">
 			<div class="box">
 				<h1 class="box-caption">
-					{% if daemon.builds.items %}<img src="/static/images/progress_blue.gif" alt="Building..." title="Building..." style="margin: -5px 0 -5px 0; padding: 0" />{% endif %}
+					{% if daemon.builds.items %}<img src="/static/img/progress_blue.gif" alt="Building..." title="Building..." style="margin: -5px 0 -5px 0; padding: 0" />{% endif %}
 					Builder: {{ daemon.build_queue }} building
 				</h1>
 				{% if daemon.builds.items %}

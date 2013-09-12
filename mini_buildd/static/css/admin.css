@@ -57,7 +57,7 @@
 
 #mbd_box caption
 {
-	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
+	background: url("/static/img/icon_48x48.png") no-repeat scroll right top;
 	background-color: #417690;
 	border-left: 1px solid #417690;
 	border-right: 1px solid #417690;
@@ -83,7 +83,7 @@
 #header
 {
 	font-size: 14px;
-	background: url("/static/images/da_header_background_gradient.png") repeat-x scroll left top;
+	background: url("/static/img/da_header_background_gradient.png") repeat-x scroll left top;
 }
 
 #header a
@@ -122,7 +122,7 @@
 
 #content-main a.wizard
 {
-	background: url("/static/images/mbd_wizard.png") no-repeat scroll 3px 50%;
+	background: url("/static/img/mbd_wizard.png") no-repeat scroll 3px 50%;
 	margin: 0px 0px 0px 0px;
 	padding: 2px 6px 2px 30px;
 	text-decoration: none;

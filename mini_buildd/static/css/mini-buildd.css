@@ -36,7 +36,7 @@ a:hover
 #mbd_header
 {
 	width: 100%;
-	background: url("/static/images/mbd_header_background_gradient.png") repeat-x scroll left top;
+	background: url("/static/img/mbd_header_background_gradient.png") repeat-x scroll left top;
 	color: #ffffcc;
 	overflow: hidden;
 	font-size: 15px;
@@ -126,7 +126,7 @@ a:hover
 
 #mbd_page_header a.button-start:link, #mbd_page_header a.button-start:visited
 {
-	background: url("/static/images/mbd_start.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_start.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -146,7 +146,7 @@ a:hover
 
 #mbd_page_header a.button-stop:link, #mbd_content a.button-stop:visited
 {
-	background: url("/static/images/mbd_stop.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_stop.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -243,7 +243,7 @@ a:hover
 
 #mbd_content h1.box-caption
 {
-	background: url("/static/images/icon_48x48.png") no-repeat scroll right top;
+	background: url("/static/img/icon_48x48.png") no-repeat scroll right top;
 	background-color: #57859a;
 	color: white;
 	font-size: 12px;
@@ -372,7 +372,7 @@ a:hover
 #mbd_page_header span.status
 {
 	padding: 1px 3px 0px 3px;
-	background: url("/static/images/mbd_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
+	background: url("/static/img/mbd_status_background_gradient.png") repeat-x scroll left bottom #ffffff;
 }
 
 #mbd_page_header span.status.busy
@@ -435,7 +435,7 @@ a:hover
 
 #mbd_content ul
 {
-	list-style-image: url("/static/images/mbd_list_style_image.png");
+	list-style-image: url("/static/img/mbd_list_style_image.png");
 }
 
 #mbd_content li
@@ -505,7 +505,7 @@ a:hover
 
 #mbd_content a.button-remove:link, #mbd_content a.button-remove:visited
 {
-	background: url("/static/images/mbd_remove.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_remove.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -525,7 +525,7 @@ a:hover
 
 #mbd_content a.button-migrate:link, #mbd_content a.button-migrate:visited
 {
-	background: url("/static/images/mbd_migrate.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_migrate.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -545,7 +545,7 @@ a:hover
 
 #mbd_content a.button-migrate-rollback:link, #mbd_content a.button-migrate-rollback:visited
 {
-	background: url("/static/images/mbd_migrate_rollback.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_migrate_rollback.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;
@@ -565,7 +565,7 @@ a:hover
 
 #mbd_content a.button-rebuild:link, #mbd_content a.button-rebuild:visited
 {
-	background: url("/static/images/mbd_rebuild.png") no-repeat scroll 3px 50% #e7e7e7;
+	background: url("/static/img/mbd_rebuild.png") no-repeat scroll 3px 50% #e7e7e7;
 	border-color: #dddddd #aaaaaa #aaaaaa #dddddd;
 	border-style: solid;
 	border-width: 1px;

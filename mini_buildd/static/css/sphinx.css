@@ -14,7 +14,7 @@ div.related ul
 	padding: 35px 8px 14px 10px;
 	line-height: 15px;
 	font-size: 15px;
-	background: url("/static/images/sp_header_background_gradient.png") repeat-x scroll left top;
+	background: url("/static/img/sp_header_background_gradient.png") repeat-x scroll left top;
 }
 
 div.related a:link, div.related a:visited, div.related a:hover

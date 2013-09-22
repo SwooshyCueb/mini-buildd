@@ -112,6 +112,7 @@ Setup the apt sources on your system somewhat like that::
 	# mini-buildd-tool HOST getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
 	# apt-get update
 	# apt-get --allow-unauthenticated install ARCHIVE-archive-keyring
+	# apt-get update
 
 Setup your user account
 =======================

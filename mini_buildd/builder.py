@@ -163,7 +163,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         if "Arch-All" in self._breq:
             sbuild_cmd.append("--arch-all")
             sbuild_cmd.append("--source")
-            sbuild_cmd.append("--debbuildopt=-sa")
+            sbuild_cmd.append("--force-orig-source")
 
         if "Run-Lintian" in self._breq:
             sbuild_cmd.append("--run-lintian")

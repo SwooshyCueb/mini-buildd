@@ -287,7 +287,7 @@ class Changes(debian.deb822.Changes):
                 os.rename(f_abs, os.path.join(logdir, f))
             else:
                 LOG.info("Removing '{f}'". format(f=f))
-                os.remove(f_abs)
+                mini_buildd.misc.skip_if_keep_in_debug(os.remove, f_abs)
 
     def remove(self):
         LOG.info("Removing changes: '{f}'".format(f=self._file_path))

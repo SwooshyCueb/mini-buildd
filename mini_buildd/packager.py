@@ -156,14 +156,14 @@ class Package(mini_buildd.misc.Status):
         self.changes.move_to_pkglog(self.get_status() == self.INSTALLED)
 
         # Purge complete package spool dir (if precheck failed, spool dir will not be present, so we need to ignore errors here)
-        shutil.rmtree(self.changes.get_spool_dir(), ignore_errors=True)
+        mini_buildd.misc.skip_if_keep_in_debug(shutil.rmtree, self.changes.get_spool_dir(), ignore_errors=True)
 
         # Hack: In case the changes comes from a temporary directory (ports!), we take care of purging that tmpdir here
         tmpdir = mini_buildd.misc.TmpDir.file_dir(self.changes.file_path)
         if tmpdir:
             mini_buildd.misc.TmpDir(tmpdir).close()
 
-        # On installed, clean out the failed log dir, if any of the very same version
+        # On installed: In case there is a "failed" log of the same version, remove it.
         if self.get_status() == self.INSTALLED:
             # The pkglog_dir must be non-None on INSTALLED status
             failed_logdir = os.path.dirname(self.changes.get_pkglog_dir(installed=False, relative=False))

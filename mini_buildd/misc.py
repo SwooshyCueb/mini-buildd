@@ -82,6 +82,17 @@ class Status(object):
         return self.__status__
 
 
+def _skip_if_in_debug(key, func, *args, **kwargs):
+    if key in mini_buildd.setup.DEBUG:
+        LOG.warn("DEBUG MODE('{k}'): Skipping: {f} {args} {kwargs}".format(k=key, f=func, args=args, kwargs=kwargs))
+    else:
+        return func(*args, **kwargs)
+
+
+def skip_if_keep_in_debug(func, *args, **kwargs):
+    return _skip_if_in_debug("keep", func, *args, **kwargs)
+
+
 class TmpDir(object):
     """
     Use with contextlib.closing() to guarantee tmpdir is purged afterwards.
@@ -91,11 +102,8 @@ class TmpDir(object):
         LOG.debug("TmpDir {t}".format(t=self._tmpdir))
 
     def close(self):
-        if "keep" in mini_buildd.setup.DEBUG:
-            LOG.warn("KEEP DEBUG MODE: Keeping tmpdir {t}".format(t=self._tmpdir))
-        else:
-            LOG.debug("Purging tmpdir: {t}".format(t=self._tmpdir))
-            shutil.rmtree(self._tmpdir, ignore_errors=True)
+        LOG.debug("Purging tmpdir: {t}".format(t=self._tmpdir))
+        skip_if_keep_in_debug(shutil.rmtree, self._tmpdir, ignore_errors=True)
 
     @property
     def tmpdir(self):

@@ -1,3 +1,51 @@
+mini-buildd (1.0.0~beta.22) experimental; urgency=low
+
+  22nd beta release. Cumulated minor bug fixes, re-work
+  mini-buildd-tool creds/args handling, more convenience changes.
+  [ Stephan Sürken ]
+  * [f185904] source: Add reverse deps. for Archives.
+  * [a331ec6] models: Use non-lethal dependencies flag for all actions (not just check).
+  * [4333220] configure: Add convenience "PCA" action (prepare, check, activate).
+  * [4282e18] Distribution: Enable 'eatmydata' and 'ccache' by default.
+  * [619dda3] Add meta call pca_all (internal testing, auto setup).
+  * [fccbb4f] check statuses: Improve the "check" status display, and show check status on home directly.
+  * [355675a] misc.py: Add UserURL helper class.
+  * [e4d6a8c] mini-buildd-tool credentials: Allow URLs with user embedded, and allow store for multiple users per host.
+  * [965e0d9] mini-buildd-tool credentials: make list/clear accept regexes (instead of acting on all).
+
+  [ Gerhard A. Dittes ]
+  * [4045ee9] doc/mini-buildd-graphics.svg: Add new drawing "progress".
+  * [3693505] Add image "progress_blue.gif" (thought to be used for blue [header] backgrounds).
+
+  [ Stephan Sürken ]
+  * [7aa7149] Add example script: auto-setup.
+  * [bbc26d3] html(home): Add progress eye-candy.
+  * [d1aff94] getsourceslist: Always add trailing newline.
+  * [82b950e] mini-buildd-tool credentials: Save after successful login.
+  * [f5e22e8] configure: Add a convenience 'PC' action.
+  * [7ee8d6c] mini-buildd-tools credentials: Add --login, --reset, always save, never save.
+  * [54f12cb] mini-buildd-tool: Make HOST mandatory first positional.
+  * [795ed44] api(stop,start): Add newline for plain output.
+  * [e8271fd] devel: Add mini-buildd-tool to pep8 test.
+  * [105e7b6] mini-buildd-tool: Allow daemon id only as HOST.
+  * [7f9bcef] repository 'debdev' wizard: Only add the 'sid' distribution.
+  * [e154177] mini-buildd-tool credentials: Switch to python-keyring as creds store.
+  * [a4b6e64] examples: Add "dput-wait-for-build" script.
+  * [22f069e] control: b-d on python-argcomplete >= 0.5.4.
+  * [7d5e552] API: Allow multiple key arguments per HTTP GET (allows for multiple select forms).
+  * [49d8789] portext/html: Allow multiple to-distributions.
+  * [0e9a2a1] html: Add js dir and initial mini-buildd.js to static files.
+  * [422756e] port/html: Allow multiple to-distributions (on api_show page).
+  * [9c07067] home(html): Use common js.
+  * [d62e3fe] html/static: Use dir layout like django admin.
+  * [3991366] html: Clean up repo overview & home; put portext to home.
+  * [4877079] builder: sbuild: Use '--force-orig-source' directly (not '--debbuildopts=-sa').
+  * [a58337a] debug mode "keep": Use generic function, add more files to keep.
+  * [2217572] doc/quickstart.rst: Using repo: Add missing 'apt-get update'.
+  * [a4e6458] builder+packager: Install dsc directly, don't include source in arch-all builds any more.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 22 Sep 2013 18:23:13 +0200
+
 mini-buildd (1.0.0~beta.21) experimental; urgency=low
 
   21st century 'docs and fixes' release.

@@ -136,7 +136,7 @@ class Package(mini_buildd.misc.Status):
         """
 
         # Install to reprepro repository
-        self.repository.mbd_package_install(self.distribution, self.suite, self.success)
+        self.repository.mbd_package_install(self.distribution, self.suite, self.changes, self.success)
 
         # Installed. Finally, try to serve magic auto backports
         for to_dist_str in self.changes.magic_auto_backports:

@@ -100,6 +100,10 @@ class Changes(debian.deb822.Changes):
                                     v=mini_buildd.misc.strip_epoch(self["Version"]))
 
     @property
+    def dsc_file_name(self):
+        return os.path.join(os.path.dirname(self._file_path), self.dsc_name)
+
+    @property
     def bres_stat(self):
         return "Build={b}, Lintian={l}".format(b=self.get("Sbuild-Status"), l=self.get("Sbuild-Lintian"))
 
@@ -306,8 +310,7 @@ class Changes(debian.deb822.Changes):
         # - Add missing from pool (i.e., orig.tar.gz).
         # - make sure all files from dsc are actually available
         files_from_pool = []
-        dsc_file = os.path.join(os.path.dirname(self._file_path), self.dsc_name)
-        dsc = debian.deb822.Dsc(file(dsc_file))
+        dsc = debian.deb822.Dsc(file(self.dsc_file_name))
         for f in dsc["Files"]:
             in_changes = f["name"] in self.get_files(key="name")
             from_pool = False

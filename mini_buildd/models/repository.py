@@ -1104,16 +1104,12 @@ DscIndices: Sources Release . .gz .bz2
                                          dist_str)
             LOG.info("Installed: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=dist_str))
 
-    def mbd_package_install(self, distribution, suite_option, bresults):
+    def mbd_package_install(self, distribution, suite_option, changes, bresults):
         """
         Install a dict arch:bres of successful build results.
         """
         # Get the full distribution str
         dist_str = suite_option.mbd_get_distribution_string(self, distribution)
-
-        # Get the 'archall' arch
-        archall = distribution.mbd_get_archall_architectures()[0]
-        LOG.debug("Package install: Archall={a}".format(a=archall))
 
         # Check that all mandatory archs are present
         missing_mandatory_archs = [arch for arch in distribution.mbd_get_mandatory_architectures() if arch not in bresults]
@@ -1121,18 +1117,18 @@ DscIndices: Sources Release . .gz .bz2
             raise Exception("{n} mandatory architecture(s) missing: {a}".format(n=len(missing_mandatory_archs), a=" ".join(missing_mandatory_archs)))
 
         # Get the (source) package name
-        package = bresults[archall]["Source"]
+        package = changes["Source"]
         LOG.debug("Package install: Package={p}".format(p=package))
 
         # Shift current package up in the rollback distributions (unless this is the initial install)
         if self.mbd_package_find(package, distribution=dist_str):
             self._mbd_package_shift_rollbacks(distribution, suite_option, package)
 
-        # First, install the archall arch, so we fail early in case there are problems with the uploaded dsc.
-        self._mbd_package_install(bresults[archall], dist_str)
+        # First, install the dsc
+        self._mbd_reprepro().install_dsc(changes.dsc_file_name, dist_str)
 
-        # Second, install all other archs
-        for bres in [s for a, s in bresults.items() if a != archall]:
+        # Second, install all build results
+        for bres in bresults.values():
             # Don't try install if skipped
             if bres.get("Sbuild-Status") == "skipped":
                 LOG.info("Skipped: {p} ({d})".format(p=bres.get_pkg_id(with_arch=True), d=bres["Distribution"]))

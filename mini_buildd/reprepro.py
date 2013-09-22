@@ -107,3 +107,6 @@ class Reprepro():
 
     def install(self, changes, distribution):
         return self._call_locked(["include", distribution, changes], show_command=True)
+
+    def install_dsc(self, dsc, distribution):
+        return self._call_locked(["includedsc", distribution, dsc], show_command=True)

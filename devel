@@ -178,7 +178,7 @@ mbd_check()
 {
 	local tests="pep8 pymisc pydoctests pyflakes pylint pydjangolint"
 	for t in ${tests}; do
-		echo "=> mbd_${t}"
+		printf "=> mbd_${t}\n"
 		mbd_${t}
 	done
 	printf "\nOK. Tests passed: %s\n" "${tests}"
@@ -264,10 +264,10 @@ trap "printf '\nUsage: ${0}${ACTIONS}[_arg1_arg2..] \n' >&2" ERR
 [ "${*}" ]
 
 for ACTION in ${*}; do
-	func=$(echo "${ACTION}" | cut -d_ -f1)
+	func=$(printf "${ACTION}" | cut -d_ -f1)
 	args=""
-	if echo "${ACTION}" | grep -q "_"; then
-		args=$(echo "${ACTION}" | cut -d_ -f2- | tr "_" " ")
+	if printf "${ACTION}" | grep -q "_"; then
+		args=$(printf "${ACTION}" | cut -d_ -f2- | tr "_" " ")
 	fi
 	mbd_${func} ${args}
 done

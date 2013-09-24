@@ -95,9 +95,7 @@
 													<input type="hidden" name="from_distribution" value="{{ values.distribution }}" />
 													<input type="hidden" name="version" value="{{ values.sourceversion }}" />
 													<select name="to_distributions" size="5" multiple="multiple" title="Distribution(s) to port to">
-														{% for d in repository.mbd_uploadable_distributions %}
-															<option>{{ d }}</option>
-														{% endfor %}
+														{% mbd_distribution_options repository uploadable=True experimental=values.experimental %}
 													</select>
 													<input type="hidden" name="output" value="referer" />
 													<br />

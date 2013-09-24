@@ -1,3 +1,4 @@
+{% load base %}
 <!-- Manage subscriptions: repositories, package -->
 <div id="mbd_subscription">
 	<div>
@@ -8,9 +9,7 @@
 				<select name="subscription" title="Limit to a distribution">
 					<option value="{{ package }}:">any distribution</option>
 					{% for r in repositories %}
-						{% for d in r.mbd_distributions %}
-							<option value="{{ package }}:{{ d }}">{{ d }}</option>
-						{% endfor %}
+						{% mbd_distribution_options r value_prefix=package|add:":" %}
 					{% endfor %}
 				</select>
 				<input type="hidden" name="output" value="referer" />

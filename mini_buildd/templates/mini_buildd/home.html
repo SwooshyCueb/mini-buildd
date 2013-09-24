@@ -1,4 +1,5 @@
 {% extends "mini_buildd/base.html" %}
+{% load base %}
 
 {% block title %}mini-buildd{% endblock %}
 {% block page_title %}{{ daemon.model.identity }}{% endblock %}
@@ -63,9 +64,7 @@
 										<input name="dsc" type="text" size="80" title="URL of any Debian source package (dsc)" value="" />
 										<br />
 										<select name="distributions" multiple="multiple" title="Distribution(s) to port to">
-											{% for d in r.mbd_uploadable_distributions %}
-												<option>{{ d }}</option>
-											{% endfor %}
+											{% mbd_distribution_options r uploadable=True %}
 										</select>
 										<br />
 										<input type="submit" value="Port" title="Port this external Debian Source package" />

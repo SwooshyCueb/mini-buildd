@@ -66,6 +66,19 @@ def _mbd_e2n(func, *args, **kwargs):
         return None
 
 
+def _mbd_distribution_options(repository, value_prefix="", **suiteoption_filter):
+    result = ""
+    for d in repository.mbd_distribution_strings(**suiteoption_filter):
+        result += '<option value="{p}{d}">{d}</option>'.format(p=value_prefix, d=d)
+    return result
+
+
+@register.simple_tag
+def mbd_distribution_options(repository, value_prefix="", **suiteoption_filter):
+    "Generate 'option' HTML tags for 'select' form input for distribution strings."
+    return _mbd_e2n(_mbd_distribution_options, repository, value_prefix=value_prefix, **suiteoption_filter)
+
+
 @register.simple_tag
 def mbd_distribution_apt_line(distribution, repository, suite_option):
     return _mbd_e2n(distribution.mbd_get_apt_line, repository, suite_option)

@@ -239,7 +239,16 @@ mini-buildd mini-buildd/options string --verbose --verbose --debug=exception,htt
 EOF
 	sudo debi
 
-	_head "Checking out orig changelog again..."
+	if [ "${1}" != "nocheck" ]; then
+		_head "Checking basic mini-buildd-tool calls"
+		local mbd="/usr/bin/mini-buildd-tool localhost:8066"
+		${mbd} status
+		${mbd} getkey
+		${mbd} getdputconf
+		${mbd} getsourceslist wheezy
+	fi
+
+	printf "Ok, update successful.\n"
 }
 
 mbd_all()

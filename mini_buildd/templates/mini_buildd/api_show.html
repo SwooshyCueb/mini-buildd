@@ -63,17 +63,25 @@
 									{% endif %}
 								</td>
 								<td>
-									{% for rollback in values.rollbacks|dictsort:"no" %}
-										<a class="button-remove"
-											 title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}"
-											 href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
-										{% if not values.sourceversion %}
-											<a class="button-migrate-rollback"
-												 title="Restore rollback {{ rollback.sourceversion }} from {{ rollback.distribution }}"
-												 href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
-										{% endif %}
-									{% endfor %}
-									<span title="{{ values.rollback }} rollback distributions">{{ values.rollbacks|length }}/{{ values.rollback }}</span>
+									{{ values.rollbacks|length }}/{{ values.rollback }} (<a id="rollbacks_{{ values.distribution }}_header" href="javascript:mbdToggleElement('rollbacks_{{ values.distribution }}','rollbacks_{{ values.distribution }}_header','hide','show')" >show</a>)
+									<div id="rollbacks_{{ values.distribution }}" style="display: none;">
+										{% for rollback in values.rollbacks|dictsort:"no" %}
+											<br />
+											<div>
+												<a class="button-remove"
+													 title="Remove {{ rollback.sourceversion }} from {{ rollback.distribution }}"
+													 href="/mini_buildd/api?command=remove&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
+												{% if not values.sourceversion %}
+													<a class="button-migrate-rollback"
+														 title="Restore rollback {{ rollback.sourceversion }} from {{ rollback.distribution }}"
+														 href="/mini_buildd/api?command=migrate&amp;package={{ rollback.source|urlencode }}&amp;distribution={{ rollback.distribution|urlencode }}&amp;version={{ rollback.sourceversion|urlencode }}&amp;output=referer">{{ rollback.no }}</a>
+												{% endif %}
+												[<a title="Get dsc of {{ rollback.sourceversion }} from {{ rollback.distribution }}"
+														href="{{ rollback.dsc_url }}">dsc</a>|<a href="/mini_buildd/log/{{ repository.identity }}/{{ api_cmd.args.package }}/{{ rollback.sourceversion }}/" title="Build logs">logs</a>]
+											</div>
+											 {% endfor %}
+									</div>
+
 								</td>
 
 								<td>

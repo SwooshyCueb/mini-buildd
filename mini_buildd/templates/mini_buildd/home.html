@@ -39,12 +39,13 @@
 					{% endif %}
 				</div>
 
-				<h2 title="Repositories in use">Repositories
-					<span style="font-weight: normal; font-size: 0.8em">
-						(<a href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_keyring_packages&amp;output=referer"
-							 title="(Re-)Build keyring packages for all active repositories">Keyring packages</a>)
-						(<a href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_test_packages&amp;output=referer"
-							 title="(Re-)Build internal test packages for all active repositories">Test packages</a>)</span>:
+				<h2 title="Repositories in use">Repositories:
+					<a class="button-rebuild"
+						 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_keyring_packages&amp;output=referer"
+						 title="(Re-)Build keyring packages for all active repositories">Keyring packages</a>
+					<a class="button-rebuild"
+						 href="/mini_buildd/api?command=meta&amp;model=repository.Repository&amp;function=build_test_packages&amp;output=referer"
+						 title="(Re-)Build internal test packages for all active repositories">Test packages</a>
 				</h2>
 
 				<ul>
@@ -67,7 +68,7 @@
 											{% mbd_distribution_options r uploadable=True %}
 										</select>
 										<br />
-										<input type="submit" value="Port" title="Port this external Debian Source package" />
+										<input type="submit" value="Port external DSC" title="Port this external Debian Source package" />
 									</div>
 								</form>
 							</div>

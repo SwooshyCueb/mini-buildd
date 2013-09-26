@@ -7,6 +7,29 @@ distributions with *all batteries included*: I.e., it covers
 **incoming**, **(distributed) building**, **installing**,
 **repository maintenance** and **repository delivery**.
 
+.. _introduction_main_components:
+
+***************
+Main Components
+***************
+
+mini-buildd does not re-invent the wheel, it's rather a
+sophisticated glue written in `python
+<http://packages.qa.debian.org/p/python.html>`_ to a number of
+standard (Debian) or off-the-shelf software components. The most
+prominent parts are:
+
+====================== ===================================================== ===========================================================
+Component              Used for                                              Realized with
+====================== ===================================================== ===========================================================
+**HTTP server**        Web application, repository delivery                  `cherrypy3 <http://packages.qa.debian.org/c/cherrypy3.html>`_
+**Web application**    Configuration, package tracking                       `python-django <http://packages.qa.debian.org/p/python-django.html>`_
+**FTP server**         Incoming (user uploads, build requests and results)   `python-pyftpdlib <http://packages.qa.debian.org/p/python-pyftpdlib.html>`_
+**Packager**           Source package manager, build distribution
+**Builder**            Package builds                                        `sbuild <http://packages.qa.debian.org/s/sbuild.html>`_ / `schroot <http://packages.qa.debian.org/s/schroot.html>`_ combo using snapshot-able chroots.
+**Repository**         APT package archive                                   `reprepro <http://packages.qa.debian.org/r/reprepro.html>`_
+====================== ===================================================== ===========================================================
+
 .. _introduction_features:
 
 ********
@@ -23,22 +46,41 @@ Features
 
 *Some prominent extras*:
 
-* *Automated* ("no-changes") *ports* of internal or external source packages.
-* *Automatic* handling of *rollback* distributions.
-* *Automated keyring package* generation.
-* *Package QA* (currently internal checks, version enforcing, lintian).
+* *mini-buildd-tool*: Use from the command line, write scripts.
+* *User management*: Package subscriptions, GPG key management, upload authorization.
+* *Package QA*: Internal sanity checks, version enforcing, lintian.
+* *Package Tracking*: ``Debian PTS``-like web based source package tracker.
+* *No-Changes-Ports*: Automates these ports for internal or external source packages.
+* *Rollback handling*: Keeps ``N`` rollbacks for any distribution.
+* *Builds keyring packages* automatically.
+
 
 The :doc:`todo` section may also help you to figure out what
 mini-buildd is not, or not yet.
 
+.. _introduction_use_cases:
+
+*****************
+Example Use Cases
+*****************
+
+* *Sandboxing*: Just setup a default ``test`` (sandbox)  repository:
+	* Test-drive mini-buildd. Click schlimm on the WebApp.
+	* Checkout what No-Changes-Ports are possible.
+	* Add a fake user as admin, and spam a collegue with mini-buildd status mails.
+* *Debian User*: Maintain a personal package archive. Publish it to your webspace via debmirror.
+* *Debian Developer*: Replace your pbuilder setup.
+* *Organisation*: Set up an archive for all organisational extra packages, ports, etc.
+
+
 .. _introduction_overview:
 
-********
-Overview
-********
+***********************
+Basic Mode Of Operation
+***********************
 
 **mini-buildd** is a Unix daemon written in python. When
-running, it provides a HTTP server (per default on port 8066).
+running, it provides a HTTP server (on port ``8066`` by default).
 
 The HTTP server serves both, mini-buildd's web application as
 well as the delivery of the package repositories.
@@ -47,8 +89,8 @@ The instance is being configured in the configuration section of
 the web application.
 
 As soon as a *mini-buildd* instance has been configured to have
-an active 'Daemon', it runs an FTP server (per default on port
-8067).
+an active 'Daemon', you may ``start`` the engine, running an FTP
+server (on port ``8067`` by default).
 
 The FTP server acts on incoming ``*.changes`` files, both from
 developers and other mini-buildd instances (via special
@@ -119,21 +161,3 @@ mini-buildd instances *ernie*, *grover* and *bert*:
 * *ernie* has repositories and chroots, and uses himself and *grover* as remote for building.
 * *grover* only has chroots, and is used by *ernie* and *bert* for building.
 * *bert* only has repositories, and uses *ernie* and *grover* as remotes for building.
-
-.. _introduction_components:
-
-*******************
-Software components
-*******************
-
-mini-buildd does not re-invent the wheel, it's rather a
-sophisticated glue to a number of standard (Debian) or
-off-the-shelf software components.
-
-The most prominent parts are:
-
-* HTTP server: `cherrypy3 <http://packages.qa.debian.org/c/cherrypy3.html>`_.
-* FTP server: `python-pyftpdlib <http://packages.qa.debian.org/p/python-pyftpdlib.html>`_.
-* Web application framework: `python-django <http://packages.qa.debian.org/p/python-django.html>`_.
-* Debian builds: via `sbuild <http://packages.qa.debian.org/s/sbuild.html>`_ / `schroot <http://packages.qa.debian.org/s/schroot.html>`_ combo using snapshot-able chroots.
-* Repository manager: `reprepro <http://packages.qa.debian.org/r/reprepro.html>`_.

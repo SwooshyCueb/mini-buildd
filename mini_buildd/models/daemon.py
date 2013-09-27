@@ -265,6 +265,7 @@ Manage your account : {url}accounts/login/
 """.format(id=self.identity, host=self.hostname, email=self.email_address, reason=reason, url=self.mbd_get_http_url())
 
     def mbd_notify(self, subject, body, repository=None, changes=None, distribution=None, msglog=LOG):
+        subject_prefix = "[mini-buildd-{i}] ".format(i=self.identity)
         m_to = []
         m_to_raw = []
         m_automatic_to_allow = re.compile(self.allow_emails_to)
@@ -279,7 +280,7 @@ Manage your account : {url}accounts/login/
                 if address_raw in m_to_raw:
                     msglog.debug("Notify: Skipping {t} address: {a}: Duplicate".format(t=typ, a=address))
                 else:
-                    m_to.append((subject, m_msglog + body + self._mbd_notify_signature(typ), self.email_address, [address]))
+                    m_to.append((subject_prefix + subject, m_msglog + body + self._mbd_notify_signature(typ), self.email_address, [address]))
                     m_to_raw.append(address_raw)
                     msglog.info("Notify: Adding {t} address: {a}".format(t=typ, a=address))
             else:

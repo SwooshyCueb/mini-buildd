@@ -596,7 +596,7 @@ class Subscription(Command):
     COMMAND = "subscription"
     AUTH = Command.LOGIN
     ARGUMENTS = [
-        (["action"], {"help": "one of 'list', 'add' or 'remove'"}),
+        (["action"], {"choices": ["list", "add", "remove"], "help": "action to run"}),
         (["subscription"], {"help": "subscription pattern"})]
 
     def run(self, daemon):

@@ -8,6 +8,8 @@
 {% block content %}
 
 	<div id="mbd_repository">
+		(<a title="Print uploaders" href="/mini_buildd/api?command=printuploaders&amp;repository={{ object.identity }}&amp;output=referer">Print uploaders</a>)
+
 		{% for d in object.distributions.all %}
 			<div class="inner-box">
 				<h1 class="inner-box-caption">

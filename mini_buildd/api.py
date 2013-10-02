@@ -219,6 +219,28 @@ class Stop(Command):
         self._plain_result = "{d}\n".format(d=daemon)
 
 
+class PrintUploaders(Command):
+    """Print all GPG ids allowed to upload to repositories."""
+    COMMAND = "printuploaders"
+    AUTH = Command.ADMIN
+    NEEDS_RUNNING_DAEMON = True
+    ARGUMENTS = [
+        (["--repository", "-R"], {"action": "store", "metavar": "REPO",
+                                  "default": ".*",
+                                  "help": "repository name regex."})]
+
+    def _uploader_lines(self, daemon):
+        for r in daemon.get_active_repositories().filter(identity__regex=r"^{r}$".format(r=self.args["repository"])):
+            yield "Uploader keys for repository '{r}':".format(r=r.identity)
+            if r.allow_unauthenticated_uploads:
+                yield " WARNING: Unauthenticated uploads allowed anyway"
+            for u in daemon.keyrings.get_uploaders()[r.identity].get_pub_colons():
+                yield " {u}".format(u=u)
+
+    def run(self, daemon):
+        self._plain_result = "\n".join(self._uploader_lines(daemon)) + "\n"
+
+
 class Meta(Command):
     """Call arbitrary meta functions for models; usually for internal use only."""
     COMMAND = "meta"
@@ -636,6 +658,7 @@ COMMANDS = [(COMMAND_GROUP, "Daemon commands"),
             (Status.COMMAND, Status),
             (Start.COMMAND, Start),
             (Stop.COMMAND, Stop),
+            (PrintUploaders.COMMAND, PrintUploaders),
             (Meta.COMMAND, Meta),
             (COMMAND_GROUP, "Configuration convenience commands"),
             (GetKey.COMMAND, GetKey),

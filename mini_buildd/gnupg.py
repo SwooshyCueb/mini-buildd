@@ -2,6 +2,7 @@
 from __future__ import unicode_literals
 
 import os
+import re
 import tempfile
 import shutil
 import subprocess
@@ -11,6 +12,43 @@ import mini_buildd.misc
 import mini_buildd.setup
 
 LOG = logging.getLogger(__name__)
+
+
+class Colons(object):
+    """
+    Provide a colon->name mapping for the gpg script-parsable '--with-colons' output.
+
+    See /usr/share/doc/gnupg/DETAILS.gz.
+    """
+    def __init__(self, colons_line):
+        self._colons = colons_line.split(":")
+
+    def __unicode__(self):
+        return "{t}: {k}: {u}".format(t=self.type, k=self.key_id, u=self.user_id)
+
+    def _get(self, index):
+        return mini_buildd.misc.list_get(self._colons, index, "")
+
+    @property
+    def type(self):
+        return self._get(0)
+
+    @property
+    def key_id(self):
+        return self._get(4)
+
+    @property
+    def creation_date(self):
+        return self._get(5)
+
+    @property
+    def expiration_date(self):
+        return self._get(6)
+
+    @property
+    def user_id(self):
+        "fingerprint for 'fpr' type"
+        return self._get(9)
 
 
 class BaseGnuPG(object):
@@ -27,41 +65,37 @@ class BaseGnuPG(object):
             t.seek(0)
             mini_buildd.misc.call(self.gpg_cmd + ["--gen-key"], stdin=t)
 
-    def export(self, dest_file):
+    def export(self, dest_file, identity=""):
         with mini_buildd.misc.open_utf8(dest_file, "w") as f:
-            subprocess.check_call(self.gpg_cmd + ["--export"], stdout=f)
+            subprocess.check_call(self.gpg_cmd + ["--export={i}".format(i=identity)], stdout=f)
 
     def get_pub_key(self, identity):
         return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--export={i}".format(i=identity)])
 
-    def pub_keys_info(self):
-        res = []
-        for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-public-keys", "--with-fingerprint", "--with-colons"]).splitlines():
-            res.append(l.split(":"))
-        return res
+    def _get_colons(self, list_arg="--list-public-keys", type_regex=".*"):
+        for line in mini_buildd.misc.call(self.gpg_cmd + [list_arg, "--with-fingerprint", "--with-colons"]).splitlines():
+            colons = Colons(line)
+            LOG.debug("{c}".format(c=colons))
+            if re.match(type_regex, colons.type):
+                yield colons
 
-    def pub_keys_ids(self):
-        ids = []
-        for key in self.pub_keys_info():
-            if key[0] == "pub":
-                ids.append(key[4])
-        return ids
+    def get_pub_colons(self, type_regex="pub"):
+        return self._get_colons(list_arg="--list-public-keys", type_regex=type_regex)
 
-    def sec_keys_info(self):
-        res = []
-        for l in mini_buildd.misc.call(self.gpg_cmd + ["--list-secret-keys", "--with-fingerprint", "--with-colons"]).splitlines():
-            res.append(l.split(":"))
-        return res
+    def get_sec_colons(self, type_regex="sec"):
+        return self._get_colons(list_arg="--list-secret-keys", type_regex=type_regex)
 
-    def get_first_sec_key_long_id(self):
-        for key in self.sec_keys_info():
-            if key[0] == "sec":
-                return key[4]
+    def get_first_sec_key(self):
+        try:
+            return self.get_sec_colons().next()
+        except StopIteration:
+            return Colons("")
 
     def get_first_sec_key_fingerprint(self):
-        for key in self.sec_keys_info():
-            if key[0] == "fpr":
-                return key[9]
+        try:
+            return self.get_sec_colons(type_regex="fpr").next()
+        except StopIteration:
+            return Colons("")
 
     def recv_key(self, keyserver, identity):
         return mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--keyserver={ks}".format(ks=keyserver), "--recv-keys", identity])
@@ -119,6 +153,16 @@ class TmpGnuPG(BaseGnuPG, mini_buildd.misc.TmpDir):
     """
     >>> gnupg = TmpGnuPG()
     >>> gnupg.gen_secret_key("Key-Type: DSA\\nKey-Length: 1024\\nName-Real: Üdo Ümlaut\\nName-Email: test@key.org")
+
+    >>> gnupg.get_first_sec_key().type
+    u'sec'
+    >>> gnupg.get_first_sec_key().user_id
+    u'\\xdcdo \\xdcmlaut <test@key.org>'
+    >>> gnupg.get_first_sec_key().key_id  #doctest: +ELLIPSIS
+    u'...'
+    >>> gnupg.get_first_sec_key_fingerprint().user_id  #doctest: +ELLIPSIS
+    u'...'
+
     >>> t = tempfile.NamedTemporaryFile()
     >>> t.write("A test file")
     >>> gnupg.sign(file_name=t.name, identity="test@key.org")

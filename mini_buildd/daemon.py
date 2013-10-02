@@ -198,6 +198,9 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
     def __init__(self, identity, gpg, debfullname, debemail, tpl_dir="/usr/share/doc/mini-buildd/examples/packages/archive-keyring-template"):
         super(KeyringPackage, self).__init__()
 
+        self.key_id = gpg.get_first_sec_key().key_id
+        LOG.debug("KeyringPackage using key: '{i}'".format(i=self.key_id))
+
         self.package_name = "{i}-archive-keyring".format(i=identity)
         self.environment = mini_buildd.misc.taint_env(
             {"DEBEMAIL": debemail,
@@ -216,12 +219,12 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                     mini_buildd.misc.subst_placeholders(
                         mini_buildd.misc.open_utf8(old_file, "r").read(),
                         {"ID": identity,
-                         "KEY_ID": gpg.pub_keys_ids()[0],
+                         "KEY_ID": self.key_id,
                          "MAINT": "{n} <{e}>".format(n=debfullname, e=debemail)}))
                 os.rename(new_file, old_file)
 
         # Export public GnuPG key into the package
-        gpg.export(os.path.join(p, self.package_name + ".gpg"))
+        gpg.export(os.path.join(p, self.package_name + ".gpg"), identity=self.key_id)
 
         # Generate changelog entry
         mini_buildd.misc.call(["debchange",

@@ -165,8 +165,8 @@ prepare/remove actions will generate/remove the GnuPG key.
         super(Daemon, self).__init__(*args, **kwargs)
         self._mbd_fullname = "mini-buildd archive {i}".format(i=self.identity)
         self._mbd_gnupg = mini_buildd.gnupg.GnuPG(self.gnupg_template, self._mbd_fullname, self.email_address)
-        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key_long_id()
-        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint()
+        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key().key_id
+        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint().user_id
 
     @property
     def mbd_fullname(self):
@@ -194,8 +194,8 @@ prepare/remove actions will generate/remove the GnuPG key.
 
     def mbd_prepare(self, request):
         self._mbd_gnupg.prepare()
-        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key_long_id()
-        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint()
+        self._mbd_gnupg_long_id = self._mbd_gnupg.get_first_sec_key().key_id
+        self._mbd_gnupg_fingerprint = self._mbd_gnupg.get_first_sec_key_fingerprint().user_id
         MsgLog(LOG, request).info("Daemon GnuPG key generated: {i}: {f}".format(i=self._mbd_gnupg_long_id, f=self._mbd_gnupg_fingerprint))
 
     @classmethod

@@ -1,7 +1,7 @@
 {% extends "mini_buildd/base.html" %}
 {% load base %}
 
-{% block mbd_page_title %}: Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
+{% block page_title %}Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
 {% block mbd_page_footer %} &raquo; Logs for: {{ repository }}/{{ package }}/{{ version }}{% endblock %}
 
 {% block content %}
@@ -19,15 +19,15 @@
 							</a>
 						</p>
 					{% endifequal %}
+
+					<h3>Build logs</h3>
 					<p>
-						<em>Build logs:</em>
 						{% for arch, uri in values.buildlogs.items %}
-							<a href="/log/{{ uri }}">{{ arch }}</a>
+							<a title="Visit build logs for {{ arch }}" href="/log/{{ uri }}">{{ arch }}</a>
 						{% endfor %}
 					</p>
-					<p>
-						<em><a href="/log/{{ values.changes_path }}">Changes:</a></em>
-					</p>
+
+					<h3><a title="Download changes for {{ repository }}/{{ package }}/{{ version }}" href="/log/{{ values.changes_path }}">Changes</a></h3>
 					<pre>{{ values.changes }}</pre>
 				{% endif %}
 			{% endfor %}

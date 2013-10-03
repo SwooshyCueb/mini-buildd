@@ -67,7 +67,8 @@ def host_from_dput(section):
         return dput_cf.get(section, "x_mini_buildd_host")
 
 PARSER = argparse.ArgumentParser(prog="mini-buildd-tool",
-                                 description="command line tool to run API calls.",
+                                 description="Command line tool to run API calls.",
+                                 epilog="Note: Uses 'python-keyring' to persist passwords (see '~/.local/share/python_keyring/')",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
 PARSER.add_argument("--version", action="version", version=mini_buildd.__version__)

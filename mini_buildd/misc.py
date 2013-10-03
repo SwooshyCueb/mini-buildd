@@ -23,6 +23,9 @@ import getpass
 import logging
 import logging.handlers
 
+# Workaround: Avoid warning 'No handlers could be found for logger "keyring"'
+KEYRING_LOG = logging.getLogger("keyring")
+KEYRING_LOG.addHandler(logging.NullHandler())
 import keyring
 import keyring.util.platform
 
@@ -789,7 +792,7 @@ def setup_console_logging(level=logging.DEBUG):
     ch = logging.StreamHandler()
     ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
 
-    for ln in ["__main__", "mini_buildd"]:
+    for ln in ["__main__", "mini_buildd", "keyring"]:
         l = logging.getLogger(ln)
         l.addHandler(ch)
         l.setLevel(level)

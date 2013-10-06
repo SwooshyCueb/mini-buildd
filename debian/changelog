@@ -1,3 +1,42 @@
+mini-buildd (1.0.0~gamma.1) unstable; urgency=low
+
+  Initial gamma release; initial upload to unstable.
+  * [3e16e55] html, port[ext]: Use generic templatetag for options; narrow list of dists based on context.
+  * [486afc3] [devel: sed s/echo/printf/g]
+  * [6300acc] [devel: Add some basic mini-buildd-tool calls to standard check]
+  * [4764a21] html(api_show): Improve rollbacks display.
+  * [84534fc] html(home): Minor design fixes.
+  * [8650b81] doc: Finish up the introduction.
+  * [33b237f] notify: Add subject prefix [mini-buildd-ID].
+  * [9659806] subscriptions: Minor display cosmetics.
+  * [f829bb3] api(subscriptions): Use 'choices' list for actions (Fixes auto-complete).
+  * [58ed076] gnupg: Fixup some implementation kludges.
+  * [1a27e9d] api: Add 'printuploaders' command.
+  * [c723e66] html(log, api_show): Cosmetic fixes.
+  * [fd54987] python-keyring: Workaround the 'No handlers could be found for logger "keyring"' console warning.
+  * [135c584] mini-buildd-tool: Add note to usage that we use python-keyring.
+  * Closing bugs for good due to the upload to unstable:
+  * Bug fix: "fails to install", thanks to Holger Levsen (Closes:
+	  #632955).
+  * Bug fix: "fails to install", thanks to Holger Levsen (Closes:
+	  #656746).
+  * Bug fix: "unowned files after purge (policy 6.8) violating FHS (policy
+	  9.1) too", thanks to Andreas Beckmann (Closes: #660939).
+  * Bug fix: "creates system user in /home", thanks to Andreas Beckmann
+	  (Closes: #677618).
+  * Bug fix: "When removing distributions, LVM volumes are not removed",
+	  thanks to Stephan Sürken (Closes: #617673).
+  * Bug fix: "no space left on device if build needs mor then 4GB disk
+	  space", thanks to Ulrich Goettlich (Closes: #607189).
+  * Bug fix: "Please add option not to use LVM with schroot", thanks to
+	  Jean Stebens (Closes: #612310).
+  * Bug fix: "please make crypto key parameters configurable", thanks to
+	  Marc Haber (Closes: #633074).
+  * Bug fix: "please consider prioritized bld hosts", thanks to Marc Haber
+	  (Closes: #638301).
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 06 Oct 2013 18:55:09 +0200
+
 mini-buildd (1.0.0~beta.22) experimental; urgency=low
 
   22nd beta release. Cumulated minor bug fixes, re-work

@@ -123,7 +123,18 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
            custom_snippet=mini_buildd.misc.open_utf8(os.path.join(self._build_dir, "sbuildrc_snippet"), 'rb').read())).save()
 
     def _buildlog_to_buildresult(self, buildlog):
-        regex = re.compile("^[a-zA-Z0-9-]+: [^ ]+$")
+        """
+        Parse sbuild's summary status from build log.
+
+        .. note:: This will iterate all lines of the build log,
+        and parse out the selection of sbuild's summary status
+        we need.  In case the build log above does write the
+        same output like 'Status: xyz', sbuild's correct status
+        at the bottom will override this later.  Best thing,
+        though, would be if sbuild would eventually provide a
+        better way to get these values.
+        """
+        regex = re.compile("^(Status|Lintian): [^ ]+$")
         with mini_buildd.misc.open_utf8(buildlog) as f:
             for l in f:
                 if regex.match(l):

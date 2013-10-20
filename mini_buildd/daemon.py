@@ -383,6 +383,13 @@ def run():
     builder_thread.join()
     ftpd_thread.join()
 
+    # keyrings.close() is not called implicitly; this leaves tmp files around.
+    # There should be a nicer way, really...
+    try:
+        get().keyrings.close()
+    except:
+        pass
+
 
 class Daemon():
     def __init__(self):

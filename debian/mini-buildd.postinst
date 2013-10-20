@@ -43,9 +43,11 @@ _update_file mini-buildd/options MINI_BUILDD_OPTIONS "--verbose"
 #
 db_get mini-buildd/home
 MINI_BUILDD_HOME="${RET}"
+# Some code may actually choke (and break builds) if the passwd geco field is empty, so we set it
+MINI_BUILDD_FULL_NAME="Custom Debian buildd"
 if ! getent passwd mini-buildd >/dev/null; then
 	# Fresh install: Add a new system user/group: mini-buildd/mini-buildd
-	adduser --system --group --shell /bin/bash --home "${MINI_BUILDD_HOME}" mini-buildd
+	adduser --system --group --shell /bin/bash --home "${MINI_BUILDD_HOME}" --gecos "${MINI_BUILDD_FULL_NAME}" mini-buildd
 else
 	# Existing user
 
@@ -54,7 +56,7 @@ else
 	usermod --gid=mini-buildd mini-buildd
 
 	# Fix HOME if needed
-	usermod --home="${MINI_BUILDD_HOME}" --move-home mini-buildd
+	usermod --home="${MINI_BUILDD_HOME}" --comment="${MINI_BUILDD_FULL_NAME}" --move-home mini-buildd
 fi
 
 # Always (re-)add to group sbuild

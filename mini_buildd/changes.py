@@ -189,12 +189,23 @@ class Changes(debian.deb822.Changes):
                               "priority": "extra",
                               "name": os.path.basename(file_name)})
 
-    def save(self, gnupg):
+    def save(self, gnupg=None):
+        """
+        Write to file (optionally signed).
+
+        >>> t = tempfile.NamedTemporaryFile()
+        >>> c = Changes(t.name)
+        >>> c["key"] = "ASCII value"
+        >>> c.save(None)
+        >>> c["key"] = "Ünicöde «value»"
+        >>> c.save(None)
+        """
         try:
             LOG.info("Saving changes: {f}".format(f=self._file_path))
-            self.dump(fd=mini_buildd.misc.open_utf8(self._file_path, "w+"))
+            self.dump(fd=open(self._file_path, "w+"), encoding=mini_buildd.setup.CHAR_ENCODING)
             LOG.info("Signing changes: {f}".format(f=self._file_path))
-            gnupg.sign(self._file_path)
+            if gnupg:
+                gnupg.sign(self._file_path)
             self._sha1 = mini_buildd.misc.sha1_of_file(self._file_path)
         except:
             # Existence of the file name is used as flag

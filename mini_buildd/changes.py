@@ -3,8 +3,6 @@ from __future__ import unicode_literals
 
 import os
 import stat
-import tempfile
-import shutil
 import glob
 import logging
 import tarfile
@@ -193,6 +191,7 @@ class Changes(debian.deb822.Changes):
         """
         Write to file (optionally signed).
 
+        >>> import tempfile
         >>> t = tempfile.NamedTemporaryFile()
         >>> c = Changes(t.name)
         >>> c["key"] = "ASCII value"
@@ -406,22 +405,20 @@ class Changes(debian.deb822.Changes):
         return bres
 
     def upload_failed_buildresult(self, gnupg, hopo, retval, status, exception):
-        t = tempfile.mkdtemp()
-        bres = self.gen_buildresult(path=t)
+        with contextlib.closing(mini_buildd.misc.TmpDir()) as t:
+            bres = self.gen_buildresult(path=t.tmpdir)
 
-        bres["Sbuildretval"] = unicode(retval)
-        bres["Sbuild-Status"] = status
-        buildlog = os.path.join(t, self.buildlog_name)
-        with mini_buildd.misc.open_utf8(buildlog, "w+") as l:
-            l.write("""
+            bres["Sbuildretval"] = unicode(retval)
+            bres["Sbuild-Status"] = status
+            buildlog = os.path.join(t.tmpdir, self.buildlog_name)
+            with mini_buildd.misc.open_utf8(buildlog, "w+") as l:
+                l.write("""
 Host: {h}
 Build request failed: {r} ({s}): {e}
 """.format(h=socket.getfqdn(), r=retval, s=status, e=exception))
-        bres.add_file(buildlog)
-        bres.save(gnupg)
-        bres.upload(hopo)
-
-        shutil.rmtree(t)
+            bres.add_file(buildlog)
+            bres.save(gnupg)
+            bres.upload(hopo)
 
 
 if __name__ == "__main__":

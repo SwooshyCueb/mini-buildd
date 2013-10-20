@@ -1,3 +1,16 @@
+mini-buildd (1.0.0~gamma.2) unstable; urgency=low
+
+  Second gamma release. Cumulated minor bug fixes.
+  * [790e162] control: Depend on django >= 1.5.2, needed for new templatetag calls (Fixes: wrong html dist filter under wheezy when not using django bpo)
+  * [a8f47b5] source wizard: Fix/update apt keys for wheezy/jessie/sid
+  * [e30ebbd] postinst: Always set mini-buildd user's 'geco' field to a non-empty value (Fixes potential build failures where code relies on this)
+  * [8458cc7] changes.py: save: Don't use codec.open, deb822.dump() already handles encoding (Fixes save with non-ascii chars)
+  * [11d7580] builder.py: Harden buildlog2status parser (only consider known/needed keys: Status|Lintian).
+  * [2134fb9] changes.py: Fix code that still used '/tmp' to use mini_buildd's tmp dir.
+  * [09da270] daemon.py: Fix keeping keyring tmp files around between init.d restarts.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 20 Oct 2013 15:13:36 +0200
+
 mini-buildd (1.0.0~gamma.1) unstable; urgency=low
 
   Initial gamma release; initial upload to unstable.

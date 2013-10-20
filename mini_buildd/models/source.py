@@ -257,7 +257,21 @@ codeversion is only used for base sources.""")
 
         @classmethod
         def mbd_meta_add_debian(cls, msglog):
-            "Add well-known Debian sources"
+            """
+            Add well-known Debian sources
+
+            8B48AD6246925553: Debian Archive Automatic Signing Key (7.0/wheezy) <ftpmaster@debian.org>
+            6FB2A1C265FFB764: Wheezy Stable Release Key <debian-release@lists.debian.org>
+
+            AED4B06F473041FA: Debian Archive Automatic Signing Key (6.0/squeeze) <ftpmaster@debian.org>
+            64481591B98321F9: Squeeze Stable Release Key <debian-release@lists.debian.org>
+
+            9AA38DCD55BE302B: Debian Archive Automatic Signing Key (5.0/lenny) <ftpmaster@debian.org>
+            4D270D06F42584E6: Lenny Stable Release Key <debian-release@lists.debian.org>
+
+            B5D0C804ADB11277: Etch Stable Release Key <debian-release@lists.debian.org>
+            EA8E8B2116BA136C: Backports.org Archive Key <ftp-master@backports.org>
+            """
             cls._mbd_get_or_create(msglog, "Debian", "etch",
                                    ["9AA38DCD55BE302B", "B5D0C804ADB11277"])
             cls._mbd_get_or_create(msglog, "Debian", "lenny",
@@ -265,11 +279,11 @@ codeversion is only used for base sources.""")
             cls._mbd_get_or_create(msglog, "Debian", "squeeze",
                                    ["AED4B06F473041FA", "64481591B98321F9"])
             cls._mbd_get_or_create(msglog, "Debian", "wheezy",
-                                   ["AED4B06F473041FA"])
+                                   ["8B48AD6246925553", "6FB2A1C265FFB764"])
             cls._mbd_get_or_create(msglog, "Debian", "jessie",
-                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+                                   ["8B48AD6246925553", "6FB2A1C265FFB764"])
             cls._mbd_get_or_create(msglog, "Debian", "sid",
-                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+                                   ["8B48AD6246925553", "6FB2A1C265FFB764"])
             cls._mbd_get_or_create(msglog, "Backports.org archive", "etch-backports",
                                    ["EA8E8B2116BA136C"])
             cls._mbd_get_or_create(msglog, "Debian Backports", "lenny-backports",
@@ -277,7 +291,7 @@ codeversion is only used for base sources.""")
             cls._mbd_get_or_create(msglog, "Debian Backports", "squeeze-backports",
                                    ["AED4B06F473041FA", "8B48AD6246925553"])
             cls._mbd_get_or_create(msglog, "Debian Backports", "wheezy-backports",
-                                   ["AED4B06F473041FA", "8B48AD6246925553"])
+                                   ["8B48AD6246925553", "6FB2A1C265FFB764"])
 
         @classmethod
         def mbd_meta_add_ubuntu(cls, msglog):

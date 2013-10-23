@@ -36,6 +36,7 @@ class Package(mini_buildd.misc.Status):
         self.pid = changes.get_pkg_id()
         self.repository, self.distribution, self.suite, self.distribution_string = None, None, None, None
         self.requests, self.success, self.failed = {}, {}, {}
+        self.port_report = {}
 
     def __unicode__(self):
         def arch_status():
@@ -145,7 +146,9 @@ class Package(mini_buildd.misc.Status):
                                  self.distribution_string,
                                  to_dist_str,
                                  self.changes["Version"])
+                self.port_report[to_dist_str] = "Requested"
             except Exception as e:
+                self.port_report[to_dist_str] = "FAILED: {e}".format(e=e)
                 mini_buildd.setup.log_exception(LOG, "{i}: Automatic package port failed for: {d}".format(i=self.changes.get_pkg_id(), d=to_dist_str), e)
 
     def move_to_pkglog(self):
@@ -200,6 +203,11 @@ class Package(mini_buildd.misc.Status):
 
         results += header("Changes")
         results += self.changes.dump()
+
+        if self.port_report:
+            results += "\n"
+            results += header("Port Report")
+            results += "\n".join(("{d:<25}: {r}".format(d=d, r=r) for d, r in self.port_report.items()))
 
         self.daemon.model.mbd_notify(
             self.__unicode__(),

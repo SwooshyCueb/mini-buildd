@@ -141,7 +141,7 @@ lintian) as non-lethal, and will install anyway.
             c=self.mbd_get_distribution_string(repository, distribution),
             o=self.mbd_get_daemon().model.mbd_get_archive_origin())
 
-    def mbd_get_apt_preferences(self, repository, distribution, prio=500):
+    def mbd_get_apt_preferences(self, repository, distribution, prio=1):
         return "Package: *\nPin: {pin}\nPin-Priority: {prio}\n".format(
             pin=self.mbd_get_apt_pin(repository, distribution),
             prio=prio)

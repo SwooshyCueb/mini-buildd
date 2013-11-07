@@ -108,9 +108,10 @@ chroots (with <tt>qemu-user-static</tt> installed).
                         msglog.info("Another backend already provides {s}/{a}".format(s=s.codename, a=a.name))
 
     def __unicode__(self):
-        return "{c}/{a} ({f})".format(c=self.source.codename,
-                                      a=self.architecture.name,
-                                      f=self.mbd_get_backend().mbd_backend_flavor())
+        return "{o} '{c}:{a}' ({f})".format(o=self.source.origin,
+                                            c=self.source.codename,
+                                            a=self.architecture.name,
+                                            f=self.mbd_get_backend().mbd_backend_flavor())
 
     def mbd_get_backend(self):
         for cls, sub in {"filechroot": [], "dirchroot": [], "lvmchroot": ["looplvmchroot"]}.items():

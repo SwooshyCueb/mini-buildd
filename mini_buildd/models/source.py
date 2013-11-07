@@ -317,6 +317,13 @@ codeversion is only used for base sources.""")
                                    ["40976EAF437D05B5", "3B4FE6ACC0B21F32"],
                                    "Codename: saucy\nSuite: saucy-backports")
 
+        @classmethod
+        def mbd_filter_active_base_sources(cls):
+            "Filter active base sources; needed in chroot and distribution wizards."
+            return Source.objects.filter(status__gte=Source.STATUS_ACTIVE,
+                                         origin__in=["Debian", "Ubuntu"],
+                                         codename__regex=r"^[a-z]+$")
+
     def __unicode__(self):
         """
         .. note:: Workaround for django 1.4.3 bug/new behaviour.

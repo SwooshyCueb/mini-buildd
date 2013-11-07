@@ -470,7 +470,7 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             def default_components(origin):
                 return {"Ubuntu": ["main", "universe", "restricted", "multiverse"]}.get(origin, ["main", "contrib", "non-free"])
 
-            for s in mini_buildd.models.source.Source.objects.filter(status__gte=mini_buildd.models.source.Source.STATUS_ACTIVE, codename__regex=r"^[a-z]+$"):
+            for s in mini_buildd.models.source.Source.Admin.mbd_filter_active_base_sources():
                 new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
                 if created:
                     # Auto-add known default components or Origin

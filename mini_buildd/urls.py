@@ -2,13 +2,21 @@
 from __future__ import unicode_literals
 
 import django.views.generic.detail
-import django.conf.urls.defaults
+
+# pylint: disable=F0401,E0611
+try:
+    # django >= 1.6
+    from django.conf.urls import patterns
+except ImportError:
+    # django 1.5
+    from django.conf.urls.defaults import patterns
+# pylint: enable=F0401,E0611
 
 import mini_buildd.views
 import mini_buildd.models.repository
 
 # pylint: disable=E1120
-urlpatterns = django.conf.urls.defaults.patterns(
+urlpatterns = patterns(
     '',
     (r"^$", mini_buildd.views.home),
     (r"^log/(.+)/(.+)/(.+)/$", mini_buildd.views.log),

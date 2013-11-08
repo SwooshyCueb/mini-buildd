@@ -21,7 +21,7 @@ import argcomplete
 import mini_buildd.misc
 import mini_buildd.setup
 import mini_buildd.httpd
-import mini_buildd.webapp
+import mini_buildd.django_settings
 
 LOG = logging.getLogger("mini_buildd")
 LOG.addHandler(logging.StreamHandler())
@@ -212,6 +212,9 @@ Comma-separated list of special debugging options:
         self._loglevel = self._setup_logging()
         self._setup_environment()
 
+        # Configure django
+        mini_buildd.django_settings.configure(self._args.smtp, self._loglevel)
+
         # Shutdown on SIGTERM or SIGINT
         self._status = "RESTART"
         signal.signal(signal.SIGTERM, self.on_signal)
@@ -229,7 +232,7 @@ Comma-separated list of special debugging options:
         # Start httpd webapp
         mini_buildd.misc.run_as_thread(mini_buildd.httpd.run, daemon=True, bind=self._args.httpd_bind, wsgi_app=webapp)
 
-        # Get the daemon manager instance (due to django, import must be here)
+        # Get the daemon manager instance (import here: We cannot import anything 'django' prior to django's configuration)
         from mini_buildd.daemon import Daemon
         daemon = Daemon()
         daemon.start()
@@ -245,8 +248,9 @@ Comma-separated list of special debugging options:
         daemon.stop()
 
     def run(self):
-        # Get the django project instance
-        webapp = mini_buildd.webapp.WebApp(self._args.smtp, self._loglevel)
+        # Get the django project instance (import here: We cannot import anything 'django' prior to django's configuration)
+        from mini_buildd.webapp import WebApp
+        webapp = WebApp()
 
         # Extra options that exit without running as daemon
         if self._args.set_admin_password:

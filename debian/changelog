@@ -1,3 +1,18 @@
+mini-buildd (1.0.0~gamma.3) unstable; urgency=low
+
+  Third gamma release. Makes it work with django 1.6, cumulated fixes.
+  * [d1c072b] package notify: Add 'port report'.
+  * [9af72fe] build: Fix prio for our own sources to 1 (was 500). Fixes 'opt-in' in builds.
+  * [3e546e3] chroot, distribution: Add 'origin' to display name (Fixes possible confusion when bogus/non-base sources are used like base sources).
+  * [c71371a] chroot+distribution wizards: Harden, make them only chose source with origin=Debian,Ubuntu as base sources.
+  * [86d5652] [django-1.6] Add extra django_settings module to be able to to configure _before_ any django imports (Fixes: django-1.6 settings exception on startup).
+  * [3786498] [django-1.6] urls.py, root_urls.py: Make imports compatible with 1.5 and 1.6.
+  * [b96d793] [django-1.6] control: deps: django-extensions >=1.2.5 (we now really need an updated version).
+  * [c460585] mini-buildd-tool: Make compatible with python-keyring >= 3.0.2.
+    Thanks to Sebastian Ramacher (Closes: 728471)
+
+ -- Stephan Sürken <absurd@debian.org>  Tue, 12 Nov 2013 18:55:51 +0100
+
 mini-buildd (1.0.0~gamma.2) unstable; urgency=low
 
   Second gamma release. Cumulated minor bug fixes.

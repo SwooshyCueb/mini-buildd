@@ -27,7 +27,12 @@ import logging.handlers
 KEYRING_LOG = logging.getLogger("keyring")
 KEYRING_LOG.addHandler(logging.NullHandler())
 import keyring
-import keyring.util.platform
+# pylint: disable=F0401,E0611
+try:
+    from keyring.util.platform_ import data_root as keyring_data_root
+except ImportError:
+    from keyring.util.platform import data_root as keyring_data_root
+# pylint: enable=F0401,E0611
 
 import mini_buildd.setup
 
@@ -677,7 +682,7 @@ class Keyring(object):
             s=self._service,
             k=self._keyring.__class__.__name__,
             p={"A": "Always", "V": "Never"}.get(self._save_policy, "Ask"),
-            path=keyring.util.platform.data_root())
+            path=keyring_data_root())
 
     def reset_save_policy(self):
         if self._save_policy:

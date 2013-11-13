@@ -6,5 +6,5 @@
 # This cronjob makes sure this is done automatically once a week
 # as long as there is no better/internal solution.
 if /etc/init.d/mini-buildd status >/dev/null 2>&1; then
-	/etc/init.d/mini-buildd restart
+	/etc/init.d/mini-buildd restart >/dev/null
 fi

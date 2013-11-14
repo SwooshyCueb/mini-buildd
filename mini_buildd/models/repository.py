@@ -696,15 +696,15 @@ Example:
                 LOG.warn("User '{u}' does not have an uploader profile (deliberately removed?)".format(u=u))
 
             if uploader and uploader.mbd_is_active() and uploader.may_upload_to.all().filter(identity=self.identity):
+                LOG.info("Adding uploader key for '{r}': {k}: {n}".format(r=self, k=uploader.key_long_id, n=uploader.key_name))
                 gpg.add_pub_key(uploader.key)
-                LOG.info("Uploader key added for '{r}': {k}: {n}".format(r=self, k=uploader.key_long_id, n=uploader.key_name))
 
         # Add configured extra keyrings
         for l in self.extra_uploader_keyrings.splitlines():
             l = l.strip()
             if l and l[0] != "#":
-                gpg.add_keyring(l)
                 LOG.info("Adding keyring: {k}".format(k=l))
+                gpg.add_keyring(l)
         return gpg
 
     def mbd_get_path(self):

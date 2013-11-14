@@ -107,7 +107,10 @@ class BaseGnuPG(object):
             mini_buildd.misc.call(self.gpg_cmd + ["--import"], stdin=t)
 
     def add_keyring(self, keyring):
-        self.gpg_cmd.append("--keyring={k}".format(k=keyring))
+        if os.path.exists(keyring):
+            self.gpg_cmd.append("--keyring={k}".format(k=keyring))
+        else:
+            LOG.warn("Skipping non-existing keyring file: {k}".format(k=keyring))
 
     def verify(self, signature, data=None):
         try:

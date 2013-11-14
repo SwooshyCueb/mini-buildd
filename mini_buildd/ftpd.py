@@ -4,6 +4,7 @@ from __future__ import unicode_literals
 import os
 import stat
 import glob
+import shutil
 import fnmatch
 import re
 import logging
@@ -90,8 +91,15 @@ class Incoming(object):
 
         for f in glob.glob(os.path.join(mini_buildd.setup.INCOMING_DIR, "*")):
             if os.path.basename(f) not in valid_files:
-                os.remove(f)
-                LOG.warning("Incoming: Cruft file removed: {f}".format(f=f))
+                # Be sure to never ever fail, just because cruft removal fails (instead log accordingly)
+                try:
+                    if os.path.isdir(f):
+                        shutil.rmtree(f)
+                    else:
+                        os.remove(f)
+                    LOG.warn("Incoming cruft removed: {f}".format(f=f))
+                except Exception as e:
+                    mini_buildd.setup.log_exception(LOG, "Can't remove cruft from incoming: {f}".format(f=f), e, logging.CRITICAL)
 
     @classmethod
     def requeue_changes(cls, queue):

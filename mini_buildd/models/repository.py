@@ -652,7 +652,11 @@ Example:
             debdev_repo, created = Repository.mbd_get_or_create(
                 msglog,
                 identity="debdev",
-                layout=Layout.objects.get(name__exact="Debian Developer"))
+                layout=Layout.objects.get(name__exact="Debian Developer"),
+                extra_uploader_keyrings="""\
+# Allow Debian maintainers (must install the 'debian-keyring' package)
+/usr/share/keyrings/debian-keyring.gpg
+""")
             if created:
                 debdev_repo.distributions.add(sid)
 

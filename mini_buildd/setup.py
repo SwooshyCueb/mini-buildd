@@ -32,4 +32,4 @@ def log_exception(log, message, exception, level=logging.ERROR):
     msg = "{m}: {e}".format(m=message, e=exception)
     log.log(level, msg)
     if "exception" in DEBUG:
-        log.exception(msg)
+        log.exception("Exception DEBUG ({m}):".format(m=msg))

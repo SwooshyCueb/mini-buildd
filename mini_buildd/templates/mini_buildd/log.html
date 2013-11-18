@@ -13,7 +13,8 @@
 					<h2 class="{{ key }}">{{ key }}</h2>
 					{% ifequal key "Failed" %}
 						<p>
-							<a href="/mini_buildd/api?command=retry&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}"
+							<a class="button-rebuild"
+								 href="/mini_buildd/api?command=retry&amp;package={{ package|urlencode }}&amp;version={{ version|urlencode }}&amp;repository={{ repository|urlencode }}"
 								 title="Retry {{ repository }}/{{ package }}/{{ version }}">
 								Retry now
 							</a>

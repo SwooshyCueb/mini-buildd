@@ -24,6 +24,11 @@ fi
 
 [ -x "${DAEMON}" ] || exit 0
 
+# Note: If the locale is not set to UTF-8 encoding when python
+# starts, python subprocess will not work with non-ascii unicode
+# chars (i.e., s.th. like 'subprocess.call([u"ü"])').
+export LANG="C.UTF-8"
+
 START_STOP_DAEMON="start-stop-daemon --quiet --pidfile ${PIDFILE}"
 STOP_DAEMON="${START_STOP_DAEMON} --stop --user mini-buildd"
 START_DAEMON="${START_STOP_DAEMON} --start --exec ${DAEMON} --chuid mini-buildd"

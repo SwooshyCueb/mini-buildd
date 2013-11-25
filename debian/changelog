@@ -1,3 +1,22 @@
+mini-buildd (1.0.0~gamma.4) unstable; urgency=low
+
+  * [c3cbf7b] mini-buildd.cron.weekly: Be quiet when restarting (Fixes:
+    Unneeded cron mails).
+  * [9550998] examples: Add apache-ssl-proxy.conf (apache2 SSL proxy for
+    mini-buildd example)
+  * [e2b3c6c] gpg: add_keyring(): Don't fail (just warn) when the keyring
+    file does not exist.
+  * [785d7ef] repository wizard(debdev): Add Debian keyring as uploader by
+    default.
+  * [ad7212f] logs: Minor cosmetics for exception debug logs.
+  * [7db87e1] ftpd: Harden incoming cruft removal (never fail but log on
+    errors).
+  * [2cacf2f] [html] Make "Retry now" look like a button.
+  * [02c06a3] init.d: Always start with LANG=C.UTF-8 (Fixes occasional
+    encoding bug when porting an "non-ascii author").
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 25 Nov 2013 19:09:54 +0100
+
 mini-buildd (1.0.0~gamma.3) unstable; urgency=low
 
   Third gamma release. Makes it work with django 1.6, cumulated fixes.

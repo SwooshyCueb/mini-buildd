@@ -65,6 +65,8 @@ class Main():
                                 help="Web Server IP/Hostname and port to bind to.")
         group_conf.add_argument("-S", "--smtp", action="store", default=":@smtp://localhost:25",
                                 help="SMTP credentials in format '[USER]:[PASSWORD]@smtp|ssmtp://HOST:PORT'.")
+        group_conf.add_argument("-U", "--dedicated-user", action="store", default="mini-buildd",
+                                help="Force a custom dedicated user name (to run as a different user than 'mini-buildd').")
         group_conf.add_argument("-H", "--home", action="store", default=os.getenv("HOME"),
                                 help="Run with this home dir. The only use case to change this for debugging, really.")
         group_conf.add_argument("-F", "--pidfile", action="store", default=os.path.join(os.getenv("HOME"), ".mini-buildd.pid"),
@@ -201,10 +203,17 @@ Comma-separated list of special debugging options:
         os.environ["HOME"] = self._args.home
         os.environ["PATH"] = "/usr/bin:/bin:/usr/sbin:/sbin"
         for name in ["USER", "LOGNAME"]:
-            os.environ[name] = pwd.getpwuid(os.getuid())[0]
+            os.environ[name] = self._user
 
     def __init__(self):
+        self._user = pwd.getpwuid(os.getuid())[0]
+
         self._args = self._parse_args()
+
+        # User sanity check
+        if self._args.dedicated_user != self._user:
+            raise Exception("Run as dedicated user only (use '--dedicated-user={u}' if you really want this, will write that user's $HOME!)".format(u=self._user))
+
         # Daemonize early
         if not self._args.foreground:
             daemon.DaemonContext(working_directory=self._args.home, umask=0022).open()

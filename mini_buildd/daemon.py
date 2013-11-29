@@ -643,9 +643,9 @@ class Daemon():
                                       env=env)
 
             # Repack DST
-            mini_buildd.misc.call(["dpkg-source", "-b", dst],
-                                  cwd=t.tmpdir,
-                                  env=env)
+            mini_buildd.misc.call(["dpkg-source", "-b", dst], cwd=t.tmpdir, env=env)
+            dsc = os.path.join(t.tmpdir, "{p}_{v}.dsc".format(p=package, v=version))
+            self.model.mbd_gnupg.sign(dsc)
 
             # Gen changes file name
             changes = os.path.join(t.tmpdir,

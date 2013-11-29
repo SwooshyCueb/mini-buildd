@@ -119,10 +119,23 @@ class BaseGnuPG(object):
             raise Exception("GnuPG authorization failed.")
 
     def sign(self, file_name, identity=None):
-        xtra_opts = ["--local-user={i}".format(i=identity)] if identity else []
+        # 1st: copy the unsigned file and add an extra new line
+        # (Like 'debsign' from devscripts does: dpkg-source <= squeeze will have problems without the newline)
+        unsigned_file = file_name + ".asc"
+        shutil.copyfile(file_name, unsigned_file)
+        with open(unsigned_file, "a") as unsigned:
+            unsigned.write("\n")
+
+        # 2nd: Sign the file copy
         signed_file = file_name + ".signed"
-        mini_buildd.misc.call(self.gpg_cmd + ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] + xtra_opts + [file_name])
+        mini_buildd.misc.call(self.gpg_cmd +
+                              ["--armor", "--textmode", "--clearsign", "--output={f}".format(f=signed_file)] +
+                              (["--local-user={i}".format(i=identity)] if identity else []) +
+                              [unsigned_file])
+
+        # 3rd: Success, move to orig file and cleanup
         os.rename(signed_file, file_name)
+        os.remove(unsigned_file)
 
 
 class GnuPG(BaseGnuPG):

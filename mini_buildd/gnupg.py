@@ -114,8 +114,7 @@ class BaseGnuPG(object):
 
     def verify(self, signature, data=None):
         try:
-            xtra_opts = [data] if data else []
-            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signature] + xtra_opts, error_log_on_fail=False)
+            mini_buildd.misc.call(self.gpg_cmd + ["--verify", signature] + ([data] if data else []), error_log_on_fail=False)
         except:
             raise Exception("GnuPG authorization failed.")
 

@@ -167,7 +167,8 @@ class TmpGnuPG(BaseGnuPG, mini_buildd.misc.TmpDir):
     u'...'
 
     >>> t = tempfile.NamedTemporaryFile()
-    >>> t.write("A test file")
+    >>> t.write("A test file\\n")
+    >>> t.flush()
     >>> gnupg.sign(file_name=t.name, identity="test@key.org")
     >>> gnupg.verify(t.name)
     >>> pub_key = gnupg.get_pub_key(identity="test@key.org")

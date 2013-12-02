@@ -1,3 +1,22 @@
+mini-buildd (1.0.0~gamma.5) unstable; urgency=low
+
+  Fifth gamma, 'l10n' release.
+  * [32cbf96] mini-buildd: Add sanity check to avoid accidental starts by
+    standard users.
+  * [1cf513c] gnupg.py: sign(): Implicitly add newline to original file
+    (like debsign does too) (Fixes signed dsc files for dpkg <= squeeze)
+  * [d82b578] ports: Also gpg-sign the dsc file.
+  * [14562c9] Debconf templates and debian/control reviewed by the debian-
+    l10n-english team as part of the Smith review project. Thanks to
+    Christian Perrier <bubulle@debian.org>, Russian (Yuri Kozlov), Danish
+    (Joe Hansen), German (Tobias Quathamer), Polish (Michał Kułach),
+    Japanese (Nobuhiro Iwamatsu), Italian (Pierangelo Mancusi), Swedish
+    (Martin Bagge / brother), Portuguese (Américo Monteiro), French
+    (Julien Patriarca) (Closes: #725850, #729295, #729429, #729655,
+    #730063, #730481, #730523, #730538, #730648, #730803)
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 02 Dec 2013 13:34:44 +0000
+
 mini-buildd (1.0.0~gamma.4) unstable; urgency=low
 
   * [c3cbf7b] mini-buildd.cron.weekly: Be quiet when restarting (Fixes:

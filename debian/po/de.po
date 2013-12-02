@@ -1,55 +1,47 @@
 # German translation of mini-buildd debconf template.
 # This file is distributed under the same license as the mini-buildd package.
-# Copyright © Tobias Quathamer <toddy@debian.org>, 2010.
-#
+# Copyright ©
+# Tobias Quathamer <toddy@debian.org>, 2010, 2013.
 msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2013-06-03 20:40+0200\n"
-"PO-Revision-Date: 2010-05-04 08:32+0100\n"
+"POT-Creation-Date: 2013-11-11 14:08+0100\n"
+"PO-Revision-Date: 2013-11-15 11:44+0100\n"
 "Last-Translator: Tobias Quathamer <toddy@debian.org>\n"
 "Language-Team: German <debian-l10n-german@lists.debian.org>\n"
 "Language: de\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Lokalize 1.5\n"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-msgid "Data purge warning"
-msgstr ""
+#: ../mini-buildd.templates:2001
+msgid "mini-buildd data purge warning"
+msgstr "Warnung vor dem vollständigen Entfernen aller mini-buildd-Daten"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid "You have chosen to purge mini-buildd on a repository host."
+#: ../mini-buildd.templates:2001
 msgid "You have chosen to purge mini-buildd."
-msgstr ""
-"Sie möchten mini-buildd vollständig von einem Rechner entfernen, auf dem ein "
-"Paketdepot vorhanden ist."
+msgstr "Sie möchten mini-buildd vollständig vom Rechner entfernen."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "This choice means that the mini-buildd user will be removed along with "
-#| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
-#| "\"."
+#: ../mini-buildd.templates:2001
 msgid ""
-"This choice means that the mini-buildd user will be removed along with all "
-"the files it owns, possibly including Debian repositories."
+"As a consequence, the mini-buildd user will be removed along with all the "
+"files it owns, possibly including Debian repositories."
 msgstr ""
-"Diese Auswahl bedeutet, dass der mini-buildd-Benutzer gemeinsam mit allen "
-"Dateien entfernt wird, die ihm zugeordnet sind. Dies schließt das Paketdepot "
-"im Verzeichnis »/home/mini-buildd/rep« ein."
+"Hierbei wird der mini-buildd-Benutzer gemeinsam mit allen Dateien entfernt, "
+"die ihm zugeordnet sind. Dies schließt möglicherweise Debian-Paketdepots ein."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
+#: ../mini-buildd.templates:2001
 msgid "To keep this data, you need to back it up now."
 msgstr ""
 "Um diese Daten zu behalten, müssen Sie jetzt eine Sicherheitskopie davon "
@@ -57,95 +49,111 @@ msgstr ""
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
+#: ../mini-buildd.templates:3001
 msgid "Home path:"
-msgstr ""
+msgstr "Home-Verzeichnis:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
-msgid ""
-"This is mini-buildd's UNIX user home, and the place where all data is kept. "
-"This path should have enough space for all repositories and/or builders data "
-"you plan to use."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "Administrator's password:"
-msgstr ""
-
-#. Type: password
-#. Description
 #: ../mini-buildd.templates:3001
 msgid ""
-"You may later login into the admin area of the web application via user "
-"'admin' and the password you give here."
+"Please choose the directory where mini-buildd data will be stored. The "
+"directory will also be the home directory for the mini-buildd user."
 msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid ""
-"Entering a password will also trigger the (needed) initial creation of the "
-"'admin' user."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "If you leave this empty, nothing will be done."
-msgstr ""
+"Bitte wählen Sie ein Verzeichnis aus, in dem die Daten von mini-buildd "
+"gespeichert werden. Das Verzeichnis wird als Home-Verzeichnis für den mini-"
+"buildd-Benutzer verwendet."
 
 #. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"It should have enough space for all the builders and repositories you plan "
+"to use."
+msgstr ""
+"Es sollte genügend Platz für alle Bauprogramme und Depots vorhanden sein, "
+"die Sie benutzen wollen."
+
+#. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
+msgid "Administrator password for mini-buildd:"
+msgstr "Administratorpasswort für mini-buildd:"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"Please choose the password for the administrative user of mini-buildd. This "
+"password will be used for the \"admin\" user in mini-buildd's web interface."
+msgstr ""
+"Bitte wählen Sie ein Passwort für den administrativen Benutzer von mini-"
+"buildd aus. Dieses Passwort wird für den Benutzer »admin« in der "
+"Weboberfläche von mini-buildd verwendet."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"If you enter a password, this will also trigger the creation of a local "
+"\"admin\" user."
+msgstr ""
+"Wenn Sie ein Passwort eingeben, wird dadurch auch die Erstellung eines "
+"lokalen Benutzers »admin« ausgelöst."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid "If you leave this empty, no user creation will happen."
+msgstr "Wenn Sie dies leer lassen, wird kein Benutzer erstellt."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
 msgid "Extra options:"
-msgstr ""
+msgstr "Zusätzliche Optionen:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
+#: ../mini-buildd.templates:5001
 msgid ""
-"You may add any mini-buildd command line option here (see 'mini-buildd --"
-"help')."
+"Please add any mini-buildd command line options you would like to use "
+"(\"mini-buildd --help\" gives a list of available options)."
 msgstr ""
+"Bitte geben Sie alle Optionen für die Befehlszeile an, die Sie verwenden "
+"möchten (»mini-buildd --help« zeigt eine Liste der verfügbaren Optionen)."
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
-msgid ""
-"However, the only really recommended option to give here is to increase/"
-"decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../mini-buildd.templates:5001
-msgid "Package configuration complete"
-msgstr ""
-
-#. Type: note
-#. Description
 #: ../mini-buildd.templates:5001
 msgid ""
-"After the package installation is complete, visit the new home of your local "
-"mini-build instance. Unless you changed the defaults, this should be "
-"reachable via:"
+"The only options really recommended for use here are \"-v\"/\"--verbose\" to "
+"increase the log level or \"-q\"/\"--quiet\" to decrease it."
 msgstr ""
+"Die einzigen Optionen, die hier wirklich zur Verwendung empfohlen werden, "
+"sind »-v«/»--verbose«, um den Umfang der Statusmeldungen zu erhöhen und »-"
+"q«/»--quiet«, um ihn zu verringern."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "http://localhost:8066"
-msgstr ""
+#: ../mini-buildd.templates:6001
+msgid "Configuration of mini-buildd complete"
+msgstr "Konfiguration von mini-buildd abgeschlossen"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "A good starting point is the online manual's Quickstart."
+#: ../mini-buildd.templates:6001
+msgid ""
+"Unless you changed the defaults, you should now be able to visit the new "
+"home of the local mini-buildd instance at http://localhost:8066."
 msgstr ""
+"Sofern Sie die Voreinstellungen nicht geändert haben, sollten Sie nun die "
+"Weboberfläche der lokalen mini-buildd-Instanz unter http://localhost:8066 "
+"ansehen können."
 
-#~ msgid "Repository purge"
-#~ msgstr "Paketdepot vollständig löschen"
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid "A good starting point is the online manual named \"Quickstart\"."
+msgstr ""
+"Ein guter Einstieg ist das Online-Handbuch unter dem Punkt »Quickstart«."

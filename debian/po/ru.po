@@ -2,150 +2,156 @@
 # Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
 # This file is distributed under the same license as the mini-buildd package.
 #
-# Yuri Kozlov <yuray@komyakino.ru>, 2010.
+# Yuri Kozlov <yuray@komyakino.ru>, 2010, 2013.
 msgid ""
 msgstr ""
-"Project-Id-Version: mini-buildd 0.8.13\n"
+"Project-Id-Version: mini-buildd 1.0.0~beta.23\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2013-06-03 20:40+0200\n"
-"PO-Revision-Date: 2010-05-05 21:28+0400\n"
+"POT-Creation-Date: 2013-11-11 14:08+0100\n"
+"PO-Revision-Date: 2013-11-11 19:22+0400\n"
 "Last-Translator: Yuri Kozlov <yuray@komyakino.ru>\n"
 "Language-Team: Russian <debian-l10n-russian@lists.debian.org>\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: KBabel 1.11.4\n"
+"X-Generator: Lokalize 1.4\n"
 "Plural-Forms:  nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-msgid "Data purge warning"
-msgstr ""
+#: ../mini-buildd.templates:2001
+msgid "mini-buildd data purge warning"
+msgstr "Предупреждение о вычистке данных mini-buildd"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid "You have chosen to purge mini-buildd on a repository host."
+#: ../mini-buildd.templates:2001
 msgid "You have chosen to purge mini-buildd."
-msgstr "Вы выбрали вычистку mini-buildd на машине с репозиторием."
+msgstr "Вы указали выполнять вычистку mini-buildd."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "This choice means that the mini-buildd user will be removed along with "
-#| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
-#| "\"."
+#: ../mini-buildd.templates:2001
 msgid ""
-"This choice means that the mini-buildd user will be removed along with all "
-"the files it owns, possibly including Debian repositories."
+"As a consequence, the mini-buildd user will be removed along with all the "
+"files it owns, possibly including Debian repositories."
 msgstr ""
 "При вычистке удаляется учётная запись mini-buildd вместе с принадлежащими ей "
-"файлами, включая репозиторий в \"/home/mini-buildd/rep\"."
+"файлами, включая репозитории Debian."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
+#: ../mini-buildd.templates:2001
 msgid "To keep this data, you need to back it up now."
 msgstr ""
 "Чтобы сохранить данные, вам нужно сделать их резервную копию прямо сейчас."
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
+#: ../mini-buildd.templates:3001
 msgid "Home path:"
-msgstr ""
+msgstr "Домашний каталог:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
-msgid ""
-"This is mini-buildd's UNIX user home, and the place where all data is kept. "
-"This path should have enough space for all repositories and/or builders data "
-"you plan to use."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "Administrator's password:"
-msgstr ""
-
-#. Type: password
-#. Description
 #: ../mini-buildd.templates:3001
 msgid ""
-"You may later login into the admin area of the web application via user "
-"'admin' and the password you give here."
+"Please choose the directory where mini-buildd data will be stored. The "
+"directory will also be the home directory for the mini-buildd user."
 msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid ""
-"Entering a password will also trigger the (needed) initial creation of the "
-"'admin' user."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "If you leave this empty, nothing will be done."
-msgstr ""
+"Укажите каталог где будут храниться данные mini-buildd. Этот каталог также "
+"будет домашним каталогом пользователя mini-buildd."
 
 #. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"It should have enough space for all the builders and repositories you plan "
+"to use."
+msgstr ""
+"В нём должно быть достаточно места для всех сборщиков и репозиториев, "
+"которые вы планируете использовать."
+
+#. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
+msgid "Administrator password for mini-buildd:"
+msgstr "Пароль администратора mini-buildd:"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"Please choose the password for the administrative user of mini-buildd. This "
+"password will be used for the \"admin\" user in mini-buildd's web interface."
+msgstr ""
+"Введите пароль административного пользователя mini-buildd. Этот пароль будет "
+"действовать для пользователя «admin» в веб-интерфейсе mini-buildd."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"If you enter a password, this will also trigger the creation of a local "
+"\"admin\" user."
+msgstr ""
+"Если вы введёте пароль, то также будет создан локальный пользователь «admin»."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid "If you leave this empty, no user creation will happen."
+msgstr "Если ничего не вводить, то пользователь создан не будет."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
 msgid "Extra options:"
-msgstr ""
+msgstr "Дополнительные параметры:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
+#: ../mini-buildd.templates:5001
 msgid ""
-"You may add any mini-buildd command line option here (see 'mini-buildd --"
-"help')."
+"Please add any mini-buildd command line options you would like to use "
+"(\"mini-buildd --help\" gives a list of available options)."
 msgstr ""
+"Укажите любые параметры командной строки mini-buildd, которые нужно "
+"использовать (команда «mini-buildd --help» выдаст возможные параметры)."
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
-msgid ""
-"However, the only really recommended option to give here is to increase/"
-"decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../mini-buildd.templates:5001
-msgid "Package configuration complete"
-msgstr ""
-
-#. Type: note
-#. Description
 #: ../mini-buildd.templates:5001
 msgid ""
-"After the package installation is complete, visit the new home of your local "
-"mini-build instance. Unless you changed the defaults, this should be "
-"reachable via:"
+"The only options really recommended for use here are \"-v\"/\"--verbose\" to "
+"increase the log level or \"-q\"/\"--quiet\" to decrease it."
 msgstr ""
+"Рекомендуется использовать только параметры «-v»/«--verbose» для повышения "
+"детализации журнала или «-q»/«--quiet» для уменьшения детализации."
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "http://localhost:8066"
-msgstr ""
+#: ../mini-buildd.templates:6001
+msgid "Configuration of mini-buildd complete"
+msgstr "Настройка mini-buildd выполнена"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "A good starting point is the online manual's Quickstart."
+#: ../mini-buildd.templates:6001
+msgid ""
+"Unless you changed the defaults, you should now be able to visit the new "
+"home of the local mini-buildd instance at http://localhost:8066."
 msgstr ""
+"Если вы не меняли настройки по умолчанию, то теперь можете войти на домашний "
+"локальный экземпляр mini-buildd по адресу http://localhost:8066."
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid "A good starting point is the online manual named \"Quickstart\"."
+msgstr "Для начала рекомендуем прочесть онлайн руководство «Quickstart»."
 
 #~ msgid "Repository purge"
 #~ msgstr "Вычистка репозитория"

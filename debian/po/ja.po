@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
-"POT-Creation-Date: 2013-06-03 20:40+0200\n"
-"PO-Revision-Date: 2010-11-02 11:24+0900\n"
+"POT-Creation-Date: 2013-11-11 14:08+0100\n"
+"PO-Revision-Date: 2013-11-11 22:08+0900\n"
 "Last-Translator: Nobuhiro Iwamatsu <iwamatsu@nigauri.org>\n"
 "Language-Team: Japanese <debian-japanese@lists.debian.org>\n"
 "Language: ja\n"
@@ -19,131 +19,132 @@ msgstr ""
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-msgid "Data purge warning"
-msgstr ""
+#: ../mini-buildd.templates:2001
+msgid "mini-buildd data purge warning"
+msgstr "mini-buildd データ完全削除の警告"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid "You have chosen to purge mini-buildd on a repository host."
+#: ../mini-buildd.templates:2001
 msgid "You have chosen to purge mini-buildd."
-msgstr "リポジトリホスト上の mini-buildd の削除を選択しました。"
+msgstr "mini-buildd の完全削除を選択しました。"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
-#, fuzzy
-#| msgid ""
-#| "This choice means that the mini-buildd user will be removed along with "
-#| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
-#| "\"."
+#: ../mini-buildd.templates:2001
 msgid ""
-"This choice means that the mini-buildd user will be removed along with all "
-"the files it owns, possibly including Debian repositories."
+"As a consequence, the mini-buildd user will be removed along with all the "
+"files it owns, possibly including Debian repositories."
 msgstr ""
-"この選択は、mini-buildd ユーザと共に、mini-buildd ユーザが所有する \"/home/"
-"mini-buildd/rep\" のリポジトリを含む全てのファイルが削除されることを意味しま"
-"す。"
+"mini-buildd パッケージを削除すると、mini-buildd ユーザと共に mini-buildd ユー"
+"ザが所有する Debian リポジトリを含む全てのファイルが削除されます。"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:1001
+#: ../mini-buildd.templates:2001
 msgid "To keep this data, you need to back it up now."
-msgstr "このデータを保つために、今それをバックアップする必要があります。"
+msgstr "このデータを保つためにはここでバックアップする必要があります。"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
+#: ../mini-buildd.templates:3001
 msgid "Home path:"
-msgstr ""
+msgstr "ホームのパス:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:2001
-msgid ""
-"This is mini-buildd's UNIX user home, and the place where all data is kept. "
-"This path should have enough space for all repositories and/or builders data "
-"you plan to use."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "Administrator's password:"
-msgstr ""
-
-#. Type: password
-#. Description
 #: ../mini-buildd.templates:3001
 msgid ""
-"You may later login into the admin area of the web application via user "
-"'admin' and the password you give here."
+"Please choose the directory where mini-buildd data will be stored. The "
+"directory will also be the home directory for the mini-buildd user."
 msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid ""
-"Entering a password will also trigger the (needed) initial creation of the "
-"'admin' user."
-msgstr ""
-
-#. Type: password
-#. Description
-#: ../mini-buildd.templates:3001
-msgid "If you leave this empty, nothing will be done."
-msgstr ""
+"mini-buildd のデータを置くディレクトリを選択してください。このディレクトリは "
+"mini-buildd ユーザのホームディレクトリにもなります。"
 
 #. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"It should have enough space for all the builders and repositories you plan "
+"to use."
+msgstr ""
+"利用予定のビルダーやリポジトリをすべて置くのに十分な空き容量を確保するように"
+"してください。"
+
+#. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
+msgid "Administrator password for mini-buildd:"
+msgstr "mini-buildd 管理者のパスワード:"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"Please choose the password for the administrative user of mini-buildd. This "
+"password will be used for the \"admin\" user in mini-buildd's web interface."
+msgstr ""
+"mini-buildd 管理用ユーザのパスワードを選択してください。このパスワードは "
+"mini-buildd のウェブインターフェイスの「admin」ユーザ用に利用されます。"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"If you enter a password, this will also trigger the creation of a local "
+"\"admin\" user."
+msgstr "パスワードを入力するとローカルの「admin」ユーザ作成もが行われます。"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid "If you leave this empty, no user creation will happen."
+msgstr "これを空白にした場合はユーザ作成は行われません。"
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
 msgid "Extra options:"
-msgstr ""
+msgstr "追加オプション:"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
+#: ../mini-buildd.templates:5001
 msgid ""
-"You may add any mini-buildd command line option here (see 'mini-buildd --"
-"help')."
+"Please add any mini-buildd command line options you would like to use "
+"(\"mini-buildd --help\" gives a list of available options)."
 msgstr ""
+"利用したい mini-buildd のコマンドラインオプションがあればここで追加してくださ"
+"い (「mini-buildd --help」で利用できるオプション一覧を得られます)。"
 
 #. Type: string
 #. Description
-#: ../mini-buildd.templates:4001
-msgid ""
-"However, the only really recommended option to give here is to increase/"
-"decrease the log level via '-v, --verbose' or '-q, --quiet', respectively."
-msgstr ""
-
-#. Type: note
-#. Description
-#: ../mini-buildd.templates:5001
-msgid "Package configuration complete"
-msgstr ""
-
-#. Type: note
-#. Description
 #: ../mini-buildd.templates:5001
 msgid ""
-"After the package installation is complete, visit the new home of your local "
-"mini-build instance. Unless you changed the defaults, this should be "
-"reachable via:"
+"The only options really recommended for use here are \"-v\"/\"--verbose\" to "
+"increase the log level or \"-q\"/\"--quiet\" to decrease it."
 msgstr ""
+"ここでの指定を実際に推奨するオプションはログレベルを増加させる「-v」や「--"
+"verbose」、または減少させる「-q」や「--quiet」だけです。"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "http://localhost:8066"
-msgstr ""
+#: ../mini-buildd.templates:6001
+msgid "Configuration of mini-buildd complete"
+msgstr "mini-buildd の設定が完了しました"
 
 #. Type: note
 #. Description
-#: ../mini-buildd.templates:5001
-msgid "A good starting point is the online manual's Quickstart."
+#: ../mini-buildd.templates:6001
+msgid ""
+"Unless you changed the defaults, you should now be able to visit the new "
+"home of the local mini-buildd instance at http://localhost:8066."
 msgstr ""
+"デフォルトを変更していなければこれで http://localhost:8066 にあるローカル "
+"mini-buildd の新しいホームに行けるはずです。"
 
-#~ msgid "Repository purge"
-#~ msgstr "リポジトリを削除する"
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid "A good starting point is the online manual named \"Quickstart\"."
+msgstr "良い開始点としてオンラインマニュアルの「クイックスタート」があります。"

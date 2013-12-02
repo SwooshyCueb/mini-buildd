@@ -1,33 +1,35 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
-# This file is distributed under the same license as the PACKAGE package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# Translation of mini-buildd debconf templates to Polish.
+# Copyright (C) 2013
+# This file is distributed under the same license as the mini-buildd package.
 #
-#, fuzzy
+# Michał Kułach <michal.kulach@gmail.com>, 2013.
 msgid ""
 msgstr ""
 "Project-Id-Version: mini-buildd\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
 "POT-Creation-Date: 2013-11-11 14:08+0100\n"
-"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: LANGUAGE <LL@li.org>\n"
-"Language: \n"
+"PO-Revision-Date: 2013-11-20 20:46+0100\n"
+"Last-Translator: Michał Kułach <michal.kulach@gmail.com>\n"
+"Language-Team: Polish <debian-l10n-polish@lists.debian.org>\n"
+"Language: pl\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
+"|| n%100>=20) ? 1 : 2);\n"
+"X-Generator: Lokalize 1.4\n"
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:2001
 msgid "mini-buildd data purge warning"
-msgstr ""
+msgstr "Ostrzeżenie o czyszczeniu danych mini-buildd"
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:2001
 msgid "You have chosen to purge mini-buildd."
-msgstr ""
+msgstr "Wybrano wyczyszczenie pakietu mini-buildd."
 
 #. Type: note
 #. Description
@@ -36,18 +38,20 @@ msgid ""
 "As a consequence, the mini-buildd user will be removed along with all the "
 "files it owns, possibly including Debian repositories."
 msgstr ""
+"Zostanie usunięty użytkownik mini-buildd razem z plikami będącymi jego "
+"własnością, co może dotyczyć również repozytoriów Debiana."
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:2001
 msgid "To keep this data, you need to back it up now."
-msgstr ""
+msgstr "Aby zachować te dane konieczne jest wykonanie kopii zapasowej."
 
 #. Type: string
 #. Description
 #: ../mini-buildd.templates:3001
 msgid "Home path:"
-msgstr ""
+msgstr "Ścieżka katalogu domowego:"
 
 #. Type: string
 #. Description
@@ -56,6 +60,8 @@ msgid ""
 "Please choose the directory where mini-buildd data will be stored. The "
 "directory will also be the home directory for the mini-buildd user."
 msgstr ""
+"Proszę wybrać katalog w którym będą przechowywane dane mini-build. Będzie to "
+"jednocześnie katalog domowy użytkownika mini-buildd."
 
 #. Type: string
 #. Description
@@ -64,12 +70,14 @@ msgid ""
 "It should have enough space for all the builders and repositories you plan "
 "to use."
 msgstr ""
+"Powinno się przewidzieć odpowiednią ilość miejsca potrzebnego do budowania i "
+"przechowywania repozytoriów które zamierza się używać."
 
 #. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
 msgid "Administrator password for mini-buildd:"
-msgstr ""
+msgstr "Hasło administratora mini-buildd:"
 
 #. Type: password
 #. Description
@@ -78,6 +86,8 @@ msgid ""
 "Please choose the password for the administrative user of mini-buildd. This "
 "password will be used for the \"admin\" user in mini-buildd's web interface."
 msgstr ""
+"Proszę wybrać hasło administratora mini-buildd. Hasło to będzie używane dla "
+"użytkownika \"admin\" w interfejsie WWW mini-buildd."
 
 #. Type: password
 #. Description
@@ -86,18 +96,19 @@ msgid ""
 "If you enter a password, this will also trigger the creation of a local "
 "\"admin\" user."
 msgstr ""
+"Jeśli wprowadzi się hasło, powstanie również lokalny użytkownik \"admin\"."
 
 #. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
 msgid "If you leave this empty, no user creation will happen."
-msgstr ""
+msgstr "Jeśli pole pozostanie puste, użytkownik nie zostanie utworzony."
 
 #. Type: string
 #. Description
 #: ../mini-buildd.templates:5001
 msgid "Extra options:"
-msgstr ""
+msgstr "Dodatkowe opcje:"
 
 #. Type: string
 #. Description
@@ -106,6 +117,8 @@ msgid ""
 "Please add any mini-buildd command line options you would like to use "
 "(\"mini-buildd --help\" gives a list of available options)."
 msgstr ""
+"Można tu dodać opcje wiersza poleceń mini-buildd (polecenie \"mini-buildd --"
+"help\" wypisze dostępne możliwości)."
 
 #. Type: string
 #. Description
@@ -114,12 +127,15 @@ msgid ""
 "The only options really recommended for use here are \"-v\"/\"--verbose\" to "
 "increase the log level or \"-q\"/\"--quiet\" to decrease it."
 msgstr ""
+"Jedyną rzeczywiście zalecaną tu opcją jest \"-v\" lub \"--verbose\" aby "
+"zwiększyć ilość wypisywanych informacji lub \"-q\" albo \"quiet\" aby ją "
+"zmniejszyć."
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:6001
 msgid "Configuration of mini-buildd complete"
-msgstr ""
+msgstr "Zakończono konfigurację mini-buildd."
 
 #. Type: note
 #. Description
@@ -128,9 +144,12 @@ msgid ""
 "Unless you changed the defaults, you should now be able to visit the new "
 "home of the local mini-buildd instance at http://localhost:8066."
 msgstr ""
+"Jeśli nie zmieniono opcji domyślnych, powinno dać się otworzyć stronę "
+"startową lokalnej instancji mini-buildd pod adresem http://localhost:8066."
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:6001
 msgid "A good starting point is the online manual named \"Quickstart\"."
 msgstr ""
+"Dobrym punktem startowym jest dostępny na stronie podręcznik \"Quickstart\"."

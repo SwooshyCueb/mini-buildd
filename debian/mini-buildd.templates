@@ -1,9 +1,18 @@
+# These templates have been reviewed by the debian-l10n-english
+# team
+#
+# If modifications/additions/rewording are needed, please ask
+# debian-l10n-english@lists.debian.org for advice.
+#
+# Even minor modifications require translation updates and such
+# changes should be coordinated with translators and reviewers.
+
 Template: mini-buildd/purge_warning
 Type: note
-_Description: Data purge warning
+_Description: mini-buildd data purge warning
  You have chosen to purge mini-buildd.
  .
- This choice means that the mini-buildd user will be removed
+ As a consequence, the mini-buildd user will be removed
  along with all the files it owns, possibly including Debian
  repositories.
  .
@@ -13,39 +22,38 @@ Template: mini-buildd/home
 Type: string
 Default: /var/lib/mini-buildd
 _Description: Home path:
- This is mini-buildd's UNIX user home, and the place where all
- data is kept. This path should have enough space for all
- repositories and/or builders data you plan to use.
+ Please choose the directory where mini-buildd data will be stored.
+ The directory will also be the home directory for the mini-buildd user.
+ .
+ It should have enough space for all the builders and repositories
+ you plan to use.
 
 Template: mini-buildd/admin_password
 Type: password
-_Description: Administrator's password:
- You may later login into the admin area of the web application
- via user 'admin' and the password you give here.
+_Description: Administrator password for mini-buildd:
+ Please choose the password for the administrative user of
+ mini-buildd. This password will be used for the "admin" user
+ in mini-buildd's web interface.
  .
- Entering a password will also trigger the (needed) initial
- creation of the 'admin' user.
+ If you enter a password, this will also trigger the creation of a
+ local "admin" user.
  .
- If you leave this empty, nothing will be done.
+ If you leave this empty, no user creation will happen.
 
 Template: mini-buildd/options
 Type: string
 Default: --verbose
 _Description: Extra options:
- You may add any mini-buildd command line option here (see
- 'mini-buildd --help').
+ Please add any mini-buildd command line options you would like to use
+ ("mini-buildd --help" gives a list of available options).
  .
- However, the only really recommended option to give here is to
- increase/decrease the log level via '-v, --verbose' or '-q,
- --quiet', respectively.
+ The only options really recommended for use here are "-v"/"--verbose"
+ to increase the log level or "-q"/"--quiet" to decrease it.
 
 Template: mini-buildd/note
 Type: note
-_Description: Package configuration complete
- After the package installation is complete, visit the new home
- of your local mini-build instance. Unless you changed the
- defaults, this should be reachable via:
+_Description: Configuration of mini-buildd complete
+ Unless you changed the defaults, you should now be able to visit the
+ new home of the local mini-buildd instance at http://localhost:8066.
  .
- http://localhost:8066
- .
- A good starting point is the online manual's Quickstart.
+ A good starting point is the online manual named "Quickstart".

@@ -108,7 +108,7 @@ def cmd_call(args):
 
     # Compute api call parameters
     http_args = {}
-    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "command_class", "func"]]:
+    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "reset_save_policy", "command_class", "func"]]:
         http_args[k] = args.__dict__[k]
 
     # Confirm if required by this call

@@ -81,6 +81,9 @@ PARSER.add_argument("-O", "--output", action="store",
                     help="output type")
 PARSER.add_argument("-R", "--reset-save-policy", action="store_true",
                     help="reset save policy of used keyring (to 'ask')")
+PARSER.add_argument("-P", "--protocol", action="store",
+                    default="http", choices=["http", "https"],
+                    help="protocol to use. Note: mini-buildd 1.0.x only speaks http -- you may use this in case you have manually set up a https proxy, though.")
 PARSER.add_argument("host", action="store",
                     metavar="HOST",
                     help="target host, either '[user@]host:port', or '[user@]DPUT_TARGET'").completer = host_completer
@@ -108,7 +111,7 @@ def cmd_call(args):
 
     # Compute api call parameters
     http_args = {}
-    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "reset_save_policy", "command_class", "func"]]:
+    for k in [k for k in args.__dict__.keys() if k not in ["terseness", "verbosity", "host", "reset_save_policy", "protocol", "command_class", "func"]]:
         http_args[k] = args.__dict__[k]
 
     # Confirm if required by this call
@@ -119,7 +122,7 @@ def cmd_call(args):
             raise Exception("{c}: Not confirmed, skipped.".format(c=args.command))
 
     # Do the api call
-    call_url = "http://{b}/mini_buildd/api?{a}".format(b=host, a=urllib.urlencode(http_args))
+    call_url = "{p}://{b}/mini_buildd/api?{a}".format(p=args.protocol, b=host, a=urllib.urlencode(http_args))
     LOG.info("API call URL: {u}".format(u=call_url))
     response = urllib2.urlopen(call_url)
 

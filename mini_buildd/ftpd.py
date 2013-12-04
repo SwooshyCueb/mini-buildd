@@ -6,7 +6,6 @@ import stat
 import glob
 import shutil
 import fnmatch
-import re
 import logging
 
 import debian.deb822
@@ -46,50 +45,36 @@ def log_init():
     pyftpdlib.ftpserver.logerror = LOG.error
 
 
-_CHANGES_RE = re.compile(r"^.*\.changes$")
-
-
-def handle_incoming_file(queue, file_name):
-    if _CHANGES_RE.match(file_name):
-        LOG.info("Incoming changes file: {f}".format(f=file_name))
-        queue.put(file_name)
-    else:
-        LOG.debug("Ignoring incoming file: {f}".format(f=file_name))
-
-
-class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
-    def on_file_received(self, file_name):
-        """
-        Make any incoming file read-only as soon as it arrives; avoids overriding uploads of the same file.
-        """
-        os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP)
-        handle_incoming_file(self.mini_buildd_queue, file_name)
-
-
 class Incoming(object):
     "Tool collection for some extra incoming directory handling."
+
+    @classmethod
+    def is_changes(cls, file_name):
+        return fnmatch.fnmatch(file_name, "*.changes")
 
     @classmethod
     def get_changes(cls):
         return glob.glob(os.path.join(mini_buildd.setup.INCOMING_DIR, "*.changes"))
 
     @classmethod
-    def remove_cruft(cls):
+    def remove_cruft_files(cls, files):
         """
-        Remove all cruft files (i.e. not valid changes or referred from changes) from incoming.
+        Remove all files from list of files not mentioned in a changes file.
         """
         valid_files = []
-        for changes_file in cls.get_changes():
-            try:
-                for fd in debian.deb822.Changes(mini_buildd.misc.open_utf8(changes_file)).get("Files", []):
-                    valid_files.append(fd["name"])
-                valid_files.append(os.path.basename(changes_file))
-            except Exception as e:
-                mini_buildd.setup.log_exception(LOG, "Invalid changes file in incoming: {f}".format(f=changes_file), e, logging.WARNING)
+        for changes_file in files:
+            if cls.is_changes(changes_file):
+                LOG.debug("Checking: {c}".format(c=changes_file))
+                try:
+                    for fd in debian.deb822.Changes(mini_buildd.misc.open_utf8(changes_file)).get("Files", []):
+                        valid_files.append(fd["name"])
+                        LOG.debug("Valid: {c}".format(c=fd["name"]))
 
-        LOG.debug("Incoming: Valid files in incoming: {v}".format(v=valid_files))
+                    valid_files.append(os.path.basename(changes_file))
+                except Exception as e:
+                    mini_buildd.setup.log_exception(LOG, "Invalid changes file: {f}".format(f=changes_file), e, logging.WARNING)
 
-        for f in glob.glob(os.path.join(mini_buildd.setup.INCOMING_DIR, "*")):
+        for f in files:
             if os.path.basename(f) not in valid_files:
                 # Be sure to never ever fail, just because cruft removal fails (instead log accordingly)
                 try:
@@ -97,9 +82,16 @@ class Incoming(object):
                         shutil.rmtree(f)
                     else:
                         os.remove(f)
-                    LOG.warn("Incoming cruft removed: {f}".format(f=f))
+                    LOG.warn("Cruft file (not in any changes file) removed: {f}".format(f=f))
                 except Exception as e:
                     mini_buildd.setup.log_exception(LOG, "Can't remove cruft from incoming: {f}".format(f=f), e, logging.CRITICAL)
+
+    @classmethod
+    def remove_cruft(cls):
+        """
+        Remove cruft files from incoming.
+        """
+        cls.remove_cruft_files(["{p}/{f}".format(p=mini_buildd.setup.INCOMING_DIR, f=f) for f in os.listdir(mini_buildd.setup.INCOMING_DIR)])
 
     @classmethod
     def requeue_changes(cls, queue):
@@ -113,6 +105,31 @@ class Incoming(object):
         for c in sorted(cls.get_changes(), cmp=lambda c0, c1: 1 if fnmatch.fnmatch(c0, "*mini-buildd-build*") else -1):
             LOG.info("Incoming: Re-queuing: {c}".format(c=c))
             queue.put(c)
+
+
+class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
+    def __init__(self, *args, **kwargs):
+        # This does not work with 'super' for some reason
+        pyftpdlib.ftpserver.FTPHandler.__init__(self, *args, **kwargs)
+        self._mbd_files_received = []
+
+    def on_file_received(self, file_name):
+        """
+        Make any incoming file read-only as soon as it arrives; avoids overriding uploads of the same file.
+        """
+        os.chmod(file_name, stat.S_IRUSR | stat.S_IRGRP)
+        self._mbd_files_received.append(file_name)
+        LOG.info("File received: {f}".format(f=file_name))
+
+    def on_incomplete_file_received(self, file_name):
+        LOG.warning("Incomplete file received: {f}".format(f=file_name))
+        self._mbd_files_received.append(file_name)
+
+    def on_disconnect(self):
+        for file_name in (f for f in self._mbd_files_received if Incoming.is_changes(f)):
+            LOG.info("Queuing incoming changes file: {f}".format(f=file_name))
+            self.mini_buildd_queue.put(file_name)
+        Incoming.remove_cruft_files(self._mbd_files_received)
 
 
 def run(bind, queue):

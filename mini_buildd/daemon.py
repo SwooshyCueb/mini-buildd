@@ -660,7 +660,7 @@ class Daemon():
                                            "-S",
                                            "-sa",
                                            "-v{v}".format(v=original_version),
-                                           "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author)],
+                                           "-DX-Mini-Buildd-Originally-Changed-By={a}".format(a=original_author).encode(mini_buildd.setup.CHAR_ENCODING)],
                                           cwd=dst_path,
                                           env=env,
                                           stdout=out,

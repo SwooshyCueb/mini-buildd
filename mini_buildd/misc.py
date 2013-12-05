@@ -807,7 +807,7 @@ def setup_console_logging(level=logging.DEBUG):
     ch = logging.StreamHandler()
     ch.setFormatter(logging.Formatter("%(levelname)s: %(message)s"))
 
-    for ln in ["__main__", "mini_buildd", "keyring"]:
+    for ln in ["__main__", "mini_buildd"]:
         l = logging.getLogger(ln)
         l.addHandler(ch)
         l.setLevel(level)

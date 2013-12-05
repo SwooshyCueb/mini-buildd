@@ -161,6 +161,7 @@ LOG.setLevel(logging.WARNING - (10 * (min(2, ARGS.verbosity) - min(2, ARGS.terse
 
 if LOG.getEffectiveLevel() <= logging.DEBUG:
     mini_buildd.setup.DEBUG = ["exception"]
+mini_buildd.misc.clone_log("keyring")
 
 try:
     # Convenience: If the old creds file is around, remove it

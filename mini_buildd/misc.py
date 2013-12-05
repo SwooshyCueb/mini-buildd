@@ -787,6 +787,16 @@ def sbuild_keys_workaround():
             LOG.info("One-time generation of sbuild keys done")
 
 
+def clone_log(dst, src="mini_buildd"):
+    "Setup logger named 'dst' with the same handlers and loglevel as the logger named 'src'."
+    src_log = logging.getLogger(src)
+    dst_log = logging.getLogger(dst)
+    dst_log.handlers = []
+    for h in src_log.handlers:
+        dst_log.addHandler(h)
+    dst_log.setLevel(src_log.getEffectiveLevel())
+
+
 def setup_console_logging(level=logging.DEBUG):
     logging.addLevelName(logging.DEBUG, "D")
     logging.addLevelName(logging.INFO, "I")

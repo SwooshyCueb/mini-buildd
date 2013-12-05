@@ -10,39 +10,15 @@ import logging
 
 import debian.deb822
 
-import pyftpdlib.ftpserver
+import pyftpdlib.handlers
+import pyftpdlib.authorizers
+import pyftpdlib.servers
 
 import mini_buildd
 import mini_buildd.setup
 import mini_buildd.misc
 
 LOG = logging.getLogger(__name__)
-
-# Alas, we need this to be compatible with 0.7 and >= 1.0 versions (see serve_forever below)
-# pylint: disable=E1101
-try:
-    PYFTPDLIB_MAIN_VERSION = pyftpdlib.__ver__.split(".")[0]
-except:
-    # 0.7 had no __ver__
-    PYFTPDLIB_MAIN_VERSION = 0
-# pylint: enable=E1101
-
-
-def log_init():
-    """
-    Force pyftpdlib log callbacks to the mini_buildd log.
-
-    See http://code.google.com/p/pyftpdlib/wiki/Tutorial#2.1_-_Logging:
-     - log: messages intended for the end user.
-     - logline: Log commands and responses passing through the command channel.
-     - logerror: Log traceback outputs occurring in case of errors.
-
-     As pyftpd "logline" really spews lot of lines, this is only
-     enabled in debug mode.
-    """
-    pyftpdlib.ftpserver.log = LOG.info
-    pyftpdlib.ftpserver.logline = LOG.debug
-    pyftpdlib.ftpserver.logerror = LOG.error
 
 
 class Incoming(object):
@@ -107,10 +83,10 @@ class Incoming(object):
             queue.put(c)
 
 
-class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
+class FtpDHandler(pyftpdlib.handlers.FTPHandler):
     def __init__(self, *args, **kwargs):
-        # This does not work with 'super' for some reason
-        pyftpdlib.ftpserver.FTPHandler.__init__(self, *args, **kwargs)
+        # Note: FTPHandler is not a new style class, so we can't use 'super' here
+        pyftpdlib.handlers.FTPHandler.__init__(self, *args, **kwargs)
         self._mbd_files_received = []
 
     def on_file_received(self, file_name):
@@ -133,34 +109,29 @@ class FtpDHandler(pyftpdlib.ftpserver.FTPHandler):
 
 
 def run(bind, queue):
-    log_init()
+    mini_buildd.misc.clone_log("pyftpdlib")
 
     ba = mini_buildd.misc.HoPo(bind)
 
     handler = FtpDHandler
-    handler.authorizer = pyftpdlib.ftpserver.DummyAuthorizer()
+    handler.authorizer = pyftpdlib.authorizers.DummyAuthorizer()
     handler.authorizer.add_anonymous(homedir=mini_buildd.setup.HOME_DIR, perm="")
     handler.authorizer.override_perm(username="anonymous", directory=mini_buildd.setup.INCOMING_DIR, perm="elrw")
 
-    handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.ftpserver.__ver__)
+    handler.banner = "mini-buildd {v} ftp server ready (pyftpdlib {V}).".format(v=mini_buildd.__version__, V=pyftpdlib.__ver__)
     handler.mini_buildd_queue = queue
 
     Incoming.remove_cruft()
     Incoming.requeue_changes(queue)
 
-    ftpd = pyftpdlib.ftpserver.FTPServer(ba.tuple, handler)
+    ftpd = pyftpdlib.servers.FTPServer(ba.tuple, handler)
     LOG.info("Starting ftpd on '{b}'.".format(b=ba.string))
 
     global _RUN
     _RUN = True
 
-# pylint: disable=E1123
     while _RUN:
-        if PYFTPDLIB_MAIN_VERSION < 1:
-            ftpd.serve_forever(count=1)
-        else:
-            ftpd.serve_forever(timeout=5.0, blocking=False, handle_exit=False)
-# pylint: enable=E1123
+        ftpd.serve_forever(timeout=5.0, blocking=False, handle_exit=False)
 
     ftpd.close_all()
 

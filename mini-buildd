@@ -142,7 +142,7 @@ Comma-separated list of special debugging options:
         mini_buildd.misc.mkdirs(mini_buildd.setup.LOG_DIR)
         mini_buildd.misc.mkdirs(mini_buildd.setup.TMP_DIR)
 
-    LOG_FORMAT = "%(name)-29s(%(lineno)03d): %(levelname)-8s: %(message)s"
+    LOG_FORMAT = "%(name)-29s(%(lineno)04d): %(levelname)-8s: %(message)s"
 
     def _log_handler_file(self):
         handler = logging.handlers.RotatingFileHandler(

@@ -92,10 +92,13 @@ class Changes(debian.deb822.Changes):
     def gen_file_name(self, arch, mbd_type):
         return self.gen_changes_file_name(self["Source"], self["Version"], arch, mbd_type)
 
+    @classmethod
+    def gen_dsc_file_name(cls, package, version):
+        return "{s}_{v}.dsc".format(s=package, v=mini_buildd.misc.strip_epoch(version))
+
     @property
     def dsc_name(self):
-        return "{s}_{v}.dsc".format(s=self["Source"],
-                                    v=mini_buildd.misc.strip_epoch(self["Version"]))
+        return self.gen_dsc_file_name(self["Source"], self["Version"])
 
     @property
     def dsc_file_name(self):

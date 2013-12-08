@@ -243,8 +243,8 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
 
         # Compute DSC file name
         self.dsc = os.path.join(self.tmpdir,
-                                "{p}_{v}.dsc".format(p=self.package_name,
-                                                     v=self.version))
+                                mini_buildd.changes.Changes.gen_dsc_file_name(self.package_name,
+                                                                              self.version))
 
 
 class DSTPackage(mini_buildd.misc.TmpDir):
@@ -644,7 +644,9 @@ class Daemon():
 
             # Repack DST
             mini_buildd.misc.call(["dpkg-source", "-b", dst], cwd=t.tmpdir, env=env)
-            dsc = os.path.join(t.tmpdir, "{p}_{v}.dsc".format(p=package, v=version))
+            dsc = os.path.join(t.tmpdir,
+                               mini_buildd.changes.Changes.gen_dsc_file_name(package,
+                                                                             version))
             self.model.mbd_gnupg.sign(dsc)
 
             # Gen changes file name

@@ -122,7 +122,7 @@ application. On the mini-buildd home page, just hit on
 You will need to log in as Django user ``admin``, with the
 password you configured when installing the package (if you
 chose an insecure password on package install time, now is the
-time to set a proper one via django's user management).
+time to set a proper one via Django's user management).
 
 All changes you do here finally wind up in the SQL database at
 ``~/config.sqlite``; this config not only represents mere
@@ -184,7 +184,7 @@ Status       Check status               Semantic
 Status actions
 --------------
 Status actions can be called from a model's list view in
-django's admin configurator.
+Django's admin configuration.
 
 =========== ============================================================================
 Action      Semantic
@@ -376,7 +376,7 @@ FAQ
 
 	 A bad one-package workaround would be to change the "build archall" flag to arch "y".
 
-.. todo:: **BUG**: *Lvm chroots fail running lvcreate with 'not found: device not cleared'*
+.. todo:: **BUG**: *LVM chroots fail running lvcreate with 'not found: device not cleared'*
 
 	 Unclear (?). See [#debbug705238]_ or http://lists.debian.org/debian-user/2012/12/msg00407.html .
 

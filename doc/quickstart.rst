@@ -6,7 +6,7 @@ Quickstart
 
 As a convention, we write code you should run as ``root`` like::
 
-	# apt-get install xyz
+	# apt-get install foo
 
 and code you should run as ``user`` like::
 
@@ -48,7 +48,7 @@ Configure
 
 	 .. note:: Daemon ``prepare`` will generate your instance ID (read: GnuPG key); you may need to generate
 						 some **entropy** (install ``haveged`` maybe) on the system if this stalls.
-	 .. note:: The Daemon ``identity`` will herafter be referred to as ``ARCHIVE``.
+	 .. note:: The Daemon ``identity`` will hereafter be referred to as ``ARCHIVE``.
 
 #. Setup **Sources** (-> :ref:`Manual <admin_sources>`).
 	 #. Call at least one wizard for each: *Archives*, *Sources*, *PrioritySources*.
@@ -65,7 +65,7 @@ Configure
 	 #. Call these wizards, in this order: *Layouts:Defaults*, *Distributions:Defaults*, and finally *Repositories:Sandbox*.
 	 #. ``Setup`` the  sandbox repository ``test``.
 
-	 ``test`` repo green? Go on.
+	 ``test`` repository green? Go on.
 
 #. Setup **Chroots** (-> :ref:`Manual <admin_chroots>`).
 	 #. Call the *DirChroot:Defaults* wizard.
@@ -105,8 +105,8 @@ The remaining Quickstart will just use ``mini-buildd-tool`` as
 example, however the API could also just be accessed via the web
 interface.
 
-Install from mini-buildd repos
-==============================
+Install from mini-buildd repositories
+=====================================
 Setup the apt sources on your system somewhat like that::
 
 	# mini-buildd-tool HOST getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
@@ -138,7 +138,7 @@ repository your are using, this cannot be answered generically.
 
 You will be able to upload to a repository when
 
-* the repository you upload for has auth disabled completely (like in the sandbox repository ``test``).
+* the repository you upload for has authorization disabled completely (like in the sandbox repository ``test``).
 * your user account profile has your GnuPG key uploaded, and your account was approved and enabled for the repository.
 * your key is included in the per-repository predefined GnuPG keyrings.
 
@@ -152,7 +152,7 @@ Control your package build results
 ==================================
 
 * Per notify (read Email). A notification mail is sent to
-	* *the uploader* (unless the repo is not configured to do so, or the mail address does not match the allowed list),
+	* *the uploader* (unless the repository is not configured to do so, or the mail address does not match the allowed list),
 	* *any subscriber* or
 	* your Email is configured by the administrator to always be notified for that repository.
 * Per web on `mini-buildd's home </mini_buildd/>`_

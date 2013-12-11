@@ -67,10 +67,10 @@ Example Use Cases
 * *Sandboxing*: Just setup a default ``test`` (sandbox)  repository:
 	* Test-drive mini-buildd. Click schlimm on the WebApp.
 	* Checkout what No-Changes-Ports are possible.
-	* Add a fake user as admin, and spam a collegue with mini-buildd status mails.
-* *Debian User*: Maintain a personal package archive. Publish it to your webspace via debmirror.
+	* Add a fake user as admin, and spam a colleague with mini-buildd status mails.
+* *Debian User*: Maintain a personal package archive. Publish it to your web space via debmirror.
 * *Debian Developer*: Replace your pbuilder setup.
-* *Organisation*: Set up an archive for all organisational extra packages, ports, etc.
+* *Organization*: Set up an archive for all organizational extra packages, ports, etc.
 
 
 .. _introduction_overview:

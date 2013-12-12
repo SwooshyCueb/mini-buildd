@@ -178,7 +178,11 @@ class Remote(KeyringKey):
     def mbd_prepare(self, request):
         url = "http://{h}/mini_buildd/api?command=getkey&output=plain".format(h=self.http)
         MsgLog(LOG, request).info("Downloading '{u}'...".format(u=url))
+
+        # We prepare the GPG data from downloaded key data, so key_id _must_ be empty (see super(mbd_prepare))
+        self.key_id = ""
         self.key = urllib2.urlopen(url).read()
+
         if self.key:
             MsgLog(LOG, request).warn("Downloaded remote key integrated: Please check key manually before activation!")
         else:

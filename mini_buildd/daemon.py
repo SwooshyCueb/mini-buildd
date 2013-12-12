@@ -299,7 +299,7 @@ class Keyrings(object):
         # Always add our own key
         if self._our_pub_key:
             remotes.add_pub_key(self._our_pub_key)
-        for r in mini_buildd.models.gnupg.Remote.mbd_get_active():
+        for r in mini_buildd.models.gnupg.Remote.mbd_get_active_or_auto_reactivate():
             remotes.add_pub_key(r.key)
             LOG.info("Remote key added for '{r}': {k}: {n}".format(r=r, k=r.key_long_id, n=r.key_name))
         return remotes

@@ -128,6 +128,10 @@ class KeyringKey(GnuPGPublicKey):
         def _mbd_on_activation(cls, request, obj):
             cls._mbd_on_change(request, obj)
 
+        @classmethod
+        def _mbd_on_deactivation(cls, request, obj):
+            cls._mbd_on_change(request, obj)
+
 
 class Uploader(KeyringKey):
     user = django.db.models.OneToOneField(django.contrib.auth.models.User)

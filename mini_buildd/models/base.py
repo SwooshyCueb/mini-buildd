@@ -110,6 +110,11 @@ are actually supported by the current model.
             "Global actions to take when an object becomes active."
             pass
 
+        @classmethod
+        def _mbd_on_deactivation(cls, request, obj):
+            "Global actions to take when an object becomes inactive."
+            pass
+
         def save_model(self, request, obj, form, change):
             if change:
                 self._mbd_on_change(request, obj)
@@ -333,6 +338,7 @@ class StatusModel(Model):
             if obj.last_checked == obj.CHECK_REACTIVATE:
                 obj.last_checked = obj.CHECK_FAILED
             obj.save()
+            cls._mbd_on_deactivation(request, obj)
             MsgLog(LOG, request).info("Deactivated: {o}".format(o=obj))
 
         @classmethod

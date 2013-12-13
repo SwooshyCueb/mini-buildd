@@ -232,6 +232,7 @@ FAQ
 *******
 Sources
 *******
+
 This groups all models that determine what APT sources are
 available, and where to get them.
 
@@ -259,31 +260,45 @@ FAQ
 ************
 Repositories
 ************
+
+Layouts
+=======
+
 It's **highly recommended** to just stick with one of the
-default Layouts, and **don't change/add anything** here.
+default Layouts, as produced by the ``Defaults wizard``.
+
+In case you really need a custom layout, it's *recommended* not to
+change the Default Layouts, but to create a new Layout profile
+with an appropriate name.
+
+The Default Layout's semantics are outlined in :ref:`User's Manual <user_default_layouts>`.
+
+The Debian Developers Layout is meant for mimicking a layout
+like in Debian unstable (no version restriction, upload to meta
+a distribution names like ``unstable``) to test build packages
+meant for Debian.
 
 You will interface with Layouts in Repositories, determining what
 suites (and rollback distributions) are available, which suites
 are uploadable, and which suites migrate, etc...
 
+Distributions
+=============
+
 Distributions determines how and for what architectures a base
 distribution is to be build.
 
-A repository represent one apt repository managed via reprepro.
+Repositories
+============
 
-FAQ
-===
-.. todo:: **IDEA**: *Allow pseudo distributions "unstable" in changes (aka 'Debian Developer mode').*
+A repository represents one apt repository managed via reprepro.
 
-	 This would practically mean you could use a dedicated,
-	 private mini-buildd repository to upload the very same package
-	 designed for a proper Debian upload to mini-buildd first for
-	 QA purposes. Maybe there are other uses as well...
+Uploaders
+=========
 
-	 Currently, we are bound to the triple CODENAME-REPOID-SUITE
-	 as distribution in changes files to identify the repository from
-	 incoming. A global (i.e., not per repository) additional mapping
-	 would be needed, like 'unstable' -> sid-myrepo-sid.
+Uploader instances are created automatically to each user
+profile. The administrator may activate GPG keys a user has
+uploaded, and decide what repositories he is allowed to upload.
 
 
 .. _admin_chroots:
@@ -304,18 +319,18 @@ to be supported by mini-buildd, the backend must support
 At the time (Feb 2013) of this writing, mini-buildd supports
 these backends:
 
-============ ========================= ================ ======== ======== ===============================
+============ ========================= ================ ======== ======== ========================================================= ===============
 Type         Options                   Build size limit Speed    Extra fs Extra dependencies
-============ ========================= ================ ======== ======== ===============================
+============ ========================= ================ ======== ======== ========================================================= ===============
+Dir          aufs[,overlayfs,unionfs]  No               Medium   No       Kernel support (aufs, in Debian standard kernel)          **Recommended**
 File         compression               No               Low      No       No
-Dir          aufs[,overlayfs,unionfs]  No               Medium   No       Kernel support (fs)
-LVM          loop,given LVM setup      Yes              Fast     Yes      LVM tools, Kernel support (device mapper)
-============ ========================= ================ ======== ======== ===============================
+LVM          loop,given LVM setup      Yes              Fast     Yes      LVM tools, Kernel support (dm, in Debian standard kernel)
+============ ========================= ================ ======== ======== ========================================================= ===============
 
-In short, we **recommend using directory based chroots via
-aufs**, using a the Debian Linux kernel >= 3.2.35 (for current
-aufs support) as best compromise. It offers acceptable speed,
-and no limits.
+In short, we **recommend directory based chroots via aufs**,
+using a the Debian Linux kernel >= 3.2.35 (for current aufs
+support) as best compromise. It offers acceptable speed, and no
+limits.
 
 **File chroots** are also fine, they will just always work; you
 may think about configuring schroot to use a tmpfs for its
@@ -325,11 +340,11 @@ speed it up.
 If you are in for speed, or just already have a LVM setup on
 your system, **LVM chroots** are good alternative, too.
 
-:note: You may configure Distributions with generic build
-       options that may also affect the backend (like
-       pre-installing ``eatmydata``) or build (like configuring
-       ``ccache`` to be used) speed. See ``Distributions and
-       Repositories``.
+.. note:: You may configure Distributions with generic build
+          options that may also affect the backend (like
+          pre-installing ``eatmydata``) or build (like
+          configuring ``ccache`` to be used) speed. See
+          ``Distributions and Repositories``.
 
 
 FAQ
@@ -437,8 +452,12 @@ To interconnect two mini-buildd instances
 Odds and Ends
 *************
 
-Provide keyring packages
-========================
+Keyring and test packages
+=========================
+
+On mini-buildd's home, you will find action buttons to
+create+build keyring packages, as well as running test packages.
+
 
 Migrate packages from 0.8.x
 ===========================

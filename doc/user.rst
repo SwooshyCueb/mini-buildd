@@ -25,15 +25,22 @@ Upload a package
 *******************************
 Semantics of the Default Layout
 *******************************
-==================== ========= ========================= ============================
-Suite                Flags     Semantic                  Consumer
-==================== ========= ========================= ============================
-*experimental*       U E R6    Use at will               Developer.
-snapshot             U E R12   Continuous integration    Developer, beta tester.
-``unstable``         U M R9    Proposed for live         Developer, beta tester.
-``testing``          M R3      QA testing                Quality Assurance.
-``stable``           R6        Live                      End customer.
-==================== ========= ========================= ============================
+
+==================== ========= =================== ========================= ============================
+Suite                Flags     Version restriction Semantic                  Consumer
+==================== ========= =================== ========================= ============================
+*experimental*       U E R6    ``~ID+0``           *Use at will*             Developer.
+snapshot             U E R12   ``~ID+0``           *Continuous integration*  Developer, beta tester.
+``unstable``         U M R9    ``~ID+[1-9]``       *Proposed for live*       Developer, beta tester.
+``testing``          M R3      ``~ID+[1-9]``       *QA testing*              Quality Assurance.
+``stable``           R6        ``~ID+[1-9]``       *Live*                    End customer.
+==================== ========= =================== ========================= ============================
+
+* ``U``: Uploadable
+* ``M``: Migrates
+* ``E``: Experimental
+* ``RN``: Keeps N rollback versions
+* ``ID``: Repository identity
 
 .. _user_api:
 

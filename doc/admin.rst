@@ -417,6 +417,19 @@ FAQ
 Remotes
 *******
 
+Remotes can interconnect a mini-buildd instance with another in
+a peer-to-peer fashion, i.e., you need to add a respective
+remote instance on both two peers. When interconnected, these
+two instances automatically share their build chroots.
+
+To interconnect two mini-buildd instances
+
+#. Add remote on instance0 for instance1; prepare, check, and activate it. Activation will initially fail, but it will be put on auto-reactivate (A).
+#. Add remote on instance1 for instance0; prepare, check, and activate it. Activation will work as instance0 already knows us, and is on auto-reactivate.
+#. Run Activate remote on instance0.
+
+.. note:: Be sure to use the exact same host names as given in the resp. instance's Daemon configuration!
+
 
 .. _admin_misc:
 

@@ -79,9 +79,9 @@ Configure
 	All wanted sources green? Go on.
 
 	.. note:: ``Setup`` of Sources will implicitly pull in
-						architectures and components, and also implicitly
-						sets up the apt keys associated to them. Purists
-						may want to re-check them manually.
+	          architectures and components, and also implicitly
+	          sets up the apt keys associated to them. Purists
+	          may want to re-check them manually.
 
 #. Setup **Repositories** (-> :ref:`Manual <admin_repositories>`).
 	#. Call these wizards, in this order: *Layouts:Defaults*, *Distributions:Defaults*, and finally *Repositories:Sandbox*.

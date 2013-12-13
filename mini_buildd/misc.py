@@ -10,6 +10,7 @@ import glob
 import errno
 import subprocess
 import threading
+import socket
 import Queue
 import multiprocessing
 import tempfile
@@ -202,6 +203,13 @@ class HoPo(object):
             self.port = self.tuple[1]
         except:
             raise Exception("Invalid bind argument (HOST:PORT): '{b}'".format(b=bind))
+
+    def test_bind(self):
+        "Check that we can bind to that port (not already bound, permissions)"
+        s = socket.socket()
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        s.bind(self.tuple)
+        s.close()
 
 
 def nop(*_args, **_kwargs):

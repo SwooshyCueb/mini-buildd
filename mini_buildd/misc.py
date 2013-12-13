@@ -44,6 +44,14 @@ def open_utf8(path, mode="r", **kwargs):
     return codecs.open(path, mode, encoding=mini_buildd.setup.CHAR_ENCODING, **kwargs)
 
 
+def check_multiprocessing():
+    "Multiprocessing needs shared memory. This may be use to check for misconfigured shm early for better error handling."
+    try:
+        multiprocessing.Lock()
+    except Exception as e:
+        raise Exception("multiprocessing not functional (shm misconfigured?): {e}".format(e=e))
+
+
 class API(object):
     """
     Helper class to implement an API check.

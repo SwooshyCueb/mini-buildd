@@ -215,8 +215,11 @@ Comma-separated list of special debugging options:
         if self._args.dedicated_user != self._user:
             raise Exception("Run as dedicated user only (use '--dedicated-user={u}' if you really want this, will write to that user's $HOME!)".format(u=self._user))
 
-        # Pre-daemonize check if HTTP port is ready to bind (cherrypy's exception later is hard to deal with).
+        # Pre-daemonize check if HTTP port is ready to bind (else cherrypy fails strangely later)
         mini_buildd.misc.HoPo(self._args.httpd_bind).test_bind()
+
+        # Pre-daemonize check if shm is usable on the system (else pyftpdlib fails strangely later)
+        mini_buildd.misc.check_multiprocessing()
 
         # Daemonize early
         if not self._args.foreground:

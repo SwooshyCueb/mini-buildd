@@ -1,3 +1,45 @@
+mini-buildd (1.0.0~rc.1) unstable; urgency=medium
+
+  First release candidate.
+  * [5efd9f0] mini-buildd-tool: Fix: Don't loop "--reset_save_policy"
+    through to API call.
+  * [5806c96] mini-buildd-tool: Add --protocol={http|https} option.
+  * [fdc10bb] ftpd: Harden incoming against cruft/bogus uploads.
+  * [0cf20bf] port: Always decode unicode arg for subprocess; use
+    LANG=C.UTF-8 in mini-buildd env.
+  * [438a935] pyftpdlib: Depend on >= 1.2, remove all 0.x compat code
+    (Fixes: pyftpd logging, installations on wheezy).
+  * [a9a14e6] mini-buildd-tool: Clone the keyring logger.
+  * [2743967] port: Fix dsc file signing for epoched versions (port
+    regression introduced by [1cf513c])
+  * [130ebcc] [devel: Make sure './devel check' works even on a clean
+    checkout]
+  * [676071d] doc: Some ispell fixes.
+  * [c5ee0aa] doc: Fixes and updates for the quickstart.
+  * [bd0d228] Remotes: Prepare: Unset key id when downloading key data
+    (Fixes re-preparing of a remote (would try key server and fail))
+  * [657e24f] models, state: Add acton trigger 'on_deactivation', and
+    schedule keyring update on 'KeyringKey' deactivation (Fixes: Keyring
+    not changed on the fly on deactivation).
+  * [394ed18] Remotes keyring: Allow uploads by auto-deactivated remotes
+    (Fixes: Rejected builds when the uploading remote was auto-deactivated
+    previously, and not yet checked again)
+  * [7536bef] mini-buildd: Add early check if the given http port is
+    bindable (Fixes error handling when mini-buildd is already running).
+  * [f1c9027] mini-buildd: Fix typo in exception message.
+  * [d867ba7] mini-buildd: Add early check for multiprocessing (shm)
+    functionality (Fixes error handling when shm is misconfigured).
+  * [828c960] mini-buildd: Only run the new extra checks on proper daemon
+    run.
+  * [1a3a6c6] doc: Update remotes doc.
+  * [86f61f6] doc: Updates for the admin's manual.
+  * [57547bd] doc: Updates for the user's manual.
+  * [824a9b0] control: Depend on sbuild >= 0.64.1 (Fixes: Lintian not run
+    in the chroot)
+  * [e6848bd] doc: Check and update all FAQ/Todo/bug items.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 15 Dec 2013 19:04:22 +0000
+
 mini-buildd (1.0.0~gamma.5) unstable; urgency=low
 
   Fifth gamma, 'l10n' release.

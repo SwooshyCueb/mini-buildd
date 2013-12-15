@@ -137,11 +137,6 @@ Repository maintenance
 
 FAQ
 ===
-.. todo:: **BUG**: *lintian version from host is used for all distributions*
-
-	 We use sbuild's --run-lintian option, which is currently runs lintian
-	 from the host, see [#debbug626361]_.
-
 .. todo:: **FAQ**: *aptitude GUI does not show distribution or origin of packages*
 
 	 To show the distribution of packages, just add ``%t`` to the
@@ -216,7 +211,6 @@ References
 **********
 
 .. rubric:: References:
-.. [#debbug626361] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626361
 .. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011
 .. [#debbug248561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=248561
 .. [#debbug657561] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=657561

@@ -416,15 +416,6 @@ FAQ
 	 (This is sudo's Debian package's default, but the
 	 administrator might have changed it at some point.)
 
-.. todo:: **FEATURE**: *Chroot maintenance (apt-update, fs checks).*
-
-	 [REGR] 0.8.x path: 'lib/chroots-update.d/10_apt-upgrade.hook'.
-
-	 Regular apt-update for source chroots would be nice to have,
-	 especially for rolling distribution like unstable/sid or
-	 testing.
-	 fs checks would only really make sense for LVM chroots.
-
 
 .. _admin_remotes:
 

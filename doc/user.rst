@@ -178,7 +178,7 @@ FAQ
 
 	 fixes it.
 
-.. todo:: **FAQ**: *Multiple versions of a packages in one distribution*
+.. todo:: **FAQ**: *Multiple versions of packages in one distribution*
 
 	 This is not really a problem, but a uncommon situation that
 	 may lead to confusion.
@@ -190,7 +190,7 @@ FAQ
 
 	 This usually happens when the 'Section' changes in the
 	 corresponding 'debian/control' file of the source package, or
-	 if package were installed manually using "-C" with reprepro.
+	 if packages were installed manually using "-C" with reprepro.
 
 	 Check with the "show" command if this is the case, i.e., s.th. like::
 
@@ -198,9 +198,9 @@ FAQ
 
 	 you may see multiple entries for one distribution with different components.
 
-	 mini-buildd handles this gracefully; the remove, migrate and
-	 port api calls all include an optional 'version' parameter to be
-	 able to select a specific version.
+	 mini-buildd handles this gracefully; the ``remove``,
+	 ``migrate`` and ``port`` API calls all include an optional
+	 'version' parameter to be able to select a specific version.
 
 	 In the automated rollback handling, all versions of a source
 	 package are shifted.

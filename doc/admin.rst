@@ -507,9 +507,10 @@ Eventually, when everything is updated, you may of course
 (re)move the old 0.8.x directory ``~/rep/``.
 
 
-##########
+**********
 References
-##########
+**********
+
 .. rubric:: References:
 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 .. [#debbug642031] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031

@@ -158,11 +158,6 @@ Install ``dput``, and setup your ``~/.dput.cf``::
 	# apt-get install dput
 	? mini-buildd-tool HOST getdputconf >>~/.dput.cf
 
-.. note:: After ``~/.dput.cf`` has been set up this way, you can
-          use shortcuts instead of ``HOST``, and these will also
-          appear in the bash auto-completion of
-          ``mini-buildd-tool``.
-
 
 Authorize yourself to do package uploads
 ========================================

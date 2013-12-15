@@ -2,45 +2,111 @@
 User's Manual
 #############
 
-.. _user_introduction:
+The user's manual covers **using** a mini-buildd installation
+-- i.e., everything you can do with it given someone else had
+already set it up for you as a service.
 
 ************
 Introduction
 ************
 
+The core functionalities of mini-buildd are, 1st the
+arch-multiplexed clean building, and 2nd providing a
+repository. You don't need to worry about 1st, mini-buildd just
+does it for you.
+
+The 2nd however, the repository, goes public and hits "global
+Debian namespace"; so, as a big picture, it's important first to
+understand how mini-buildd's (default) setup tries to deal with
+this.
+
+First of all, each **instance** has it's own **identity**
+string, which will be used in the name of the keyring package,
+and will also appear in the apt repository in the ``Origin``
+field.
+
+Second, each instance instance may have ``N`` **repositories**,
+which each have their own **identity** string, which determines
+the actual distribution names (``CODENAME-ID-SUITE``) to be used
+for uploads or in apt lines.
+
+Both identities should be "globally unique" to avoid any
+confusion or conflicts with other existing repositories.
+
+.. note:: Exceptions are the generic *Sandbox* and *Developer*
+          repositories, with the de-facto standard names
+          ``test`` and ``debdev``; these should never be used
+          publicly or for anything but testing.
+
+Third, when people are mixing repositories together, we want to avoid
+package clashes, like same PACKAGE-VERSION from two different
+repositories. Also, we want guaranteed upgradeability between two
+different base distributions, and from experimental to
+non-experimental suites. Hence, at least in the **Default
+Layout**, we also have a **version restriction**, which
+resembles that of Debian Backports:
+
+.. _user_default_layouts:
+
+==================== ========= =================== ========================= ========================= ============================
+The Default Layout's Suites and Semantics Overview
+-----------------------------------------------------------------------------------------------------------------------------------
+Suite                Flags     Version restriction Repository                Semantic                  Consumer
+==================== ========= =================== ========================= ========================= ============================
+*experimental*       U E 6R    ``~ID+0``           No auto                   *Use at will*             Developer.
+snapshot             U E 12R   ``~ID+0``           No auto, but upgrades     *Continuous integration*  Developer, beta tester.
+``unstable``         U M 9R    ``~ID+[1-9]``       No auto, but upgrades     *Proposed for live*       Developer, beta tester.
+``testing``          M 3R      ``~ID+[1-9]``       No auto, but upgrades     *QA testing*              Quality Assurance.
+``stable``           6R        ``~ID+[1-9]``       No auto, but upgrades     *Live*                    End customer.
+==================== ========= =================== ========================= ========================= ============================
+``U``: Uploadable ``M``: Migrates ``E``: Experimental ``NR``: keeps N Rollback versions ``ID``: repository IDentity
+
 .. _user_setup:
 
-*****************
-Setup your system
-*****************
+**********
+User Setup
+**********
+
+As a **minimal setup**, you should have a *web browser installed*;
+you can instantly `browse mini-buildd </mini_buildd/>`_, and use
+all functionality that do not require extra permissions.
+
+To be able **use advanced functionality** (for example, create
+package subscriptions, access restricted API calls, or upload
+your GnuPG public key), create a *user account*:
+
+#. `Register a user account </accounts/register/>`_.
+#. `Setup your profile </mini_buildd/accounts/profile/>`_ (package subscriptions, GnuPG key upload).
+
+To **access mini-buildd from the command line** via
+``mini-buildd-tool``, install ``python-mini-buildd``::
+
+	# apt-get install python-mini-buildd
+
+To **upload packages**, install ``dput`` and add `mini-buildd's
+dput config </mini_buildd/api?command=getdputconf>`_ to your
+``~/.dput.cf``::
+
+	# apt-get install dput
+	? mini-buildd-tool HOST getdputconf >>~/.dput.cf
+
+.. note:: After ``~/.dput.cf`` has been set up this way, you can
+          use ``[USER@]ID``-like shortcuts instead of ``HOST``,
+          and these will also appear in the bash auto-completion
+          of ``mini-buildd-tool``.
+
+
+.. _user_repository:
+
+********************
+Using the repository
+********************
 
 .. _user_upload:
 
 ****************
 Upload a package
 ****************
-
-.. _user_default_layouts:
-
-*******************************
-Semantics of the Default Layout
-*******************************
-
-==================== ========= =================== ========================= ============================
-Suite                Flags     Version restriction Semantic                  Consumer
-==================== ========= =================== ========================= ============================
-*experimental*       U E R6    ``~ID+0``           *Use at will*             Developer.
-snapshot             U E R12   ``~ID+0``           *Continuous integration*  Developer, beta tester.
-``unstable``         U M R9    ``~ID+[1-9]``       *Proposed for live*       Developer, beta tester.
-``testing``          M R3      ``~ID+[1-9]``       *QA testing*              Quality Assurance.
-``stable``           R6        ``~ID+[1-9]``       *Live*                    End customer.
-==================== ========= =================== ========================= ============================
-
-* ``U``: Uploadable
-* ``M``: Migrates
-* ``E``: Experimental
-* ``RN``: Keeps N rollback versions
-* ``ID``: Repository identity
 
 .. _user_api:
 
@@ -68,12 +134,6 @@ Repository maintenance
 .. todo:: **IDEA**: *Dependency check on package migration.*
 
 .. todo:: **IDEA**: *Custom hooks (prebuild.d source.changes, preinstall.d/arch.changes, postinstall.d/arch.changes).*
-
-.. _user_repository:
-
-********************
-Using the repository
-********************
 
 FAQ
 ===
@@ -150,9 +210,11 @@ FAQ
 	 In the automated rollback handling, all versions of a source
 	 package are shifted.
 
-##########
+
+**********
 References
-##########
+**********
+
 .. rubric:: References:
 .. [#debbug626361] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=626361
 .. [#debbug484011] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=484011

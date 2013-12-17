@@ -59,6 +59,7 @@ snapshot             U E 12R   ``~ID+0``           No auto, but upgrades     *Co
 ``testing``          M 3R      ``~ID+[1-9]``       No auto, but upgrades     *QA testing*              Quality Assurance.
 ``stable``           6R        ``~ID+[1-9]``       No auto, but upgrades     *Live*                    End customer.
 ==================== ========= =================== ========================= ========================= ============================
+
 ``U``: Uploadable ``M``: Migrates ``E``: Experimental ``NR``: keeps N Rollback versions ``ID``: repository IDentity
 
 .. _user_setup:

@@ -54,7 +54,7 @@ class StaticWithIndex(cherrypy._cptools.HandlerTool):
 
             # Only walk one step
             path, dirs, files = next(os.walk(directory))
-            # Dirs first, adn sort entries by name
+            # Dirs first, and sort entries by name
             for entry in sorted(dirs):
                 add(path, entry, True)
 

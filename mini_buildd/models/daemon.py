@@ -200,7 +200,7 @@ prepare/remove actions will generate/remove the GnuPG key.
 
     @classmethod
     def mbd_sync(cls, request):
-        MsgLog(LOG, request).warn("The GnuPG key will never be updated automatically. Explicitly run remove+prepare to achive this.")
+        MsgLog(LOG, request).warn("The GnuPG key will never be updated automatically. Explicitly run remove+prepare to achieve this.")
 
     def mbd_remove(self, request):
         self._mbd_gnupg.remove()

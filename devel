@@ -112,6 +112,15 @@ mbd_pymisc()
 	done
 }
 
+mbd_codespell()
+{
+	local ups=$(codespell --quiet-level=2 mini-buildd mini-buildd-tool mini_buildd/ doc/)
+	if [ -n "${ups}" ]; then
+		printf "${ups}\n" >&2
+		return 1
+	fi
+}
+
 mbd_pydoctests()
 {
 	(
@@ -272,7 +281,7 @@ for c in $(compgen -A function | grep '^mbd_'); do
 	ACTIONS+="${sep}${c:4}"
 	sep="|"
 done
-trap "printf '\nUsage: ${0}${ACTIONS}[_arg1_arg2..] \n' >&2" ERR
+trap "printf '\nUsage: $(basename "${0}")${ACTIONS}[_arg1_arg2..] \n' >&2" ERR
 
 [ "${*}" ]
 

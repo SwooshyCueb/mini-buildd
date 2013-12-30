@@ -106,7 +106,7 @@ class Package(mini_buildd.misc.Status):
         arch = bres["Architecture"]
 
         # Retval and status must be the same with sbuild in mode user, so status is not really needed
-        # status may also be none in case some non-sbuild build error occured
+        # status may also be none in case some non-sbuild build error occurred
         retval = int(bres["Sbuildretval"])
         status = bres.get("Sbuild-Status")
         lintian = bres.get("Sbuild-Lintian")

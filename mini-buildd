@@ -192,7 +192,7 @@ Comma-separated list of special debugging options:
         # Global: Don't propagate exceptions that happen while logging
         logging.raiseExceptions = 0
 
-        # Finally, log all errors now that occured while setting up loggers
+        # Finally, log all errors now that occurred while setting up loggers
         for typ, err in loggers_failed.items():
             LOG.critical("Logger {t} failed: {e}".format(t=typ, e=err))
 

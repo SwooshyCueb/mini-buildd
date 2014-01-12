@@ -120,7 +120,10 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         "Ping and update the ping value."
         try:
             t0 = datetime.datetime.now()
-            urllib2.urlopen(self.url)
+            # Append dists to URL for ping check: Archive may be
+            # just fine, but not allow to access to base URL
+            # (like ourselves ;). Any archive _must_ have dists/ anyway.
+            urllib2.urlopen("{u}/dists/".format(u=self.url))
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
             self.save()
@@ -183,7 +186,7 @@ class Source(mini_buildd.models.base.StatusModel):
                                         help_text="The exact string of the 'Origin' field of the resp. Release file.")
     codename = django.db.models.CharField(max_length=60, default="sid",
                                           help_text="""\
-The name of the directory below 'dist/' in archives this source refers to; this is also used
+The name of the directory below 'dists/' in archives this source refers to; this is also used
 as-is to check the 'Codename' field in the Release file (unless you overwrite it in
 extra options, see below).
 <br />

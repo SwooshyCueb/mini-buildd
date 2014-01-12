@@ -1,3 +1,17 @@
+mini-buildd (1.0.0~rc.2) unstable; urgency=medium
+
+  Second release candidate.
+  * [3cb75bb] doc/user.rst: Fix RST blank line warning.
+  * [7ec39c2] control: Update to Stds-Ver 3.9.5 (no changes needed).
+  * [c3a5623] devel: Add docspell check; some textual code fixes.
+  * [06c2f26] Bug fix: "[INTL:es] updated Spanish translation of debconf
+    messages". Thanks to Matias Bellone (Closes: #734208)
+  * [d821bff] Archive: Fix mbd_ping() for archives not allowing base URL.
+    Thanks to Klee Dienes (Closes: #733256)
+  * [dc4aae2] pylint 1.0: Fixes and updates for new warnings.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 12 Jan 2014 18:38:43 +0000
+
 mini-buildd (1.0.0~rc.1) unstable; urgency=medium
 
   First release candidate.

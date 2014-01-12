@@ -18,7 +18,7 @@ _LOCKS_LOCK = threading.Lock()
 _LOCKS = {}
 
 
-class Reprepro():
+class Reprepro(object):
     """
     Abstraction to reprepro repository commands.
 

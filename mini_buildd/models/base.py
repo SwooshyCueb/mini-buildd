@@ -93,7 +93,7 @@ are actually supported by the current model.
     # May be used by any model for persistent python state
     pickled_data = django.db.models.TextField(blank=True, editable=False)
 
-    class Meta:
+    class Meta(object):
         abstract = True
         app_label = "mini_buildd"
 

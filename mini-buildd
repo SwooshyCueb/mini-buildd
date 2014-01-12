@@ -51,7 +51,7 @@ class PIDFile(object):
         self.pidfile.release()
 
 
-class Main():
+class Main(object):
     @classmethod
     def _parse_args(cls):
         parser = argparse.ArgumentParser(prog="mini-buildd",

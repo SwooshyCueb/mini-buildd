@@ -395,7 +395,7 @@ class Changes(debian.deb822.Changes):
         return breq_dict
 
     def gen_buildresult(self, path=None):
-        assert(self.type == self.TYPE_BREQ)
+        assert self.type == self.TYPE_BREQ
         if not path:
             path = self.get_spool_dir()
 

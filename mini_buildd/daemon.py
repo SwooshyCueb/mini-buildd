@@ -391,7 +391,7 @@ def run():
         pass
 
 
-class Daemon():
+class Daemon(object):
     def __init__(self):
         # Set global to ourself
         global _INSTANCE
@@ -714,7 +714,7 @@ _INSTANCE = None
 
 
 def get():
-    assert(_INSTANCE)
+    assert _INSTANCE
     return _INSTANCE
 
 

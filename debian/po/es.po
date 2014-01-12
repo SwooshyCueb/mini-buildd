@@ -1,26 +1,29 @@
 # mini-buildd po-debconf translation to Spanish
-# Copyright (C) 2010 Software in the Public Interest
+# Copyright (C) 2010-2013 Software in the Public Interest
 # This file is distributed under the same license as the mini-buildd package.
 #
 # Changes:
 #   - Initial translation
 #       Francisco Javier Cuadrado <fcocuadrado@gmail.com>, 2010
 #
+#   - Updates
+#       Matías Bellone <matiasbellone+debian@gmail.com>, 2013
+#
 # Traductores, si no conocen el formato PO, merece la pena leer la
-# documentaci??n de gettext, especialmente las secciones dedicadas a este
+# documentación de gettext, especialmente las secciones dedicadas a este
 # formato, por ejemplo ejecutando:
 #       info -n '(gettext)PO Files'
 #       info -n '(gettext)Header Entry'
 #
-# Equipo de traducci??n al espa??ol, por favor lean antes de traducir
+# Equipo de traducción al español, por favor lean antes de traducir
 # los siguientes documentos:
 #
-#   - El proyecto de traducci??n de Debian al espa??ol
+#   - El proyecto de traducción de Debian al español
 #     http://www.debian.org/intl/spanish/
-#     especialmente las notas y normas de traducci??n en
+#     especialmente las notas y normas de traducción en
 #     http://www.debian.org/intl/spanish/notas
 #
-#   - La gu??a de traducci??n de po's de debconf:
+#   - La guía de traducción de po's de debconf:
 #     /usr/share/doc/po-debconf/README-trans
 #     o http://www.debian.org/intl/l10n/po-debconf/README-trans
 #
@@ -29,10 +32,10 @@ msgstr ""
 "Project-Id-Version: mini-buildd 0.8.13\n"
 "Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
 "POT-Creation-Date: 2013-11-11 14:08+0100\n"
-"PO-Revision-Date: 2010-05-16 20:40+0200\n"
-"Last-Translator: Francisco Javier Cuadrado <fcocuadrado@gmail.com>\n"
+"PO-Revision-Date: 2013-12-21 19:38-0300\n"
+"Last-Translator: Matías Bellone <matiasbellone+debian@gmail.com>\n"
 "Language-Team: Debian l10n Spanish <debian-l10n-spanish@lists.debian.org>\n"
-"Language: \n"
+"Language: es\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
@@ -41,20 +44,18 @@ msgstr ""
 #. Description
 #: ../mini-buildd.templates:2001
 msgid "mini-buildd data purge warning"
-msgstr ""
+msgstr "Advertencia sobre purga de datos los de mini-buildd"
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:2001
-#, fuzzy
 #| msgid "You have chosen to purge mini-buildd on a repository host."
 msgid "You have chosen to purge mini-buildd."
-msgstr "Ha escogido purgar mini-buildd en un servidor de repositorio."
+msgstr "Ha seleccionado purgar mini-buildd."
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:2001
-#, fuzzy
 #| msgid ""
 #| "This choice means that the mini-buildd user will be removed along with "
 #| "all the files it owns, including the repository in \"/home/mini-buildd/rep"
@@ -63,9 +64,9 @@ msgid ""
 "As a consequence, the mini-buildd user will be removed along with all the "
 "files it owns, possibly including Debian repositories."
 msgstr ""
-"Esta elecci??n borrar?? el usuario de mini-buildd junto a todos los archivos "
-"que le pertenecen, incluyendo el repositorio ubicado en ??/home/mini-buildd/"
-"rep??."
+"Como resultado de esta acción, se eliminará el usuario mini-buildd junto con "
+"todos los archivos que le pertenecen, entre los que posiblemente se "
+"encuentren repositorios Debian."
 
 #. Type: note
 #. Description
@@ -77,7 +78,7 @@ msgstr "Para mantener estos datos, debe realizar una copia de seguridad ahora."
 #. Description
 #: ../mini-buildd.templates:3001
 msgid "Home path:"
-msgstr ""
+msgstr "Ruta del directorio personal («/home»):"
 
 #. Type: string
 #. Description
@@ -86,6 +87,9 @@ msgid ""
 "Please choose the directory where mini-buildd data will be stored. The "
 "directory will also be the home directory for the mini-buildd user."
 msgstr ""
+"Seleccione el directorio donde se almacenarán los datos de mini-buildd. "
+"Este directorio será el directorio personal («/home») del usuario "
+"mini-buildd."
 
 #. Type: string
 #. Description
@@ -94,12 +98,14 @@ msgid ""
 "It should have enough space for all the builders and repositories you plan "
 "to use."
 msgstr ""
+"Debe tener suficiente espacio para todos los constructores y repositorios "
+"que planea utilizar."
 
 #. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
 msgid "Administrator password for mini-buildd:"
-msgstr ""
+msgstr "Contraseña de administración para mini-buildd:"
 
 #. Type: password
 #. Description
@@ -108,6 +114,9 @@ msgid ""
 "Please choose the password for the administrative user of mini-buildd. This "
 "password will be used for the \"admin\" user in mini-buildd's web interface."
 msgstr ""
+"Seleccione la contraseña para el usuario de administración de mini-buildd. "
+"Se utilizará esta cotraseña para el usuario «admin» en la interfaz web de "
+"mini-buildd."
 
 #. Type: password
 #. Description
@@ -116,18 +125,19 @@ msgid ""
 "If you enter a password, this will also trigger the creation of a local "
 "\"admin\" user."
 msgstr ""
+"Si introduce una contraseña se creará un usuario «admin» local."
 
 #. Type: password
 #. Description
 #: ../mini-buildd.templates:4001
 msgid "If you leave this empty, no user creation will happen."
-msgstr ""
+msgstr "Si deja esto vacío no se creará ningún usuario."
 
 #. Type: string
 #. Description
 #: ../mini-buildd.templates:5001
 msgid "Extra options:"
-msgstr ""
+msgstr "Opciones adicionales:"
 
 #. Type: string
 #. Description
@@ -136,6 +146,8 @@ msgid ""
 "Please add any mini-buildd command line options you would like to use "
 "(\"mini-buildd --help\" gives a list of available options)."
 msgstr ""
+"Agregue las opciones que desea utilizar durante la ejecución de mini-buildd "
+"(«mini-buildd --help» proporciona una lista de las opciones disponibles)."
 
 #. Type: string
 #. Description
@@ -144,12 +156,15 @@ msgid ""
 "The only options really recommended for use here are \"-v\"/\"--verbose\" to "
 "increase the log level or \"-q\"/\"--quiet\" to decrease it."
 msgstr ""
+"Las únicas opciones recomendadas para introducir aquí son «-v»/«--verbose» "
+"para aumentar el nibel de detalle de los registros o «-q»/«--quiet» para "
+"reducirla."
 
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:6001
 msgid "Configuration of mini-buildd complete"
-msgstr ""
+msgstr "Se completó la configuración de mini-buildd"
 
 #. Type: note
 #. Description
@@ -158,12 +173,16 @@ msgid ""
 "Unless you changed the defaults, you should now be able to visit the new "
 "home of the local mini-buildd instance at http://localhost:8066."
 msgstr ""
+"A menos que haya modificado los valores predeterminados, debería poder "
+"acceder a la nueva interfaz de la instancia local de mini-buildd en "
+"«http://localhost:8066»."
 
+# NdT: couldn't find any translation of the documentation to point to
 #. Type: note
 #. Description
 #: ../mini-buildd.templates:6001
 msgid "A good starting point is the online manual named \"Quickstart\"."
-msgstr ""
+msgstr "Un buen punto de partida es el manual en línea llamado «Quickstart»."
 
 #~ msgid "Repository purge"
 #~ msgstr "Purga del repositorio"

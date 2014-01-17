@@ -68,7 +68,7 @@ automatically added.""")
 
     gnupg_keyserver = django.db.models.CharField(
         max_length=200,
-        default="subkeys.pgp.net",
+        default="pool.sks-keyservers.net",
         help_text="GnuPG keyserver to use (as fill-in helper).")
 
     ftpd_bind = django.db.models.CharField(

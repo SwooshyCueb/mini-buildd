@@ -403,12 +403,12 @@ should be prevent package installation (for non-experimental suites).
 #!/bin/sh -e
 
 # Install and use 'eatmydata' in builds where available
-if apt-get --yes --no-install-recommends install eatmydata; then
+if apt-get --yes --option=APT::Install-Recommends=false install eatmydata; then
    printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
 fi
 
 # Have 'ccache' ready in builds
-apt-get --yes --no-install-recommends install ccache || true
+apt-get --yes --option=APT::Install-Recommends=false install ccache || true
 """,
                                                      help_text="""\
 Script that will be run via sbuild's '--chroot-setup-command'.
@@ -418,12 +418,12 @@ Example:
 #!/bin/sh -e
 
 # Install and use 'eatmydata' in builds where available
-if apt-get --yes --no-install-recommends install eatmydata; then
+if apt-get --yes --option=APT::Install-Recommends=false install eatmydata; then
    printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
 fi
 
 # Have 'ccache' ready in builds
-apt-get --yes --no-install-recommends install ccache || true
+apt-get --yes --option=APT::Install-Recommends=false install ccache || true
 
 # Accept sun-java6 licence so we can build-depend on it
 echo "sun-java6-bin shared/accepted-sun-dlj-v1-1 boolean true" | debconf-set-selections --verbose

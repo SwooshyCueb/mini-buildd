@@ -468,7 +468,33 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
         fieldsets = (
             ("Basics", {"fields": ("base_source", "extra_sources", "components")}),
             ("Build options", {"fields": ("build_dep_resolver", "apt_allow_unauthenticated", "lintian_mode", "lintian_extra_options")}),
-            ("Extra", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),)
+            ("Chroot setup options", {"classes": ("collapse",), "fields": ("chroot_setup_script", "sbuildrc_snippet")}),
+            ("Extra Options", {"classes": ("collapse",),
+                               "description": """
+<b>Supported extra options</b>
+<p><em>Internal-APT-Priority: N</em>: Set APT priority for internal apt sources in builds.</p>
+<p>
+The default is 1, which means you will only build against newer
+packages in our own repositories in case it's really needed by
+the build dependencies. This is the recommended behaviour,
+producing sparse dependencies.
+</p>
+<p>
+However, some packages with incorrect build dependencies might
+break anyway, while they would work fine when just build against
+the newest version available.
+</p>
+<p>
+So, in case you don't care about sparse dependencies, you can
+pimp the internal priority up here.
+</p>
+<p>
+<em>Example</em>:
+<tt>Internal-APT-Priority: 500</tt>: Always build against newer internal packages.
+</p>
+""",
+                               "fields": ("extra_options",)}),)
+
         inlines = (ArchitectureOptionInline,)
         filter_horizontal = ("extra_sources", "components",)
 
@@ -554,8 +580,9 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
             result += e.mbd_get_apt_preferences() + "\n"
 
         # Get preferences for all internal sources
+        internal_prio = self.mbd_get_extra_option("Internal-APT-Priority", 1)
         for s in repository.mbd_get_internal_suite_dependencies(suite_option):
-            result += s.mbd_get_apt_preferences(repository, self) + "\n"
+            result += s.mbd_get_apt_preferences(repository, self, prio=internal_prio) + "\n"
 
         return result
 

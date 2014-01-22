@@ -176,7 +176,9 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
         if "Run-Lintian" in self._breq:
             sbuild_cmd.append("--run-lintian")
-            sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
+            # Be sure not to use --suppress-tags when its not availaible (only >=squeeze).
+            if mini_buildd.misc.Distribution(self.distribution).has_lintian_suppress():
+                sbuild_cmd.append("--lintian-opts=--suppress-tags=bad-distribution-in-changes-file")
             sbuild_cmd.append("--lintian-opts={o}".format(o=self._breq["Run-Lintian"]))
 
         sbuild_cmd.append(self._breq.dsc_name)

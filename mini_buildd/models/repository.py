@@ -380,7 +380,15 @@ class Distribution(mini_buildd.models.base.Model):
     lintian_mode = django.db.models.IntegerField(choices=LINTIAN_CHOICES, default=LINTIAN_FAIL_ON_ERROR,
                                                  help_text="""\
 Control whether to do lintian checks (via sbuild), and if they
-should be prevent package installation (for non-experimental suites).
+should prevent package installation (for non-experimental suites).
+<p>
+<b>IMPORTANT</b>: Note that for Distributions based on lenny or older,
+there is no way to suppress the 'bad distribution' check, which
+will always result in a lintian error. So all such Distributions
+must have lintian disabled or -- recommended -- set to 'run
+only'. This way, lintian is still run and you can look it up in
+the build logs.
+</p>
 """)
     lintian_extra_options = django.db.models.CharField(max_length=200, default="--info")
 
@@ -471,7 +479,11 @@ $build_environment = { 'CCACHE_DIR' => '%LIBDIR%/.ccache' };
                 return {"Ubuntu": ["main", "universe", "restricted", "multiverse"]}.get(origin, ["main", "contrib", "non-free"])
 
             for s in mini_buildd.models.source.Source.Admin.mbd_filter_active_base_sources():
-                new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
+                if mini_buildd.misc.codename_has_lintian_suppress(s.codename):
+                    new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
+                else:
+                    new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s, lintian_mode=Distribution.LINTIAN_RUN_ONLY)
+
                 if created:
                     # Auto-add known default components or Origin
                     for c in default_components(s.origin):

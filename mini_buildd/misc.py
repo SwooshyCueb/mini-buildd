@@ -238,6 +238,11 @@ def timedelta_total_seconds(delta):
     return float(delta.microseconds + (delta.seconds + delta.days * 24 * 3600) * (10 ** 6)) / (10 ** 6)
 
 
+def codename_has_lintian_suppress(codename):
+    "Test if the distribution (identified by the codename) has a recent lintian with the '--suppress-tags' option."
+    return codename not in ["buzz", "rex", "bo", "hamm", "slink", "potato", "woody", "sarge", "etch", "lenny"]
+
+
 class Distribution(object):
     """
     A mini-buildd distribution string.
@@ -305,6 +310,9 @@ class Distribution(object):
         " Rollback (int) number: 'rollback0' -> 0 "
         if self.is_rollback:
             return int(re.sub(r"\D", "", self.rollback))
+
+    def has_lintian_suppress(self):
+        return codename_has_lintian_suppress(self.codename)
 
 
 def strip_epoch(version):

@@ -282,16 +282,34 @@ You will interface with Layouts in Repositories, determining what
 suites (and rollback distributions) are available, which suites
 are uploadable, and which suites migrate, etc...
 
+
 Distributions
 =============
 
 Distributions determines how and for what architectures a base
-distribution is to be build.
+distribution is to be build:
+
+* What **base distribution**? (*sid, wheezy, lenny, ...*)
+* With what **extra sources**? (*Debian Backports, ...*)
+* What **components** to support? (*main, contrib, non-free, ...*)
+* With what generic **build options**? (*resolver, lintian, ccache, eatmydata, ...*)
+* For what **architectures**? (*i386, amd64, armel, ...*)
+
+.. todo:: **BUG**: *eatmydata: Builds fail when linked with openvc*
+
+	 Only a problem in current (Jan 2014) *sid*. See [#debbug733281]_.
+
 
 Repositories
 ============
 
-A repository represents one apt repository managed via reprepro.
+A repository represents one apt repository managed via reprepro:
+
+* What repository **identity**? ("codename-*identity*-suite")
+* What mini-buildd **Layout**?  ("codename-identity-*suite*", supported suites and their semantics)
+* What mini-buildd **Distributions**? ("*codename*-identity-suite")
+* What **misc configuration** to use? (*reprepro, static GPG auth, notify, ...*)
+
 
 Uploaders
 =========
@@ -507,3 +525,4 @@ References
 .. [#debbug642031] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031
 .. [#debbug706086] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=706086
 .. [#debbug705238] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=705238
+.. [#debbug733281] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=733281

@@ -1,3 +1,22 @@
+mini-buildd (1.0.0~rc.3) unstable; urgency=medium
+
+  Third release candidate.
+  * [80703fd] Daemon: Switch default GPG keyserver to 'pool.sks-
+    keyservers.net' (experienced a lot of net timeouts with
+    'subkeys.pgp.net')
+  * [35a1fa7] All defaults and examples: Use '--option=APT::Install-
+    Recommends=false' instead of '--no-install-recommends' (compatibility,
+    also works for etch and lesser).
+  * [b9cc7f9] lintian: Avoid --suppress-tags for dists that do not support
+    it (<=lenny).
+  * [f3db7d7] Bug fix: "should include apt-transport-https if https://
+    sources are in use" Thanks to Klee Dienes (Closes: #733443)
+  * [69a9ffc] Distribution: Add 'extra option' to set custom internal apt
+    prio for builds. Thanks to Klee Dienes (Closes: #733257)
+  * [f71129b] doc: Admin manual updates; add note about eatmydata bug.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 26 Jan 2014 12:28:55 +0000
+
 mini-buildd (1.0.0~rc.2) unstable; urgency=medium
 
   Second release candidate.

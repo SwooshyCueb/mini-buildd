@@ -1,0 +1,132 @@
+#!/usr/bin/python
+"""Script to use as a 'command' in an authorized_key file to allow authorization to mini-buildd uploads via SSH.
+
+Steps to install 'uploads via SSH' (uses 'mini-buildd-uploader' as user name).
+
+As user 'root'::
+
+  adduser --disabled-password mini-buildd-uploader
+
+As mini-buildd-uploader::
+
+  gpg --gen-key    # Be sure to only have one secret key in the keyring; we will use the first found.
+  mkdir -m700 .ssh
+  edit ~/.dput.cf    # Put the dput.cf target of your mini-buildd instance here; First target found will be used.
+
+As admin user at the mini-buildd instance (web app)::
+
+  Generate a django pseudo user "ssh-uploads".
+  In the new user's "Uploader" profile:
+    Add the mini-buildd-uploader's GPG public key to the django users "Uploader" profile.
+    Add the repos to access ("may upload to").
+    PCA (prepare, check, activate) the new uploader profile.
+
+To authorize a SSH Key, as user mini-buildd-uploader, add a line like this::
+
+  command="/usr/share/doc/mini-buildd/examples/ssh-uploader-command" ssh-rsa AA...
+
+per ssh user key.
+
+As SSH uploader::
+
+  Run 'ssh mini-buildd-uploader@the.mini-buildd.host'. This
+  (will fail but) gives you a hint how to configure your
+  '.dput.cf'
+  Patch up your .dput.cf, then you should be able to upload like
+  normal via dput with the new target.
+"""
+from __future__ import print_function
+
+import sys
+import os
+import glob
+import shutil
+import socket
+import tempfile
+import subprocess
+
+
+def log(*args):
+    print(*args, file=sys.stderr)
+
+
+def get_key_id():
+    return subprocess.check_output("gpg --list-secret-keys --with-colons | grep --max-count=1 '^sec' | cut -d: -f5", shell=True).strip()
+
+
+def get_dput_target():
+    return subprocess.check_output("grep --max-count=1 '^\[.*\]' ~/.dput.cf", shell=True).strip("\n[]")
+
+
+RETVAL = 0
+try:
+    # Prepare incoming dir and tmp dir for this upload
+    INCOMING = os.path.expanduser("~") + "/incoming/"
+    try:
+        os.makedirs(INCOMING)
+    except:
+        pass
+    TMPDIR = tempfile.mkdtemp(dir=INCOMING)
+    log("I: Accepting incoming dir: {i}".format(i=INCOMING))
+    log("I: Using upload tmp dir: {t}".format(t=TMPDIR))
+
+    # Build up secure command to use from original command
+    ORIGINAL_COMMAND = os.environ.get("SSH_ORIGINAL_COMMAND", "").split()
+    log("I: Original command: ", ORIGINAL_COMMAND)
+    COMMAND = []
+    ALLOWED_ITEMS = ["scp", "-p", "-d", "-t"]
+    IT = iter(ORIGINAL_COMMAND)
+    for N in IT:
+        if N in ALLOWED_ITEMS:
+            if N == "-t":
+                target = next(IT)
+                if target != INCOMING:
+                    raise Exception("Seems you got the incoming dir wrong.")
+                COMMAND.append("-t")
+                COMMAND.append(TMPDIR)
+            else:
+                COMMAND.append(N)
+        else:
+            raise Exception("Option not allowed: {o}.".format(o=N))
+
+    # Transfer files
+    log("I: Uploading files via: ", COMMAND)
+    subprocess.check_call(COMMAND)
+    log("I: Upload successful to: {t}".format(t=TMPDIR))
+
+    # Compute changes file
+    CHANGES = glob.glob(TMPDIR + "/*.changes")
+    log("I: Found changes: {c}".format(c=CHANGES))
+    if len(CHANGES) != 1:
+        raise Exception("Multiple changes files uploaded.")
+
+    # Re-sign changes file with our GPG key
+    SIGN_COMMAND = "debsign --re-sign -k{k} {c}".format(k=get_key_id(), c=CHANGES[0])
+    log("I: SIGN_COMMAND: {c}".format(c=SIGN_COMMAND))
+    log(subprocess.check_output(SIGN_COMMAND, shell=True))
+
+    # Upload to the actual mini-buildd
+    DPUT_COMMAND = "dput {t} {c}".format(t=get_dput_target(), c=CHANGES[0])
+    log("I: DPUT_COMMAND: {c}".format(c=DPUT_COMMAND))
+    log(subprocess.check_output(DPUT_COMMAND, shell=True))
+
+except Exception as e:
+    log("""\
+
+*ERROR*: {e}
+
+Please only use 'dput' on me, and check that your target in
+'~/.dput.cf' looks like this:
+---
+[{t}]
+method   = scp
+login    = {u}
+fqdn     = {h}
+incoming = {i}
+---
+    """.format(e=e, t=get_dput_target() + "-ssh-upload", u=os.getenv("USER"), h=socket.getfqdn(), i=INCOMING))
+    RETVAL = 1
+finally:
+    shutil.rmtree(TMPDIR, ignore_errors=True)
+
+sys.exit(RETVAL)

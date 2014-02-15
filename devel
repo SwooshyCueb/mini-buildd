@@ -189,7 +189,8 @@ mbd_pydjangolint()
 
 mbd_check()
 {
-	local tests="pep8 pymisc pydoctests pyflakes pylint pydjangolint"
+	# 2014 Feb: 'pydjangolint' removed: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=735199
+	local tests="pep8 pymisc pydoctests pyflakes pylint"
 	for t in ${tests}; do
 		printf "=> mbd_${t}\n"
 		mbd_${t}

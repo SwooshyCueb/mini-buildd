@@ -692,6 +692,10 @@ class UserURL(object):
             return self.plain
 
 
+def qualname(obj):
+    return "{m}.{c}".format(m=obj.__module__, c=obj.__class__.__name__)
+
+
 class Keyring(object):
     _SAVE_POLICY_KEY = "save_policy"
 
@@ -699,20 +703,21 @@ class Keyring(object):
         self._service = service
         self._keyring = keyring.get_keyring()
         self._save_policy = self._keyring.get_password(service, self._SAVE_POLICY_KEY)
-        LOG.debug("{c}".format(c=self))
+        LOG.info("Viable keyring backends: {b}".format(b=" ".join([qualname(o) for o in keyring.backend.get_all_keyring()])))
+        LOG.info("Hint: You may set up '{r}/keyringrc.cfg' to force a backend.".format(r=keyring_data_root()))
+        LOG.info("Hint: See 'keyringrc.cfg' in the package's docs 'examples' directory for a sample file.")
 
     def __unicode__(self):
-        return "Saving '{s}' passwords to '{k}' with policy '{p}' (config in '{path}')".format(
+        return "Saving '{s}' passwords to '{k}' with policy '{p}'".format(
             s=self._service,
-            k=self._keyring.__class__.__name__,
-            p={"A": "Always", "V": "Never"}.get(self._save_policy, "Ask"),
-            path=keyring_data_root())
+            k=qualname(self._keyring),
+            p={"A": "Always", "V": "Never"}.get(self._save_policy, "Ask"))
 
     def reset_save_policy(self):
+        LOG.warn("Resetting save policy in '{k}' back to 'Ask'.".format(k=qualname(self._keyring)))
         if self._save_policy:
             self._keyring.delete_password(self._service, self._SAVE_POLICY_KEY)
             self._save_policy = None
-            LOG.info("Save policy reset in '{k}'".format(k=self._keyring.__class__.__name__))
 
     def set(self, key, password):
         if self._save_policy:
@@ -728,7 +733,7 @@ Save password for '{k}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=self, k=ke
 
         if answer in ["A", "V"]:
             self._keyring.set_password(self._service, self._SAVE_POLICY_KEY, answer)
-            LOG.info("Password saved to '{k}'".format(k=self._keyring.__class__.__name__))
+            LOG.info("Password saved to '{k}'".format(k=qualname(self._keyring)))
 
         if answer in ["Y", "A"]:
             self._keyring.set_password(self._service, key, password)
@@ -740,7 +745,7 @@ Save password for '{k}': (Y)es, (N)o, (A)lways, Ne(v)er? """.format(c=self, k=ke
 
         password = self._keyring.get_password(self._service, key)
         if password:
-            LOG.info("Password retrieved from '{k}'".format(k=self._keyring.__class__.__name__))
+            LOG.info("Password retrieved from '{k}'".format(k=qualname(self._keyring)))
             new = False
         else:
             password = getpass.getpass("[{k}] Password: ".format(k=key))

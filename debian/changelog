@@ -1,3 +1,17 @@
+mini-buildd (1.0.0~rc.4) unstable; urgency=medium
+
+  Fourth release candidate.
+  * [4650324] examples: Add 'ssh-uploader-command', may be used to
+    facilitate uploads via ssh auth.
+  * [1df2cf3] examples: Add sample 'keyringrc.cfg' for python-keyring
+    (used by mini-buildd-tool).
+  * [f8f48b1] mini-buildd-tool: Be more transparent as to what keyring
+    backend is actually used, and add keyring config hints (via -v).
+  * [3c94a36] [devel] Remove django-lint from standard check (currently
+    broken in sid).
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 16 Feb 2014 15:14:24 +0000
+
 mini-buildd (1.0.0~rc.3) unstable; urgency=medium
 
   Third release candidate.

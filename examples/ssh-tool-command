@@ -1,0 +1,93 @@
+#!/usr/bin/python
+"""Script to use as a 'command' in an authorized_key file to allow mini-buildd-tool runs only via SSH.
+
+You may use this to authorize certain roles (for now: superuser and
+staff) via plain secure SSH.
+
+Steps to install:
+
+As user 'root'::
+
+  adduser --disabled-password mini-buildd-admin
+  adduser --disabled-password mini-buildd-staff
+
+As mini-buildd-[staff|uploader]::
+
+  Set up ~/.dput.cf with exactly one mini-buildd target.
+  Configure python-keyring to use a plaintext keyring, see "/usr/share/doc/mini-buildd/examples/keyringrc.cfg"
+  Run once to save the password:
+   $ mini-buildd-tool admin|staff@TARGET status
+
+As admin user at the mini-buildd instance (web app)::
+
+  Generate apropriate django pseudo users ("admin" does already exist).
+
+To authorize a SSH Key, as user mini-buildd-uploader, add a line like this::
+
+  command="/usr/share/doc/mini-buildd/examples/ssh-tool-command" ssh-rsa AA...
+
+per ssh user key.
+
+As SSH user::
+
+  Run 'ssh mini-buildd-[admin|staff]@your.host.name mini-buildd-tool -x -z -y
+"""
+from __future__ import print_function
+
+import sys
+import os
+import socket
+import subprocess
+
+
+def log(*args):
+    print(*args, file=sys.stderr)
+
+
+def get_dput_target():
+    return subprocess.check_output(r"grep --max-count=1 '^\[.*\]' ~/.dput.cf", shell=True).strip("\n[]")
+
+
+RETVAL = 0
+try:
+    MBD_USER = os.getenv("USER").split("-")[2]
+    MBD_TARGET = get_dput_target()
+
+    # Build up secure command to use from original command
+    ORIGINAL_COMMAND = os.environ.get("SSH_ORIGINAL_COMMAND", "").split()
+    log("I: Original command: ", ORIGINAL_COMMAND)
+    if not ORIGINAL_COMMAND or ORIGINAL_COMMAND[0] != "mini-buildd-tool":
+        raise Exception("You may only run mini-buildd-tool here.")
+    COMMAND = ["mini-buildd-tool", "{u}@{t}".format(u=MBD_USER, t=MBD_TARGET)] + ORIGINAL_COMMAND[1:]
+
+    # Run command
+    log("I: Running: ", COMMAND)
+    log("N: Some commands (like migrate) need a confirmation (but you will not see the prompt here).")
+    log("N: You may of course use '--confirm=CMD' directly to avoid the confirmation.")
+    log("N: In case this stalls here, you need to re-type the mini-buildd-tool command now.")
+    log("---mini-buildd-tool---")
+    subprocess.check_call(COMMAND)
+
+except Exception as e:
+    log("""\
+----------------------------------------------------------------------
+*ERROR*: {e}
+
+You can only call me like this:
+
+ $ ssh {u}@{h} mini-buildd-tool [OPTIONS W/O TARGET...]
+
+It's recommended to update your shell config like so:
+
+ alias mbdt-{id}-{mu}="ssh {u}@{h} mini-buildd-tool"
+
+Examples (using sandbox repo "test"; see 'mini-buildd-tool --help'):
+
+ $ mbdt-{id}-{mu} migrate package wheezy-test-unstable                           # (staff) Migrate a package to testing
+ $ mbdt-{id}-{mu} migrate package wheezy-test-testing                            # (staff) Migrate a package to stable
+ $ mbdt-{id}-{mu} portext http://.../package_0.0.5.dsc wheezy-test-experimental  # (staff) External port to experimental
+ $ mbdt-{id}-{mu} start|stop                                                     # (superuser) Start/stop mini-buildd
+    """.format(e=e, u=os.getenv("USER"), h=socket.getfqdn(), id=MBD_TARGET[12:], mu=MBD_USER))
+    RETVAL = 1
+
+sys.exit(RETVAL)

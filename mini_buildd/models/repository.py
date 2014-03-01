@@ -505,12 +505,12 @@ pimp the internal priority up here.
                 return {"Ubuntu": ["main", "universe", "restricted", "multiverse"]}.get(origin, ["main", "contrib", "non-free"])
 
             for s in mini_buildd.models.source.Source.Admin.mbd_filter_active_base_sources():
-                if mini_buildd.misc.codename_has_lintian_suppress(s.codename):
-                    new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
-                else:
-                    new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s, lintian_mode=Distribution.LINTIAN_RUN_ONLY)
+                new_dist, created = Distribution.mbd_get_or_create(msglog, base_source=s)
 
                 if created:
+                    if not mini_buildd.misc.codename_has_lintian_suppress(s.codename):
+                        new_dist.lintian_mode = Distribution.LINTIAN_RUN_ONLY
+
                     # Auto-add known default components or Origin
                     for c in default_components(s.origin):
                         component = mini_buildd.models.source.Component.objects.get(name__exact=c)
@@ -529,6 +529,9 @@ pimp the internal priority up here.
                                                                  build_architecture_all=archall)
                         architecture_option.save()
                         archall = False
+
+                    # Save changes to Distribution model
+                    new_dist.save()
 
     def __unicode__(self):
         return "{o} '{b}': {c} ({a}) + ({x})".format(o=self.base_source.origin,

@@ -1,3 +1,16 @@
+mini-buildd (1.0.0~rc.5) unstable; urgency=medium
+
+  Fifth release candidate.
+  * [835f91a] examples: Add 'ssh-tool-command', may be used to faciliate
+    mbd-tool runs via ssh auth.
+  * [ccb271f] Wizard(Archive): Switch to 'archive.ubuntu.com' as default
+    Ubuntu archive (previous default no longer worked).
+  * [a07c12e] Wizard(Distribution): Really always avoid creation of
+    "duplicate" instances.
+  * [2d32524] [devel] Add tox.ini to help with emacs 'elpy' python mode.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 02 Mar 2014 13:11:15 +0000
+
 mini-buildd (1.0.0~rc.4) unstable; urgency=medium
 
   Fourth release candidate.

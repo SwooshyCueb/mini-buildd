@@ -67,7 +67,7 @@ Depends: ${misc:Depends},
          lintian,
          devscripts (>= 2.10.15)
 Recommends: python-apt
-Suggests: haveged, lvm2, qemu-user-static, binfmt-support
+Suggests: haveged, lvm2, qemu-user-static, binfmt-support, debootstrap (>= 1.0.55~)
 Breaks: mini-buildd-rep (<< 1.0.0~),
         mini-buildd-bld (<< 1.0.0~)
 Replaces: mini-buildd-rep,

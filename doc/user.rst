@@ -109,6 +109,18 @@ Using the repository
 Upload a package
 ****************
 
+Changelog Magic Lines (per-upload control)
+==========================================
+
+``mini-buildd`` currently supports these so called ``magic
+lines`` as changelog entry to control it on a per-upload basis::
+
+	MINI_BUILDD: BACKPORT_MODE
+	  Make QA-Checks that usually break when backporting unlethal (like lintian).
+
+	MINI_BUILDD: AUTO_BACKPORTS: CODENAME-REPOID-SUITE[,CODENAME-REPOID-SUITE...]
+	  After successful build for the upload distribution, create and upload automatic internal ports for the given distributions.
+
 .. _user_api:
 
 *************

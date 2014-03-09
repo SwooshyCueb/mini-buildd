@@ -123,15 +123,22 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
             # Append dists to URL for ping check: Archive may be
             # just fine, but not allow to access to base URL
             # (like ourselves ;). Any archive _must_ have dists/ anyway.
-            urllib2.urlopen("{u}/dists/".format(u=self.url))
+            try:
+                urllib2.urlopen("{u}/dists/".format(u=self.url))
+            except urllib2.HTTPError as e:
+                # Allow HTTP 4xx client errors through; these might be valid use cases like:
+                # 404 Usage Information: apt-cacher-ng
+                if not 400 <= e.code <= 499:
+                    raise
+
             delta = datetime.datetime.now() - t0
             self.ping = mini_buildd.misc.timedelta_total_seconds(delta) * (10 ** 3)
             self.save()
             MsgLog(LOG, request).debug("{s}: Ping!".format(s=self))
-        except:
+        except Exception as e:
             self.ping = -1.0
             self.save()
-            raise Exception("{s}: Does not ping.".format(s=self))
+            raise Exception("{s}: Does not ping: {e}".format(s=self, e=e))
 
     def mbd_get_reverse_dependencies(self):
         "Return all sources (and their deps) that use us."

@@ -69,7 +69,6 @@ Example Use Cases
 	* Checkout what No-Changes-Ports are possible.
 	* Add a fake user as admin, and spam a colleague with mini-buildd status mails.
 * *Debian User*: Maintain a personal package archive. Publish it to your web space via debmirror.
-* *Debian Developer*: Replace your pbuilder setup.
 * *Organization*: Set up an archive for all organizational extra packages, ports, etc.
 
 

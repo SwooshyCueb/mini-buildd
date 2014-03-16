@@ -1,3 +1,19 @@
+mini-buildd (1.0.0) unstable; urgency=medium
+
+  Initial 1.0.x stable release.
+  * [b689f4a] debian/control: Needs python >=2.7 (we are actually no
+    longer compat with python 2.6).
+  * [6549ed4] debian/control: Suggest debootstrap >= 1.0.55 (this will
+    actually support all codenames currently in the wizards).
+  * [57f25e1] doc: Add raw doc for the "magic changelog lines".
+  * [ec1eca3] Bug fix: "[INTL:it]" (i18n update) Thanks to Pierangelo
+    Mancusi (Closes: #740853)
+  * [efad690] Bug fix: "ping mechanism still fails, this time on apt-
+    cacher-ng" Thanks to Klee Dienes (Closes: #740576)
+  * [9cd7735] doc/introduction.rst: Remove note about pbuilder.
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 16 Mar 2014 17:39:00 +0100
+
 mini-buildd (1.0.0~rc.5) unstable; urgency=medium
 
   Fifth release candidate.

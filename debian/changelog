@@ -1,6 +1,10 @@
 mini-buildd (1.1.0) UNRELEASED; urgency=medium
 
   Initial 1.1.x unstable release.
+  * [805994c] debian/changelog: Pseudo entry to pimp version to 1.1.x.
+  * [d85d2d4] Add all available sources.lists to keyring packages for easy
+    integration.
+  * [de66ac4] debian/changelog: Fix up pseudo header for 1.1.x.
 
  -- Stephan Sürken <absurd@debian.org>  Sun, 13 Apr 2014 08:45:13 +0000
 

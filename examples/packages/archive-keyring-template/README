@@ -1,1 +1,11 @@
-This is an automated keyring package for a mini-buildd archive.
+This is the automated keyring package for the
+
+mini-buildd archive "%ID%".
+
+This also includes all the available APT "sources.list files"
+for this archive in
+
+/usr/share/mini-buildd/sources.list.d/
+
+so you can easily select sources via symlinks in
+"/etc/apt/sources.list.d/".

@@ -378,10 +378,11 @@ codeversion is only used for base sources.""")
         else:
             raise Exception("{s}: No archive found. Please add appropriate archive and/or check network setup.".format(s=self))
 
-    def mbd_get_apt_line(self, distribution):
+    def mbd_get_apt_line(self, distribution, prefix="deb "):
         allowed_components = [c.name for c in distribution.components.all()]
         components = sorted([c for c in self.components.all() if c.name in allowed_components], cmp=cmp_components)
-        return "deb {u} {d} {c}".format(
+        return "{p}{u} {d} {c}".format(
+            p=prefix,
             u=self.mbd_get_archive().url,
             d=self.codename + ("" if components else "/"),
             c=" ".join([c.name for c in components]))

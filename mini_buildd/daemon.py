@@ -226,6 +226,20 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
         # Export public GnuPG key into the package
         gpg.export(os.path.join(p, self.package_name + ".gpg"), identity=self.key_id)
 
+        # Generate sources.lists
+        daemon = get()
+        for r in mini_buildd.models.repository.Repository.objects.all():
+            for d in r.distributions.all():
+                for s in r.layout.suites.all():
+                    apt_id = "{codename}_{archive}_{repository}_{suite}".format(codename=d.base_source.codename,
+                                                                                archive=daemon.model.identity,
+                                                                                repository=r.identity,
+                                                                                suite=s.name)
+                    for prefixes, appendix in ((["deb "], ""), ((["deb-src "], "_src"))):
+                        apt_lines = daemon.mbd_get_sources_list(d.base_source.codename, r.identity, s.name, prefixes=prefixes, with_extra_sources=False)
+                        file_name = "{id}{appendix}.list".format(id=apt_id, appendix=appendix)
+                        mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_lines)
+
         # Generate changelog entry
         mini_buildd.misc.call(["debchange",
                                "--create",
@@ -687,13 +701,8 @@ class Daemon(object):
         return DSTPackage("/usr/share/doc/mini-buildd/examples/packages/mbd-test-{i}".format(i=id_),
                           version=DebianVersion.stamp())
 
-    def mbd_get_sources_list(self, codename, repo_regex, suite_regex, with_deb_src, with_extra_sources):
+    def mbd_get_sources_list(self, codename, repo_regex, suite_regex, prefixes, with_extra_sources):
         apt_lines = []
-
-        def _add(line):
-            apt_lines.append(line)
-            if with_deb_src:
-                apt_lines.append("deb-src {l}".format(l=line[4:]))
 
         for r in mini_buildd.models.repository.Repository.objects.filter(identity__regex=r"^{r}$".format(r=repo_regex)):
             repo_info = "mini-buildd '{i}': Repository '{r}'".format(i=self.model.identity, r=r.identity)
@@ -701,12 +710,14 @@ class Daemon(object):
                 if with_extra_sources:
                     apt_lines.append("# {i}: Extra sources".format(i=repo_info))
                     for e in d.extra_sources.all():
-                        _add(e.source.mbd_get_apt_line(d))
+                        for p in prefixes:
+                            apt_lines.append(e.source.mbd_get_apt_line(d, prefix=p))
                     apt_lines.append("")
 
                 apt_lines.append("# {i}: Sources".format(i=repo_info))
                 for s in r.layout.suiteoption_set.filter(suite__name__regex=r"^{r}$".format(r=suite_regex)):
-                    _add(d.mbd_get_apt_line(r, s))
+                    for p in prefixes:
+                        apt_lines.append(d.mbd_get_apt_line(r, s, prefix=p))
         return "\n".join(apt_lines) + "\n"
 
 

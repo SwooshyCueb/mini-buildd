@@ -297,7 +297,7 @@ class GetSourcesList(Command):
         self._plain_result = daemon.mbd_get_sources_list(self.args["codename"],
                                                          self.args["repository"],
                                                          self.args["suite"],
-                                                         self.has_flag("with_deb_src"),
+                                                         ["deb ", "deb-src "] if self.has_flag("with_deb_src") else ["deb "],
                                                          self.has_flag("with_extra_sources"))
 
 

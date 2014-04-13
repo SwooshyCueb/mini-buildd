@@ -33,6 +33,9 @@ binary-indep: checkroot
 	gzip -9 -v debian/tmp/usr/share/doc/%ID%-archive-keyring/*
 	$(instfile) debian/copyright debian/tmp/usr/share/doc/%ID%-archive-keyring/
 
+	$(instdir) debian/tmp/usr/share/mini-buildd/sources.list.d/
+	cp -a *.list debian/tmp/usr/share/mini-buildd/sources.list.d/
+
 	dpkg-gencontrol -p%ID%-archive-keyring -isp
 	chown -R root.root debian/tmp
 	chmod -R go=rX debian/tmp

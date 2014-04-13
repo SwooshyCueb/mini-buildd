@@ -552,8 +552,9 @@ pimp the internal priority up here.
     def mbd_get_mandatory_architectures(self):
         return [a.architecture.name for a in self.architectureoption_set.all() if not a.optional]
 
-    def mbd_get_apt_line(self, repository, suite_option):
-        return "deb {u}{r}/{i}/ {d} {c}".format(
+    def mbd_get_apt_line(self, repository, suite_option, prefix="deb "):
+        return "{p}{u}{r}/{i}/ {d} {c}".format(
+            p=prefix,
             u=self.mbd_get_daemon().model.mbd_get_http_url(),
             r=os.path.basename(mini_buildd.setup.REPOSITORIES_DIR),
             i=repository.identity,

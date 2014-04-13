@@ -1,7 +1,8 @@
-mini-buildd (1.1.0~~UNRELEASED) UNRELEASED; urgency=medium
+mini-buildd (1.1.0) UNRELEASED; urgency=medium
 
+  Initial 1.1.x unstable release.
 
- -- Stephan Sürken <absurd@debian.org>  Sun, 16 Mar 2014 19:02:52 +0100
+ -- Stephan Sürken <absurd@debian.org>  Sun, 13 Apr 2014 08:45:13 +0000
 
 mini-buildd (1.0.0) unstable; urgency=medium
 

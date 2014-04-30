@@ -80,6 +80,9 @@ try:
         if N in ALLOWED_ITEMS:
             if N == "-t":
                 target = next(IT)
+                # Workaround: squeeze's dput seems to add a "--" between -t and the directory option, we should skip that
+                if target == "--":
+                    target = next(IT)
                 if target != INCOMING:
                     raise Exception("Seems you got the incoming dir wrong.")
                 COMMAND.append("-t")

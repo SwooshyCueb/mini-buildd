@@ -1,3 +1,13 @@
+mini-buildd (1.0.1) unstable; urgency=medium
+
+  * [d85d2d4] Add all available sources.lists to keyring packages for easy
+    integration.
+  * [33be1bd] examples/ssh-uploader-command: Add workaround to make it
+    work for squeeze's dput (0.9.6).
+  * [71b9e6f] wizards: Add support for Ubuntu "trusty".
+
+ -- Stephan Sürken <absurd@debian.org>  Mon, 05 May 2014 18:26:07 +0000
+
 mini-buildd (1.0.0) unstable; urgency=medium
 
   Initial 1.0.x stable release.

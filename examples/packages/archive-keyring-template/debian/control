@@ -7,5 +7,6 @@ Standards-Version: 3.9.1
 Package: %ID%-archive-keyring
 Architecture: all
 Depends: gnupg, apt
-Description: mini-buildd archive keys for %ID%
- Automatic archive keys for mini-buildd instance id %ID%.
+Description: mini-buildd archive keys (and sources.lists) for %ID%
+ Automatic archive keys and APT sources.list library for
+ mini-buildd instance id %ID%.

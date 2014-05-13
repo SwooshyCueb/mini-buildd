@@ -1,0 +1,82 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+"""keyring-packages should be available in all
+(non-experimental) suites, and most importantly in the 'upmost'
+(stable) suite. These packages usually don't really need an
+audit/manual migration, so this automates this tedious task (as
+long as there is no support for this in mini-buildd itself).
+
+No need to change SUITES if your are using (one of) the default
+layouts.
+
+1.0.x: No need to change PROTO unless you set up a https proxy
+(and want to use it).
+
+Typical example:
+
+migrate-keyring-packages my-archive admin@my-host.intra.net:8066
+"""
+from __future__ import unicode_literals
+from __future__ import print_function
+
+import sys
+import pickle
+import urllib2
+
+import mini_buildd.misc
+
+
+def print_daemon_messages(headers):
+    "Stolen from mini-buildd-tool"
+    msgs_header = "x-mini-buildd-message"
+    for msg in [v for k, v in headers.items() if msgs_header == k[:len(msgs_header)]]:
+        print("mini-buildd says: {m}".format(m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
+    print("", file=sys.stderr)
+
+
+def http_get(url, args):
+    get_args = "&".join("{k}={v}".format(k=k, v=v) for k, v in args.items())
+    url = "{url}?{args}&output=python".format(url=url, args=get_args)
+    print("API call URL: {}".format(url))
+    response = urllib2.urlopen(url)
+    print_daemon_messages(response.headers)
+    return response.read()
+
+
+def http_get_python(url, args):
+    a = dict(args)
+    a.update({"output": "python"})
+    return pickle.loads(http_get(url, a))
+
+
+# Setup
+try:
+    # @todo: The archive id should be in status, too
+    ARCHIVE_ID = sys.argv[1]
+    USER, DUMMY, HOST = sys.argv[2].rpartition("@")
+    PROTO = sys.argv[3] if len(sys.argv) > 3 else "http"
+    # @todo: Suite names should be in status, too
+    SUITES = sys.argv[4].split(",") if len(sys.argv) > 4 else ["unstable", "testing"]
+except:
+    print("Usage: migrate-keyring-packages ARCHIVE_ID USER@my-host.xyz[:PORT] [PROTO=http] [SUITES=unstable,testing]", file=sys.stderr)
+    sys.exit(1)
+
+# Login. Use the user's mini-buildd keyring for auth, like mini-buildd-tool
+KEYRING = mini_buildd.misc.Keyring("mini-buildd")
+mini_buildd.misc.web_login(HOST, USER, KEYRING)
+
+# Get status
+URL = "{proto}://{host}/mini_buildd/api".format(proto=PROTO, host=HOST)
+STATUS = http_get_python(URL, {"command": "status"})
+
+# Try to run migrate on each found dist for the keyring package
+for R, CODENAMES in STATUS.repositories.items():
+    for C in CODENAMES:
+        for s in SUITES:
+            DIST = "{c}-{r}-{s}".format(c=C, r=R, s=s)
+            PACKAGE = "{id}-archive-keyring".format(id=ARCHIVE_ID)
+            print("\nTrying to migrate {} from: {}".format(PACKAGE, DIST))
+            try:
+                http_get(URL, {"command": "migrate", "confirm": "migrate", "package": PACKAGE, "distribution": DIST})
+            except urllib2.HTTPError as e:
+                print_daemon_messages(e.headers)

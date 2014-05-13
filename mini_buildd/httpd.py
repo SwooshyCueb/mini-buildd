@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-import sys
 import os
 import re
 import stat
@@ -195,12 +194,11 @@ def run(bind, wsgi_app):
 
     # Serve mini_buildd webapp's static directory
     add_static_handler("/static",
-                       "/usr/share/pyshared/mini_buildd/static")
+                       "{p}/mini_buildd/static".format(p=mini_buildd.setup.PY_PACKAGE_PATH))
 
     # Serve django admin webapp's static directory
     add_static_handler("/static/admin",
-                       "/usr/lib/python{major}.{minor}/dist-packages/django/contrib/admin/static/admin".format(major=sys.version_info[0],
-                                                                                                               minor=sys.version_info[1]))
+                       "{p}/django/contrib/admin/static/admin".format(p=mini_buildd.setup.PY_PACKAGE_PATH))
 
     # Serve mini-buildd's HTML manual
     add_static_handler("/doc",

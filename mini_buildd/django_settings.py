@@ -88,7 +88,7 @@ def configure(smtp_string, loglevel):
         EMAIL_HOST_USER=smtp.user,
         EMAIL_HOST_PASSWORD=smtp.password,
 
-        TEMPLATE_DIRS=["/usr/share/pyshared/mini_buildd/templates"],
+        TEMPLATE_DIRS=["{p}/mini_buildd/templates".format(p=mini_buildd.setup.PY_PACKAGE_PATH)],
         TEMPLATE_LOADERS=(
             "django.template.loaders.filesystem.Loader",
             "django.template.loaders.app_directories.Loader"),

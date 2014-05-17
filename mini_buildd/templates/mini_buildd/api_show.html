@@ -102,7 +102,9 @@
 													<input type="hidden" name="package" value="{{ values.source }}" />
 													<input type="hidden" name="from_distribution" value="{{ values.distribution }}" />
 													<input type="hidden" name="version" value="{{ values.sourceversion }}" />
-													<select name="to_distributions" size="5" multiple="multiple" title="Distribution(s) to port to">
+													<input id="mbd_port_filter_{{ values.distribution }}" type="text" title="Bulk-select distributions via regex" onchange="mbdSelectByRegex('mbd_port_to_distributions_{{ values.distribution }}', 'mbd_port_filter_{{ values.distribution }}')"/>
+													<br />
+													<select id="mbd_port_to_distributions_{{ values.distribution }}" name="to_distributions" size="10" multiple="multiple" title="Distribution(s) to port to">
 														{% mbd_distribution_options repository uploadable=True experimental=values.experimental %}
 													</select>
 													<input type="hidden" name="output" value="referer" />

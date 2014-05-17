@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
+import sys
 import logging
 
 DEBUG = []
@@ -26,6 +27,9 @@ MANUAL_DIR = None
 
 # This should never ever be changed
 CHAR_ENCODING = "UTF-8"
+
+# Compute python-version dependent install path
+PY_PACKAGE_PATH = "/usr/lib/python{major}.{minor}/dist-packages".format(major=sys.version_info[0], minor=sys.version_info[1])
 
 
 def log_exception(log, message, exception, level=logging.ERROR):

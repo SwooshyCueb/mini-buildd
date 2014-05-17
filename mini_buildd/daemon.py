@@ -230,15 +230,17 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
         daemon = get()
         for r in mini_buildd.models.repository.Repository.objects.all():
             for d in r.distributions.all():
-                for s in r.layout.suites.all():
-                    apt_id = "{codename}_{archive}_{repository}_{suite}".format(codename=d.base_source.codename,
-                                                                                archive=daemon.model.identity,
-                                                                                repository=r.identity,
-                                                                                suite=s.name)
-                    for prefixes, appendix in ((["deb "], ""), ((["deb-src "], "_src"))):
-                        apt_lines = daemon.mbd_get_sources_list(d.base_source.codename, r.identity, s.name, prefixes=prefixes, with_extra_sources=False)
-                        file_name = "{id}{appendix}.list".format(id=apt_id, appendix=appendix)
-                        mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_lines)
+                for s in r.layout.suiteoption_set.all():
+                    for rb in [None] + range(s.rollback):
+                        file_base = "{codename}_{archive}_{repository}_{suite}{rollback}".format(codename=d.base_source.codename,
+                                                                                                 archive=daemon.model.identity,
+                                                                                                 repository=r.identity,
+                                                                                                 suite=s.suite.name,
+                                                                                                 rollback="" if rb is None else "-rollback{rb}".format(rb=rb))
+                        for prefix, appendix in [("deb ", ""), ("deb-src ", "_src")]:
+                            apt_line = d.mbd_get_apt_line(r, s, rollback=rb, prefix=prefix)
+                            file_name = "{base}{appendix}.list".format(base=file_base, appendix=appendix)
+                            mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_line)
 
         # Generate changelog entry
         mini_buildd.misc.call(["debchange",

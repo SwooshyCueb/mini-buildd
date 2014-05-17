@@ -64,7 +64,9 @@
 										<input type="hidden" name="output" value="referer" />
 										<input name="dsc" type="text" size="80" title="URL of any Debian source package (dsc)" value="" />
 										<br />
-										<select name="distributions" multiple="multiple" title="Distribution(s) to port to">
+										<input id="mbd_portext_filter" type="text" title="Bulk-select distributions via regex" onchange="mbdSelectByRegex('mbd_portext_distributions', 'mbd_portext_filter')"/>
+										<br />
+										<select id="mbd_portext_distributions" name="distributions" multiple="multiple" size="10" title="Distribution(s) to port to">
 											{% mbd_distribution_options r uploadable=True %}
 										</select>
 										<br />
@@ -72,7 +74,6 @@
 									</div>
 								</form>
 							</div>
-
 						</li>
 					{% empty %}
 						<li>No repositories.</li>

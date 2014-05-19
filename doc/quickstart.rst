@@ -119,6 +119,47 @@ User's Quickstart
 **Goal**: Walk through the most important use cases.
 
 
+"Bootstrap" a system's APT for a mini-buildd archive
+====================================================
+
+The resp. archive's *keyring package* includes both, the APT key
+as well as a "library" of all sources available (for easy
+integration via ``/etc/apt/sources.list.d/``).
+
+However, the *keyring package* also is **in** the archive, so we
+need some initial fiddling to get it installed in the first
+place.
+
+**1st**, on `mini-buildd's home </mini_buildd/>`_, jump to the
+repository overview page (if there are more than one, use the
+repository you intend to actually use on the system
+later). Select the ``stable`` suite of your base distribution's
+(i.e., squeeze, wheezy, jessie,...) APT line, and then::
+
+	# echo "APT_LINE" >/etc/apt/sources.list.d/tmp.list
+	# apt-get update
+	# apt-get --allow-unauthenticated install ARCHIVE-archive-keyring
+	# rm /etc/apt/sources.list.d/tmp.list
+
+.. note:: You may also get the resp. APT line via
+					``mini-buildd-tool`` via the ``getsourceslist`` API
+					call in case you have it installed already.
+
+.. note:: You may compare the key' fingerprint (``apt-key
+					finger``) with the one on `mini-buildd's home
+					</mini_buildd/>`_. There might also be other means set
+					up by the local administrator to cross-verify the key.
+
+**2nd**, re-add the stable sources.list back in via
+"sources.list library", somewhat like::
+
+	# cd /etc/apt/sources.list.d
+	# ln -s /usr/share/mini-buildd/sources.list.d/CODENAME_ARCHIVE_REPO_stable.list .
+	# apt-get update
+
+Now you can **opt in or out other sources** from the archive
+just by *adding or removing symlinks*.
+
 Install the command line tool
 =============================
 Access API calls from the command line via ``mini-buildd-tool``::
@@ -128,17 +169,6 @@ Access API calls from the command line via ``mini-buildd-tool``::
 The remaining Quickstart will just use ``mini-buildd-tool`` as
 example, however the API could also just be accessed via the web
 interface.
-
-
-Install from mini-buildd repositories
-=====================================
-
-Setup the apt sources on your system somewhat like that::
-
-	# mini-buildd-tool HOST getsourceslist $(lsb_release -s -c) >/etc/apt/sources.list.d/my-mini-buildd.list
-	# apt-get update
-	# apt-get --allow-unauthenticated install ARCHIVE-archive-keyring
-	# apt-get update
 
 
 Setup your user account

@@ -101,7 +101,7 @@ try:
     CHANGES = glob.glob(TMPDIR + "/*.changes")
     log("I: Found changes: {c}".format(c=CHANGES))
     if len(CHANGES) != 1:
-        raise Exception("Multiple changes files uploaded.")
+        raise Exception("{} changes files uploaded (only upload exactly one).".format(len(CHANGES)))
 
     # Re-sign changes file with our GPG key
     SIGN_COMMAND = "debsign --re-sign -k{k} {c}".format(k=get_key_id(), c=CHANGES[0])

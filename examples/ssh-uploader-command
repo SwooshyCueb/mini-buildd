@@ -6,6 +6,8 @@ Steps to install 'uploads via SSH' (uses 'mini-buildd-uploader' as user name).
 As user 'root'::
 
   adduser --disabled-password mini-buildd-uploader
+  # OPTIONAL: Allows 'auth log' with the fingerprint
+  adduser mini-buildd-uploader adm
 
 As mini-buildd-uploader::
 
@@ -44,6 +46,53 @@ import shutil
 import socket
 import tempfile
 import subprocess
+import re
+import getpass
+import syslog
+
+
+# Use syslog, facility user, to log access and key
+syslog.openlog(facility=syslog.LOG_USER)
+
+def auth_log(msg):
+    """
+    Uff. Dirty hack to get an 'auth' log including the ssh fingerprint.
+
+    Needs sshd on loglevel=VERBOSE, and the user needs access to
+    auth.log (i.e., add user to group 'adm' in standard Debian).
+    """
+    def getpppid():
+        "Get grandparent PID."
+        return subprocess.check_output("/bin/ps -p {ppid} -oppid=".format(ppid=os.getppid()), shell=True).strip()
+
+    def get_last_matching_line(file_name, regex):
+        result = None
+        with open(file_name) as f:
+            for line in f:
+                if re.match(regex, line):
+                    result = line
+        return result
+
+    def get_fingerprint():
+        try:
+            line = get_last_matching_line("/var/log/auth.log", "^.*sshd\[{pppid}\]: Found matching .* key: .*".format(pppid=getpppid()))
+            fp = line.rpartition(" ")[2].strip()
+        except:
+            fp = "NO_FINGERPRINT_FOUND"
+        return fp
+
+    command = os.environ.get("SSH_ORIGINAL_COMMAND", "NO_COMMAND_FOUND")
+    ip = os.environ.get("SSH_CONNECTION", "NO_IP_FOUND").partition(" ")[0]
+    try:
+        host = socket.gethostbyaddr(ip)[0]
+    except:
+        host = ip
+
+    syslog.syslog(syslog.LOG_NOTICE, "{msg}: [{user}] {fp}@{host} \"{command}\"".format(msg=msg,
+                                                                                        user=getpass.getuser(),
+                                                                                        host=host,
+                                                                                        fp=get_fingerprint(),
+                                                                                        command=command))
 
 
 def log(*args):
@@ -113,7 +162,12 @@ try:
     log("I: DPUT_COMMAND: {c}".format(c=DPUT_COMMAND))
     log(subprocess.check_output(DPUT_COMMAND, shell=True))
 
+    # Try to do the auth log
+    auth_log("SUCCESS")
+
 except Exception as e:
+    auth_log("FAILED")
+
     log("""\
 
 *ERROR*: {e}

@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# django false-positives:
+# pylint: disable=E1123,E1120
 from __future__ import unicode_literals
 
 import os

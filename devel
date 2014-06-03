@@ -157,7 +157,7 @@ mbd_pylint()
 	_check_prog pylint
 	(
 		pyenv
-		pylint --reports=no setup.py mini-buildd mini-buildd-tool mini_buildd/
+		pylint setup.py mini-buildd mini-buildd-tool mini_buildd/
 	)
 }
 

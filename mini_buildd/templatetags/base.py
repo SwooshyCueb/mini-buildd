@@ -38,6 +38,7 @@ def mbd_model_count(model):
         return ""
 
     try:
+        # pylint: disable=W0123
         model_class = eval("mini_buildd.models.{m}".format(m=model))
         is_status_model = getattr(model_class, "mbd_is_prepared", None)
         total = model_class.objects.all().count()

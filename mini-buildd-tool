@@ -28,6 +28,7 @@ def host_completer(prefix, **kwargs):
     dput_cf = ConfigParser.RawConfigParser()
     dput_cf.read(os.path.expanduser("~/.dput.cf"))
     for section in dput_cf.sections():
+        # pylint: disable=W0640
         def _join(host, user):
             if user:
                 return "{u}@{h}".format(u=user, h=host)

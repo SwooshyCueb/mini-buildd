@@ -2,10 +2,14 @@
 
 # E1002: too many false-positives with django 1.5
 disable=E1002,
-        C0111,C0301,
+        C0111,C0301,C0330,
         W0142,W0232,W0603,W0702,W0703,
         I0011,
         R0401,W0621
+
+[REPORTS]
+reports=no
+msg-template={path}:{line}: [{msg_id}({symbol}), {obj}] {msg}
 
 [FORMAT]
 max-module-lines=1500

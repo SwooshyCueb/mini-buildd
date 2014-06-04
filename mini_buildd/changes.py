@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# django false-positives:
+# pylint: disable=E1123,E1120
 from __future__ import unicode_literals
 
 import os
@@ -48,7 +50,7 @@ class Changes(debian.deb822.Changes):
         else:
             self._type = self.TYPE_DEFAULT
 
-        super(Changes, self).__init__([] if self._new else file(file_path))
+        super(Changes, self).__init__([] if self._new else open(file_path))
         # Be sure base dir is always available
         mini_buildd.misc.mkdirs(os.path.dirname(file_path))
 
@@ -323,7 +325,7 @@ class Changes(debian.deb822.Changes):
         # - Add missing from pool (i.e., orig.tar.gz).
         # - make sure all files from dsc are actually available
         files_from_pool = []
-        dsc = debian.deb822.Dsc(file(self.dsc_file_name))
+        dsc = debian.deb822.Dsc(open(self.dsc_file_name))
         for f in dsc["Files"]:
             in_changes = f["name"] in self.get_files(key="name")
             from_pool = False

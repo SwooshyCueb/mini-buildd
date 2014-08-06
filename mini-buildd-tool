@@ -94,7 +94,9 @@ def print_daemon_messages(headers, host):
     "Output daemon messages to stderr"
     msgs_header = "x-mini-buildd-message"
     for msg in [v for k, v in headers.items() if msgs_header == k[:len(msgs_header)]]:
-        print("[{h}] {m}".format(h=host, m=mini_buildd.misc.b642u(msg)), file=sys.stderr)
+        # msg line in unicode, use preferred encoding for print only (avoid mixing unicode/str in .format)
+        msg_line = "[{h}] {m}".format(h=host, m=mini_buildd.misc.b642u(msg))
+        print(msg_line.encode(locale.getpreferredencoding(), "backslashreplace"), file=sys.stderr)
     print("", file=sys.stderr)
 
 
@@ -135,7 +137,7 @@ def cmd_call(args):
     if sys.stdout.isatty() and http_args["output"] == "plain":
         # On plain output to a tty, try to encode to the preferred locale
         encoding = response.headers["content-type"].partition("charset=")[2]
-        sys.stdout.write(unicode(result, encoding if encoding else "UTF-8").encode(locale.getpreferredencoding()))
+        sys.stdout.write(unicode(result, encoding if encoding else "UTF-8").encode(locale.getpreferredencoding(), "backslashreplace"))
     else:
         sys.stdout.write(result)
 

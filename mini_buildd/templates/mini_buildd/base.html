@@ -9,7 +9,8 @@
 			{% with api_cmd.args.package as package %}
 				<a href="/mini_buildd/api?command=show&amp;package={{ package|urlencode }}" title="Show {{ package }} source package">Show package</a>
 				<br />
-				<a href="http://packages.qa.debian.org/common/index.html?src={{ package|urlencode }}" title="Show {{ package }} source package in Debian PTS">Show Debian</a>
+				<a href="https://tracker.debian.org/pkg/{{ package|urlencode }}" title="Show {{ package }} source package in the Debian Package Tracker">Show Debian</a>
+				(<a href="http://packages.qa.debian.org/common/index.html?src={{ package|urlencode }}" title="Show {{ package }} source package in the (traditional) Debian PTS">Old</a>)
 				<br />
 			{% endwith %}
 		{% endif %}

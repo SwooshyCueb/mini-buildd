@@ -134,7 +134,7 @@ lintian) as non-lethal, and will install anyway.
         if rollback is None:
             return dist_string
         else:
-            if not rollback in range(self.rollback):
+            if rollback not in range(self.rollback):
                 raise Exception("Rollback number out of range: {r} ({m})".format(r=rollback, m=self.rollback))
             return "{d}-rollback{r}".format(d=dist_string, r=rollback)
 

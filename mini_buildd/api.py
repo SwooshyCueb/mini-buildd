@@ -60,7 +60,7 @@ different components), or just as safeguard
 
             # Check required
             if sargs[0][:2] != "--" or ("required" in kvsargs and kvsargs["required"]):
-                if not arg in result or not result[arg]:
+                if arg not in result or not result[arg]:
                     raise Exception("Missing required argument '{a}'".format(a=arg))
 
         return result

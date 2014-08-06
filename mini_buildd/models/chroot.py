@@ -254,7 +254,7 @@ personality={p}
         # '/var/lib/schroot/mount/mini-buildd-wheezy-amd64-aaba77f3-4cba-423e-b34f-2b2bbb9789e1: device is busy.'
         # making this fail _and_ leave schroot cruft around.
         # Wtf! Hence we now just skip this ls test for now.
-        #self._mbd_schroot_run(["--directory=/", "--", "/bin/ls"])
+        #  self._mbd_schroot_run(["--directory=/", "--", "/bin/ls"])
 
         # Backend checks
         MsgLog(LOG, request).info("{c}: Running backend check.".format(c=self))

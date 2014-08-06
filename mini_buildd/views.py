@@ -149,7 +149,7 @@ def api(request):
 
         # Get API class from 'command' parameter
         command = request.GET.get("command", None)
-        if not command in mini_buildd.api.COMMANDS_DICT:
+        if command not in mini_buildd.api.COMMANDS_DICT:
             return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
         api_cls = mini_buildd.api.COMMANDS_DICT[command]
 

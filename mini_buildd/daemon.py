@@ -625,6 +625,9 @@ class Daemon(object):
                                   cwd=t.tmpdir,
                                   env=env)
 
+            # Get SHA1 of original dsc file
+            original_dsc_sha1sum = mini_buildd.misc.sha1_of_file(os.path.join(t.tmpdir, os.path.basename(dsc_url)))
+
             # Unpack DSC (note: dget does not support -x to a dedcicated dir).
             dst = "debian_source_tree"
             mini_buildd.misc.call(["dpkg-source",
@@ -648,7 +651,7 @@ class Daemon(object):
                                    "--force-bad-version",
                                    "--preserve",
                                    "--dist={d}".format(d=dist),
-                                   "Automated port via mini-buildd (no changes)."],
+                                   "Automated port via mini-buildd (no changes). Original DSC's SHA1: {s}.".format(s=original_dsc_sha1sum)],
                                   cwd=dst_path,
                                   env=env)
 

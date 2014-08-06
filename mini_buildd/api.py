@@ -484,7 +484,7 @@ class Remove(Command):
     """Remove a source package (along with all binary packages)."""
 
     COMMAND = "remove"
-    AUTH = Command.STAFF
+    AUTH = Command.ADMIN
     CONFIRM = True
     ARGUMENTS = [
         (["package"], {"help": "source package name"}),

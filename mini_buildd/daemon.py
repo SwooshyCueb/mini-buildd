@@ -240,7 +240,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                         for prefix, appendix in [("deb ", ""), ("deb-src ", "_src")]:
                             apt_line = d.mbd_get_apt_line(r, s, rollback=rb, prefix=prefix)
                             file_name = "{base}{appendix}.list".format(base=file_base, appendix=appendix)
-                            mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_line)
+                            mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_line + "\n")
 
         # Generate changelog entry
         mini_buildd.misc.call(["debchange",

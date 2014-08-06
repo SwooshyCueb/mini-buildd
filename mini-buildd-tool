@@ -118,7 +118,7 @@ def cmd_call(args):
     # Confirm if required by this call
     if args.command_class.CONFIRM:
         if not http_args["confirm"]:
-            http_args["confirm"] = raw_input("Repeat command name to confirm: ")
+            http_args["confirm"] = raw_input("Repeat command name '{c}' to confirm: ".format(c=args.command_class.COMMAND))
         if not http_args["confirm"]:
             raise Exception("{c}: Not confirmed, skipped.".format(c=args.command))
 

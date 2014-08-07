@@ -5,6 +5,7 @@ import os
 import logging
 import random
 
+import django
 import django.conf
 
 import mini_buildd.setup
@@ -121,3 +122,9 @@ def configure(smtp_string, loglevel):
             "django_extensions",
             "registration",
             "mini_buildd"))
+
+    try:
+        # django 1.7
+        django.setup()
+    except:
+        pass

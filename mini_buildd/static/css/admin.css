@@ -73,12 +73,6 @@
 
 /* Extension of existing (default) style definitions. */
 
-#user-tools {
-	font-size: 12px;
-	padding: 38px 10px 8px 0px;
-	position: absolute;
-}
-
 /* "mini-buildd"-App Caption */
 #header
 {

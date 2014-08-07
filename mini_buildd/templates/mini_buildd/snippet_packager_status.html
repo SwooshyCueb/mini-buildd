@@ -17,7 +17,7 @@
 			<td>{{ p.changes.distribution }}</td>
 			<td>
 				{% if p.log %}
-					<a href="{{ p.log }}" title="Go to log page">{{ p.changes.version }}</a>
+					<a href="{{ p.log }}/" title="Go to log page">{{ p.changes.version }}</a>
 				{% else %}
 					{{ p.changes.version }}
 				{%endif %}

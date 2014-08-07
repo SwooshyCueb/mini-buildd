@@ -20,8 +20,14 @@ import os
 sys.path.insert(0, os.path.abspath('..'))
 
 # Dummy; needed so django does not freak out on doc building
+import django
 import django.core.management
 os.environ["DJANGO_SETTINGS_MODULE"] = "doc.django_settings"
+try:
+    # django 1.7
+    django.setup()
+except:
+    pass
 
 # Try building models graphic
 try:

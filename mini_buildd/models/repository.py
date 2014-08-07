@@ -735,7 +735,9 @@ Example:
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()
         # Add keys from django users
+        # pylint: disable=E1101
         for u in django.contrib.auth.models.User.objects.filter(is_active=True):
+            # pylint: enable=E1101
             LOG.debug("Checking user: {u}".format(u=u))
 
             uploader = None

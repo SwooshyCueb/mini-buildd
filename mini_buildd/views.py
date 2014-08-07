@@ -203,11 +203,11 @@ def api(request):
 
         elif output == "plain":
             response = django.http.HttpResponse(api_cmd.__unicode__().encode(mini_buildd.setup.CHAR_ENCODING),
-                                                mimetype="text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING))
+                                                content_type="text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING))
 
         elif output == "python":
             response = django.http.HttpResponse(pickle.dumps(api_cmd, pickle.HIGHEST_PROTOCOL),
-                                                mimetype="application/python-pickle")
+                                                content_type="application/python-pickle")
 
         elif output[:7] == "referer":
             # Add all plain result lines as info messages on redirect

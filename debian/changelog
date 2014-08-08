@@ -1,8 +1,67 @@
-mini-buildd (1.1.0) UNRELEASED; urgency=medium
+mini-buildd (1.1.0~~0) UNRELEASED; urgency=medium
 
-  1.1.x unstable pseudo header.
+  * [d85d2d4] Add all available sources.lists to keyring packages for easy
+    integration.
+  * [de66ac4] debian/changelog: Fix up pseudo header for 1.1.x.
+  * [fb0d6a3] Revert "debian/changelog: Pseudo entry to pimp version to
+    1.1.x."
+  * [928dbfa] debian/changelog: Include all changes sine 1.0.0 to make git
+    dch happy.
+  * [33be1bd] examples/ssh-uploader-command: Add workaround to make it
+    work for squeeze's dput (0.9.6).
+  * [71b9e6f] wizards: Add support for Ubuntu "trusty".
+  * [c3b3a4f] Prepare 1.0.1
+  * [f374128] keyring package, 'APT sources library': Support the rollback
+    distributions, too.
+  * [8dd7f26] port, portext (web): Add support to 'regex-bulk-select'
+    distributions.
+  * [a23346e] Never use '/usr/share/pyshared', always use computed 'dist-
+    packages' path (Fixes builds with newer dh_python2).
+  * [316de91] Add example 'migrate-keyring-packages': Bulk-migrate keyring
+    packages.
+  * [b61a4eb] debian/changelog: Prepare 1.0.2.
+  * [5100f3a] doc/quickstart: Update for the new keyring's "sources.list
+    library".
+  * [6de2b52] examples/ssh-uploader-command: Improve error output when 0
+    changes files are uploaded.
+  * [d39e93f] examples: Add auth logging support for ssh wrapper scripts.
+  * [62cd2be] [devel] Update setup/code for new pylint >= 1.2 (Fixes:
+    pylint check).
+  * [f187b97] Preparing 1.0.3.
+  * [14cb9e5] Ubuntu wizard: Add 'old-releases' archive (raring and
+    quantal recently moved there)
+  * [646f403] *.py: Some style fixes to satisfy newer pep8.
+  * [36783bf] API: Fix: Make 'remove' an admin command (was: staff).
+  * [872562c] web: 'show': Add link for the new Debian Package Tracker.
+  * [d93a3af] copyright: Update years.
+  * [5974f4a] keyring package(sources library): Add trailing newline (for
+    purists).
+  * [aea6a07] ports: Add SHA1 of original DSC to changelog.
+  * [dbc9652] mini-buildd-tool: Improve help message for command
+    confirmation.
+  * [0bbe7a8] mini-buildd-tool: Also encode logs for terminal, and use
+    'backslashreplace' instead of just failing when recoding.
+  * [dfe5f71] [django 1.7] web home, status: Fix missing trailing "/" in
+    link.
+  * [ae8c326] [django 1.7] HttpResponse: Use 'content_type', not
+    'mimetype'.
+  * [4d462f1] [django 1.7] Explicitly configure MIDDLEWARE_CLASSES (using
+    django 1.5 default).
+  * [6bdf476] [django 1.7] Fixup (fix conf, call setup) doc building.
+  * [5daf8ea] [django 1.7] Call django.setup() after configure.
+  * [771acfb] [django 1.7] devel: doctest workaround (omit doctests for
+    django-related modules).
+  * [1b93738] [django 1.7] pylint: Disable two new false-positives.
+  * [4c78f81] [django 1.7] web/css: Don't overwrite user-tools (fixes
+    design breakage for Configuration). (finishing django 1.7 fixes).
+    (Closes: #755659)
+  * [4621caf] Bug fix: "[l10n:cs] Updated Czech translation of PO debconf
+    template for mini-buildd 1.0.0~beta.23", thanks to Michal Šimůnek
+    (Closes: #751380)
+  * [5f9ce69] Prepare 1.0.4.
+  * [79f1750] Don't sync debian/changelog on merge.
 
- -- Stephan Sürken <absurd@debian.org>  Fri, 08 Aug 2014 12:51:36 +0200
+ -- Stephan Sürken <absurd@debian.org>  Fri, 08 Aug 2014 13:38:10 +0200
 
 mini-buildd (1.0.0) unstable; urgency=medium
 

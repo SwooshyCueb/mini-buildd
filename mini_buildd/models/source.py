@@ -74,6 +74,7 @@ Use the 'directory' notation with exactly one trailing slash (like 'http://examp
         def mbd_meta_add_ubuntu(cls, msglog):
             "Add internet Ubuntu archive sources."
             for url in ["http://archive.ubuntu.com/ubuntu/",              # Ubuntu releases
+                        "http://old-releases.ubuntu.com/ubuntu/",         # Older Ubuntu release
                         ]:
                 cls._mbd_get_or_create(msglog, url)
             msglog.info("Consider replacing these archives with you closest mirror(s); check netselect-apt.")

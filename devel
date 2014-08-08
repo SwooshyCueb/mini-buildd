@@ -125,7 +125,10 @@ mbd_pydoctests()
 {
 	(
 		pyenv
-		for m in mini-buildd mini-buildd-tool mini_buildd/*.py mini_buildd/models/*.py; do
+		# Workaround: Don't run doctests on any django model modules, and root_urls.py:
+		#  - These will always fail with django 1.7; there are not doctests there anyway yet
+		for m in mini-buildd mini-buildd-tool $(find mini_buildd/ -maxdepth 1 -name "*.py" -not -name "root_urls.py"); do
+			printf "=> Doctest on %s\n" "${m}"
 			python -m doctest -v ${m}
 		done
 	)

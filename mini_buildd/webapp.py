@@ -38,7 +38,9 @@ class WebApp(django.core.handlers.wsgi.WSGIHandler):
         import django.contrib.auth
 
         try:
+            # pylint: disable=E1101
             user = django.contrib.auth.models.User.objects.get(username="admin")
+            # pylint: enable=E1101
             LOG.info("Updating 'admin' user password...")
             user.set_password(password)
             user.save()

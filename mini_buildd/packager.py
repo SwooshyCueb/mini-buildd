@@ -276,7 +276,7 @@ def run(daemon, changes):
     pid = changes.get_pkg_id()
 
     if changes.type == changes.TYPE_BRES:
-        if not pid in daemon.packages:
+        if pid not in daemon.packages:
             raise Exception("{p}: Stray build result (not building here).".format(p=pid))
 
         package = daemon.packages[pid]

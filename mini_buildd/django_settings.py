@@ -5,6 +5,7 @@ import os
 import logging
 import random
 
+import django
 import django.conf
 
 import mini_buildd.setup
@@ -104,6 +105,14 @@ def configure(smtp_string, loglevel):
         AUTH_PROFILE_MODULE="mini_buildd.Uploader",
         ACCOUNT_ACTIVATION_DAYS=3,
         LOGIN_REDIRECT_URL="/mini_buildd/",
+
+        MIDDLEWARE_CLASSES=(
+            "django.middleware.common.CommonMiddleware",
+            "django.contrib.sessions.middleware.SessionMiddleware",
+            "django.middleware.csrf.CsrfViewMiddleware",
+            "django.contrib.auth.middleware.AuthenticationMiddleware",
+            "django.contrib.messages.middleware.MessageMiddleware"),
+
         INSTALLED_APPS=(
             "django.contrib.auth",
             "django.contrib.contenttypes",
@@ -113,3 +122,9 @@ def configure(smtp_string, loglevel):
             "django_extensions",
             "registration",
             "mini_buildd"))
+
+    try:
+        # django 1.7
+        django.setup()
+    except:
+        pass

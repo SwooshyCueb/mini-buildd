@@ -134,7 +134,7 @@ lintian) as non-lethal, and will install anyway.
         if rollback is None:
             return dist_string
         else:
-            if not rollback in range(self.rollback):
+            if rollback not in range(self.rollback):
                 raise Exception("Rollback number out of range: {r} ({m})".format(r=rollback, m=self.rollback))
             return "{d}-rollback{r}".format(d=dist_string, r=rollback)
 
@@ -735,7 +735,9 @@ Example:
     def mbd_get_uploader_keyring(self):
         gpg = mini_buildd.gnupg.TmpGnuPG()
         # Add keys from django users
+        # pylint: disable=E1101
         for u in django.contrib.auth.models.User.objects.filter(is_active=True):
+            # pylint: enable=E1101
             LOG.debug("Checking user: {u}".format(u=u))
 
             uploader = None

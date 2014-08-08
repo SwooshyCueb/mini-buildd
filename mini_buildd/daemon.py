@@ -240,7 +240,7 @@ class KeyringPackage(mini_buildd.misc.TmpDir):
                         for prefix, appendix in [("deb ", ""), ("deb-src ", "_src")]:
                             apt_line = d.mbd_get_apt_line(r, s, rollback=rb, prefix=prefix)
                             file_name = "{base}{appendix}.list".format(base=file_base, appendix=appendix)
-                            mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_line)
+                            mini_buildd.misc.open_utf8(os.path.join(p, file_name), "w").write(apt_line + "\n")
 
         # Generate changelog entry
         mini_buildd.misc.call(["debchange",
@@ -625,6 +625,9 @@ class Daemon(object):
                                   cwd=t.tmpdir,
                                   env=env)
 
+            # Get SHA1 of original dsc file
+            original_dsc_sha1sum = mini_buildd.misc.sha1_of_file(os.path.join(t.tmpdir, os.path.basename(dsc_url)))
+
             # Unpack DSC (note: dget does not support -x to a dedcicated dir).
             dst = "debian_source_tree"
             mini_buildd.misc.call(["dpkg-source",
@@ -648,7 +651,7 @@ class Daemon(object):
                                    "--force-bad-version",
                                    "--preserve",
                                    "--dist={d}".format(d=dist),
-                                   "Automated port via mini-buildd (no changes)."],
+                                   "Automated port via mini-buildd (no changes). Original DSC's SHA1: {s}.".format(s=original_dsc_sha1sum)],
                                   cwd=dst_path,
                                   env=env)
 

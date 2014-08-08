@@ -116,7 +116,7 @@ try:
     log("I: Running: ", COMMAND)
     log("N: Some commands (like migrate) need a confirmation (but you will not see the prompt here).")
     log("N: You may of course use '--confirm=CMD' directly to avoid the confirmation.")
-    log("N: In case this stalls here, you need to re-type the mini-buildd-tool command now.")
+    log("N: IN CASE THIS STALLS HERE: Type '{c}<RETURN>' to continue.".format(c=ORIGINAL_COMMAND[1]))
     log("---mini-buildd-tool---")
     subprocess.check_call(COMMAND)
 

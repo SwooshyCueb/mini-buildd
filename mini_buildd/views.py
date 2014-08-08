@@ -149,7 +149,7 @@ def api(request):
 
         # Get API class from 'command' parameter
         command = request.GET.get("command", None)
-        if not command in mini_buildd.api.COMMANDS_DICT:
+        if command not in mini_buildd.api.COMMANDS_DICT:
             return error400_bad_request(request, "API: Unknown command '{c}'".format(c=command))
         api_cls = mini_buildd.api.COMMANDS_DICT[command]
 
@@ -203,11 +203,11 @@ def api(request):
 
         elif output == "plain":
             response = django.http.HttpResponse(api_cmd.__unicode__().encode(mini_buildd.setup.CHAR_ENCODING),
-                                                mimetype="text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING))
+                                                content_type="text/plain; charset={charset}".format(charset=mini_buildd.setup.CHAR_ENCODING))
 
         elif output == "python":
             response = django.http.HttpResponse(pickle.dumps(api_cmd, pickle.HIGHEST_PROTOCOL),
-                                                mimetype="application/python-pickle")
+                                                content_type="application/python-pickle")
 
         elif output[:7] == "referer":
             # Add all plain result lines as info messages on redirect

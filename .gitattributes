@@ -1,0 +1,4 @@
+# debian/changelog: Always keep ours
+#  ? git config [--global] merge.ours.driver true
+# in your repo to make it work
+debian/changelog merge=ours

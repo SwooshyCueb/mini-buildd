@@ -1,3 +1,38 @@
+mini-buildd (1.0.4) unstable; urgency=medium
+
+  * [14cb9e5] Ubuntu wizard: Add 'old-releases' archive (raring and
+    quantal recently moved there)
+  * [646f403] *.py: Some style fixes to satisfy newer pep8.
+  * [36783bf] API: Fix: Make 'remove' an admin command (was: staff).
+  * [872562c] web: 'show': Add link for the new Debian Package Tracker.
+  * [d93a3af] copyright: Update years.
+  * [5974f4a] keyring package(sources library): Add trailing newline (for
+    purists).
+  * [aea6a07] ports: Add SHA1 of original DSC to changelog.
+  * [dbc9652] mini-buildd-tool: Improve help message for command
+    confirmation.
+  * [0bbe7a8] mini-buildd-tool: Also encode logs for terminal, and use
+    'backslashreplace' instead of just failing when recoding.
+  * [dfe5f71] [django 1.7] web home, status: Fix missing trailing "/" in
+    link.
+  * [ae8c326] [django 1.7] HttpResponse: Use 'content_type', not
+    'mimetype'.
+  * [4d462f1] [django 1.7] Explicitly configure MIDDLEWARE_CLASSES (using
+    django 1.5 default).
+  * [6bdf476] [django 1.7] Fixup (fix conf, call setup) doc building.
+  * [5daf8ea] [django 1.7] Call django.setup() after configure.
+  * [771acfb] [django 1.7] devel: doctest workaround (omit doctests for
+    django-related modules).
+  * [1b93738] [django 1.7] pylint: Disable two new false-positives.
+  * [4c78f81] [django 1.7] web/css: Don't overwrite user-tools (fixes
+    design breakage for Configuration). (finishing django 1.7 fixes).
+    (Closes: #755659)
+  * [4621caf] Bug fix: "[l10n:cs] Updated Czech translation of PO debconf
+    template for mini-buildd 1.0.0~beta.23", thanks to Michal Šimůnek
+    (Closes: #751380)
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 08 Aug 2014 12:40:59 +0200
+
 mini-buildd (1.0.3) unstable; urgency=medium
 
   * [5100f3a] doc/quickstart: Update for the new keyring's "sources.list

@@ -25,5 +25,8 @@ urlpatterns = patterns(
     (r"^admin/doc/", include("django.contrib.admindocs.urls")),
     (r"^admin/", include(django.contrib.admin.site.urls)),
     # registration
-    (r'^accounts/', include("registration.backends.default.urls")),)
+    (r'^accounts/', include("registration.backends.default.urls")),
+    # registration: This extra line is needed for p-d-registration since some django update...
+    (r'^accounts/', include('django.contrib.auth.urls')),
+)
 # pylint: enable=E1120

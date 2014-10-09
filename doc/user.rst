@@ -121,6 +121,27 @@ lines`` as changelog entry to control it on a per-upload basis::
 	MINI_BUILDD: AUTO_BACKPORTS: CODENAME-REPOID-SUITE[,CODENAME-REPOID-SUITE...]
 	  After successful build for the upload distribution, create and upload automatic internal ports for the given distributions.
 
+	MINI_BUILDD: INTERNAL_APT_PRIORITY: APT_PRIORITY
+	  Set APT priority for internal apt sources in builds.
+
+	  The default is 1, which means you will only build against newer
+	  packages in our own repositories in case it's really needed by
+	  the build dependencies. This is the recommended behaviour,
+	  producing sparse dependencies.
+
+	  However, some packages with incorrect build dependencies might
+	  break anyway, while they would work fine when just build against
+	  the newest version available.
+
+	  So, in case you don't care about sparse dependencies, you can
+	  pimp the internal priority up here, for this upload only.
+	  Usually, you use a prio of "1" to enable sparse dependency
+	  builds, and "500" to always build against newest versions of
+	  mini-buildd's own repository.
+
+	  This overwrites the extra config "Internal-APT-Priority" for
+	  the distribution.
+
 .. _user_api:
 
 *************

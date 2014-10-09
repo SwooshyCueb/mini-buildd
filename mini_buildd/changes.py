@@ -172,6 +172,11 @@ class Changes(debian.deb822.Changes):
     def magic_backport_mode(self):
         return bool(re.search(r"\*\s*MINI_BUILDD:\s*BACKPORT_MODE", self._magic_get_changes()))
 
+    @property
+    def magic_internal_apt_priority(self):
+        mres = re.search(r"\*\s*MINI_BUILDD:\s*INTERNAL_APT_PRIORITY:\s*([^*.\[\]]+)", self._magic_get_changes())
+        return int((re.sub(r"\s+", "", mres.group(1))).strip()) if mres else None
+
     def get_spool_dir(self):
         return os.path.join(mini_buildd.setup.SPOOL_DIR, self._sha1)
 
@@ -355,7 +360,7 @@ class Changes(debian.deb822.Changes):
 
                 # Generate sources.list et.al. to be used
                 mini_buildd.misc.open_utf8(os.path.join(path, "apt_sources.list"), "w").write(dist.mbd_get_apt_sources_list(repository, suite_option))
-                mini_buildd.misc.open_utf8(os.path.join(path, "apt_preferences"), "w").write(dist.mbd_get_apt_preferences(repository, suite_option))
+                mini_buildd.misc.open_utf8(os.path.join(path, "apt_preferences"), "w").write(dist.mbd_get_apt_preferences(repository, suite_option, internal_prio=self.magic_internal_apt_priority))
                 mini_buildd.misc.open_utf8(os.path.join(path, "apt_keys"), "w").write(repository.mbd_get_apt_keys(dist))
                 chroot_setup_script = os.path.join(path, "chroot_setup_script")
                 # Note: For some reason (python, django sqlite, browser?) the text field may be in DOS mode.

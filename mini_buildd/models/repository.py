@@ -488,7 +488,8 @@ the newest version available.
 </p>
 <p>
 So, in case you don't care about sparse dependencies, you can
-pimp the internal priority up here.
+pimp the internal priority up here for all builds in this
+distribution.
 </p>
 <p>
 <em>Example</em>:
@@ -578,7 +579,7 @@ pimp the internal priority up here.
         result += "\n"
         return result
 
-    def mbd_get_apt_preferences(self, repository, suite_option):
+    def mbd_get_apt_preferences(self, repository, suite_option, internal_prio=None):
         result = ""
 
         # Get preferences for all extra (prioritized) sources
@@ -586,7 +587,8 @@ pimp the internal priority up here.
             result += e.mbd_get_apt_preferences() + "\n"
 
         # Get preferences for all internal sources
-        internal_prio = self.mbd_get_extra_option("Internal-APT-Priority", 1)
+        if internal_prio is None:
+            internal_prio = self.mbd_get_extra_option("Internal-APT-Priority", 1)
         for s in repository.mbd_get_internal_suite_dependencies(suite_option):
             result += s.mbd_get_apt_preferences(repository, self, prio=internal_prio) + "\n"
 

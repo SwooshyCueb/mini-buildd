@@ -1,3 +1,19 @@
+mini-buildd (1.1.0) unstable; urgency=medium
+
+  mini-buildd >= 1.1.0 no longer removes '/etc/sudoers' in chroot snapshots prior
+  to builds.
+
+  This file was part of a workaround for a sbuild bug; it's present in
+  chroots created with mini-buildd versions < 1.0.5.
+
+  In case you really have not yet re-created those chroots, you really
+  MUST DO IT NOW, else your build runs may gain root privileges.
+
+  To re-create chroots, enter the Web configuration frontend as 'admin' user,
+  and first run 'Remove' and then 'PCA' on each chroot instance.
+
+ -- Stephan Sürken <absurd@debian.org>  Fri, 10 Oct 2014 16:41:50 +0000
+
 mini-buildd (1.0.5) unstable; urgency=medium
 
   This version removes the "sudo workaround" for the per-build chroot

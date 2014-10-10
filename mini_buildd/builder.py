@@ -143,16 +143,6 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                     self._bres["Sbuild-" + s[0]] = s[1].strip()
 
     def build(self):
-        """
-        .. note:: OBSOLETED SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
-
-            The workaround has been removed, except for the "rm -v -f /etc/sudoers" cleanup (search below).
-
-            This is still there so that users who do not re-create their chroots for whatever reason at
-            least keep the same level of security as before.
-
-            This left over will be removed for the 1.2.x version.
-        """
         self._breq.untar(path=self._build_dir)
         self._generate_sbuildrc()
         self.started = self._get_started_stamp()
@@ -179,7 +169,6 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                        "--chroot-setup-command=apt-key add {p}/apt_keys".format(p=self._build_dir),
                        "--chroot-setup-command=apt-get --option=Acquire::Languages=none update",
                        "--chroot-setup-command={p}/chroot_setup_script".format(p=self._build_dir),
-                       "--chroot-setup-command=rm -v -f /etc/sudoers",
                        "--chroot-setup-command=apt-cache policy",
                        "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
                        "--keyid={k}".format(k=self._gnupg.get_first_sec_key().key_id),

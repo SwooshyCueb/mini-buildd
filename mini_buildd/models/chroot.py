@@ -142,9 +142,6 @@ chroots (with <tt>qemu-user-static</tt> installed).
     def mbd_get_system_schroot_conf_file(self):
         return os.path.join("/etc/schroot/chroot.d", self.mbd_get_name() + ".conf")
 
-    def mbd_get_sudoers_workaround_file(self):
-        return os.path.join(self.mbd_get_path(), "sudoers_workaround")
-
     def mbd_get_pre_sequence(self):
         "Subclasses may implement this to do define an extra preliminary sequence."
         LOG.debug("{c}: No pre-sequence defined.".format(c=self))
@@ -158,26 +155,15 @@ chroots (with <tt>qemu-user-static</tt> installed).
               "--variant=buildd",
               "--keyring={k}".format(k=self.mbd_get_keyring_file()),
               "--arch={a}".format(a=self.architecture.name),
-              "--include=sudo",
               self.source.codename,
               self.mbd_get_tmp_dir(),
               self.source.mbd_get_archive().url],
-             ["/bin/umount", "-v", os.path.join(self.mbd_get_tmp_dir(), "proc"), os.path.join(self.mbd_get_tmp_dir(), "sys")]),
-
-            (["/bin/cp", "--verbose", self.mbd_get_sudoers_workaround_file(), "{m}/etc/sudoers".format(m=self.mbd_get_tmp_dir())],
-             [])] + self.mbd_get_backend().mbd_get_post_sequence() + [
+             ["/bin/umount", "-v", os.path.join(self.mbd_get_tmp_dir(), "proc"), os.path.join(self.mbd_get_tmp_dir(), "sys")])] + self.mbd_get_backend().mbd_get_post_sequence() + [
 
             (["/bin/cp", "--verbose", self.mbd_get_schroot_conf_file(), self.mbd_get_system_schroot_conf_file()],
              ["/bin/rm", "--verbose", self.mbd_get_system_schroot_conf_file()])]
 
     def mbd_prepare(self, request):
-        """
-        .. note:: SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
-
-            Includes '--include=sudo' and all handling of 'sudoers_workaround_file' below.
-
-            .. seealso:: :py:class:`~mini_buildd.builder.Build`
-        """
         mini_buildd.misc.mkdirs(os.path.join(self.mbd_get_path(), mini_buildd.setup.CHROOT_LIBDIR))
 
         # Set personality
@@ -189,13 +175,6 @@ chroots (with <tt>qemu-user-static</tt> installed).
                 self.personality = self.PERSONALITIES[self.architecture.name]
             except:
                 self.personality = "linux"
-
-        mini_buildd.misc.ConfFile(
-            self.mbd_get_sudoers_workaround_file(),
-            """\
-{u} ALL=(ALL) ALL
-{u} ALL=NOPASSWD: ALL
-""".format(u=os.getenv("USER"))).save()
 
         mini_buildd.misc.ConfFile(
             self.mbd_get_schroot_conf_file(),

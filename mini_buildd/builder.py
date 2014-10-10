@@ -144,11 +144,14 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
 
     def build(self):
         """
-        .. note:: SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
+        .. note:: OBSOLETED SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
 
-            Includes all 'sudo' prefix for chroot-setup-commands below.
+            The workaround has been removed, except for the "rm -v -f /etc/sudoers" cleanup (search below).
 
-            .. seealso:: :py:class:`~mini_buildd.models.chroot.Chroot`
+            This is still there so that users who do not re-create their chroots for whatever reason at
+            least keep the same level of security as before.
+
+            This left over will be removed for the 1.2.x version.
         """
         self._breq.untar(path=self._build_dir)
         self._generate_sbuildrc()
@@ -160,7 +163,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         with mini_buildd.misc.open_utf8(sources_list_file) as sources_list:
             for apt_line in sources_list:
                 if re.match("deb https", apt_line):
-                    apt_transports = ["--chroot-setup-command=sudo apt-get --yes --option=APT::Install-Recommends=false install ca-certificates apt-transport-https"]
+                    apt_transports = ["--chroot-setup-command=apt-get --yes --option=APT::Install-Recommends=false install ca-certificates apt-transport-https"]
                     LOG.info("{p}: Found https source: {l}".format(p=self.key, l=apt_line))
                     break
 
@@ -169,14 +172,14 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                       "--arch={0}".format(self.architecture),
                       "--chroot={c}".format(c=self._chroot)]
         sbuild_cmd += apt_transports
-        sbuild_cmd += ["--chroot-setup-command=sudo cp {s} /etc/apt/sources.list".format(s=sources_list_file),
+        sbuild_cmd += ["--chroot-setup-command=cp {s} /etc/apt/sources.list".format(s=sources_list_file),
                        "--chroot-setup-command=cat /etc/apt/sources.list",
-                       "--chroot-setup-command=sudo cp {p}/apt_preferences /etc/apt/preferences".format(p=self._build_dir),
+                       "--chroot-setup-command=cp {p}/apt_preferences /etc/apt/preferences".format(p=self._build_dir),
                        "--chroot-setup-command=cat /etc/apt/preferences",
-                       "--chroot-setup-command=sudo apt-key add {p}/apt_keys".format(p=self._build_dir),
-                       "--chroot-setup-command=sudo apt-get --option=Acquire::Languages=none update",
-                       "--chroot-setup-command=sudo {p}/chroot_setup_script".format(p=self._build_dir),
-                       "--chroot-setup-command=sudo rm -v -f /etc/sudoers",
+                       "--chroot-setup-command=apt-key add {p}/apt_keys".format(p=self._build_dir),
+                       "--chroot-setup-command=apt-get --option=Acquire::Languages=none update",
+                       "--chroot-setup-command={p}/chroot_setup_script".format(p=self._build_dir),
+                       "--chroot-setup-command=rm -v -f /etc/sudoers",
                        "--chroot-setup-command=apt-cache policy",
                        "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
                        "--keyid={k}".format(k=self._gnupg.get_first_sec_key().key_id),

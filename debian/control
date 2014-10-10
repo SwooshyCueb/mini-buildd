@@ -62,7 +62,7 @@ Depends: ${misc:Depends},
          reprepro (>= 4.2),
          debootstrap (>= 1.0.24~),
          schroot (>= 1.6.3),
-         sbuild (>= 0.64.1),
+         sbuild (>= 0.64.3),
          dpkg-dev,
          lintian,
          devscripts (>= 2.10.15)

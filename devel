@@ -259,6 +259,10 @@ EOF
 	if [ "${1}" != "nocheck" ]; then
 		_head "Checking basic mini-buildd-tool calls"
 		local mbd="/usr/bin/mini-buildd-tool localhost:8066"
+
+		# Wait a while to be sure the network service is ready
+		sleep 3
+
 		${mbd} status
 		${mbd} getkey
 		${mbd} getdputconf

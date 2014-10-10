@@ -351,7 +351,7 @@ def run():
             break
 
         try:
-            LOG.info("Status: {0} active packages, {0} changes waiting in incoming.".
+            LOG.info("Status: {0} active packages, {1} changes waiting in incoming.".
                      format(len(get().packages), get().incoming_queue.qsize()))
 
             changes = None

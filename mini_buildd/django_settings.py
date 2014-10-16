@@ -102,7 +102,6 @@ def configure(smtp_string, loglevel):
         SECRET_KEY=get_django_secret_key(mini_buildd.setup.HOME_DIR),
         ROOT_URLCONF="mini_buildd.root_urls",
         STATIC_URL="/static/",
-        AUTH_PROFILE_MODULE="mini_buildd.Uploader",
         ACCOUNT_ACTIVATION_DAYS=3,
         LOGIN_REDIRECT_URL="/mini_buildd/",
 

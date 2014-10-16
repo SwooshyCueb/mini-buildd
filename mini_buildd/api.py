@@ -589,7 +589,7 @@ class SetUserKey(Command):
         (["key"], {"help": "GnuPG public key; multiline inputs will be handled as ascii armored full key, one-liners as key ids"})]
 
     def run(self, _daemon):
-        uploader = self.request.user.get_profile()
+        uploader = self.request.user.uploader
         uploader.Admin.mbd_remove(self.request, uploader)
         key = self.args["key"]
 

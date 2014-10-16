@@ -16,7 +16,7 @@
 
 	<h3>Package uploads</h3>
 	<p>
-		<tt class="status {{ user.get_profile.get_status_display }}">{{ user.get_profile }}</tt>
+		Status: <tt class="status {{ user.uploader.get_status_display }}">{{ user.uploader|default:"ERROR: User has no uploader config. Please contact administrator." }}</tt>
 	</p>
 
 	<p>
@@ -30,7 +30,7 @@
 		<form action="/mini_buildd/api" method="get">
 			<div>
 				<input type="hidden" name="command" value="setuserkey" />
-				<textarea name="key" title="Full ascii-armored GnuPG public key or one-line key ID (to be found on the keyserver)" cols="80" rows="10">{{ user.get_profile.key }}</textarea>
+				<textarea name="key" title="Full ascii-armored GnuPG public key or one-line key ID (to be found on the keyserver)" cols="80" rows="10">{{ user.uploader.key }}</textarea>
 				<input type="hidden" name="output" value="referer" />
 			</div>
 			<div>

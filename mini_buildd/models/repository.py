@@ -742,7 +742,7 @@ Example:
 
             uploader = None
             try:
-                uploader = u.get_profile()
+                uploader = u.uploader
             except:
                 LOG.warn("User '{u}' does not have an uploader profile (deliberately removed?)".format(u=u))
 

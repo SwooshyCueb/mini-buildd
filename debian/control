@@ -63,9 +63,9 @@ Depends: ${misc:Depends},
          debootstrap (>= 1.0.24~),
          schroot (>= 1.6.3),
          sbuild (>= 0.64.3),
-         dpkg-dev,
-         lintian,
-         devscripts (>= 2.10.15)
+         dpkg-dev (>= 1.17),
+         devscripts (>= 2.14.5~),
+         lintian
 Recommends: python-apt
 Suggests: haveged, lvm2, qemu-user-static, binfmt-support, debootstrap (>= 1.0.55~)
 Breaks: mini-buildd-rep (<< 1.0.0~),

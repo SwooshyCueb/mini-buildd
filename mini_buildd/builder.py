@@ -146,10 +146,13 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
         """
         .. note:: OBSOLETED SUDO WORKAROUND for http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=608840
 
-            The workaround has been removed, except for the "rm -v -f /etc/sudoers" cleanup (search below).
+            The workaround has been removed, except for the "/etc/sudoers" cleanup (search below).
 
             This is still there so that users who do not re-create their chroots for whatever reason at
             least keep the same level of security as before.
+
+            Since some version of sudo, upgrading the package with missing /etc/sudoers fails, so we now
+            additionally touch this, so /etc/sudoers exist as empty file.
 
             This left over will be removed for the 1.2.x version.
         """
@@ -180,6 +183,7 @@ $apt_allow_unauthenticated = {apt_allow_unauthenticated};
                        "--chroot-setup-command=apt-get --option=Acquire::Languages=none update",
                        "--chroot-setup-command={p}/chroot_setup_script".format(p=self._build_dir),
                        "--chroot-setup-command=rm -v -f /etc/sudoers",
+                       "--chroot-setup-command=touch /etc/sudoers",
                        "--chroot-setup-command=apt-cache policy",
                        "--build-dep-resolver={r}".format(r=self._breq["Build-Dep-Resolver"]),
                        "--keyid={k}".format(k=self._gnupg.get_first_sec_key().key_id),

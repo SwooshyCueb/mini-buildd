@@ -20,13 +20,19 @@
 							</a>
 						</p>
 					{% endifequal %}
+					<p>
+						<a title="Browse log directory" href="/log/{{ repository }}{% ifequal key "Failed" %}/_failed{% endifequal %}/{{ package }}/{{ version }}/">Browse files</a>
+						<a title="Show {{ package }} source package" href="/mini_buildd/api?command=show&amp;package={{ package|urlencode }}">Show package</a>
+					</p>
+					<hr/>
 
 					<h3>Build logs</h3>
 					<p>
 						{% for arch, uri in values.buildlogs.items %}
-							<a title="Visit build logs for {{ arch }}" href="/log/{{ uri }}">{{ arch }}</a>
+							<a title="Build log for {{ arch }}" href="/log/{{ uri }}">{{ arch }}</a>
 						{% endfor %}
 					</p>
+					<hr/>
 
 					<h3><a title="Download changes for {{ repository }}/{{ package }}/{{ version }}" href="/log/{{ values.changes_path }}">Changes</a></h3>
 					<pre>{{ values.changes }}</pre>

@@ -1,22 +1,25 @@
 mini-buildd (1.0.5) unstable; urgency=medium
 
-  This version removes the "sudo workaround" for the per-build chroot
-  setup (as the resp. bug #608840 in 'sbuild' is now fixed).
+  This version removes the "sudo workaround" for the per-build
+  chroot setup (as the resp. bug #608840 in 'sbuild' is now
+  fixed).
 
-  It's highly recommended to re-create all chroots once now to get rid of the
-  workaround's '/etc/sudoers' file in chroots, which imposes a potential
-  security risk.
+  You must RE-CREATE ALL CHROOTS ONCE NOW to get rid of the
+  workaround's '/etc/sudoers' file in chroots, which imposes a
+  potential security risk.
 
-  All 1.0.x versions will still remove the '/etc/sudoers' in snapshots prior to
-  builds (i.e., you keep the same level of security as before even if you do
-  nothing), but 1st this will be removed in future versions of mini-buildd
-  (>= 1.1.x), and 2nd you gain security now in case the chroots are used by
-  third parties.
+  FWIW: These chroots will all be automatically disabled in the
+  next 'check' run (which automatically is done weekly). All
+  1.0.x versions will still remove the '/etc/sudoers' in
+  snapshots prior to builds (i.e., you keep the same level of
+  security as before even if you do nothing until the chroot is
+  actually disabled).
 
-  To re-create chroots, enter the Web configuration frontend as 'admin' user,
-  and first run 'Remove' and then 'PCA' on each chroot instance.
+  To re-create chroots, enter the web configuration frontend as
+  'admin' user, and first run 'Remove' and then 'PCA' on each
+  chroot instance.
 
- -- Stephan Sürken <absurd@debian.org>  Thu, 09 Oct 2014 17:35:36 +0000
+ -- Stephan Sürken <absurd@debian.org>  Wed, 22 Oct 2014 14:01:36 +0000
 
 mini-buildd (1.0.0~alpha.1) experimental; urgency=low
 

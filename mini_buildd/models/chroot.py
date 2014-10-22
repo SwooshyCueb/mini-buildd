@@ -219,11 +219,31 @@ personality={p}
                                            "--user={u}".format(u=user)] +
                                           args)
 
+    def mbd_check_sudo_workaround(self, request):
+        """
+        mini-buildd <= 1.0.4 created chroots with a "sudo workaround" for bug
+        https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=607228.
+
+        Suche chroots must be recreated, and no longer used.
+        """
+        has_sudo_workaround = False
+        try:
+            self._mbd_schroot_run(["--directory=/", "--", "grep", "^{u}".format(u=os.getenv("USER")), "/etc/sudoers"])
+            has_sudo_workaround = True
+        except:
+            MsgLog(LOG, request).info("{c}: Ok, no sudo workaround found.".format(c=self))
+
+        if has_sudo_workaround:
+            raise Exception("Chroot has sudo workaround (created with versions <= 1.0.4): Please run 'Remove' + 'PCA' on this chroot to re-create!")
+
     def mbd_backend_check(self, request):
         "Subclasses may implement this to do extra backend checks."
         MsgLog(LOG, request).info("{c}: No backend check implemented.".format(c=self))
 
     def mbd_check(self, request):
+        # Check for the old sudo workaround (chroots created by mini-buildd <= 1.0.4)
+        self.mbd_check_sudo_workaround(request)
+
         # Basic function checks
         self._mbd_schroot_run(["--info"])
 

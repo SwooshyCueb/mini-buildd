@@ -34,7 +34,7 @@ Depends: ${misc:Depends},
          python-argparse,
          python-argcomplete (>= 0.5.4),
          python-keyring (>= 1.6),
-         python-debian (>= 0.1.18~)
+         python-debian (>= 0.1.25~)
 Description: minimal build daemon - python library and user tool
  Mini-buildd is an easy-to-configure autobuilder and
  repository for deb packages.

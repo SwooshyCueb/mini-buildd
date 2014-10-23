@@ -1,5 +1,10 @@
 mini-buildd (1.0.5) unstable; urgency=medium
 
+  This version upgrade unfortunately requires some manual
+  maintenance:
+
+  (1) "sudo chroot workaround" removed:
+
   This version removes the "sudo workaround" for the per-build
   chroot setup (as the resp. bug #608840 in 'sbuild' is now
   fixed).
@@ -18,6 +23,26 @@ mini-buildd (1.0.5) unstable; urgency=medium
   To re-create chroots, enter the web configuration frontend as
   'admin' user, and first run 'Remove' and then 'PCA' on each
   chroot instance.
+
+  (2) Updated default snippets for eatmydata 82:
+
+  The new eatmydata 82 (sid/jessie) breaks the old eatmydata
+  shell snippet (which is automatically added for newly created
+  Distributions to the -- otherwise freely configurable --
+  distribution's "chroot setup script").
+
+  This breakage usually only means eatmydata is not enabled in
+  builds (which may dramatically increase your build times), and
+  ugly error messages in build logs.
+
+  To update the snippet, enter the web configuration frontend as
+  'admin' user, and fix up (or entirely remove) the snippet for
+  each distribution instance from "Chroot setup options/Chroot
+  setup script" (for your cut&paste pleasure, an updated snippet
+  is shown there in the example script).
+
+  Note that you also need to 'PCA' all depending repositories
+  afterwards.
 
  -- Stephan Sürken <absurd@debian.org>  Wed, 22 Oct 2014 14:01:36 +0000
 

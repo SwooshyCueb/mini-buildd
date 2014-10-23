@@ -412,9 +412,21 @@ the build logs.
                                                      default="""\
 #!/bin/sh -e
 
-# Install and use 'eatmydata' in builds where available
+printf "I: Install and use 'eatmydata' in builds where available...\\n"
 if apt-get --yes --option=APT::Install-Recommends=false install eatmydata; then
-   printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+    # eatmydata <= 26: Just one 'deb', and not multiarched
+    EATMYDATA_SO=$(dpkg -L eatmydata | grep 'libeatmydata.so$') || true
+    if [ -z "${EATMYDATA_SO}" ]; then
+        # eatmydata >= 82: Has a library 'deb', and is multiarched
+        EATMYDATA_SO=$(dpkg -L libeatmydata1 | grep 'libeatmydata.so$') || true
+    fi
+    if [ -n "${EATMYDATA_SO}" ]; then
+        printf " ${EATMYDATA_SO}" >> /etc/ld.so.preload
+    else
+        printf "W: eatmydata: No *.so found (skipping)\\n" >&2
+    fi
+else
+    printf "W: eatmydata: Not installable (skipping)\\n" >&2
 fi
 
 # Have 'ccache' ready in builds
@@ -427,9 +439,21 @@ Example:
 <pre>
 #!/bin/sh -e
 
-# Install and use 'eatmydata' in builds where available
+printf "I: Install and use 'eatmydata' in builds where available...\\n"
 if apt-get --yes --option=APT::Install-Recommends=false install eatmydata; then
-   printf " /usr/lib/libeatmydata/libeatmydata.so" >> /etc/ld.so.preload
+    # eatmydata <= 26: Just one 'deb', and not multiarched
+    EATMYDATA_SO=$(dpkg -L eatmydata | grep 'libeatmydata.so$') || true
+    if [ -z "${EATMYDATA_SO}" ]; then
+        # eatmydata >= 82: Has a library 'deb', and is multiarched
+        EATMYDATA_SO=$(dpkg -L libeatmydata1 | grep 'libeatmydata.so$') || true
+    fi
+    if [ -n "${EATMYDATA_SO}" ]; then
+        printf " ${EATMYDATA_SO}" >> /etc/ld.so.preload
+    else
+        printf "W: eatmydata: No *.so found (skipping)\\n" >&2
+    fi
+else
+    printf "W: eatmydata: Not installable (skipping)\\n" >&2
 fi
 
 # Have 'ccache' ready in builds

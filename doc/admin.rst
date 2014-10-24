@@ -367,6 +367,20 @@ your system, **LVM chroots** are good alternative, too.
 
 FAQ
 ===
+.. todo:: **BUG**: *For some distributions, schroot doesn't work with systemd (/dev/shm).*
+
+	 See this [#debbug728096]_ schroot bug for more information.
+
+	 mini-buildd comes with a crude **temporary** workaround, see
+	 (and please read the comments in)
+	 ``/usr/share/doc/mini-buildd/examples/09bug728096shmfixer``. Just
+	 symlink in schroot's setup.d::
+
+		 # cd /etc/schroot/setup.d
+		 # ln -s /usr/share/doc/mini-buildd/examples/09bug728096shmfixer .
+
+	 to enable.
+
 .. todo:: **FAQ**: *How to use foreign-architecture chroots with qemu.*
 
 	 Tested with 'armel' (other architectures might work as well, but not tested).
@@ -521,6 +535,7 @@ References
 **********
 
 .. rubric:: References:
+.. [#debbug728096] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=728096
 .. [#debbug683205] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=683205
 .. [#debbug642031] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=642031
 .. [#debbug706086] http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=706086

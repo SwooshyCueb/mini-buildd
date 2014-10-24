@@ -1,0 +1,33 @@
+#!/bin/sh
+
+# This crude quick fix workaround for
+#
+# https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=728096
+#
+# When using systemd (jessie/sid), you will need this (while the
+# bug is not fixed) to make some (i.e., those who use /run/shm
+# with /dev/shm a symlink to run like wheezy does) distribution
+# chroots work.
+#
+# Symlinking this file from /etc/schroot/setup.d should suffice
+# to enable.
+#
+# Note that this is tested only for directory based chroots, it
+# may not work for other types.
+#
+# Note that this actually _changes_ the source chroot, not only
+# the snasphots -- so you might want to re-create your chroots
+# once the workaround is no longer needed to clean things up.
+
+set -e
+
+. "$SETUP_DATA_DIR/common-data"
+. "$SETUP_DATA_DIR/common-functions"
+. "$SETUP_DATA_DIR/common-config"
+
+if [ "$(readlink -m "${CHROOT_DIRECTORY}/dev/shm")" = "/run/shm" ]; then
+	printf "W: Workaround for: https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=728096\n" >&2
+	printf "W: Fixing SHM symlink in source chroot (systemd?)\n" >&2
+	rm -v "${CHROOT_DIRECTORY}/dev/shm"
+	mkdir -v "${CHROOT_DIRECTORY}/dev/shm"
+fi

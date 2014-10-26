@@ -1,3 +1,34 @@
+mini-buildd (1.0.5) unstable; urgency=medium
+
+  * [016c59f] mini_buildd/daemon.py: Fix warning with pylint 1.3.
+  * [9f3d61a] [devel] "./devel all": Sleep a while until service becomes
+    ready.
+  * [2cdcffc] [devel] pylint: Globally disable W1302 (seems just wrong).
+  * [48d9bf7] p-d-registration: Add 'd.c.auth.urls', needed since some
+    django update. (Closes: 764736)
+  * [0aaf375] Remove the obsoleted "chroot sudo workaround". (Closes:
+    764617)
+  * [09adf78] [django 1.7] Remove "user profile" code (deprecated for good
+    in 1.7) (Closes: 765378)
+  * [a4e6e5c] sudo chroot workaround cleanup: Assure /etc/sudoers file is
+    present (else newer sudo may fail on upgrade) (Closes: 766191)
+  * [ab55bd0] control: Add dep dpkg-dev >1.17 (needed by new sbuild); also
+    update devscripts dep (relevant for wheezy port only).
+  * [e887a9a] [html] Log: Add "file browse" and PTS link for convenience.
+  * [8ae5176] Chroot::check(): Detect (and deny) "sudo workaround chroots"
+    (so they eventually become disabled automatically).
+  * [6e39fda] Update etamydata chroot setup default/example snippets to
+    also work with eatmydata >= 82. (Closes: 765641)
+  * [2149b13] mini-buildd.NEWS: Update/correct existing NEWS (for
+    upgrading 0.8.x->1.0.0)
+  * [0266352] control: Depend on python-debian (>= 0.1.25~). (Closes:
+    764595)
+  * [a6fa26f] doc: Add note about systemd/schroot bug 728096, and add
+    workaround as example script.
+  * [aa3757e] setup wizards: Add support for Ubuntu "utopic".
+
+ -- Stephan Sürken <absurd@debian.org>  Sun, 26 Oct 2014 20:12:05 +0000
+
 mini-buildd (1.0.4) unstable; urgency=medium
 
   * [14cb9e5] Ubuntu wizard: Add 'old-releases' archive (raring and

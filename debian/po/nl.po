@@ -1,0 +1,155 @@
+# Dutch translation of mini-buildd debconf templates.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the mini-buildd package.
+# Frans Spiesschaert <Frans.Spiesschaert@yucom.be>, 2014.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mini-buildd\n"
+"Report-Msgid-Bugs-To: mini-buildd@packages.debian.org\n"
+"POT-Creation-Date: 2013-11-11 14:08+0100\n"
+"PO-Revision-Date: 2014-10-16 21:11+0200\n"
+"Last-Translator: Frans Spiesschaert <Frans.Spiesschaert@yucom.be>\n"
+"Language-Team: Debian Dutch l10n Team <debian-l10n-dutch@lists.debian.org>\n"
+"Language: nl\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:2001
+msgid "mini-buildd data purge warning"
+msgstr "Waarschuwing: opruimen van gegevens van mini-buildd"
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:2001
+msgid "You have chosen to purge mini-buildd."
+msgstr "U heeft ervoor gekozen om mini-buildd op te ruimen."
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:2001
+msgid ""
+"As a consequence, the mini-buildd user will be removed along with all the "
+"files it owns, possibly including Debian repositories."
+msgstr ""
+"Ten gevolge daarvan zal ook de gebruiker mini-buildd verwijderd worden samen "
+"met alle bestanden waarvan hij eigenaar is. Misschien zijn daar ook "
+"pakketbronnen van Debian bij."
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:2001
+msgid "To keep this data, you need to back it up now."
+msgstr ""
+"Om deze gegevens te behouden, moet u er nu een veiligheidskopie van maken."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid "Home path:"
+msgstr "Pad naar de thuismap:"
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"Please choose the directory where mini-buildd data will be stored. The "
+"directory will also be the home directory for the mini-buildd user."
+msgstr ""
+"Geef aan in welke map de gegevens van mini-buildd opgeslagen zullen worden. "
+"Deze map zal ook de thuismap van gebruiker mini-buildd zijn."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:3001
+msgid ""
+"It should have enough space for all the builders and repositories you plan "
+"to use."
+msgstr ""
+"Ze moet voldoende opslagruimte bevatten voor alle genereerders en "
+"pakketbronnen die u zinnens bent te gebruiken."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid "Administrator password for mini-buildd:"
+msgstr "Beheerderswachtwoord voor mini-buildd:"
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"Please choose the password for the administrative user of mini-buildd. This "
+"password will be used for the \"admin\" user in mini-buildd's web interface."
+msgstr ""
+"Kies het wachtwoord voor de beheerder van mini-buildd. Dit wachtwoord zal "
+"gebruikt worden voor gebruiker \"admin\" in de webinterface van mini-buildd."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid ""
+"If you enter a password, this will also trigger the creation of a local "
+"\"admin\" user."
+msgstr ""
+"Indien u een wachtwoord ingeeft, zal dit ook tot gevolg hebben dat er lokaal "
+"een gebruiker \"admin\" aangemaakt wordt."
+
+#. Type: password
+#. Description
+#: ../mini-buildd.templates:4001
+msgid "If you leave this empty, no user creation will happen."
+msgstr "Indien u dit leeg laat, dan wordt er geen gebruiker aangemaakt."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
+msgid "Extra options:"
+msgstr "Extra opties:"
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
+msgid ""
+"Please add any mini-buildd command line options you would like to use "
+"(\"mini-buildd --help\" gives a list of available options)."
+msgstr ""
+"Geef eventuele commandolijnopties op die u met mini-buildd wilt gebruiken "
+"(\"mini-buildd --help\" toont een lijst van beschikbare opties)."
+
+#. Type: string
+#. Description
+#: ../mini-buildd.templates:5001
+msgid ""
+"The only options really recommended for use here are \"-v\"/\"--verbose\" to "
+"increase the log level or \"-q\"/\"--quiet\" to decrease it."
+msgstr ""
+"De enige opties die hier echt aanbevolen worden, zijn \"-v\"/\"--verbose\" "
+"om het log-niveau te verhogen of \"-q\"/\"--quiet\" om het te verlagen."
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid "Configuration of mini-buildd complete"
+msgstr "Instellen van mini-buildd voltooid"
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid ""
+"Unless you changed the defaults, you should now be able to visit the new "
+"home of the local mini-buildd instance at http://localhost:8066."
+msgstr ""
+"Tenzij u niet de standaardinstellingen gevolgd heeft, zou u nu in staat "
+"moeten zijn om de nieuwe thuismap van het lokale exemplaar van mini-buildd "
+"te vinden op http://localhost:8066."
+
+#. Type: note
+#. Description
+#: ../mini-buildd.templates:6001
+msgid "A good starting point is the online manual named \"Quickstart\"."
+msgstr "Een goed beginpunt is de online-handleiding \"Quickstart\"."

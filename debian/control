@@ -21,7 +21,7 @@ Build-Depends: debhelper (>= 8.1.0~),
                python-django (>= 1.5.2),
                python-django-extensions (>= 1.2.5),
                python-django-registration (>= 0.9~)
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Vcs-Git: git://git.debian.org/git/collab-maint/mini-buildd.git
 Vcs-Browser: http://git.debian.org/?p=collab-maint/mini-buildd.git;a=summary
 Homepage: http://mini-buildd.installiert.net/
